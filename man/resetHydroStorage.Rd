@@ -22,8 +22,8 @@ Reset to 0 the hydro storage time series
 }
 \note{
 The function make a copy of the original hydro storage time series,
- you can restore these with \code{restoreHydroStorage}
+ you can restore these with \code{restoreHydroStorage}.
 }
 \seealso{
-restoreHydroStorage
+\link{restoreHydroStorage}
 }

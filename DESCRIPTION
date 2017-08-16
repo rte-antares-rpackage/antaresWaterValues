@@ -1,10 +1,17 @@
 Package: antaresWaterValues
 Title: Calculate Water Values
 Version: 0.0.0.9000
-Authors@R: person("Victor", "Perrier", email = "victor.perrier@dreamrs.fr", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: c(
+    person("Victor", "Perrier", email = "victor.perrier@rte-france.com", role = c("aut", "cre")),
+    person("RTE", role = "cph"))
+Description: Setup simulation for running simulation to calculate water values..
 Depends: R (>= 3.4.1)
 License: GPL (>= 2) | file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
+Imports: antaresRead,
+    antaresEditObject,
+    antaresXpansion,
+    assertthat,
+    data.table

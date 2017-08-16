@@ -8,9 +8,9 @@
 #'   \code{antaresRead::setSimulationPath}
 #'   
 #' @note The function make a copy of the original hydro storage time series,
-#'  you can restore these with \code{restoreHydroStorage}
+#'  you can restore these with \code{restoreHydroStorage}.
 #'  
-#' @seealso restoreHydroStorage
+#' @seealso \link{restoreHydroStorage}
 #' 
 #' @importFrom utils read.table write.table
 #' @importFrom assertthat assert_that
@@ -50,7 +50,8 @@ resetHydroStorage <- function(area, force = FALSE, opts = antaresRead::simOption
       x = hydro_storage, 
       file = path_hydro_storage, 
       row.names = FALSE,
-      col.names = FALSE
+      col.names = FALSE, 
+      sep = "\t"
     )
     
   } else {
@@ -61,7 +62,8 @@ resetHydroStorage <- function(area, force = FALSE, opts = antaresRead::simOption
       x = data.frame(x = rep(0, 12)), 
       file = path_hydro_storage, 
       row.names = FALSE,
-      col.names = FALSE
+      col.names = FALSE, 
+      sep = "\t"
     )
     
   }

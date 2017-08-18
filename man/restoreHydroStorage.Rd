@@ -15,7 +15,7 @@ restoreHydroStorage(area, path = NULL, opts = antaresRead::simOptions())
 \code{antaresRead::setSimulationPath}}
 }
 \value{
-An upddated list containing various information about the simulation.
+An updated list containing various information about the simulation.
 }
 \description{
 Restore the hydro storage time series

@@ -2,9 +2,9 @@
 % Please edit documentation in R/setupWaterValuesSimulation.R
 \name{setupWaterValuesSimulation}
 \alias{setupWaterValuesSimulation}
-\title{Setup a simulation befor running it for calculating Water Values}
+\title{Setup a simulation before running it for calculating Water Values}
 \usage{
-setupWaterValuesSimulation(area, fictive_area = paste0("WaterValue_", area),
+setupWaterValuesSimulation(area, fictive_area = paste0("watervalue_", area),
   thermal_cluster = "WaterValueCluster", overwrite = FALSE,
   opts = antaresRead::simOptions())
 }
@@ -24,5 +24,5 @@ setupWaterValuesSimulation(area, fictive_area = paste0("WaterValue_", area),
 The result of antaresRead::simOptions
 }
 \description{
-Setup a simulation befor running it for calculating Water Values
+Setup a simulation before running it for calculating Water Values
 }

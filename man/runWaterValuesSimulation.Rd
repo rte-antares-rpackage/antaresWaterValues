@@ -5,7 +5,7 @@
 \title{Run a simulation for calculating water values for a specific area}
 \usage{
 runWaterValuesSimulation(area, simulation_name = "WeeklyWaterAmount\%s",
-  binding_constraint = "WeeklyWaterAmount", constraint_values,
+  nb_simulation = 10, binding_constraint = "WeeklyWaterAmount",
   fictive_area = NULL, thermal_cluster = NULL, path_solver, wait = TRUE,
   show_output_on_console = TRUE, overwrite = FALSE,
   opts = antaresRead::simOptions())
@@ -13,12 +13,12 @@ runWaterValuesSimulation(area, simulation_name = "WeeklyWaterAmount\%s",
 \arguments{
 \item{area}{The area concerned by the simulation.}
 
-\item{simulation_name}{The name of the simulation, \code{s} is a placeholder for the constraint value,
-this is usefull if \code{constraint_values} is a vector.}
+\item{simulation_name}{The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_simulation}.}
+
+\item{nb_simulation}{Number of simulation to launch, a vector of energy constraint
+will be created from 0 to the hydro storage maximum and of length this parameter.}
 
 \item{binding_constraint}{Name of the binding constraint.}
-
-\item{constraint_values}{Vector of energy constraints on the link between the area and the fictive area.}
 
 \item{fictive_area}{Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.}
 
@@ -30,7 +30,7 @@ this is usefull if \code{constraint_values} is a vector.}
 
 \item{show_output_on_console}{Argument passed to \code{\link[antaresXpansion]{run_simulation}}.}
 
-\item{overwrite}{If area or cluster already exists, overwrite them ?}
+\item{overwrite}{If area or cluster already exists, should they be overwritten?}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

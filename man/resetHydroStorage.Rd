@@ -15,7 +15,7 @@ resetHydroStorage(area, force = FALSE, opts = antaresRead::simOptions())
 \code{antaresRead::setSimulationPath}}
 }
 \value{
-An upddated list containing various information about the simulation.
+An updated list containing various information about the simulation.
 }
 \description{
 Reset to 0 the hydro storage time series

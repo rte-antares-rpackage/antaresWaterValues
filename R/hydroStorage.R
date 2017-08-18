@@ -16,7 +16,7 @@
 #' @importFrom assertthat assert_that
 #' @importFrom antaresRead setSimulationPath
 #'
-#' @return An upddated list containing various information about the simulation.
+#' @return An updated list containing various information about the simulation.
 #' @export
 #'
 # @examples
@@ -85,7 +85,7 @@ resetHydroStorage <- function(area, force = FALSE, opts = antaresRead::simOption
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
-#' @return An upddated list containing various information about the simulation.
+#' @return An updated list containing various information about the simulation.
 #' @export
 #' 
 #' @importFrom assertthat assert_that

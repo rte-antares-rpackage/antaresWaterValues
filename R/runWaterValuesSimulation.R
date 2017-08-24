@@ -25,7 +25,7 @@
 #'
 # @examples
 runWaterValuesSimulation <- function(area,
-                                     simulation_name = "WeeklyWaterAmount%s",
+                                     simulation_name = "weekly_water_amount_%s",
                                      nb_simulation = 10,
                                      binding_constraint = "WeeklyWaterAmount", 
                                      # constraint_values,
@@ -42,11 +42,12 @@ runWaterValuesSimulation <- function(area,
   thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
   
   # setup study
-  setupWaterValuesSimulation(
+  opts <- setupWaterValuesSimulation(
     area = area,
     fictive_area = fictive_area, 
     thermal_cluster = thermal_cluster,
-    overwrite = overwrite
+    overwrite = overwrite, 
+    opts = opts
   )
   
   # Get reservoir capacity for concerned area
@@ -62,12 +63,13 @@ runWaterValuesSimulation <- function(area,
   
   
   # Get hydro max power
-  max_hydro <- antaresRead::readClusterDesc()[cluster==thermal_cluster, c(nominalcapacity)]
-  max_hydro <- max_hydro*168/1e6
-  constraint_values <- seq(from = 0, to = max_hydro, length.out = 10)
+  # max_hydro <- antaresRead::readClusterDesc()[area==watervalue_fr, c(nominalcapacity)]
+  max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
+  max_hydro <- max_hydro[, max(hstorPMaxHigh)]*168/1e6
+  constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_simulation)
   
 
-  
+  simulation_names <- vector(mode = "character", length = length(constraint_values))
   for (i in constraint_values) {
     name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
     constraint_value <- i * reservoir_capacity / 7  # stock max lac pays (Fr+ch)           ####################
@@ -79,6 +81,7 @@ runWaterValuesSimulation <- function(area,
       timeStep = "weekly", 
       operator = "less",
       overwrite = overwrite, 
+      coefficients = setNames(1, paste(area, fictive_area, sep = "%")),
       opts = opts
     )
     message("#  ------------------------------------------------------------------------")
@@ -92,8 +95,9 @@ runWaterValuesSimulation <- function(area,
       show_output_on_console = show_output_on_console,
       opts = opts
     )
+    simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
     opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
   }
   
-  invisible()
+  simulation_names
 }

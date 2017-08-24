@@ -4,7 +4,7 @@
 \alias{runWaterValuesSimulation}
 \title{Run a simulation for calculating water values for a specific area}
 \usage{
-runWaterValuesSimulation(area, simulation_name = "WeeklyWaterAmount\%s",
+runWaterValuesSimulation(area, simulation_name = "weekly_water_amount_\%s",
   nb_simulation = 10, binding_constraint = "WeeklyWaterAmount",
   fictive_area = NULL, thermal_cluster = NULL, path_solver, wait = TRUE,
   show_output_on_console = TRUE, overwrite = FALSE,

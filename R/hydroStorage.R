@@ -38,7 +38,7 @@ resetHydroStorage <- function(area, force = FALSE, opts = antaresRead::simOption
     res_copy <- file.copy(
       from = path_hydro_storage,
       to = file.path(inputPath, "hydro", "series", area, "mod_backup.txt"),
-      overwrite = TRUE
+      overwrite = FALSE
     )
     if (!res_copy & !force)
       stop("Impossible to backup hydro storage file")
@@ -69,7 +69,9 @@ resetHydroStorage <- function(area, force = FALSE, opts = antaresRead::simOption
   }
   
   # Maj simulation
-  res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+  suppressWarnings({
+    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+  })
   
   invisible(res)
 }

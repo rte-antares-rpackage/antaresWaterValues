@@ -34,7 +34,7 @@ setupWaterValuesSimulation <- function(area,
   suppressWarnings(resetHydroStorage(area = area, opts = opts))
   
   # Get hydro max power
-  hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly")
+  hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   
   # Create thermal cluster
   suppressWarnings({
@@ -64,9 +64,9 @@ setupWaterValuesSimulation <- function(area,
   
   # Activate output year by year
   suppressWarnings({
-    updateGeneralSettings(year.by.year = TRUE)
+    updateGeneralSettings(year.by.year = TRUE, opts = opts)
   })
   
   
-  antaresRead::simOptions()
+  opts
 }

@@ -22,6 +22,7 @@
 #' @importFrom antaresEditObject createBindingConstraint removeBindingConstraint readIniFile
 #' @importFrom antaresRead readClusterDesc
 #' @importFrom antaresXpansion run_simulation
+#' @importFrom stats setNames
 #'
 # @examples
 runWaterValuesSimulation <- function(area,
@@ -81,7 +82,7 @@ runWaterValuesSimulation <- function(area,
       timeStep = "weekly", 
       operator = "less",
       overwrite = overwrite, 
-      coefficients = setNames(1, paste(area, fictive_area, sep = "%")),
+      coefficients = stats::setNames(1, paste(area, fictive_area, sep = "%")),
       opts = opts
     )
     message("#  ------------------------------------------------------------------------")

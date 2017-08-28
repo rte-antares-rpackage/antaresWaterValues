@@ -4,10 +4,13 @@
 \alias{getSimulationNames}
 \title{Utility function to get simulation's name}
 \usage{
-getSimulationNames(pattern, opts = antaresRead::simOptions())
+getSimulationNames(pattern, studyPath = NULL,
+  opts = antaresRead::simOptions())
 }
 \arguments{
 \item{pattern}{A pattern to match among the simulation.}
+
+\item{studyPath}{Path to study outputs, used if \code{setSimulationPath} is not set.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
@@ -19,5 +22,7 @@ A character vector.
 Utility function to get simulation's name
 }
 \examples{
+\dontrun{
 getSimulationNames("eco")
+}
 }

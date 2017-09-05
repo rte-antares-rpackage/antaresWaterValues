@@ -7,7 +7,7 @@
 getReservoirCapacity(area, force = FALSE, opts = antaresRead::simOptions())
 }
 \arguments{
-\item{area}{An area.}
+\item{area}{An 'antares' area.}
 
 \item{force}{If "reservoir management" is disabled, return anyway the reservoir capacity?}
 

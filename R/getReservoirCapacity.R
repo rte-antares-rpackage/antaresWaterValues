@@ -1,6 +1,6 @@
 #' Get the reservoir capacity for an area
 #'
-#' @param area An area.
+#' @param area An 'antares' area.
 #' @param force If "reservoir management" is disabled, return anyway the reservoir capacity?
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -8,6 +8,10 @@
 #'
 #' @return the reservoir capacity (in Wh), or \code{NULL} if none.
 #' @export
+#' 
+#' @importFrom assertthat assert_that
+#' @importFrom antaresRead getAreas
+#' @importFrom antaresEditObject readIniFile
 #'
 #' @examples
 #' \dontrun{

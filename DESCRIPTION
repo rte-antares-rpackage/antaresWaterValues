@@ -14,7 +14,8 @@ Imports: antaresRead,
     antaresEditObject,
     antaresXpansion,
     assertthat,
-    data.table
+    data.table,
+    zoo
 Remotes: rte-antares-rpackage/antaresEditObject,
     rte-antares-rpackage/antaresXpansion
 Suggests: stats

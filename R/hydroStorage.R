@@ -2,7 +2,7 @@
 #' 
 #'
 #' @param area A valid Antares area.
-#' @parma path Optional, a path where to save the hydro storage file.
+#' @param path Optional, a path where to save the hydro storage file.
 #' @param force Force to reset the hydro storage file even if backup the file failed, see \code{Note}.
 #' @param opts
 #'   List of simulation parameters returned by the function

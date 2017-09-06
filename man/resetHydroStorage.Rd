@@ -4,10 +4,13 @@
 \alias{resetHydroStorage}
 \title{Reset to 0 the hydro storage time series}
 \usage{
-resetHydroStorage(area, force = FALSE, opts = antaresRead::simOptions())
+resetHydroStorage(area, path = NULL, force = FALSE,
+  opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{A valid Antares area.}
+
+\item{path}{Optional, a path where to save the hydro storage file.}
 
 \item{force}{Force to reset the hydro storage file even if backup the file failed, see \code{Note}.}
 

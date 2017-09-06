@@ -2,6 +2,7 @@
 #' 
 #'
 #' @param area A valid Antares area.
+#' @parma path Optional, a path where to save the hydro storage file.
 #' @param force Force to reset the hydro storage file even if backup the file failed, see \code{Note}.
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -20,7 +21,7 @@
 #' @export
 #'
 # @examples
-resetHydroStorage <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
+resetHydroStorage <- function(area, path = NULL, force = FALSE, opts = antaresRead::simOptions()) {
   
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
@@ -30,7 +31,11 @@ resetHydroStorage <- function(area, force = FALSE, opts = antaresRead::simOption
   inputPath <- opts$inputPath
   
   # Hydro storage ----
-  path_hydro_storage <- file.path(inputPath, "hydro", "series", area, "mod.txt")
+  if (is.null(path)) {
+    path_hydro_storage <- file.path(inputPath, "hydro", "series", area, "mod.txt")
+  } else {
+    path_hydro_storage <- path
+  }
   
   if (file.exists(path_hydro_storage)) {
     
@@ -112,6 +117,7 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
         to = file.path(inputPath, "hydro", "series", area, "mod.txt"), 
         overwrite = TRUE
       )
+      unlink(x = path_hydro_storage_backup)
     } else {
       message("No backup found")
     }

@@ -21,12 +21,13 @@ readReservoirLevels <- function(area, timeStep = "weekly", opts = antaresRead::s
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly"))
   if (!area %in% antaresRead::getAreas(opts = opts)) 
     stop("Not a valid area!")
-  
+  path <- file.path(opts$inputPath , sprintf("hydro/common/capacity/reservoir_%s.txt", area))
   vars <- c("level_low", "level_avg", "level_high")
-  reservoir <- data.table::fread(
-    input = file.path(opts$inputPath , sprintf("hydro/common/capacity/reservoir_%s.txt", area)),
-    col.names = vars
-  )
+  if (!file.exists(path) || file.size(path) == 0) {
+    reservoir <- data.table::data.table(matrix(rep(0, 3*12), ncol = 3, dimnames = list(NULL, vars)))
+  } else {
+    reservoir <- data.table::fread(input = path, col.names = vars)
+  }
   full_year <- data.table(
     date = seq.Date(from = as.Date(opts$start), by = "day", length.out = 364)
   )

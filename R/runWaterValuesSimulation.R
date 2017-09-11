@@ -19,7 +19,7 @@
 #' @export
 #' 
 #' @importFrom assertthat assert_that
-#' @importFrom antaresEditObject createBindingConstraint removeBindingConstraint readIniFile
+#' @importFrom antaresEditObject createBindingConstraint removeBindingConstraint readIniFile writeIni
 #' @importFrom antaresRead readClusterDesc
 #' @importFrom antaresXpansion run_simulation
 #' @importFrom stats setNames
@@ -96,6 +96,12 @@ runWaterValuesSimulation <- function(area,
       show_output_on_console = show_output_on_console,
       opts = opts
     )
+    path_output <- list.files(
+      path = file.path(opts$studyPath, "output"), 
+      pattern =  paste0(sprintf(simulation_name, format(i, decimal.mark = ",")), "$")
+    )
+    path_output <- file.path(file.path(opts$studyPath, "output"), path_output, "watervalues.ini")
+    antaresEditObject::writeIni(list(general = list(watervalue = i)), path_output)
     simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
     opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
   }

@@ -68,5 +68,19 @@ setupWaterValuesSimulation <- function(area,
   })
   
   
+  # Create a water values district
+  suppressWarnings({
+    createDistrict(
+      name = "water values district", 
+      caption = "water values district",
+      comments = "Used for calculate water values",
+      apply_filter = "add-all", 
+      output = TRUE, 
+      overwrite = TRUE,
+      opts = opts
+    )
+  })
+  
+  
   opts
 }

@@ -2,6 +2,7 @@
 #'
 #' @param area An 'antares' area.
 #' @param timeStep Resolution of the data to import: weekly (default, a linear interpolation is done on the data), monthly (original data).
+#' @param byReservoirCapacity Multiply the result by the reservoir capacity (if available).
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}  
@@ -16,7 +17,7 @@
 #' @export
 #'
 # @examples
-readReservoirLevels <- function(area, timeStep = "weekly", opts = antaresRead::simOptions()) {
+readReservoirLevels <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly"))
   if (!area %in% antaresRead::getAreas(opts = opts)) 
@@ -44,5 +45,15 @@ readReservoirLevels <- function(area, timeStep = "weekly", opts = antaresRead::s
   reservoir <- reservoir[, (vars) := lapply(.SD, interpolation), .SDcols = vars]
   reservoir <- reservoir[, timeId := rep(seq_len(52), each = 7)]
   reservoir <- reservoir[, lapply(.SD, mean), by = timeId, .SDcols = vars]
+  if (byReservoirCapacity) {
+    reservoirCapacity <- getReservoirCapacity(area = area, opts = opts)
+    if (!is.null(reservoirCapacity)) {
+      vars <- c("level_low", "level_avg", "level_high")
+      reservoir <- reservoir[, 
+        (vars) := lapply(.SD, function(x) {x * reservoirCapacity/1e6}),
+        .SDcols = vars
+        ]
+    }
+  }
   reservoir
 }

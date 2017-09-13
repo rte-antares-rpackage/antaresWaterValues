@@ -16,6 +16,8 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}  
 #'
+#' @note This function have side effects on the Antares study used, a fictive area is created and a new district as well.
+#' 
 #' @export
 #' 
 #' @importFrom assertthat assert_that
@@ -105,6 +107,9 @@ runWaterValuesSimulation <- function(area,
     simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
     opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
   }
+  
+  # restore hydrostorage
+  restoreHydroStorage(area = area, opts = opts)
   
   simulation_names
 }

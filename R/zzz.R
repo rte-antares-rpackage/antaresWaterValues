@@ -15,5 +15,7 @@ utils::globalVariables(
     "pumpingCapacity", "pumpingCapacity.x", "pumpingCapacity.y", "rarea", 
     "storageCapacity", "storageCapacity.x", "storageCapacity.y", "toDistrict", 
     "transCapacityDirect", "transCapacityIndirect", "varea", "x", "y",
-    "NODU", "min.stable.power", "thermalPmin")
+    "NODU", "min.stable.power", "thermalPmin",
+    "weeks", "statesid", "tsId", "level_low", "level_high", "meanGridLayer",
+    "states_next", "years", "value_node_year")
 )

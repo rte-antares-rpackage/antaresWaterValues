@@ -3,6 +3,7 @@
 export(getReservoirCapacity)
 export(getReward)
 export(getSimulationNames)
+export(meanGridLayer)
 export(readReservoirLevels)
 export(resetHydroStorage)
 export(restoreHydroStorage)

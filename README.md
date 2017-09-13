@@ -6,6 +6,16 @@
 > Calculate Water Values.
 
 
+Install the package (you'll also need `antaresEditObject`):
+
+
+```r
+# From Github
+# install.packages("devtools")
+devtools::install_github("rte-antares-rpackage/antaresEditObject")
+devtools::install_github("rte-antares-rpackage/antaresWaterValues")
+
+```
 
 
 

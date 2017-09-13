@@ -99,6 +99,7 @@ Here's a representation of the result :
 
 ```r
 library(ggplot2)
+library(viridis)
 ggplot(data = value_nodes) + 
   aes(x = weeks, y = rev(statesid), fill = value_node) + 
   geom_tile() + 

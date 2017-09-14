@@ -6,12 +6,13 @@
 > Calculate Water Values.
 
 
-Install the package (you'll also need `antaresEditObject`):
+Install the package (you'll also need `antaresEditObject` and `antaresXpansion`):
 
 
 ```r
 # From Github
 # install.packages("devtools")
+devtools::install_github("rte-antares-rpackage/antaresXpansion")
 devtools::install_github("rte-antares-rpackage/antaresEditObject")
 devtools::install_github("rte-antares-rpackage/antaresWaterValues")
 
@@ -28,7 +29,7 @@ library( antaresEditObject )
 library( antaresWaterValues )
 
 # Set simulation path to an Antares study in Input mode
-setSimulationPath(path = "inputs/BP16_2020_conso_median_defav/", simulation = "input")
+setSimulationPath(path = "path/to/simulation/", simulation = "input")
 
 # For speed, we limit the number of MC years to 20
 updateGeneralSettings(nbyears = 20)

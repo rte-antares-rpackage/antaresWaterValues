@@ -38,3 +38,6 @@ will be created from 0 to the hydro storage maximum and of length this parameter
 \description{
 Run a simulation for calculating water values for a specific area
 }
+\note{
+This function have side effects on the Antares study used, a fictive area is created and a new district as well.
+}

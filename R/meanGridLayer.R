@@ -55,6 +55,16 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, stat
   inflow <- antaresRead::readInputTS(hydroStorage = area, timeStep = "weekly", opts = opts)
   inflow <- inflow[, hydroStorage := hydroStorage / 1e6]
   
+  # decalage des donnees
+  decalage <- data.frame(timeId = seq_len(53), timeIdNew = c(26:53, 1:25))
+  # decalage$timeIdNew <- decalage$timeId + 25
+  # decalage$timeIdNew[decalage$timeIdNew>52] <- decalage$timeIdNew[decalage$timeIdNew>52]-52
+  # decalage$timeIdNew <- as.integer(decalage$timeIdNew)
+  inflow <- merge(x = inflow, y = decalage, by = "timeId")
+  inflow <- inflow[, timeId := NULL]
+  setnames(x = inflow, old = "timeIdNew", new = "timeId")
+  
+  
   # Reward
   reward <- getReward(simulation_names = simulation_names, opts = opts)
   

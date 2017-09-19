@@ -126,6 +126,9 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, stat
   
   # value_nodes_dc <- dcast(data = value_nodes_dt, formula = statesid ~ weeks, value.var = "value_node")
   
+  # add states levels
+  value_nodes_dt <- merge(x = value_nodes_dt, y = statesdt, by = c("weeks", "statesid"))
+  
   return(value_nodes_dt)
 }
 

@@ -45,7 +45,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, stat
   if (length(week_53) == 1)
     week_53 <- rep_len(week_53, nrow(states))
   
-  value_node  <- matrix(data = NA, nrow = nrow(states), ncol = n_week)
+  value_node  <- matrix(data = NA, nrow = nrow(states), ncol = n_week - 1)
   value_node <- cbind(value_node, week_53)
   
   # decision space
@@ -118,7 +118,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, stat
       by = list(years, statesid)
       ]
     
-    next_week_values <- res_wv[, list(value_node_year = mean(value_node, na.rm = TRUE)), by = statesid][, c(value_node_year)]
+    next_week_values <- res_wv[weeks == i, list(value_node_year = mean(value_node, na.rm = TRUE)), by = statesid][, c(value_node_year)]
     
   }
   
@@ -142,24 +142,26 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   decision_space <- unlist(decision_space)
   states_next <- unlist(states_next)
   
+  alpha <- 1e-5
+  
   # value_node_year <- rep(NA_real_, times = length(states))
   # 
-  if (states >= level_high) {
+  if (states >= level_high - alpha) {
     return(-Inf)
   }
-  if (states <= level_low) {
+  if (states <= level_low + alpha) {
     return(-Inf)
   }
   
   
   largest_decision <- min(c(states + value_inflow, E_max), na.rm = TRUE)
   
-  decisions_current_benef <- decision_space[decision_space <= largest_decision]
+  decisions_current_benef <- decision_space[decision_space <= largest_decision + alpha]
   
   provisional_steps <- unique(c(decisions_current_benef, E_max) )
   provisional_reward_line <- unique(c(value_reward[seq_along(decisions_current_benef)] , value_reward[length(value_reward)]))
   
-  next_states <- states_next[states_next >= (states - E_max + value_inflow) & states_next <= (states  + value_inflow) ]
+  next_states <- states_next[states_next >= (states - E_max + value_inflow) & states_next <= (states + value_inflow + alpha) ]
   
   decisions_benef_to_go <- states - next_states + value_inflow
   
@@ -170,13 +172,13 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     # boucle sur ?
     for (index in setdiff(decisions_benef_to_go, decisions_current_benef)) { # index <- 0.008604931
       
-      before <- provisional_steps[index >= provisional_steps]
+      before <- provisional_steps[index >= provisional_steps - alpha]
       before <- before[length(before)]
       
-      after <- provisional_steps[index <= provisional_steps]
+      after <- provisional_steps[index <= provisional_steps + alpha]
       after <- after[1]
       
-      remainder <- (index -  before ) / (after - before)
+      remainder <- (index -  before) / (after - before)
       remainder <- abs(remainder - trunc(remainder)) 
       
       index_before <- match(before, provisional_steps)
@@ -198,9 +200,9 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   } # fin if
   
   
-  decisions <- decisions[decisions <= states + value_inflow - level_low]
+  decisions <- decisions[decisions - alpha <= states + value_inflow - level_low]
   
-  decisions <- decisions[decisions >= states + value_inflow - level_high]
+  decisions <- decisions[decisions + alpha >= states + value_inflow - level_high]
   
   
   
@@ -211,20 +213,20 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     
     count_x <- count_x + 1
     
-    if ((states - l + value_inflow) >= niveau_max) {
+    if ((states - l + value_inflow) >= niveau_max + alpha) {
       next
     }
     
-    states_above <- states_next[states_next >= (states - l + value_inflow)]
-    states_below <- states_next[states_next <= (states - l + value_inflow)]
+    states_above <- states_next[states_next >= (states - l + value_inflow) - alpha]
+    states_below <- states_next[states_next <= (states - l + value_inflow) + alpha]
     
-    next_node_up <- match(states_above[length(states_above)], states_next, nomatch = -1) 
-    next_node_down <- match(states_below[1], states_next, nomatch = -1)
+    next_node_up <- match(states_above[length(states_above)], states_next, nomatch = 0) 
+    next_node_down <- match(states_below[1], states_next, nomatch = 0)
     
     remainder <- 0
     
     if (isTRUE(next_node_up != next_node_down)) {
-      remainder <- (states- l + value_inflow) %% (states_above[length(states_above)] - states_below[1]) 
+      remainder <- (states - l + value_inflow) %% (states_above[length(states_above)] - states_below[1]) 
     }
     
     interpolation <- remainder * value_node_next_week[next_node_up] + (1 - remainder) * value_node_next_week[next_node_down]

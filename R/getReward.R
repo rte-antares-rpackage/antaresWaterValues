@@ -60,13 +60,15 @@ getReward <- function(simulation_names = NULL, pattern = NULL, opts = antaresRea
     }),
     .SDcols = vars
     ]
-  reward <- reward[, (vars) := lapply(vars, function(x) {
-    if (water_used_list[[x]] > 0) {
-      get(x) / (water_used_list[[x]]*1e6)
-    } else {
-      get(x)
-    }
-  })]
+  
+  ## Division valeur stock
+  # reward <- reward[, (vars) := lapply(vars, function(x) {
+  #   if (water_used_list[[x]] > 0) {
+  #     get(x) / (water_used_list[[x]]*1e6)
+  #   } else {
+  #     get(x)
+  #   }
+  # })]
   
   # restore previous antares options
   options("antares" = opts)

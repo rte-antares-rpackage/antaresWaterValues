@@ -82,7 +82,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, stat
   
   # add states plus 1
   statesplus1 <- copy(statesdt)
-  statesplus1 <- statesplus1[, weeks := weeks + 1]
+  statesplus1 <- statesplus1[, weeks := weeks - 1]
   statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = weeks]
   statesplus1 <- merge(x = statesdt, y = statesplus1, by = c("weeks"), all.x = TRUE)
   watervalues <- merge(x = watervalues, y = statesplus1, by = "weeks", all.x = TRUE, all.y = FALSE, allow.cartesian = TRUE)
@@ -217,8 +217,8 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
       next
     }
     
-    states_above <- states_next[states_next >= (states - l + value_inflow) - alpha]
-    states_below <- states_next[states_next <= (states - l + value_inflow) + alpha]
+    states_above <- states_next[states_next - (states - l + value_inflow) >= - alpha]
+    states_below <- states_next[states_next + (states - l + value_inflow) <= alpha]
     
     next_node_up <- match(states_above[length(states_above)], states_next, nomatch = 0) 
     next_node_down <- match(states_below[1], states_next, nomatch = 0)

@@ -5,7 +5,7 @@
 \title{Calculate grid mean layer matrix}
 \usage{
 meanGridLayer(area, simulation_names, simulation_values = NULL, states,
-  max_mcyears = NULL, n_week = 53, week_53 = 0,
+  max_mcyears = NULL, n_week = 52, week_53 = 0,
   opts = antaresRead::simOptions())
 }
 \arguments{

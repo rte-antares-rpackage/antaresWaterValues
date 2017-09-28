@@ -61,7 +61,7 @@ getReward <- function(simulation_names = NULL, pattern = NULL, opts = antaresRea
     .SDcols = vars
     ]
   
-  ## Division valeur stock
+  # # Division valeur stock
   # reward <- reward[, (vars) := lapply(vars, function(x) {
   #   if (water_used_list[[x]] > 0) {
   #     get(x) / (water_used_list[[x]]*1e6)

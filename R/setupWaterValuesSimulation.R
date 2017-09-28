@@ -15,6 +15,7 @@
 #' @importFrom antaresRead simOptions readInputTS
 #' @import antaresEditObject
 #' @import data.table
+#' @importFrom utils tail
 #'
 #'
 # @examples
@@ -35,6 +36,9 @@ setupWaterValuesSimulation <- function(area,
   
   # Get hydro max power
   hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
+  hydro_storage_max <- rbind(
+    hydro_storage_max, tail(hydro_storage_max, 24)
+  )
   
   # Create thermal cluster
   suppressWarnings({
@@ -50,13 +54,13 @@ setupWaterValuesSimulation <- function(area,
   
   # Create link
   dataLink <- matrix(
-    data = c(rep(0, 8760), rep(hydro_storage_max[, max(hstorPMaxHigh)], 8760), rep(0, 8760*3)),
+    data = c(rep(0, 8760), rep(hydro_storage_max[, max(hstorPMaxHigh)], 8760), rep(0, 8760*1), rep(0, 8760*2)), ###
     ncol = 5
   )
   suppressWarnings({
     opts <- antaresEditObject::createLink(
       from = area, to = fictive_area, 
-      propertiesLink = propertiesLinkOptions(transmission_capacities = "infinite"), 
+      propertiesLink = propertiesLinkOptions(transmission_capacities = "enabled"), #infinite
       dataLink = dataLink, overwrite = overwrite, opts = opts
     )
   })

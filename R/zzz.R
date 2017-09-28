@@ -17,5 +17,5 @@ utils::globalVariables(
     "transCapacityDirect", "transCapacityIndirect", "varea", "x", "y",
     "NODU", "min.stable.power", "thermalPmin",
     "weeks", "statesid", "tsId", "level_low", "level_high", "meanGridLayer",
-    "states_next", "years", "value_node_year")
+    "states_next", "years", "value_node_year", "value_node")
 )

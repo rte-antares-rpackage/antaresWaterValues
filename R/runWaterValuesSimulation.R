@@ -59,7 +59,7 @@ runWaterValuesSimulation <- function(area,
     reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
     if (is.null(reservoir_capacity))
       stop(paste0("Incorrect reservoir capacity for area: ", area))
-    reservoir_capacity <- reservoir_capacity * 10
+    reservoir_capacity <- reservoir_capacity / 10
   } else {
     reservoir_capacity <- 1
   }
@@ -84,7 +84,7 @@ runWaterValuesSimulation <- function(area,
       timeStep = "weekly", 
       operator = "less",
       overwrite = overwrite, 
-      coefficients = stats::setNames(1, paste(area, fictive_area, sep = "%")),
+      coefficients = stats::setNames(1, paste(area, fictive_area, sep = "%")), ####
       opts = opts
     )
     message("#  ------------------------------------------------------------------------")
@@ -103,7 +103,7 @@ runWaterValuesSimulation <- function(area,
       pattern =  paste0(sprintf(simulation_name, format(i, decimal.mark = ",")), "$")
     )
     path_output <- file.path(file.path(opts$studyPath, "output"), path_output, "watervalues.ini")
-    antaresEditObject::writeIni(list(general = list(watervalue = i)), path_output)
+    antaresEditObject::writeIni(listData = list(general = list(watervalue = i)), pathIni = path_output, overwrite = TRUE)
     simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
     opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
   }

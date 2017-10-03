@@ -3,6 +3,7 @@
 #' @param area An 'antares' area.
 #' @param simulation_names Names of simulations to retrieve
 #' @param simulation_values Values for the simulation.
+#' @param district_name Name of the district used to store output.
 #' @param states States matrix.
 #' @param max_mcyears Number of MC years to consider, by default all of them.
 #' @param n_week Number of weeks.
@@ -22,7 +23,7 @@
 #' # TODO
 #' 
 #' }
-meanGridLayer <- function(area, simulation_names, simulation_values = NULL, states, max_mcyears = NULL, n_week = 52, week_53 = 0, opts = antaresRead::simOptions()) {
+meanGridLayer <- function(area, simulation_names, simulation_values = NULL, district_name = "water values district", states, max_mcyears = NULL, n_week = 52, week_53 = 0, opts = antaresRead::simOptions()) {
   
   assertthat::assert_that(class(opts) == "simOptions")
   
@@ -57,24 +58,32 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, stat
   # inflow
   inflow <- antaresRead::readInputTS(hydroStorage = area, timeStep = "weekly", opts = opts)
   inflow <- inflow[, hydroStorage := hydroStorage / 1e6]
+  inflow <- inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
+  inflow <- inflow[, timeId := as.numeric(timeId)]
+  inflow <- inflow[, list(hydroStorage = mean(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)]
   
-  # decalage des donnees
-  decalage <- data.frame(timeId = seq_len(53), timeIdNew = c(26:53, 1:25))
-  # decalage$timeIdNew <- decalage$timeId + 25
-  # decalage$timeIdNew[decalage$timeIdNew>52] <- decalage$timeIdNew[decalage$timeIdNew>52]-52
-  # decalage$timeIdNew <- as.integer(decalage$timeIdNew)
-  inflow <- merge(x = inflow, y = decalage, by = "timeId")
-  inflow <- inflow[, timeId := NULL]
-  setnames(x = inflow, old = "timeIdNew", new = "timeId")
-  inflow <- inflow[order(timeId, tsId)]
+  # # decalage des donnees
+  # decalage <- data.frame(timeId = seq_len(53), timeIdNew = c(26:53, 1:25))
+  # # decalage$timeIdNew <- decalage$timeId + 25
+  # # decalage$timeIdNew[decalage$timeIdNew>52] <- decalage$timeIdNew[decalage$timeIdNew>52]-52
+  # # decalage$timeIdNew <- as.integer(decalage$timeIdNew)
+  # inflow <- merge(x = inflow, y = decalage, by = "timeId")
+  # inflow <- inflow[, timeId := NULL]
+  # setnames(x = inflow, old = "timeIdNew", new = "timeId")
+  # inflow <- inflow[order(timeId, tsId)]
   
   
   # Reward
-  reward <- getReward(simulation_names = simulation_names, opts = opts)
-  reward <- reward[tsId %in% seq_len(n_week)]
+  reward <- getReward(simulation_names = simulation_names, district_name = district_name, opts = opts)
+  reward <- reward[timeId %in% seq_len(n_week)]
   
   # Reservoir (calque)
-  reservoir <- readReservoirLevels(area, timeStep = "weekly", opts = opts)
+  reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
+  vars <- c("level_low", "level_avg", "level_high")
+  reservoir <- reservoir[, 
+                         (vars) := lapply(.SD, function(x) {x * max(states)}),
+                         .SDcols = vars
+                         ]
   
   # preparation donnees
   watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = max_mcyears))
@@ -110,7 +119,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, stat
   # watervalues <- merge(x = watervalues, y = decision_space, by = "weeks", all = TRUE)
 
   # return(watervalues)
-  
+  # verif_watervalues <<- watervalues
   # Calcul by week
   next_week_values <- week_53
   

@@ -84,7 +84,7 @@ runWaterValuesSimulation <- function(area,
       timeStep = "weekly", 
       operator = "less",
       overwrite = overwrite, 
-      coefficients = stats::setNames(1, paste(area, fictive_area, sep = "%")), ####
+      coefficients = stats::setNames(-1, paste(area, fictive_area, sep = "%")), ####
       opts = opts
     )
     message("#  ------------------------------------------------------------------------")
@@ -111,5 +111,8 @@ runWaterValuesSimulation <- function(area,
   # restore hydrostorage
   restoreHydroStorage(area = area, opts = opts)
   
-  simulation_names
+  list(
+    simulation_names = simulation_names,
+    simulation_values = constraint_values
+  )
 }

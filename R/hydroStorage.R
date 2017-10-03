@@ -52,7 +52,7 @@ resetHydroStorage <- function(area, path = NULL, force = FALSE, opts = antaresRe
     hydro_storage <- utils::read.table(file = path_hydro_storage)
     hydro_storage[] <- 0
     utils::write.table(
-      x = hydro_storage, 
+      x = hydro_storage[, 1, drop = FALSE], 
       file = path_hydro_storage, 
       row.names = FALSE,
       col.names = FALSE, 

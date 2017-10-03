@@ -1,7 +1,8 @@
 #' Get the reward matrix from simulations
 #'
-#' @param simulation_names Names of the simulation to obtain the reward
-#' @param pattern A pattern to identify simulations
+#' @param simulation_names Names of the simulation to obtain the reward.
+#' @param pattern A pattern to identify simulations.
+#' @param district_name Name of the district used to store output.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath} 
@@ -18,8 +19,9 @@
 #' # TODO
 #' 
 #' }
-getReward <- function(simulation_names = NULL, pattern = NULL, opts = antaresRead::simOptions()) {
+getReward <- function(simulation_names = NULL, pattern = NULL, district_name = "water values district", opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
+  assertthat::assert_that(district_name %in% antaresRead::getDistricts())
   studyPath <- opts$studyPath
   if (is.null(simulation_names)) {
     if (is.null(pattern))
@@ -38,22 +40,23 @@ getReward <- function(simulation_names = NULL, pattern = NULL, opts = antaresRea
   reward <- lapply(
     X = opts_o, 
     FUN = function(o) {
-      res <- antaresRead::readAntares(districts = "water values district", mcYears = "all", timeStep = "weekly", opts = o)
+      res <- antaresRead::readAntares(districts = district_name, mcYears = "all", timeStep = "weekly", opts = o)
       res$simulation <- o$name
       res
     }
   )
-  water_used_list <- lapply(
-    X = opts_o,
-    FUN = function(o) {
-      wvini <- antaresEditObject::readIniFile(file = file.path(o$simPath, "watervalues.ini"))
-      wvini$general$watervalue
-    }
-  )
-  water_used_list <- stats::setNames(water_used_list, sapply(opts_o, `[[`, "name"))
+  # water_used_list <- lapply(
+  #   X = opts_o,
+  #   FUN = function(o) {
+  #     wvini <- antaresEditObject::readIniFile(file = file.path(o$simPath, "watervalues.ini"))
+  #     wvini$general$watervalue
+  #   }
+  # )
+  # water_used_list <- stats::setNames(water_used_list, sapply(opts_o, `[[`, "name"))
   reward <- rbindlist(reward)
   reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
-  vars <- setdiff(names(reward), c("timeId", "mcYear"))
+  vars <- simulation_names # setdiff(names(reward), c("timeId", "mcYear"))
+  setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
   reward <- reward[
     , (vars) := lapply(.SD, FUN = function(x) {
       get(vars[1]) - x

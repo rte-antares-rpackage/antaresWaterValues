@@ -5,12 +5,14 @@
 \title{Get the reward matrix from simulations}
 \usage{
 getReward(simulation_names = NULL, pattern = NULL,
-  opts = antaresRead::simOptions())
+  district_name = "water values district", opts = antaresRead::simOptions())
 }
 \arguments{
-\item{simulation_names}{Names of the simulation to obtain the reward}
+\item{simulation_names}{Names of the simulation to obtain the reward.}
 
-\item{pattern}{A pattern to identify simulations}
+\item{pattern}{A pattern to identify simulations.}
+
+\item{district_name}{Name of the district used to store output.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

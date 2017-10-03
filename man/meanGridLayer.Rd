@@ -4,9 +4,9 @@
 \alias{meanGridLayer}
 \title{Calculate grid mean layer matrix}
 \usage{
-meanGridLayer(area, simulation_names, simulation_values = NULL, states,
-  max_mcyears = NULL, n_week = 52, week_53 = 0,
-  opts = antaresRead::simOptions())
+meanGridLayer(area, simulation_names, simulation_values = NULL,
+  district_name = "water values district", states, max_mcyears = NULL,
+  n_week = 52, week_53 = 0, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}
@@ -14,6 +14,8 @@ meanGridLayer(area, simulation_names, simulation_values = NULL, states,
 \item{simulation_names}{Names of simulations to retrieve}
 
 \item{simulation_values}{Values for the simulation.}
+
+\item{district_name}{Name of the district used to store output.}
 
 \item{states}{States matrix.}
 

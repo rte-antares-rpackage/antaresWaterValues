@@ -70,12 +70,20 @@ runWaterValuesSimulation <- function(area,
   max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   max_hydro <- max_hydro[, max(hstorPMaxHigh)]*168/1e6
   constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_simulation)
-  
+  constraint_values <- round(constraint_values, 2)
+  print(constraint_values)
 
   simulation_names <- vector(mode = "character", length = length(constraint_values))
   for (i in constraint_values) {
     name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
     constraint_value <- i * reservoir_capacity / 7  # stock max lac pays (Fr+ch)           ####################
+    # Coefficient
+    if (match(area, sort(c(area, fictive_area))) == 1) {
+      coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+    } else {
+      coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
+    }
+    print(coeff)
     # Create binding constraint
     opts <- antaresEditObject::createBindingConstraint(
       name = name_bc, 
@@ -84,7 +92,7 @@ runWaterValuesSimulation <- function(area,
       timeStep = "weekly", 
       operator = "less",
       overwrite = overwrite, 
-      coefficients = stats::setNames(-1, paste(area, fictive_area, sep = "%")), ####
+      coefficients = coeff, ####
       opts = opts
     )
     message("#  ------------------------------------------------------------------------")
@@ -98,12 +106,12 @@ runWaterValuesSimulation <- function(area,
       show_output_on_console = show_output_on_console,
       opts = opts
     )
-    path_output <- list.files(
-      path = file.path(opts$studyPath, "output"), 
-      pattern =  paste0(sprintf(simulation_name, format(i, decimal.mark = ",")), "$")
-    )
-    path_output <- file.path(file.path(opts$studyPath, "output"), path_output, "watervalues.ini")
-    antaresEditObject::writeIni(listData = list(general = list(watervalue = i)), pathIni = path_output, overwrite = TRUE)
+    # path_output <- list.files(
+    #   path = file.path(opts$studyPath, "output"), 
+    #   pattern =  paste0(sprintf(simulation_name, format(i, decimal.mark = ",")), "$")
+    # )
+    # path_output <- file.path(file.path(opts$studyPath, "output"), path_output, "watervalues.ini")
+    # antaresEditObject::writeIni(listData = list(general = list(watervalue = i)), pathIni = path_output, overwrite = TRUE)
     simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
     opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
   }

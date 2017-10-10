@@ -123,7 +123,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   # watervalues <- merge(x = watervalues, y = decision_space, by = "weeks", all = TRUE)
 
   # return(watervalues)
-  verif_watervalues <<- watervalues
+  # verif_watervalues <<- watervalues
   # Calcul by week
   next_week_values <- week_53
   
@@ -372,12 +372,11 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     # if (!is.finite(vdnw))
     #   vdnw <- 0
     interpolation <- remainder * vunw + (1 - remainder) * vdnw
-    # print(interpolation)
-    
-    verif <<- list(
-      remainder = remainder, next_node_up = next_node_up, next_node_down = next_node_down, states_above = states_above,
-      states_next = states_next, states_below = states_below, value_node_next_week = value_node_next_week
-    )
+
+    # verif <<- list(
+    #   remainder = remainder, next_node_up = next_node_up, next_node_down = next_node_down, states_above = states_above,
+    #   states_next = states_next, states_below = states_below, value_node_next_week = value_node_next_week
+    # )
     # if (!is.finite(interpolation))
     #   stop()
     

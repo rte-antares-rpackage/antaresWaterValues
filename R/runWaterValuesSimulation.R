@@ -4,6 +4,7 @@
 #' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_simulation}.
 #' @param nb_simulation Number of simulation to launch, a vector of energy constraint
 #'  will be created from 0 to the hydro storage maximum and of length this parameter.
+#' @param nb_mcyears Number of Monte Carlo years to simulate.
 #' @param binding_constraint Name of the binding constraint. 
 # @param constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
@@ -30,6 +31,7 @@
 runWaterValuesSimulation <- function(area,
                                      simulation_name = "weekly_water_amount_%s",
                                      nb_simulation = 10,
+                                     nb_mcyears = NULL,
                                      binding_constraint = "WeeklyWaterAmount", 
                                      # constraint_values,
                                      fictive_area = NULL,
@@ -43,6 +45,10 @@ runWaterValuesSimulation <- function(area,
   
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
   thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
+  
+  if (!is.null(nb_mcyears)) {
+    updateGeneralSettings(nbyears = nb_mcyears, opts = opts)
+  }
   
   # setup study
   opts <- setupWaterValuesSimulation(
@@ -70,20 +76,18 @@ runWaterValuesSimulation <- function(area,
   max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   max_hydro <- max_hydro[, max(hstorPMaxHigh)]*168/1e6
   constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_simulation)
-  constraint_values <- round(constraint_values, 2)
-  print(constraint_values)
+  constraint_values <- round(constraint_values, 3)
 
   simulation_names <- vector(mode = "character", length = length(constraint_values))
   for (i in constraint_values) {
     name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
-    constraint_value <- i * reservoir_capacity / 7  # stock max lac pays (Fr+ch)           ####################
+    constraint_value <- round(i * reservoir_capacity / 7)  # stock max lac pays (Fr+ch)           ####################
     # Coefficient
     if (match(area, sort(c(area, fictive_area))) == 1) {
       coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
     } else {
       coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
     }
-    print(coeff)
     # Create binding constraint
     opts <- antaresEditObject::createBindingConstraint(
       name = name_bc, 

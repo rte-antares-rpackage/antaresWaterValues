@@ -1,8 +1,9 @@
 #' Calculate grid mean layer matrix
 #'
 #' @param area An 'antares' area.
-#' @param simulation_names Names of simulations to retrieve
+#' @param simulation_names Names of simulations to retrieve.
 #' @param simulation_values Values for the simulation.
+#' @param n_runs Number of times to run the algoithm.
 #' @param district_name Name of the district used to store output.
 #' @param states States matrix.
 #' @param max_mcyears Number of MC years to consider, by default all of them.
@@ -23,7 +24,9 @@
 #' # TODO
 #' 
 #' }
-meanGridLayer <- function(area, simulation_names, simulation_values = NULL, district_name = "water values district", states, max_mcyears = NULL, n_week = 52, week_53 = 0, opts = antaresRead::simOptions()) {
+meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_runs = 2L,
+                          district_name = "water values district", states, max_mcyears = NULL, 
+                          n_week = 52, week_53 = 0, opts = antaresRead::simOptions()) {
   
   assertthat::assert_that(class(opts) == "simOptions")
   
@@ -124,7 +127,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, dist
   # Calcul by week
   next_week_values <- week_53
   
-  for (i in 52:1) {
+  for (i in rep(52:1, times = n_runs)) {
     # print(next_week_values)
     watervalues <- watervalues[
       weeks == i,
@@ -147,6 +150,12 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, dist
   # add states levels
   value_nodes_dt <- merge(x = value_nodes_dt, y = statesdt, by = c("weeks", "statesid"))
   
+  # Calculate Usage values
+  value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]
+  value_nodes_dt <- value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
+  value_nodes_dt <- value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
+  value_nodes_dt <- value_nodes_dt[, vu := abs(value_node_dif / states_dif / 1e6)]
+  
   return(value_nodes_dt)
 }
 
@@ -154,7 +163,8 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, dist
 
 # TODO : documentation
 
-# calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space, level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344) {
+# calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space,
+# level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344) {
 #   
 #   value_reward <- unlist(value_reward)
 #   decision_space <- unlist(decision_space)
@@ -211,7 +221,8 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, dist
 #       
 #       
 #       
-#       provisional_reward_line <- c(provisional_reward_line[seq_len(index_before)], new_reward_element, provisional_reward_line[index_after:length(provisional_reward_line)])
+#       provisional_reward_line <- c(provisional_reward_line[seq_len(index_before)],
+# new_reward_element, provisional_reward_line[index_after:length(provisional_reward_line)])
 #       
 #     } # fin boucle sur ?
 #     
@@ -256,7 +267,8 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, dist
 #   max(temp, na.rm = TRUE)
 # }
 
-calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space, level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344) {
+calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space, 
+                                 level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344) {
   
   value_reward <- unlist(value_reward)
   decision_space <- unlist(decision_space)
@@ -315,7 +327,8 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
       
       
       
-      provisional_reward_line <- c(provisional_reward_line[seq_len(index_before)], new_reward_element, provisional_reward_line[index_after:length(provisional_reward_line)])
+      provisional_reward_line <- c(provisional_reward_line[seq_len(index_before)], 
+                                   new_reward_element, provisional_reward_line[index_after:length(provisional_reward_line)])
       
     } # fin boucle sur ?
     

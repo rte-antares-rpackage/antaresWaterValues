@@ -6,7 +6,8 @@
 \usage{
 meanGridLayer(area, simulation_names, simulation_values = NULL, n_runs = 2L,
   district_name = "water values district", states, max_mcyears = NULL,
-  n_week = 52, week_53 = 0, opts = antaresRead::simOptions())
+  n_week = 52, week_53 = 0, method = c("mean-grid", "grid-mean"),
+  opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}
@@ -26,6 +27,8 @@ meanGridLayer(area, simulation_names, simulation_values = NULL, n_runs = 2L,
 \item{n_week}{Number of weeks.}
 
 \item{week_53}{Water values for week 53, by default 0.}
+
+\item{method}{Perform mean grid algorithm or grid mean algorithm ?}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

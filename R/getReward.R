@@ -41,6 +41,9 @@ getReward <- function(simulation_names = NULL, pattern = NULL, district_name = "
     X = opts_o, 
     FUN = function(o) {
       res <- antaresRead::readAntares(districts = district_name, mcYears = "all", timeStep = "weekly", opts = o)
+      # res <- res[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = as.character(time))]
+      res <- res[timeId == 53L, timeId := 1L]
+      res <- res[, lapply(.SD, sum, na.rm = TRUE), by = list(timeId, mcYear), .SDcols = "OV. COST"]
       res$simulation <- o$name
       res
     }

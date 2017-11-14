@@ -9,6 +9,7 @@
 #' @param max_mcyears Number of MC years to consider, by default all of them.
 #' @param n_week Number of weeks.
 #' @param week_53 Water values for week 53, by default 0.
+#' @param method Perform mean grid algorithm or grid mean algorithm ?
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}  
@@ -26,8 +27,9 @@
 #' }
 meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_runs = 2L,
                           district_name = "water values district", states, max_mcyears = NULL, 
-                          n_week = 52, week_53 = 0, opts = antaresRead::simOptions()) {
+                          n_week = 52, week_53 = 0, method = c("mean-grid", "grid-mean"), opts = antaresRead::simOptions()) {
   
+  method <- match.arg(method)
   assertthat::assert_that(class(opts) == "simOptions")
   
   # assertthat::assert_that(ncol(states) == n_week)
@@ -58,10 +60,13 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   # decision_space <- matrix(data = simulation_values, nrow = length(simulation_values), ncol = n_week+1)
   decision_space <- simulation_values
   
+  decimals <- 6
+  
   # inflow
   inflow <- antaresRead::readInputTS(hydroStorage = area, timeStep = "weekly", opts = opts)
-  inflow <- inflow[, hydroStorage := hydroStorage / 1e6]
+  inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, decimals-4)]
   inflow <- inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
+  # inflow <- inflow[timeId == 53L, timeId := 1L]
   inflow <- inflow[, timeId := as.numeric(timeId)]
   inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)]
   
@@ -84,7 +89,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
   vars <- c("level_low", "level_avg", "level_high")
   reservoir <- reservoir[, 
-                         (vars) := lapply(.SD, function(x) {round(x * max(states), 2)}),
+                         (vars) := lapply(.SD, function(x) {round(x * max(states), decimals)}),
                          .SDcols = vars
                          ]
   
@@ -96,7 +101,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
   statesdt <- statesdt[, weeks := as.numeric(gsub("V", "", weeks))]
   statesdt <- statesdt[, statesid := seq_along(states), by = weeks]
-  statesdt <- statesdt[, states := round(states, 2)]
+  statesdt <- statesdt[, states := round(states, decimals)]
   
   # add states plus 1
   statesplus1 <- copy(statesdt)
@@ -122,28 +127,52 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   # decision_space <- decision_space[, list(decision_space = list(unlist(decision_space))), by = weeks]
   # watervalues <- merge(x = watervalues, y = decision_space, by = "weeks", all = TRUE)
 
-  # return(watervalues)
-  # verif_watervalues <<- watervalues
+  options("antaresWaterValues.before.meanGrid" = watervalues) # to remove
+  
   # Calcul by week
   next_week_values <- week_53
   
+  max_hydro <- max(decision_space)
+  
+  watervalues <- watervalues[, value_node := NA_real_]
+  
+  verif_next_week <- list()
+  
+  mean_finite <- function(x, na.rm = FALSE) {
+    if (all(!is.finite(x))) {
+      -Inf
+    } else {
+      mean(x[is.finite(x)], na.rm = na.rm)
+    }
+  }
+  if (method == "mean-grid") {
+    funGridMean <- mean
+  } else {
+    funGridMean <- max
+  }
+  
   for (i in rep(52:1, times = n_runs)) {
     # print(next_week_values)
+    watervalues <- watervalues[weeks == i, value_node := NA_real_]
     watervalues <- watervalues[
       weeks == i,
       value_node := calculate_value_node(
         states = states, states_next = states_next, value_reward = reward,
         value_inflow = hydroStorage, decision_space = decision_space, level_high = level_high, 
-        level_low = level_low, value_node_next_week = next_week_values, niveau_max = niveau_max, E_max = max_hydro
+        level_low = level_low, value_node_next_week = next_week_values, niveau_max = niveau_max, E_max = max_hydro,
+        method = method
       ),
       by = list(years, statesid)
       ]
     
-    next_week_values <- watervalues[weeks == i, list(value_node_year = mean(value_node, na.rm = TRUE)), by = statesid][, c(value_node_year)]
-    
+    next_week_values <- watervalues[weeks == i, list(vny = funGridMean(value_node, na.rm = TRUE)), by = statesid][, c(vny)]
+    verif_next_week <- c(verif_next_week, list(next_week_values))
   }
   
-  value_nodes_dt <- watervalues[, list(value_node = mean(value_node, na.rm = TRUE)), by = list(weeks, statesid)]
+  options("antaresWaterValues.valuesbyweek" = verif_next_week) # to remove
+  options("antaresWaterValues.after.meanGrid" = watervalues) # to remove
+  
+  value_nodes_dt <- watervalues[, list(value_node = funGridMean(value_node, na.rm = TRUE)), by = list(weeks, statesid)]
   
   # value_nodes_dc <- dcast(data = value_nodes_dt, formula = statesid ~ weeks, value.var = "value_node")
   
@@ -163,160 +192,64 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
 
 # TODO : documentation
 
-# calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space,
-# level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344) {
-#   
-#   value_reward <- unlist(value_reward)
-#   decision_space <- unlist(decision_space)
-#   states_next <- unlist(states_next)
-#   
-#   alpha <- 1e-5
-#   
-#   # value_node_year <- rep(NA_real_, times = length(states))
-#   # 
-#   if (states >= level_high - alpha) {
-#     return(-Inf)
-#   }
-#   if (states <= level_low + alpha) {
-#     return(-Inf)
-#   }
-#   
-#   
-#   largest_decision <- min(c(states + value_inflow, E_max), na.rm = TRUE)
-#   
-#   decisions_current_benef <- decision_space[decision_space <= largest_decision + alpha]
-#   
-#   provisional_steps <- unique(c(decisions_current_benef, E_max) )
-#   provisional_reward_line <- unique(c(value_reward[seq_along(decisions_current_benef)] , value_reward[length(value_reward)]))
-#   
-#   next_states <- states_next[states_next >= (states - E_max + value_inflow) & states_next <= (states + value_inflow + alpha) ]
-#   
-#   decisions_benef_to_go <- states - next_states + value_inflow
-#   
-#   decisions <- unique(sort(c(decisions_benef_to_go, decisions_current_benef), decreasing = FALSE))
-#   
-#   if (!any(decisions_benef_to_go %in% decisions_current_benef)) {
-#     
-#     # boucle sur ?
-#     for (index in setdiff(decisions_benef_to_go, decisions_current_benef)) { # index <- 0.008604931
-#       
-#       before <- provisional_steps[index >= provisional_steps - alpha]
-#       before <- before[length(before)]
-#       
-#       after <- provisional_steps[index <= provisional_steps + alpha]
-#       after <- after[1]
-#       
-#       remainder <- (index -  before) / (after - before)
-#       remainder <- abs(remainder - trunc(remainder)) 
-#       
-#       index_before <- match(before, provisional_steps)
-#       index_after <- match(after,provisional_steps)
-#       
-#       interpolation_current_benef <- provisional_reward_line[index_before]*(1-remainder) + provisional_reward_line[index_after]*remainder
-#       
-#       
-#       provisional_steps <- unique(sort(c(index, provisional_steps), decreasing = FALSE))
-#       
-#       new_reward_element <- interpolation_current_benef
-#       
-#       
-#       
-#       provisional_reward_line <- c(provisional_reward_line[seq_len(index_before)],
-# new_reward_element, provisional_reward_line[index_after:length(provisional_reward_line)])
-#       
-#     } # fin boucle sur ?
-#     
-#   } # fin if
-#   
-#   
-#   decisions <- decisions[decisions - alpha <= states + value_inflow - level_low]
-#   
-#   decisions <- decisions[decisions + alpha >= states + value_inflow - level_high]
-#   
-#   
-#   
-#   temp <- vector(mode = "numeric", length = length(decisions))
-#   count_x <- 0
-#   
-#   for(l in decisions) { # l <- 0
-#     
-#     count_x <- count_x + 1
-#     
-#     if ((states - l + value_inflow) >= niveau_max + alpha) {
-#       next
-#     }
-#     
-#     states_above <- states_next[states_next - (states - l + value_inflow) >= - alpha]
-#     states_below <- states_next[states_next + (states - l + value_inflow) <= alpha]
-#     
-#     next_node_up <- match(states_above[length(states_above)], states_next, nomatch = 0) 
-#     next_node_down <- match(states_below[1], states_next, nomatch = 0)
-#     
-#     remainder <- 0
-#     
-#     if (isTRUE(next_node_up != next_node_down)) {
-#       remainder <- (states - l + value_inflow) %% (states_above[length(states_above)] - states_below[1]) 
-#     }
-#     
-#     interpolation <- remainder * value_node_next_week[next_node_up] + (1 - remainder) * value_node_next_week[next_node_down]
-#     
-#     temp[count_x] <- sum(c(provisional_reward_line[match(l, provisional_steps)], interpolation), na.rm = TRUE)
-#     
-#   }
-#   
-#   max(temp, na.rm = TRUE)
-# }
+
 
 calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space, 
-                                 level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344) {
+                                 level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344, method) {
   
-  value_reward <- unlist(value_reward)
-  decision_space <- unlist(decision_space)
-  states_next <- unlist(states_next)
+  value_reward <- unlist(value_reward, use.names = FALSE)
+  decision_space <- unlist(decision_space, use.names = FALSE)
+  states_next <- unlist(states_next, use.names = FALSE)
+  
+  alpha <- getOption(x = "antaresWaterValues.alpha", default = 0.0001)
+  decimals <- getOption(x = "antaresWaterValues.decimals", default = 3)
   
   # value_node_year <- rep(NA_real_, times = length(states))
   # 
-  if (states >= round(level_high, 2)) {
+  if (states >= round(level_high, decimals) - alpha) {
     return(-Inf)
   }
-  if (states <= round(level_low, 2)) {
+  if (states <= round(level_low, decimals) + alpha) {
     return(-Inf)
   }
   
   
   largest_decision <- min(c(states + value_inflow, E_max), na.rm = TRUE)
   
-  largest_decision <- round(largest_decision, 2) ###
-  decisions_current_benef <- decision_space[decision_space <= largest_decision]
-  decisions_current_benef <- round(decisions_current_benef, 2) ###
+  largest_decision <- round(largest_decision, decimals) ###
+  decisions_current_benef <- decision_space[decision_space <= largest_decision + alpha]
+  decisions_current_benef <- round(decisions_current_benef, decimals) ###
   
   provisional_steps <- unique(c(decisions_current_benef, E_max) )
   provisional_reward_line <- unique(c(value_reward[seq_along(decisions_current_benef)] , value_reward[length(value_reward)]))
   
-  next_states <- states_next[states_next >= (states - E_max + value_inflow) & states_next <= (states + value_inflow) ]
+  next_states <- states_next[states_next >= (states - E_max + value_inflow) & states_next <= (states + value_inflow + alpha) ]
   
   decisions_benef_to_go <- states - next_states + value_inflow
-  decisions_benef_to_go <- round(decisions_benef_to_go, 2) ###
+  decisions_benef_to_go <- round(decisions_benef_to_go, decimals) ###
   
   decisions <- unique(sort(c(decisions_benef_to_go, decisions_current_benef), decreasing = FALSE))
   
-  if (any(!decisions_benef_to_go %in% decisions_current_benef)) {
+  # if (any(!decisions_benef_to_go %in% decisions_current_benef)) {
+  if (length(setdiff(decisions_benef_to_go, decisions_current_benef)) > 0) {
     
     # boucle sur ?
     for (index in setdiff(decisions_benef_to_go, decisions_current_benef)) { # index <- 0.008604931
       
-      before <- provisional_steps[index >= provisional_steps]
+      before <- provisional_steps[index >= provisional_steps - alpha]
       before <- before[length(before)]
       
-      after <- provisional_steps[index <= provisional_steps]
+      after <- provisional_steps[index <= provisional_steps + alpha]
       after <- after[1]
       
       remainder <- (index -  before ) / (after - before)
-      remainder <- round(remainder, 2) ###
+      remainder <- round(remainder, decimals) ###
       remainder <- abs(remainder - trunc(remainder)) 
       
       index_before <- match(before, provisional_steps)
+      index_before <- round(index_before)
       index_after <- match(after, provisional_steps)
+      index_after <- round(index_after)
       
       interpolation_current_benef <- provisional_reward_line[index_before]*(1-remainder) + provisional_reward_line[index_after]*remainder
       
@@ -335,11 +268,11 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   } # fin if
   
   
-  decisions <- decisions[decisions <= states + value_inflow - level_low]
+  decisions <- decisions[decisions - alpha <= states + value_inflow - level_low]
   
-  decisions <- decisions[decisions >= states + value_inflow - level_high]
+  decisions <- decisions[decisions + alpha >= states + value_inflow - level_high]
 
-  decisions <- round(decisions, 2) ###
+  decisions <- round(decisions, decimals) ###
   
   
   temp <- vector(mode = "numeric", length = length(decisions))
@@ -349,15 +282,15 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     
     count_x <- count_x + 1
     
-    if ((states - l + value_inflow) >= niveau_max) {
-      return(-Inf)
+    if ((states - l + value_inflow) >= niveau_max + alpha) {
+      next
     }
     
-    states_above <- states_next[states_next >= (states - l + value_inflow)]
-    states_below <- states_next[states_next <= (states - l + value_inflow)]
+    states_above <- states_next[states_next >= (states - l + value_inflow) - alpha]
+    states_below <- states_next[states_next <= (states - l + value_inflow) + alpha]
     
-    next_node_up <- match(states_above[length(states_above)], states_next) 
-    next_node_down <- match(states_below[1], states_next)
+    next_node_up <- which(states_above[length(states_above)] == states_next)
+    next_node_down <- which(states_below[1] == states_next)
     
     remainder <- 0
     
@@ -380,9 +313,19 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     # if (!is.finite(interpolation))
     #   stop()
     
-    temp[count_x] <- sum(c(provisional_reward_line[match(l, provisional_steps)], interpolation), na.rm = TRUE)
-    
+    temp[count_x] <- sum(c(provisional_reward_line[match(l, provisional_steps)], interpolation), na.rm = FALSE)
   }
   
-  max(temp, na.rm = TRUE)
+  if (method == "mean-grid") {
+    max(temp, na.rm = TRUE)
+  } else {
+    mean_finite <- function(x, na.rm = FALSE) {
+      if (all(!is.finite(x))) {
+        -Inf
+      } else {
+        mean(x[is.finite(x)], na.rm = na.rm)
+      }
+    }
+    mean_finite(temp, na.rm = TRUE)
+  }
 }

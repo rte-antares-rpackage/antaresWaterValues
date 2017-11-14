@@ -64,7 +64,7 @@ runWaterValuesSimulation <- function(area,
   if (isTRUE(hydro_ini$reservoir[[area]])) {
     reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
     if (is.null(reservoir_capacity))
-      stop(paste0("Incorrect reservoir capacity for area: ", area))
+      reservoir_capacity <- getOption("watervalues.reservoir_capacity", default = 1e7)
     reservoir_capacity <- reservoir_capacity / 10
   } else {
     reservoir_capacity <- 1
@@ -78,6 +78,16 @@ runWaterValuesSimulation <- function(area,
   constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_simulation)
   constraint_values <- round(constraint_values, 3)
 
+  if (match(area, sort(c(area, fictive_area))) == 1) {
+    coeff_nn <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+  } else {
+    coeff_nn <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
+  }
+  antaresEditObject::createBindingConstraint(
+    name = "nonnegative", enabled = TRUE, operator = "greater", 
+    coefficients = coeff_nn, opts = opts, overwrite = TRUE, timeStep = "hourly"
+  )
+  
   simulation_names <- vector(mode = "character", length = length(constraint_values))
   for (i in constraint_values) {
     name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))

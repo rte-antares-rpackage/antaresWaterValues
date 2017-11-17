@@ -44,9 +44,9 @@ updateGeneralSettings(nbyears = 20)
 # a binding constraints, set to 0 the hydro storage times series, ...)
 # and return the names of the simulations run
 
-simulation_names <- runWaterValuesSimulation(
+simulation_res <- runWaterValuesSimulation(
   area = "fr",
-  nb_simulation = 15,
+  nb_simulation = 10,
   path_solver = "C:/antares/bin/antares-6.0-solver.exe", 
   show_output_on_console = FALSE,
   overwrite = TRUE
@@ -59,25 +59,34 @@ When each simulation has run, we can use result to calculate a mean grid layer :
 ```r
 # Parameters
 
-# Values for simulations
-simulation_values <- gsub("weekly_water_amount_", "", simulation_names)
+# Values and names for simulations
+simulation_names <- simulation_res$simulation_names
+simulation_values <- simulation_res$simulation_values
+
+# If you don't have run 'runWaterValuesSimulation' before, you can retrieve names and values loke this :
+simulation_names <- getSimulationNames(pattern = "decision")
+simulation_names <- gsub(pattern = ".*eco-", replacement = "", x = simulation_names)
+
+simulation_values <- gsub("decision|twh", "", simulation_names)
 simulation_values <- gsub(",", ".", simulation_values)
 simulation_values <- as.numeric(simulation_values)
 
+
 # Number of weeks
-n_weeks <- 53
+n_weeks <- 52
 
 # states matrix
-states <- matrix( rep(seq(from = 10, to = 0, by = -0.05), n_weeks), byrow = FALSE, ncol = n_weeks)
+states <- matrix( rep(seq(from = 10, to = 0, by = -0.05), n_weeks + 1), byrow = FALSE, ncol = n_weeks + 1)
 
 
 
 # Nodes values calculation
-value_nodes <- meanGridLayer(
+value_nodes_2017 <- meanGridLayer(
   area = "fr",
   simulation_names = simulation_names, 
   simulation_values = simulation_values,
-  states = states, max_mcyears = 10,
+  states = states, 
+  n_runs = 2,
   n_week = n_weeks, 
   week_53 = 0
 )
@@ -101,8 +110,8 @@ Here's a representation of the result :
 ```r
 library(ggplot2)
 library(viridis)
-ggplot(data = value_nodes) + 
-  aes(x = weeks, y = states, fill = value_node) + 
+ggplot(data = value_nodes_2017) + 
+  aes(x = weeks, y = states, fill = vu) + 
   geom_tile() + 
   scale_fill_viridis(na.value = "transparent") + 
   theme_minimal() + 
@@ -111,4 +120,21 @@ ggplot(data = value_nodes) +
 ```
 ![mean grid layer](inst/img/mean_grid_layer.png)
 
+
+
+
+Adding bands around water values :
+
+```r
+value_nodes_2017 <- value_nodes_2017[, vu_band := addBand(vu = vu, states = states, failure_cost = 100), by = weeks]
+
+ggplot(data = value_nodes_2017) + 
+  aes(x = weeks, y = states, fill = vu_band) + 
+  geom_tile() + 
+  scale_fill_viridis(na.value = "transparent") + 
+  theme_minimal() + 
+  labs(title = "Mean Grid Layer with bands", x = "Weeks", y = "States")
+```
+
+![mean grid layer bands](inst/img/mean_grid_layer_bands.png)
 

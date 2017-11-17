@@ -1,6 +1,6 @@
 Package: antaresWaterValues
 Title: Calculate Water Values
-Version: 0.0.0.9000
+Version: 0.0.0.9100
 Authors@R: c(
     person("Victor", "Perrier", email = "victor.perrier@rte-france.com", role = c("aut", "cre")),
     person("RTE", role = "cph"))
@@ -15,7 +15,8 @@ Imports: antaresRead,
     antaresXpansion,
     assertthat,
     data.table,
-    zoo
+    zoo,
+    ggplot2
 Remotes: rte-antares-rpackage/antaresEditObject,
     rte-antares-rpackage/antaresXpansion
 Suggests: stats

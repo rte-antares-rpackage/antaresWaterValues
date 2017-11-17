@@ -10,6 +10,7 @@
 #' @param n_week Number of weeks.
 #' @param week_53 Water values for week 53, by default 0.
 #' @param method Perform mean grid algorithm or grid mean algorithm ?
+#' @param na_rm Remove NAs
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}  
@@ -27,7 +28,7 @@
 #' }
 meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_runs = 2L,
                           district_name = "water values district", states, max_mcyears = NULL, 
-                          n_week = 52, week_53 = 0, method = c("mean-grid", "grid-mean"), opts = antaresRead::simOptions()) {
+                          n_week = 52, week_53 = 0, method = c("mean-grid", "grid-mean"), na_rm = FALSE, opts = antaresRead::simOptions()) {
   
   method <- match.arg(method)
   assertthat::assert_that(class(opts) == "simOptions")
@@ -127,7 +128,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   # decision_space <- decision_space[, list(decision_space = list(unlist(decision_space))), by = weeks]
   # watervalues <- merge(x = watervalues, y = decision_space, by = "weeks", all = TRUE)
 
-  options("antaresWaterValues.before.meanGrid" = watervalues) # to remove
+  # options("antaresWaterValues.before.meanGrid" = watervalues) # to remove
   
   # Calcul by week
   next_week_values <- week_53
@@ -160,7 +161,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
         states = states, states_next = states_next, value_reward = reward,
         value_inflow = hydroStorage, decision_space = decision_space, level_high = level_high, 
         level_low = level_low, value_node_next_week = next_week_values, niveau_max = niveau_max, E_max = max_hydro,
-        method = method
+        method = method, na_rm = na_rm
       ),
       by = list(years, statesid)
       ]
@@ -169,8 +170,10 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
     verif_next_week <- c(verif_next_week, list(next_week_values))
   }
   
-  options("antaresWaterValues.valuesbyweek" = verif_next_week) # to remove
-  options("antaresWaterValues.after.meanGrid" = watervalues) # to remove
+  # options("antaresWaterValues.valuesbyweek" = verif_next_week) # to remove
+  # options("antaresWaterValues.after.meanGrid" = watervalues) # to remove
+  
+  # verif_watervalues2 <<- watervalues
   
   value_nodes_dt <- watervalues[, list(value_node = funGridMean(value_node, na.rm = TRUE)), by = list(weeks, statesid)]
   
@@ -195,7 +198,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
 
 
 calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space, 
-                                 level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344, method) {
+                                 level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344, method, na_rm = FALSE) {
   
   value_reward <- unlist(value_reward, use.names = FALSE)
   decision_space <- unlist(decision_space, use.names = FALSE)
@@ -246,9 +249,11 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
       remainder <- round(remainder, decimals) ###
       remainder <- abs(remainder - trunc(remainder)) 
       
-      index_before <- match(before, provisional_steps)
+      # index_before <- match(before, provisional_steps)
+      index_before <- which(num_equal(before, provisional_steps))
       index_before <- round(index_before)
-      index_after <- match(after, provisional_steps)
+      # index_after <- match(after, provisional_steps)
+      index_after <- which(num_equal(after, provisional_steps))
       index_after <- round(index_after)
       
       interpolation_current_benef <- provisional_reward_line[index_before]*(1-remainder) + provisional_reward_line[index_after]*remainder
@@ -289,12 +294,12 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     states_above <- states_next[states_next >= (states - l + value_inflow) - alpha]
     states_below <- states_next[states_next <= (states - l + value_inflow) + alpha]
     
-    next_node_up <- which(states_above[length(states_above)] == states_next)
-    next_node_down <- which(states_below[1] == states_next)
+    next_node_up <- which(num_equal(states_above[length(states_above)], states_next))
+    next_node_down <- which(num_equal(states_below[1], states_next))
     
     remainder <- 0
     
-    if (isTRUE(next_node_up != next_node_down)) {
+    if (!num_equal(next_node_up, next_node_down)) {
       remainder <- (states- l + value_inflow) %% (states_above[length(states_above)] - states_below[1]) 
     }
     
@@ -313,7 +318,8 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     # if (!is.finite(interpolation))
     #   stop()
     
-    temp[count_x] <- sum(c(provisional_reward_line[match(l, provisional_steps)], interpolation), na.rm = FALSE)
+    # temp[count_x] <- sum(c(provisional_reward_line[match(l, provisional_steps)], interpolation), na.rm = na_rm)
+    temp[count_x] <- sum(c(provisional_reward_line[num_equal(l, provisional_steps)], interpolation), na.rm = na_rm)
   }
   
   if (method == "mean-grid") {
@@ -328,4 +334,10 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     }
     mean_finite(temp, na.rm = TRUE)
   }
+}
+
+
+
+num_equal <- function(x, y, tol = sqrt(.Machine$double.eps)) {
+  abs(x - y) < tol
 }

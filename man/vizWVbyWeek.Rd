@@ -4,14 +4,14 @@
 \alias{vizWVbyWeek}
 \title{Visualize Water Weeks for a specified week}
 \usage{
-vizWVbyWeek(value_node, week, add_band = FALSE, ...)
+vizWVbyWeek(value_node, week, add_band = "none", ...)
 }
 \arguments{
 \item{value_node}{Result from \code{meanGridLayer}.}
 
 \item{week}{Week to visualize}
 
-\item{add_band}{Add band around water values}
+\item{add_band}{Add band around water values, choice between 'none', 'linear', 'spline' or 'both'.}
 
 \item{...}{Parametters passed to \code{\link{addBand}}.}
 }

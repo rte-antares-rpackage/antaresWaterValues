@@ -4,12 +4,15 @@
 \alias{addBand}
 \title{Add Band to Water Values}
 \usage{
-addBand(vu, states, bandwidth = 100, failure_cost = 3000)
+addBand(vu, states, type = c("linear", "spline"), bandwidth = 100,
+  failure_cost = 3000)
 }
 \arguments{
 \item{vu}{Water values from \code{meanGridLayer}}
 
-\item{states}{Level of states}
+\item{states}{Level of states.}
+
+\item{type}{Perform a linear or a spline interpolation.}
 
 \item{bandwidth}{Ith of the band to add.}
 

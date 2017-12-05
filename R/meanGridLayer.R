@@ -167,13 +167,15 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
       ]
     
     next_week_values <- watervalues[weeks == i, list(vny = funGridMean(value_node, na.rm = TRUE)), by = statesid][, c(vny)]
+    next_week_values[!is.finite(next_week_values) | is.na(next_week_values)] <- 0
     verif_next_week <- c(verif_next_week, list(next_week_values))
   }
   
+  verif_next_week <<- verif_next_week
   # options("antaresWaterValues.valuesbyweek" = verif_next_week) # to remove
   # options("antaresWaterValues.after.meanGrid" = watervalues) # to remove
   
-  # verif_watervalues2 <<- watervalues
+  verif_watervalues2 <<- watervalues
   
   value_nodes_dt <- watervalues[, list(value_node = funGridMean(value_node, na.rm = TRUE)), by = list(weeks, statesid)]
   
@@ -300,7 +302,9 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     remainder <- 0
     
     if (!num_equal(next_node_up, next_node_down)) {
-      remainder <- (states- l + value_inflow) %% (states_above[length(states_above)] - states_below[1]) 
+      remainder <- (states - l + value_inflow) %% (states_above[length(states_above)] - states_below[1]) 
+    } else {
+      remainder <- 1
     }
     
     vunw <- value_node_next_week[next_node_up]

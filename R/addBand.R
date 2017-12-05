@@ -41,7 +41,9 @@ addBand <- function(vu, states, type = c("linear", "spline"), bandwidth = 100, f
   # val <- data[num_equal(states, states_below[2]), vu_band]
   # vals <- zoo::na.approx(c(failure_cost, rep_len(NA, n_nas - 2), val))
   # data[states >= states_below[1] & states <= states_below[2], vu_band := vals]
-  data <- data[states > states_below[1] & states < states_below[2], vu_band := NA]
+  if (type == "linear") {
+    data <- data[states > states_below[1] & states < states_below[2], vu_band := NA]
+  }
   data <- data[num_equal(states, states_below[1]), vu_band := failure_cost]
   
   # above
@@ -52,7 +54,9 @@ addBand <- function(vu, states, type = c("linear", "spline"), bandwidth = 100, f
   # val <- data[num_equal(states, states_above[1]), vu_band]
   # vals <- zoo::na.approx(c(val, rep_len(NA, n_nas - 2), 0))
   # data[states >= states_above[1] & states <= states_above[2], vu_band := vals]
-  data <- data[states > states_above[1] & states < states_above[2], vu_band := NA]
+  if (type == "linear") {
+    data <- data[states > states_above[1] & states < states_above[2], vu_band := NA]
+  }
   data <- data[num_equal(states, states_above[2]), vu_band := 0]
   
   # Interpolation

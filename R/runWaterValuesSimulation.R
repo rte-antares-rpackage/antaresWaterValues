@@ -22,9 +22,8 @@
 #' @export
 #' 
 #' @importFrom assertthat assert_that
-#' @importFrom antaresEditObject createBindingConstraint removeBindingConstraint readIniFile writeIni
+#' @importFrom antaresEditObject createBindingConstraint removeBindingConstraint readIniFile writeIni runSimulation
 #' @importFrom antaresRead readClusterDesc
-#' @importFrom antaresXpansion run_simulation
 #' @importFrom stats setNames
 #'
 # @examples
@@ -112,7 +111,7 @@ runWaterValuesSimulation <- function(area,
     message("#  ------------------------------------------------------------------------")
     message(paste0("Running simulation: ", sprintf(simulation_name, format(i, decimal.mark = ","))))
     message("#  ------------------------------------------------------------------------")
-    antaresXpansion::run_simulation(
+    antaresEditObject::runSimulation(
       name = sprintf(simulation_name, format(i, decimal.mark = ",")), 
       mode = "economy",
       wait = wait,

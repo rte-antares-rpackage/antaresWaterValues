@@ -63,7 +63,7 @@ When each simulation has run, we can use result to calculate a mean grid layer :
 simulation_names <- simulation_res$simulation_names
 simulation_values <- simulation_res$simulation_values
 
-# If you don't have run 'runWaterValuesSimulation' before, you can retrieve names and values loke this :
+# If you don't have run 'runWaterValuesSimulation' before, you can retrieve names and values like this :
 simulation_names <- getSimulationNames(pattern = "decision")
 simulation_names <- gsub(pattern = ".*eco-", replacement = "", x = simulation_names)
 

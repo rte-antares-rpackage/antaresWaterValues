@@ -5,9 +5,10 @@
 \title{Calculate grid mean layer matrix}
 \usage{
 meanGridLayer(area, simulation_names, simulation_values = NULL, n_runs = 2L,
-  district_name = "water values district", states, max_mcyears = NULL,
-  n_week = 52, week_53 = 0, method = c("mean-grid", "grid-mean"),
-  na_rm = FALSE, opts = antaresRead::simOptions())
+  district_name = "water values district", max_mcyears = NULL,
+  week_53 = 0, method = c("mean-grid", "grid-mean"), states_steps = 0.05,
+  reservoir_capacity = NULL, na_rm = FALSE,
+  opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}
@@ -20,15 +21,16 @@ meanGridLayer(area, simulation_names, simulation_values = NULL, n_runs = 2L,
 
 \item{district_name}{Name of the district used to store output.}
 
-\item{states}{States matrix.}
-
 \item{max_mcyears}{Number of MC years to consider, by default all of them.}
-
-\item{n_week}{Number of weeks.}
 
 \item{week_53}{Water values for week 53, by default 0.}
 
 \item{method}{Perform mean grid algorithm or grid mean algorithm ?}
+
+\item{states_steps}{Steps to discretize steps levels between the reservoir capacity and zero.}
+
+\item{reservoir_capacity}{Reservoir capacity for the given area, if \code{NULL} (the default),
+value in Antares is used.}
 
 \item{na_rm}{Remove NAs}
 

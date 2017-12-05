@@ -5,11 +5,12 @@
 #' @param simulation_values Values for the simulation.
 #' @param n_runs Number of times to run the algoithm.
 #' @param district_name Name of the district used to store output.
-#' @param states States matrix.
 #' @param max_mcyears Number of MC years to consider, by default all of them.
-#' @param n_week Number of weeks.
 #' @param week_53 Water values for week 53, by default 0.
 #' @param method Perform mean grid algorithm or grid mean algorithm ?
+#' @param states_steps Steps to discretize steps levels between the reservoir capacity and zero.
+#' @param reservoir_capacity Reservoir capacity for the given area, if \code{NULL} (the default),
+#' value in Antares is used.
 #' @param na_rm Remove NAs
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -27,11 +28,17 @@
 #' 
 #' }
 meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_runs = 2L,
-                          district_name = "water values district", states, max_mcyears = NULL, 
-                          n_week = 52, week_53 = 0, method = c("mean-grid", "grid-mean"), na_rm = FALSE, opts = antaresRead::simOptions()) {
+                          district_name = "water values district", max_mcyears = NULL, 
+                          week_53 = 0, method = c("mean-grid", "grid-mean"), 
+                          states_steps = 0.05,
+                          reservoir_capacity = NULL, na_rm = FALSE, 
+                          opts = antaresRead::simOptions()) {
   
   method <- match.arg(method)
   assertthat::assert_that(class(opts) == "simOptions")
+  
+  # Number of weeks
+  n_week <- 52
   
   # assertthat::assert_that(ncol(states) == n_week)
   
@@ -48,8 +55,16 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   max_mcyears <- seq_len(max_mcyears)
   
   # Niveau max
-  niveau_max <- max(states)
+  if (is.null(reservoir_capacity)) {
+    niveau_max <- getReservoirCapacity(area = "fr")/1e6
+    if (length(niveau_max) == 0) 
+      stop("Failed to retrieve reservoir capacity, please specify it explicitly with 'reservoir_capacity'.")
+  }
+  # niveau_max <- max(states)
   # rev_week <- rev(seq_len(n_week))
+  
+  # States matrix
+  states <- matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1)
   
   if (length(week_53) == 1)
     week_53 <- rep_len(week_53, nrow(states))

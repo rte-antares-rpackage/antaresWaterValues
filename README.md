@@ -6,16 +6,14 @@
 > Calculate Water Values.
 
 
-Install the package (you'll also need `antaresEditObject` and `antaresXpansion`):
+Install the package (you'll also need `antaresEditObject`):
 
 
 ```r
 # From Github
 # install.packages("devtools")
-devtools::install_github("rte-antares-rpackage/antaresXpansion")
 devtools::install_github("rte-antares-rpackage/antaresEditObject")
 devtools::install_github("rte-antares-rpackage/antaresWaterValues")
-
 ```
 
 
@@ -48,7 +46,6 @@ simulation_res <- runWaterValuesSimulation(
   area = "fr",
   nb_simulation = 10,
   path_solver = "C:/antares/bin/antares-6.0-solver.exe", 
-  show_output_on_console = FALSE,
   overwrite = TRUE
 )
 ```
@@ -72,23 +69,13 @@ simulation_values <- gsub(",", ".", simulation_values)
 simulation_values <- as.numeric(simulation_values)
 
 
-# Number of weeks
-n_weeks <- 52
-
-# states matrix
-states <- matrix( rep(seq(from = 10, to = 0, by = -0.05), n_weeks + 1), byrow = FALSE, ncol = n_weeks + 1)
-
-
 
 # Nodes values calculation
 value_nodes_2017 <- meanGridLayer(
   area = "fr",
   simulation_names = simulation_names, 
   simulation_values = simulation_values,
-  states = states, 
-  n_runs = 2,
-  n_week = n_weeks, 
-  week_53 = 0
+  n_runs = 2
 )
 ```
 

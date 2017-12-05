@@ -37,7 +37,7 @@ runWaterValuesSimulation <- function(area,
                                      thermal_cluster = NULL,
                                      path_solver,
                                      wait = TRUE,
-                                     show_output_on_console = TRUE,
+                                     show_output_on_console = FALSE,
                                      overwrite = FALSE, 
                                      opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")

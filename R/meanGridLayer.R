@@ -3,7 +3,7 @@
 #' @param area An 'antares' area.
 #' @param simulation_names Names of simulations to retrieve.
 #' @param simulation_values Values for the simulation.
-#' @param n_runs Number of times to run the algoithm.
+#' @param n_runs Number of times to run the algorithm.
 #' @param district_name Name of the district used to store output.
 #' @param max_mcyears Number of MC years to consider, by default all of them.
 #' @param week_53 Water values for week 53, by default 0.

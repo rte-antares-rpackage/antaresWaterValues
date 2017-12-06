@@ -17,7 +17,7 @@ meanGridLayer(area, simulation_names, simulation_values = NULL, n_runs = 2L,
 
 \item{simulation_values}{Values for the simulation.}
 
-\item{n_runs}{Number of times to run the algoithm.}
+\item{n_runs}{Number of times to run the algorithm.}
 
 \item{district_name}{Name of the district used to store output.}
 

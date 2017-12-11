@@ -20,6 +20,7 @@
 #' @export
 #' 
 #' @importFrom antaresRead readInputTS
+#' @importFrom utils txtProgressBar setTxtProgressBar
 #'
 #' @examples
 #' \dontrun{
@@ -79,22 +80,35 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   decimals <- 6
   
   # inflow
-  inflow <- antaresRead::readInputTS(hydroStorage = area, timeStep = "weekly", opts = opts)
-  inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, decimals-4)]
+  # inflow <- antaresRead::readInputTS(hydroStorage = area, timeStep = "weekly", opts = opts)
+  # inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, decimals-4)]
+  # inflow <- inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
+  # # inflow <- inflow[timeId == 53L, timeId := 1L]
+  # inflow <- inflow[, timeId := as.numeric(timeId)]
+  # inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)]
+  
+  tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
+  suppressWarnings({
+    tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = tmp_name)
+    inflow <- readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = "all", opts = tmp_opt)
+  })
+  inflow <- inflow[order(mcYear, timeId)]
+  inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
+  inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, digits = 3)]
   inflow <- inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
-  # inflow <- inflow[timeId == 53L, timeId := 1L]
   inflow <- inflow[, timeId := as.numeric(timeId)]
   inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)]
+  options("antares" = opts)
   
-  # # decalage des donnees
-  # decalage <- data.frame(timeId = seq_len(53), timeIdNew = c(26:53, 1:25))
-  # # decalage$timeIdNew <- decalage$timeId + 25
-  # # decalage$timeIdNew[decalage$timeIdNew>52] <- decalage$timeIdNew[decalage$timeIdNew>52]-52
-  # # decalage$timeIdNew <- as.integer(decalage$timeIdNew)
-  # inflow <- merge(x = inflow, y = decalage, by = "timeId")
-  # inflow <- inflow[, timeId := NULL]
-  # setnames(x = inflow, old = "timeIdNew", new = "timeId")
-  # inflow <- inflow[order(timeId, tsId)]
+  # # # decalage des donnees
+  # # decalage <- data.frame(timeId = seq_len(53), timeIdNew = c(26:53, 1:25))
+  # # # decalage$timeIdNew <- decalage$timeId + 25
+  # # # decalage$timeIdNew[decalage$timeIdNew>52] <- decalage$timeIdNew[decalage$timeIdNew>52]-52
+  # # # decalage$timeIdNew <- as.integer(decalage$timeIdNew)
+  # # inflow <- merge(x = inflow, y = decalage, by = "timeId")
+  # # inflow <- inflow[, timeId := NULL]
+  # # setnames(x = inflow, old = "timeIdNew", new = "timeId")
+  # # inflow <- inflow[order(timeId, tsId)]
   
   
   # Reward
@@ -167,23 +181,35 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
     funGridMean <- max
   }
   
-  for (i in rep(52:1, times = n_runs)) {
-    # print(next_week_values)
-    watervalues <- watervalues[weeks == i, value_node := NA_real_]
-    watervalues <- watervalues[
-      weeks == i,
-      value_node := calculate_value_node(
-        states = states, states_next = states_next, value_reward = reward,
-        value_inflow = hydroStorage, decision_space = decision_space, level_high = level_high, 
-        level_low = level_low, value_node_next_week = next_week_values, niveau_max = niveau_max, E_max = max_hydro,
-        method = method, na_rm = na_rm
-      ),
-      by = list(years, statesid)
-      ]
+  
+  for (n_run in seq_len(n_runs)) {
     
-    next_week_values <- watervalues[weeks == i, list(vny = funGridMean(value_node, na.rm = TRUE)), by = statesid][, c(vny)]
-    next_week_values[!is.finite(next_week_values) | is.na(next_week_values)] <- 0
-    verif_next_week <- c(verif_next_week, list(next_week_values))
+    cat("Calculating value nodes, run number:", n_run, "\n")
+    
+    pb <- txtProgressBar(min = 0, max = 51, style = 3)
+    
+    for (i in rev(seq_len(52))) { # rep(52:1, times = n_runs)
+      # print(next_week_values)
+      watervalues <- watervalues[weeks == i, value_node := NA_real_]
+      watervalues <- watervalues[
+        weeks == i,
+        value_node := calculate_value_node(
+          states = states, states_next = states_next, value_reward = reward,
+          value_inflow = hydroStorage, decision_space = decision_space, level_high = level_high, 
+          level_low = level_low, value_node_next_week = next_week_values, niveau_max = niveau_max, E_max = max_hydro,
+          method = method, na_rm = na_rm
+        ),
+        by = list(years, statesid)
+        ]
+      
+      next_week_values <- watervalues[weeks == i, list(vny = funGridMean(value_node, na.rm = TRUE)), by = statesid][, c(vny)]
+      # next_week_values[!is.finite(next_week_values) | is.na(next_week_values)] <- 0
+      verif_next_week <- c(verif_next_week, list(next_week_values))
+      
+      setTxtProgressBar(pb = pb, value = 52 - i)
+      
+    }
+    close(pb)
   }
   
   verif_next_week <<- verif_next_week

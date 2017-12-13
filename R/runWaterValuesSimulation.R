@@ -108,8 +108,9 @@ runWaterValuesSimulation <- function(area,
       coefficients = coeff, ####
       opts = opts
     )
+    iii <- which(num_equal(i, constraint_values))
     message("#  ------------------------------------------------------------------------")
-    message(paste0("Running simulation: ", sprintf(simulation_name, format(i, decimal.mark = ","))))
+    message(paste0("Running simulation: ", iii, " - ", sprintf(simulation_name, format(i, decimal.mark = ","))))
     message("#  ------------------------------------------------------------------------")
     antaresEditObject::runSimulation(
       name = sprintf(simulation_name, format(i, decimal.mark = ",")), 

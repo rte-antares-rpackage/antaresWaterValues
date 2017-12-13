@@ -3,7 +3,7 @@
 #' @param area An 'antares' area.
 #' @param simulation_names Names of simulations to retrieve.
 #' @param simulation_values Values for the simulation.
-#' @param n_runs Number of times to run the algorithm.
+#' @param nb_runs Number of times to run the algorithm.
 #' @param district_name Name of the district used to store output.
 #' @param max_mcyears Number of MC years to consider, by default all of them.
 #' @param week_53 Water values for week 53, by default 0.
@@ -28,7 +28,7 @@
 #' # TODO
 #' 
 #' }
-meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_runs = 2L,
+meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_runs = 2L,
                           district_name = "water values district", max_mcyears = NULL, 
                           week_53 = 0, method = c("mean-grid", "grid-mean"), 
                           states_steps = 0.05,
@@ -94,7 +94,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   })
   inflow <- inflow[order(mcYear, timeId)]
   inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
-  inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, digits = 3)]
+  inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, digits = 2)]
   inflow <- inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
   inflow <- inflow[, timeId := as.numeric(timeId)]
   inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)]
@@ -182,7 +182,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, n_ru
   }
   
   
-  for (n_run in seq_len(n_runs)) {
+  for (n_run in seq_len(nb_runs)) {
     
     cat("Calculating value nodes, run number:", n_run, "\n")
     
@@ -382,7 +382,3 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
 }
 
 
-
-num_equal <- function(x, y, tol = sqrt(.Machine$double.eps)) {
-  abs(x - y) < tol
-}

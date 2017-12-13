@@ -4,7 +4,8 @@
 \alias{waterValues}
 \title{Run Water Values Simulation and Calculate Value Node}
 \usage{
-waterValues(area, nb_simulation = 10, n_runs = 3)
+waterValues(area, nb_simulation = 10, nb_runs = 3, nb_year = NULL,
+  overwrite = TRUE, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{The area concerned by the simulation.}
@@ -13,7 +14,14 @@ waterValues(area, nb_simulation = 10, n_runs = 3)
 a vector of energy constraint will be created from 0 to 
 the hydro storage maximum and of length this parameter.}
 
-\item{n_runs}{Number of times to run the algorithm.}
+\item{nb_runs}{Number of times to run the algorithm.}
+
+\item{nb_year}{Number of Monte-Carlo years to use in simulation, default is to use Antares' setting.}
+
+\item{overwrite}{If area or cluster already exists, should they be overwritten?}
+
+\item{opts}{List of simulation parameters returned by the function
+\code{antaresRead::setSimulationPath}}
 }
 \value{
 a data.table

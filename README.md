@@ -10,13 +10,28 @@ Install the package (you'll also need `antaresEditObject`):
 
 
 ```r
-# From Github
-# install.packages("devtools")
-devtools::install_github("rte-antares-rpackage/antaresEditObject")
-devtools::install_github("rte-antares-rpackage/antaresWaterValues")
+# Install package from Github
+# source("https://install-github.me/rte-antares-rpackage/antaresWaterValues")
+
+library( "antaresWaterValues" )
 ```
 
 
+# Simple use
+
+You can run a water values simulation with the command :
+
+```r
+waterValues(area = "fr")
+```
+
+A dialog box will be launched to choose the directory containing the Antares simulation, a second one to choose the path of the Antares solver in order to launch the simulations.
+
+By default, **10 simulations** are run in Antares by discretizing the stock level for the area concerned from 0 to the maximum value. The algorithm to calculate the average of the grids is **run 3 times**.
+
+
+
+# Advanced use
 
 ## Running water values simulation
 

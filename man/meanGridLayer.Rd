@@ -4,10 +4,10 @@
 \alias{meanGridLayer}
 \title{Calculate grid mean layer matrix}
 \usage{
-meanGridLayer(area, simulation_names, simulation_values = NULL, n_runs = 2L,
-  district_name = "water values district", max_mcyears = NULL,
-  week_53 = 0, method = c("mean-grid", "grid-mean"), states_steps = 0.05,
-  reservoir_capacity = NULL, na_rm = FALSE,
+meanGridLayer(area, simulation_names, simulation_values = NULL,
+  nb_runs = 2L, district_name = "water values district",
+  max_mcyears = NULL, week_53 = 0, method = c("mean-grid", "grid-mean"),
+  states_steps = 0.05, reservoir_capacity = NULL, na_rm = FALSE,
   opts = antaresRead::simOptions())
 }
 \arguments{
@@ -17,7 +17,7 @@ meanGridLayer(area, simulation_names, simulation_values = NULL, n_runs = 2L,
 
 \item{simulation_values}{Values for the simulation.}
 
-\item{n_runs}{Number of times to run the algorithm.}
+\item{nb_runs}{Number of times to run the algorithm.}
 
 \item{district_name}{Name of the district used to store output.}
 

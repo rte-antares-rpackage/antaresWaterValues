@@ -25,7 +25,11 @@ waterValuesViz <- function(value_nodes, add_band = FALSE,
     ), by = weeks]
   }
   p <- ggplot2::ggplot(data = value_nodes)
-  p <- p + ggplot2::aes(x = weeks, y = states, fill = vu)
+  if (add_band) {
+    p <- p + ggplot2::aes(x = weeks, y = states, fill = vu_band)
+  } else {
+    p <- p + ggplot2::aes(x = weeks, y = states, fill = vu)
+  }
   p <- p + ggplot2::geom_tile()
   p <- p + viridis::scale_fill_viridis(na.value = "transparent")
   p <- p + ggplot2::theme_minimal()

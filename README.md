@@ -93,7 +93,7 @@ value_nodes_2017 <- meanGridLayer(
   area = "fr",
   simulation_names = simulation_names, 
   simulation_values = simulation_values,
-  n_runs = 2
+  nb_runs = 2
 )
 ```
 
@@ -113,15 +113,7 @@ value_nodes_dc <- dcast(
 Here's a representation of the result :
 
 ```r
-library(ggplot2)
-library(viridis)
-ggplot(data = value_nodes_2017) + 
-  aes(x = weeks, y = states, fill = vu) + 
-  geom_tile() + 
-  scale_fill_viridis(na.value = "transparent") + 
-  theme_minimal() + 
-  labs(title = "Mean Grid Layer", x = "Weeks", y = "States")
-
+waterValuesViz(value_nodes_2017)
 ```
 ![mean grid layer](inst/img/mean_grid_layer.png)
 
@@ -131,14 +123,7 @@ ggplot(data = value_nodes_2017) +
 Adding bands around water values :
 
 ```r
-value_nodes_2017 <- value_nodes_2017[, vu_band := addBand(vu = vu, states = states, failure_cost = 100), by = weeks]
-
-ggplot(data = value_nodes_2017) + 
-  aes(x = weeks, y = states, fill = vu_band) + 
-  geom_tile() + 
-  scale_fill_viridis(na.value = "transparent") + 
-  theme_minimal() + 
-  labs(title = "Mean Grid Layer with bands", x = "Weeks", y = "States")
+waterValuesViz(value_nodes_2017, add_band = TRUE, bandwidth = 100, failure_cost = 100)
 ```
 
 ![mean grid layer bands](inst/img/mean_grid_layer_bands.png)

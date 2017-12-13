@@ -5,7 +5,7 @@
 #' @param states Level of states.
 #' @param type Perform a linear or a spline interpolation.
 #' @param bandwidth Ith of the band to add.
-#' @param failure_cost Cost of failure
+#' @param failure_cost Cost of failure.
 #'
 #' @return A vector of water values with a band
 #' @export

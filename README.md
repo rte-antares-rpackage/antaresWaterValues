@@ -22,7 +22,10 @@ library( "antaresWaterValues" )
 You can run a water values simulation with the command :
 
 ```r
-waterValues(area = "fr")
+res <- waterValues(area = "fr")
+
+# Plot
+waterValuesViz(res)
 ```
 
 A dialog box will be launched to choose the directory containing the Antares simulation, a second one to choose the path of the Antares solver in order to launch the simulations.

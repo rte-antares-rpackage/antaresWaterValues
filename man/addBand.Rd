@@ -16,7 +16,7 @@ addBand(vu, states, type = c("linear", "spline"), bandwidth = 100,
 
 \item{bandwidth}{Ith of the band to add.}
 
-\item{failure_cost}{Cost of failure}
+\item{failure_cost}{Cost of failure.}
 }
 \value{
 A vector of water values with a band

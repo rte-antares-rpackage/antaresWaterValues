@@ -71,3 +71,86 @@ addBand <- function(vu, states, type = c("linear", "spline"), bandwidth = 100, f
   # end
   return(data$vu_band)
 }
+
+
+
+
+
+#' Get unserved energy cost for a given area
+#'
+#' @param area An 'antares' area.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath} 
+#'
+#' @return a numeric value
+#' @export
+#' 
+#' @importFrom assertthat assert_that
+#' @importFrom antaresEditObject readIniFile
+#' @importFrom antaresRead getAreas simOptions
+#'
+#' @examples
+#' \dontrun{
+#' 
+#' getUnserverdEnergyCost(area = "nl")
+#' 
+#' }
+getUnserverdEnergyCost <- function(area, opts = antaresRead::simOptions()) {
+  assertthat::assert_that(class(opts) == "simOptions")
+  if (!area %in% antaresRead::getAreas(opts = opts)) 
+    stop("Not a valid area!", call. = FALSE)
+  path <- file.path(opts$inputPath , "thermal", "areas.ini")
+  ini <- antaresEditObject::readIniFile(path)
+  if (!is.null(ini[["unserverdenergycost"]][[area]])) {
+    ini[["unserverdenergycost"]][[area]]
+  } else {
+    NA_integer_
+  }
+}
+
+
+
+
+#' Add Band to Value Nodes
+#'
+#' @param value_nodes \code{data.table} in output of \code{\link{meanGridLayer}}.
+#' @param type Perform a linear or a spline interpolation.
+#' @param bandwidth Ith of the band to add.
+#' @param failure_cost Cost of failure, if not provided will retrieve 
+#'  failure cost in Antares, for that you should specify a valid area.
+#' @param area An Antares area.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}  
+#'
+#' @return a \code{data.table} with one extra column
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' 
+#' value_nodes <- addBandVU(value_nodes, 
+#'                          type = "linear", 
+#'                          bandwidth = 100,
+#'                          failure_cost = 3000)
+#' 
+#' }
+addBandVU <- function(value_nodes, type = c("linear", "spline"), bandwidth = 100,
+                      failure_cost = NULL, area = NULL, opts = antaresRead::simOptions()) {
+  if (is.null(failure_cost)) {
+    if (is.null(area))
+      stop("You must provide an area to retrieve failure cost.", call. = FALSE)
+    failure_cost <- getUnserverdEnergyCost(area = area, opts = opts)
+  }
+  value_nodes <- copy(value_nodes)
+  value_nodes <- value_nodes[, vu_band := addBand(
+    vu = vu, states = states, 
+    failure_cost = failure_cost, type = type,
+    bandwidth = bandwidth
+  ), by = weeks]
+  return(value_nodes)
+}
+
+
+

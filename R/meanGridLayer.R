@@ -58,6 +58,11 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
   # Niveau max
   if (is.null(reservoir_capacity)) {
     niveau_max <- getReservoirCapacity(area = "fr")/1e6
+    if (length(niveau_max) == 0) {
+      ask_niveau_max <- "Failed to retrieve reservoir capacity from Antares, please specify value (e.g. 10000 for France):\n"
+      niveau_max <- readline(prompt = ask_niveau_max)
+      niveau_max <- as.numeric(niveau_max)
+    }
     if (length(niveau_max) == 0) 
       stop("Failed to retrieve reservoir capacity, please specify it explicitly with 'reservoir_capacity'.")
   }
@@ -203,6 +208,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
         ]
       
       next_week_values <- watervalues[weeks == i, list(vny = funGridMean(value_node, na.rm = TRUE)), by = statesid][, c(vny)]
+      next_week_values <- remove_outliers(next_week_values)
       # next_week_values[!is.finite(next_week_values) | is.na(next_week_values)] <- 0
       verif_next_week <- c(verif_next_week, list(next_week_values))
       
@@ -218,7 +224,10 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
   
   verif_watervalues2 <<- watervalues
   
-  value_nodes_dt <- watervalues[, list(value_node = funGridMean(value_node, na.rm = TRUE)), by = list(weeks, statesid)]
+  
+  # watervalues <- watervalues[, value_node := remove_outliers(value_node)]
+  value_nodes_dt <- watervalues[, list(value_node = funGridMean(remove_outliers(value_node), na.rm = TRUE)),
+                                by = list(weeks, statesid)]
   
   # value_nodes_dc <- dcast(data = value_nodes_dt, formula = statesid ~ weeks, value.var = "value_node")
   
@@ -345,15 +354,15 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     if (!num_equal(next_node_up, next_node_down)) {
       remainder <- (states - l + value_inflow) %% (states_above[length(states_above)] - states_below[1]) 
     } else {
-      remainder <- 1
+      remainder <- 0
     }
     
     vunw <- value_node_next_week[next_node_up]
-    # if (!is.finite(vunw))
-    #   vunw <- 0
+    if (!is.finite(vunw))
+      vunw <- 0
     vdnw <- value_node_next_week[next_node_down]
-    # if (!is.finite(vdnw))
-    #   vdnw <- 0
+    if (!is.finite(vdnw))
+      vdnw <- 0
     interpolation <- remainder * vunw + (1 - remainder) * vdnw
 
     # verif <<- list(

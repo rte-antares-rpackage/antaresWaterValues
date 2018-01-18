@@ -17,6 +17,7 @@ Imports: antaresRead,
     data.table,
     zoo,
     ggplot2,
-    viridis
+    viridis,
+    grDevices
 Remotes: rte-antares-rpackage/antaresEditObject
 Suggests: stats

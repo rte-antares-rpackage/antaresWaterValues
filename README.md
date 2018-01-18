@@ -22,7 +22,7 @@ library( "antaresWaterValues" )
 You can run a water values simulation with the command :
 
 ```r
-res <- waterValues(area = "fr")
+res <- waterValues(area = "fr", nb_disc_stock = 10, nb_cycle = 2, nb_scenario = 30)
 
 # Plot
 waterValuesViz(res)
@@ -30,8 +30,28 @@ waterValuesViz(res)
 
 A dialog box will be launched to choose the directory containing the Antares simulation, a second one to choose the path of the Antares solver in order to launch the simulations.
 
+Function's argument:
+
+* **area** : area for which perform the simulation.
+* **nb_disc_stock** : number of values to discretize the stock level between 0 and the the maximum value for the given area.
+* **nb_cycle** : number of cycle for performing the mean grid layer algorithm.
+* **nb_scenario** : number of Monte-Carlo years to use for each simulation.
+
+
 By default, **10 simulations** are run in Antares by discretizing the stock level for the area concerned from 0 to the maximum value. The algorithm to calculate the average of the grids is **run 3 times**.
 
+
+### Setup simulation and solver path manually
+
+You can setup path to the simulation and to the Antares solver before running water values simulation like this :
+
+```r
+# simulation path
+antaresRead::setSimulationPath(path = "inputs/my_study/", simulation = "input")
+
+# solver path
+setSolverPath(path = "D:/Program Files/RTE/Antares/6.0.0/bin/antares-6.0-solver.exe")
+```
 
 
 # Advanced use

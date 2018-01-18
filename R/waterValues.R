@@ -1,11 +1,11 @@
 #' Run Water Values Simulation and Calculate Value Node
 #'
 #' @param area The area concerned by the simulation.
-#' @param nb_simulation Number of simulation to launch, 
+#' @param nb_disc_stock Number of simulation to launch, 
 #' a vector of energy constraint will be created from 0 to 
 #' the hydro storage maximum and of length this parameter.
-#' @param nb_runs Number of times to run the algorithm.
-#' @param nb_year Number of Monte-Carlo years to use in simulation, default is to use Antares' setting.
+#' @param nb_cycle Number of times to run the algorithm.
+#' @param nb_scenario Number of Monte-Carlo years to use in simulation, default is to use Antares' setting.
 #' @param overwrite If area or cluster already exists, should they be overwritten?
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -23,7 +23,7 @@
 #' waterValues(area = "fr")
 #' 
 #' }
-waterValues <- function(area, nb_simulation = 10, nb_runs = 3, nb_year = NULL, overwrite = TRUE, opts = antaresRead::simOptions()) {
+waterValues <- function(area, nb_disc_stock = 10, nb_cycle = 3, nb_scenario = NULL, overwrite = TRUE, opts = antaresRead::simOptions()) {
   
   opts <- try(opts, silent = TRUE)
   if ("try-error" %in% class(opts)) {
@@ -38,13 +38,13 @@ waterValues <- function(area, nb_simulation = 10, nb_runs = 3, nb_year = NULL, o
     path_solver <- getOption("antares.solver")
   }
   
-  if (!is.null(nb_year)) {
-    updateGeneralSettings(nbyears = nb_year)
+  if (!is.null(nb_scenario)) {
+    updateGeneralSettings(nbyears = nb_scenario)
   }
   
   simulation_res <- runWaterValuesSimulation(
     area = area,
-    nb_simulation = nb_simulation,
+    nb_simulation = nb_disc_stock,
     path_solver = path_solver, 
     overwrite = overwrite, 
     show_output_on_console = FALSE,
@@ -61,7 +61,7 @@ waterValues <- function(area, nb_simulation = 10, nb_runs = 3, nb_year = NULL, o
     area = area,
     simulation_names = simulation_names, 
     simulation_values = simulation_values,
-    nb_runs = nb_runs, 
+    nb_runs = nb_cycle, 
     na_rm = TRUE,
     opts = opts
   )

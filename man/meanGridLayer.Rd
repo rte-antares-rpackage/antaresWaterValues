@@ -29,8 +29,8 @@ meanGridLayer(area, simulation_names, simulation_values = NULL,
 
 \item{states_steps}{Steps to discretize steps levels between the reservoir capacity and zero.}
 
-\item{reservoir_capacity}{Reservoir capacity for the given area, if \code{NULL} (the default),
-value in Antares is used.}
+\item{reservoir_capacity}{Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
+value in Antares is used if available else a prompt ask the user the value to be used.}
 
 \item{na_rm}{Remove NAs}
 

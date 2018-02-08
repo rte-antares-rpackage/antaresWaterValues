@@ -9,9 +9,9 @@
 # @param constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
 #' @param thermal_cluster Name of the thermal cluster to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
-#' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresXpansion]{run_simulation}}.
-#' @param wait Argument passed to \code{\link[antaresXpansion]{run_simulation}}.
-#' @param show_output_on_console Argument passed to \code{\link[antaresXpansion]{run_simulation}}.
+#' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
+#' @param wait Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
+#' @param show_output_on_console Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param overwrite If area or cluster already exists, should they be overwritten?
 #' @param opts
 #'   List of simulation parameters returned by the function

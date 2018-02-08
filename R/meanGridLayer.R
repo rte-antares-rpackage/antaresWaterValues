@@ -9,8 +9,8 @@
 #' @param week_53 Water values for week 53, by default 0.
 #' @param method Perform mean grid algorithm or grid mean algorithm ?
 #' @param states_steps Steps to discretize steps levels between the reservoir capacity and zero.
-#' @param reservoir_capacity Reservoir capacity for the given area, if \code{NULL} (the default),
-#' value in Antares is used.
+#' @param reservoir_capacity Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
+#'  value in Antares is used if available else a prompt ask the user the value to be used.
 #' @param na_rm Remove NAs
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -59,12 +59,14 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
   if (is.null(reservoir_capacity)) {
     niveau_max <- getReservoirCapacity(area = "fr")/1e6
     if (length(niveau_max) == 0) {
-      ask_niveau_max <- "Failed to retrieve reservoir capacity from Antares, please specify value (e.g. 10000 for France):\n"
+      ask_niveau_max <- "Failed to retrieve reservoir capacity from Antares, please specify value (in GWh, e.g. 10000 for France):\n"
       niveau_max <- readline(prompt = ask_niveau_max)
-      niveau_max <- as.numeric(niveau_max)
+      niveau_max <- as.numeric(niveau_max)/1e3
     }
     if (length(niveau_max) == 0) 
       stop("Failed to retrieve reservoir capacity, please specify it explicitly with 'reservoir_capacity'.")
+  } else {
+    niveau_max <- reservoir_capacity/1e3
   }
   # niveau_max <- max(states)
   # rev_week <- rev(seq_len(n_week))
@@ -218,11 +220,9 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
     close(pb)
   }
   
-  verif_next_week <<- verif_next_week
-  # options("antaresWaterValues.valuesbyweek" = verif_next_week) # to remove
-  # options("antaresWaterValues.after.meanGrid" = watervalues) # to remove
-  
-  verif_watervalues2 <<- watervalues
+  # verif_next_week <<- verif_next_week
+
+  # verif_watervalues2 <<- watervalues
   
   
   # watervalues <- watervalues[, value_node := remove_outliers(value_node)]

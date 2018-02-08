@@ -27,11 +27,11 @@ will be created from 0 to the hydro storage maximum and of length this parameter
 
 \item{thermal_cluster}{Name of the thermal cluster to create, argument passed to \code{\link{setupWaterValuesSimulation}}.}
 
-\item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresXpansion]{run_simulation}}.}
+\item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
-\item{wait}{Argument passed to \code{\link[antaresXpansion]{run_simulation}}.}
+\item{wait}{Argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
-\item{show_output_on_console}{Argument passed to \code{\link[antaresXpansion]{run_simulation}}.}
+\item{show_output_on_console}{Argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
 \item{overwrite}{If area or cluster already exists, should they be overwritten?}
 

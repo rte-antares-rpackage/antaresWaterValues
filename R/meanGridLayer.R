@@ -210,7 +210,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
         ]
       
       next_week_values <- watervalues[weeks == i, list(vny = funGridMean(value_node, na.rm = TRUE)), by = statesid][, c(vny)]
-      next_week_values <- remove_outliers(next_week_values)
+      # next_week_values <- remove_outliers(next_week_values)
       # next_week_values[!is.finite(next_week_values) | is.na(next_week_values)] <- 0
       verif_next_week <- c(verif_next_week, list(next_week_values))
       
@@ -226,7 +226,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
   
   
   # watervalues <- watervalues[, value_node := remove_outliers(value_node)]
-  value_nodes_dt <- watervalues[, list(value_node = funGridMean(remove_outliers(value_node), na.rm = TRUE)),
+  value_nodes_dt <- watervalues[, list(value_node = funGridMean(value_node, na.rm = TRUE)),
                                 by = list(weeks, statesid)]
   
   # value_nodes_dc <- dcast(data = value_nodes_dt, formula = statesid ~ weeks, value.var = "value_node")
@@ -358,11 +358,11 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
     }
     
     vunw <- value_node_next_week[next_node_up]
-    if (!is.finite(vunw))
-      vunw <- 0
+    # if (!is.finite(vunw))
+    #   vunw <- 0
     vdnw <- value_node_next_week[next_node_down]
-    if (!is.finite(vdnw))
-      vdnw <- 0
+    # if (!is.finite(vdnw))
+    #   vdnw <- 0
     interpolation <- remainder * vunw + (1 - remainder) * vdnw
 
     # verif <<- list(

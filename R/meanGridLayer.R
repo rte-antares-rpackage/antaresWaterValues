@@ -3,7 +3,7 @@
 #' @param area An 'antares' area.
 #' @param simulation_names Names of simulations to retrieve.
 #' @param simulation_values Values for the simulation.
-#' @param nb_runs Number of times to run the algorithm.
+#' @param nb_cycle Number of times to run the algorithm.
 #' @param district_name Name of the district used to store output.
 #' @param max_mcyears Number of MC years to consider, by default all of them.
 #' @param week_53 Water values for week 53, by default 0.
@@ -28,7 +28,7 @@
 #' # TODO
 #' 
 #' }
-meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_runs = 2L,
+meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_cycle = 2L,
                           district_name = "water values district", max_mcyears = NULL, 
                           week_53 = 0, method = c("mean-grid", "grid-mean"), 
                           states_steps = 0.05,
@@ -189,13 +189,13 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_r
   }
   
   
-  for (n_run in seq_len(nb_runs)) {
+  for (n_cycl in seq_len(nb_cycle)) {
     
-    cat("Calculating value nodes, run number:", n_run, "\n")
+    cat("Calculating value nodes, cycle number:", n_cycl, "\n")
     
     pb <- txtProgressBar(min = 0, max = 51, style = 3)
     
-    for (i in rev(seq_len(52))) { # rep(52:1, times = n_runs)
+    for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
       # print(next_week_values)
       watervalues <- watervalues[weeks == i, value_node := NA_real_]
       watervalues <- watervalues[

@@ -1,8 +1,8 @@
 #' Run a simulation for calculating water values for a specific area
 #'
 #' @param area The area concerned by the simulation.
-#' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_simulation}.
-#' @param nb_simulation Number of simulation to launch, a vector of energy constraint
+#' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.
+#' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint
 #'  will be created from 0 to the hydro storage maximum and of length this parameter.
 #' @param nb_mcyears Number of Monte Carlo years to simulate.
 #' @param binding_constraint Name of the binding constraint. 
@@ -29,7 +29,7 @@
 # @examples
 runWaterValuesSimulation <- function(area,
                                      simulation_name = "weekly_water_amount_%s",
-                                     nb_simulation = 10,
+                                     nb_disc_stock = 10,
                                      nb_mcyears = NULL,
                                      binding_constraint = "WeeklyWaterAmount", 
                                      # constraint_values,
@@ -74,7 +74,7 @@ runWaterValuesSimulation <- function(area,
   # max_hydro <- antaresRead::readClusterDesc()[area==watervalue_fr, c(nominalcapacity)]
   max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   max_hydro <- max_hydro[, max(hstorPMaxHigh)]*168/1e6
-  constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_simulation)
+  constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_disc_stock)
   constraint_values <- round(constraint_values, 3)
 
   if (match(area, sort(c(area, fictive_area))) == 1) {

@@ -5,7 +5,7 @@
 \title{Run a simulation for calculating water values for a specific area}
 \usage{
 runWaterValuesSimulation(area, simulation_name = "weekly_water_amount_\%s",
-  nb_simulation = 10, nb_mcyears = NULL,
+  nb_disc_stock = 10, nb_mcyears = NULL,
   binding_constraint = "WeeklyWaterAmount", fictive_area = NULL,
   thermal_cluster = NULL, path_solver, wait = TRUE,
   show_output_on_console = FALSE, overwrite = FALSE,
@@ -14,9 +14,9 @@ runWaterValuesSimulation(area, simulation_name = "weekly_water_amount_\%s",
 \arguments{
 \item{area}{The area concerned by the simulation.}
 
-\item{simulation_name}{The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_simulation}.}
+\item{simulation_name}{The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.}
 
-\item{nb_simulation}{Number of simulation to launch, a vector of energy constraint
+\item{nb_disc_stock}{Number of simulation to launch, a vector of energy constraint
 will be created from 0 to the hydro storage maximum and of length this parameter.}
 
 \item{nb_mcyears}{Number of Monte Carlo years to simulate.}

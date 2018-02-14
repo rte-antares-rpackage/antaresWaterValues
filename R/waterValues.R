@@ -44,7 +44,7 @@ waterValues <- function(area, nb_disc_stock = 10, nb_cycle = 3, nb_scenario = NU
   
   simulation_res <- runWaterValuesSimulation(
     area = area,
-    nb_simulation = nb_disc_stock,
+    nb_disc_stock = nb_disc_stock,
     path_solver = path_solver, 
     overwrite = overwrite, 
     show_output_on_console = FALSE,
@@ -61,7 +61,7 @@ waterValues <- function(area, nb_disc_stock = 10, nb_cycle = 3, nb_scenario = NU
     area = area,
     simulation_names = simulation_names, 
     simulation_values = simulation_values,
-    nb_runs = nb_cycle, 
+    nb_cycle = nb_cycle, 
     na_rm = TRUE,
     opts = opts
   )

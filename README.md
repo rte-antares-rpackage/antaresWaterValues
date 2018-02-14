@@ -73,7 +73,7 @@ updateGeneralSettings(nbyears = 20)
 
 # Run several simulation with different constraint values
 
-# here 15 simulations with binding constraints values from 0 to 1.344 (max hydro storage on a week)
+# here 10 simulations with binding constraints values from 0 to 1.344 (max hydro storage on a week)
 
 # This function will run Antares with parameters specified for calculate water values
 # (create a fictive area, a link between the area studied and the fictive area,
@@ -82,7 +82,7 @@ updateGeneralSettings(nbyears = 20)
 
 simulation_res <- runWaterValuesSimulation(
   area = "fr",
-  nb_simulation = 10,
+  nb_disc_stock = 10,
   path_solver = "C:/antares/bin/antares-6.0-solver.exe", 
   overwrite = TRUE
 )
@@ -113,7 +113,7 @@ value_nodes_2017 <- meanGridLayer(
   area = "fr",
   simulation_names = simulation_names, 
   simulation_values = simulation_values,
-  nb_runs = 2
+  nb_cycle = 2
 )
 ```
 

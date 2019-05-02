@@ -4,8 +4,8 @@
 \alias{setupWaterValuesSimulation}
 \title{Setup a simulation before running it for calculating Water Values}
 \usage{
-setupWaterValuesSimulation(area, fictive_area = paste0("watervalue_", area),
-  thermal_cluster = "WaterValueCluster", overwrite = FALSE,
+setupWaterValuesSimulation(area, fictive_area = paste0("watervalue_",
+  area), thermal_cluster = "WaterValueCluster", overwrite = FALSE,
   opts = antaresRead::simOptions())
 }
 \arguments{

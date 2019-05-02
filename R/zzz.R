@@ -19,5 +19,5 @@ utils::globalVariables(
     "weeks", "statesid", "tsId", "level_low", "level_high", "meanGridLayer",
     "states_next", "years", "value_node_year", "value_node", "time",
     "vny", "value_node_dif", "states_dif", "vu", "vu_band", "states", "band",
-    "band_lin", "band_spl")
+    "band_lin", "band_spl", "generatingMaxPower")
 )

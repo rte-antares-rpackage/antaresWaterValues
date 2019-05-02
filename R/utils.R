@@ -16,3 +16,8 @@ remove_outliers <- function(x) {
   x[x %in% boxplot.stats(x)$out] <- NA
   x
 }
+
+hasName <- function(x, name) {
+  match(name, names(x), nomatch = 0L) > 0L
+}
+  

@@ -4,7 +4,8 @@
 \alias{restoreHydroStorage}
 \title{Restore the hydro storage time series}
 \usage{
-restoreHydroStorage(area, path = NULL, opts = antaresRead::simOptions())
+restoreHydroStorage(area, path = NULL,
+  opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{A valid Antares area.}

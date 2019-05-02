@@ -4,8 +4,8 @@
 \alias{readReservoirLevels}
 \title{Read Reservoir Levels}
 \usage{
-readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = TRUE,
-  opts = antaresRead::simOptions())
+readReservoirLevels(area, timeStep = "weekly",
+  byReservoirCapacity = TRUE, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}

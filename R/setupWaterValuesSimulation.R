@@ -41,35 +41,51 @@ setupWaterValuesSimulation <- function(area,
   )
   
   # Create thermal cluster
-  prepro_modulation <- matrix(data = c(rep(1, times = 365 * 24 * 2),
-                                       hydro_storage_max[, c(hstorPMaxHigh)]/hydro_storage_max[, max(hstorPMaxHigh)],
-                                       rep(0, times = 365 * 24 * 1)), ncol = 4)
+  if (hasName(hydro_storage_max, "hstorPMaxHigh")) {
+    prepro_modulation <- matrix(
+      data = c(rep(1, times = 365 * 24 * 2),
+               hydro_storage_max[, c(hstorPMaxHigh)]/hydro_storage_max[, max(hstorPMaxHigh)],
+               rep(0, times = 365 * 24 * 1)), 
+      ncol = 4
+    )
+    time_series <- hydro_storage_max[, list(hstorPMaxHigh)]
+    nominalcapacity <- hydro_storage_max[, max(hstorPMaxHigh)]
+  } else {
+    prepro_modulation <- matrix(
+      data = c(rep(1, times = 365 * 24 * 2),
+               hydro_storage_max[, c(generatingMaxPower)]/hydro_storage_max[, max(generatingMaxPower)],
+               rep(0, times = 365 * 24 * 1)), 
+      ncol = 4
+    )
+    time_series <- hydro_storage_max[, list(generatingMaxPower)]
+    nominalcapacity <- hydro_storage_max[, max(generatingMaxPower)]
+  }
+  
   suppressWarnings({
     opts <- antaresEditObject::createCluster(
-      area = fictive_area, cluster_name = thermal_cluster,
+      area = fictive_area, 
+      cluster_name = thermal_cluster,
       group = "other", unitcount = "1",
-      time_series = hydro_storage_max[, list(hstorPMaxHigh)],
-      nominalcapacity = hydro_storage_max[, max(hstorPMaxHigh)], 
+      time_series = time_series,
+      nominalcapacity = nominalcapacity, 
       prepro_modulation = prepro_modulation,
-      `min-down-time` = "1", `marginal-cost` = 0.01,
-      `market-bid-cost` = 0.01, overwrite = overwrite, opts = opts
+      `min-down-time` = "1",
+      `marginal-cost` = 0.01,
+      `market-bid-cost` = 0.01, 
+      overwrite = overwrite, 
+      opts = opts
     )
   })
   
   # Create link
-  # dataLink <- matrix(
-  #   data = c(rep(0, 8760), rep(hydro_storage_max[, max(hstorPMaxHigh)], 8760), rep(0, 8760*1), rep(0, 8760*2)), ###
-  #   ncol = 5
-  # )
-  dataLink <- matrix(
-    data = c(rep(1, 8760), rep(1, 8760), rep(0, 8760*1), rep(0, 8760*2)), ###
-    ncol = 5
-  )
   suppressWarnings({
     opts <- antaresEditObject::createLink(
-      from = area, to = fictive_area, 
+      from = area,
+      to = fictive_area, 
       propertiesLink = propertiesLinkOptions(transmission_capacities = "infinite"), #
-      dataLink = dataLink, overwrite = overwrite, opts = opts
+      dataLink = NULL,
+      overwrite = overwrite, 
+      opts = opts
     )
   })
   

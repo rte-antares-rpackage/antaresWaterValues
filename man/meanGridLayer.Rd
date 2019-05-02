@@ -6,9 +6,9 @@
 \usage{
 meanGridLayer(area, simulation_names, simulation_values = NULL,
   nb_cycle = 2L, district_name = "water values district",
-  max_mcyears = NULL, week_53 = 0, method = c("mean-grid", "grid-mean"),
-  states_steps = 0.05, reservoir_capacity = NULL, na_rm = FALSE,
-  opts = antaresRead::simOptions())
+  max_mcyears = NULL, week_53 = 0, method = c("mean-grid",
+  "grid-mean"), states_steps = 0.05, reservoir_capacity = NULL,
+  na_rm = FALSE, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}

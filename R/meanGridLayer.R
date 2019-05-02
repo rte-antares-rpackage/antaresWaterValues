@@ -45,7 +45,11 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   
   # max hydro (E_max, fr = 1.344)
   monthly_hydroStorage <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
-  max_hydro <- monthly_hydroStorage[, max(hstorPMaxHigh)]*168/1e6
+  if (hasName(monthly_hydroStorage, "hstorPMaxHigh")) {
+    max_hydro <- monthly_hydroStorage[, max(hstorPMaxHigh)] * 168 / 1e6
+  } else {
+    max_hydro <- monthly_hydroStorage[, max(generatingMaxPower)] * 168 / 1e6
+  }
   if (is.null(simulation_values)) {
     simulation_values <- seq(from = 0, to = max_hydro, length.out = length(simulation_names))
     message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))

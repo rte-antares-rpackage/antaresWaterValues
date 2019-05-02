@@ -73,7 +73,11 @@ runWaterValuesSimulation <- function(area,
   # Get hydro max power
   # max_hydro <- antaresRead::readClusterDesc()[area==watervalue_fr, c(nominalcapacity)]
   max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
-  max_hydro <- max_hydro[, max(hstorPMaxHigh)]*168/1e6
+  if (hasName(max_hydro, "hstorPMaxHigh")) {
+    max_hydro <- max_hydro[, max(hstorPMaxHigh)] * 168 / 1e6
+  } else {
+    max_hydro <- max_hydro[, max(generatingMaxPower)] * 168 / 1e6
+  }
   constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_disc_stock)
   constraint_values <- round(constraint_values, 3)
 
@@ -83,8 +87,13 @@ runWaterValuesSimulation <- function(area,
     coeff_nn <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
   }
   antaresEditObject::createBindingConstraint(
-    name = "nonnegative", enabled = TRUE, operator = "greater", 
-    coefficients = coeff_nn, opts = opts, overwrite = TRUE, timeStep = "hourly"
+    name = "nonnegative",
+    enabled = TRUE, 
+    operator = "greater", 
+    coefficients = coeff_nn, 
+    opts = opts, 
+    overwrite = TRUE, 
+    timeStep = "hourly"
   )
   
   simulation_names <- vector(mode = "character", length = length(constraint_values))

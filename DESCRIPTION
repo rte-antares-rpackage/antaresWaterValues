@@ -1,11 +1,11 @@
 Package: antaresWaterValues
 Title: Calculate Water Values
-Version: 0.0.1.9000
+Version: 0.0.1.9100
 Authors@R: c(
-    person("Victor", "Perrier", email = "victor.perrier@rte-france.com", role = c("aut", "cre")),
+    person("Frederic", "Breant", email = "frederic.breant@rte-france.com", role = c("aut", "cre")),
+    person("Victor", "Perrier", email = "victor.perrier@dreamRs.fr", role = c("aut")),
     person("RTE", role = "cph"))
-Maintainer: BREANT Frederic <frederic.breant@rte-france.com>
-Description: Setup simulation for running simulation to calculate water values..
+Description: Setup simulation for running simulation to calculate water values.
 Depends: R (>= 3.1.0)
 License: GPL (>= 2) | file LICENSE
 Encoding: UTF-8
@@ -19,5 +19,6 @@ Imports: antaresRead (>= 2.2.3.900),
     ggplot2,
     viridis,
     grDevices
-Remotes: rte-antares-rpackage/antaresEditObject
+Remotes: rte-antares-rpackage/antaresEditObject,
+    rte-antares-rpackage/antaresRead
 Suggests: stats

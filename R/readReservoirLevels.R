@@ -53,7 +53,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
     reservoir <- data.table::fread(input = path, col.names = vars)
   }
   full_year <- data.table(
-    date = seq.Date(from = as.Date(opts$start), by = "day", length.out = nrow(reservoir))
+    date = seq.Date(from = as.Date(opts$start), by = "day", length.out = 365)
   )
   reservoir <- reservoir[, date := full_year[format(date, "%d") == "01"][order(format(date, "%m")), c(date)]]
   if (timeStep == "monthly") {
@@ -97,7 +97,7 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
   full_year <- data.table(
     date = seq.Date(from = as.Date(opts$start), by = "day", length.out = nrow(reservoir))
   )
-  reservoir <- reservoir[, date := full_year[order(format(date, "%m")), c(date)]]
+  reservoir <- reservoir[, date := full_year$date]
   if (timeStep == "daily") {
     setnames(x = reservoir, old = "date", new = "timeId")
   }

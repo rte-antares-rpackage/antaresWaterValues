@@ -179,13 +179,6 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   
   verif_next_week <- list()
   
-  mean_finite <- function(x, na.rm = FALSE) {
-    if (all(!is.finite(x))) {
-      -Inf
-    } else {
-      mean(x[is.finite(x)], na.rm = na.rm)
-    }
-  }
   if (method == "mean-grid") {
     funGridMean <- mean
   } else {
@@ -383,13 +376,6 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   if (method == "mean-grid") {
     max(temp, na.rm = TRUE)
   } else {
-    mean_finite <- function(x, na.rm = FALSE) {
-      if (all(!is.finite(x))) {
-        -Inf
-      } else {
-        mean(x[is.finite(x)], na.rm = na.rm)
-      }
-    }
     mean_finite(temp, na.rm = TRUE)
   }
 }

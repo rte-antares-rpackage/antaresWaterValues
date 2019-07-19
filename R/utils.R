@@ -20,4 +20,11 @@ remove_outliers <- function(x) {
 hasName <- function(x, name) {
   match(name, names(x), nomatch = 0L) > 0L
 }
-  
+
+mean_finite <- function(x, na.rm = FALSE) {
+  if (all(!is.finite(x))) {
+    -Inf
+  } else {
+    mean(x[is.finite(x)], na.rm = na.rm)
+  }
+}

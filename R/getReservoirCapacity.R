@@ -6,7 +6,7 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}  
 #'
-#' @return the reservoir capacity (in Wh), or \code{NULL} if none.
+#' @return the reservoir capacity (in TWh), or \code{NULL} if none.
 #' @export
 #' 
 #' @importFrom assertthat assert_that

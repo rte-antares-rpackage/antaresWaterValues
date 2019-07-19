@@ -105,9 +105,9 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   })
   inflow <- inflow[order(mcYear, timeId)]
   inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
-  inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, digits = 2)]
-  inflow <- inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
-  inflow <- inflow[, timeId := as.numeric(timeId)]
+  inflow[, hydroStorage := round(hydroStorage / 1e6, digits = 2)]
+  inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
+  inflow[, timeId := as.numeric(timeId)]
   inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)]
   options("antares" = opts)
   
@@ -140,13 +140,13 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   # add states
   statesdt <- as.data.table(states)
   statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
-  statesdt <- statesdt[, weeks := as.numeric(gsub("V", "", weeks))]
+  statesdt[, weeks := as.numeric(gsub("V", "", weeks))]
   statesdt <- statesdt[, statesid := seq_along(states), by = weeks]
-  statesdt <- statesdt[, states := round(states, decimals)]
+  statesdt[, states := round(states, decimals)]
   
   # add states plus 1
   statesplus1 <- copy(statesdt)
-  statesplus1 <- statesplus1[, weeks := weeks - 1]
+  statesplus1[, weeks := weeks - 1]
   statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = weeks]
   statesplus1 <- merge(x = statesdt, y = statesplus1, by = c("weeks"), all.x = TRUE)
   watervalues <- merge(x = watervalues, y = statesplus1, by = "weeks", all.x = TRUE, all.y = FALSE, allow.cartesian = TRUE)
@@ -175,7 +175,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   
   max_hydro <- max(decision_space)
   
-  watervalues <- watervalues[, value_node := NA_real_]
+  watervalues[, value_node := NA_real_]
   
   verif_next_week <- list()
   

@@ -193,8 +193,6 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
     pb <- txtProgressBar(min = 0, max = 51, style = 3)
     
     for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
-      # print(next_week_values)
-      watervalues <- watervalues[weeks == i, value_node := NA_real_]
       watervalues <- watervalues[
         weeks == i,
         value_node := calculate_value_node(

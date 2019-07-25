@@ -129,10 +129,10 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   # Reservoir (calque)
   reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
   vars <- c("level_low", "level_avg", "level_high")
-  reservoir <- reservoir[, 
-                         (vars) := lapply(.SD, function(x) {round(x * max(states), decimals)}),
-                         .SDcols = vars
-                         ]
+  reservoir[, 
+            (vars) := lapply(.SD, function(x) {round(x * max(states), decimals)}),
+            .SDcols = vars
+            ]
   
   # preparation donnees
   watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = max_mcyears))
@@ -141,7 +141,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   statesdt <- as.data.table(states)
   statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
   statesdt[, weeks := as.numeric(gsub("V", "", weeks))]
-  statesdt <- statesdt[, statesid := seq_along(states), by = weeks]
+  statesdt[, statesid := seq_along(states), by = weeks]
   statesdt[, states := round(states, decimals)]
   
   # add states plus 1
@@ -193,7 +193,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
     pb <- txtProgressBar(min = 0, max = 51, style = 3)
     
     for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
-      watervalues <- watervalues[
+      watervalues[
         weeks == i,
         value_node := calculate_value_node(
           states = states, states_next = states_next, value_reward = reward,
@@ -231,9 +231,9 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   
   # Calculate Usage values
   value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]
-  value_nodes_dt <- value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
-  value_nodes_dt <- value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
-  value_nodes_dt <- value_nodes_dt[, vu := abs(value_node_dif / states_dif / 1e6)]
+  value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
+  value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
+  value_nodes_dt[, vu := abs(value_node_dif / states_dif / 1e6)]
   
   return(value_nodes_dt)
 }
@@ -347,7 +347,7 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   temp <- vector(mode = "numeric", length = length(decisions))
   count_x <- 0
   
-  for(l in decisions) { # l <- 0
+  for (l in decisions) { # l <- 0
     
     count_x <- count_x + 1
     

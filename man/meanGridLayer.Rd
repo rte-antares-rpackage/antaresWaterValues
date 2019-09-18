@@ -8,7 +8,8 @@ meanGridLayer(area, simulation_names, simulation_values = NULL,
   nb_cycle = 2L, district_name = "water values district",
   max_mcyears = NULL, week_53 = 0, method = c("mean-grid",
   "grid-mean"), states_steps = 0.05, reservoir_capacity = NULL,
-  na_rm = FALSE, opts = antaresRead::simOptions())
+  na_rm = FALSE, correct_outliers = FALSE,
+  opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}
@@ -34,6 +35,9 @@ value in Antares is used if available else a prompt ask the user the value to be
 
 \item{na_rm}{Remove NAs}
 
+\item{correct_outliers}{If TRUE, outliers in Bellman values are replaced by spline
+interpolations. Defaults to FALSE.}
+
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 }
@@ -46,7 +50,26 @@ Calculate grid mean layer matrix
 \examples{
 \dontrun{
 
-# TODO
+opts <- antaresRead::setSimulationPath(path = "path/to/study", simulation = "input")
+
+simulation_names <- getSimulationNames(pattern = "water_amount")
+simulation_names <- gsub(pattern = ".*eco-", replacement = "", x = simulation_names)
+
+simulation_values <- gsub("weekly_water_amount_", "", simulation_names)
+simulation_values <- gsub(",", ".", simulation_values)
+simulation_values <- as.numeric(simulation_values)
+
+meanGridLayer(
+  area = "fr",
+  simulation_names = simulation_names,
+  simulation_values = simulation_values,
+  nb_cycle = 1,
+  na_rm = TRUE,
+  correct_outliers = TRUE
+)
+
+waterValuesViz(value_nodes_2017bis_1cycle)
+waterValuesViz(value_nodes_2017bis_1cycle, add_band = TRUE, bandwidth = 100, failure_cost = 100)
 
 }
 }

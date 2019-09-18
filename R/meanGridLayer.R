@@ -12,6 +12,8 @@
 #' @param reservoir_capacity Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
 #'  value in Antares is used if available else a prompt ask the user the value to be used.
 #' @param na_rm Remove NAs
+#' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
+#'   interpolations. Defaults to FALSE.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}  
@@ -25,7 +27,26 @@
 #' @examples
 #' \dontrun{
 #' 
-#' # TODO
+#' opts <- antaresRead::setSimulationPath(path = "path/to/study", simulation = "input")
+#' 
+#' simulation_names <- getSimulationNames(pattern = "water_amount")
+#' simulation_names <- gsub(pattern = ".*eco-", replacement = "", x = simulation_names)
+#' 
+#' simulation_values <- gsub("weekly_water_amount_", "", simulation_names)
+#' simulation_values <- gsub(",", ".", simulation_values)
+#' simulation_values <- as.numeric(simulation_values)
+#' 
+#' meanGridLayer(
+#'   area = "fr",
+#'   simulation_names = simulation_names,
+#'   simulation_values = simulation_values,
+#'   nb_cycle = 1,
+#'   na_rm = TRUE,
+#'   correct_outliers = TRUE
+#' )
+#' 
+#' waterValuesViz(value_nodes_2017bis_1cycle)
+#' waterValuesViz(value_nodes_2017bis_1cycle, add_band = TRUE, bandwidth = 100, failure_cost = 100)
 #' 
 #' }
 meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_cycle = 2L,
@@ -33,6 +54,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
                           week_53 = 0, method = c("mean-grid", "grid-mean"), 
                           states_steps = 0.05,
                           reservoir_capacity = NULL, na_rm = FALSE, 
+                          correct_outliers = FALSE,
                           opts = antaresRead::simOptions()) {
   
   method <- match.arg(method)
@@ -105,9 +127,9 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   })
   inflow <- inflow[order(mcYear, timeId)]
   inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
-  inflow <- inflow[, hydroStorage := round(hydroStorage / 1e6, digits = 2)]
-  inflow <- inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
-  inflow <- inflow[, timeId := as.numeric(timeId)]
+  inflow[, hydroStorage := round(hydroStorage / 1e6, digits = 2)]
+  inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
+  inflow[, timeId := as.numeric(timeId)]
   inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)]
   options("antares" = opts)
   
@@ -129,10 +151,10 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   # Reservoir (calque)
   reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
   vars <- c("level_low", "level_avg", "level_high")
-  reservoir <- reservoir[, 
-                         (vars) := lapply(.SD, function(x) {round(x * max(states), decimals)}),
-                         .SDcols = vars
-                         ]
+  reservoir[, 
+            (vars) := lapply(.SD, function(x) {round(x * max(states), decimals)}),
+            .SDcols = vars
+            ]
   
   # preparation donnees
   watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = max_mcyears))
@@ -140,13 +162,13 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   # add states
   statesdt <- as.data.table(states)
   statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
-  statesdt <- statesdt[, weeks := as.numeric(gsub("V", "", weeks))]
-  statesdt <- statesdt[, statesid := seq_along(states), by = weeks]
-  statesdt <- statesdt[, states := round(states, decimals)]
+  statesdt[, weeks := as.numeric(gsub("V", "", weeks))]
+  statesdt[, statesid := seq_along(states), by = weeks]
+  statesdt[, states := round(states, decimals)]
   
   # add states plus 1
   statesplus1 <- copy(statesdt)
-  statesplus1 <- statesplus1[, weeks := weeks - 1]
+  statesplus1[, weeks := weeks - 1]
   statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = weeks]
   statesplus1 <- merge(x = statesdt, y = statesplus1, by = c("weeks"), all.x = TRUE)
   watervalues <- merge(x = watervalues, y = statesplus1, by = "weeks", all.x = TRUE, all.y = FALSE, allow.cartesian = TRUE)
@@ -175,17 +197,10 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   
   max_hydro <- max(decision_space)
   
-  watervalues <- watervalues[, value_node := NA_real_]
+  watervalues[, value_node := NA_real_]
   
   verif_next_week <- list()
   
-  mean_finite <- function(x, na.rm = FALSE) {
-    if (all(!is.finite(x))) {
-      -Inf
-    } else {
-      mean(x[is.finite(x)], na.rm = na.rm)
-    }
-  }
   if (method == "mean-grid") {
     funGridMean <- mean
   } else {
@@ -200,9 +215,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
     pb <- txtProgressBar(min = 0, max = 51, style = 3)
     
     for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
-      # print(next_week_values)
-      watervalues <- watervalues[weeks == i, value_node := NA_real_]
-      watervalues <- watervalues[
+      watervalues[
         weeks == i,
         value_node := calculate_value_node(
           states = states, states_next = states_next, value_reward = reward,
@@ -212,6 +225,9 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
         ),
         by = list(years, statesid)
         ]
+      if (correct_outliers) {
+        watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
+      }
       
       next_week_values <- watervalues[weeks == i, list(vny = funGridMean(value_node, na.rm = TRUE)), by = statesid][, c(vny)]
       # next_week_values <- remove_outliers(next_week_values)
@@ -240,18 +256,32 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   
   # Calculate Usage values
   value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]
-  value_nodes_dt <- value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
-  value_nodes_dt <- value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
-  value_nodes_dt <- value_nodes_dt[, vu := abs(value_node_dif / states_dif / 1e6)]
+  value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
+  value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
+  value_nodes_dt[, vu := abs(value_node_dif / states_dif / 1e6)]
   
   return(value_nodes_dt)
 }
 
 
 
-# TODO : documentation
-
-
+#' Compute Bellman values at step i from step i+1
+#' 
+#' @param states Numeric. All the water values that can be set, listed in
+#'   decreasing order.
+#' @param states_next List of vectors enumerating all reachable states?
+#' @param value_reward A data.table. Rewards for each simulation value and each
+#'   Monte-Carlo year.
+#' @param value_inflow Numeric. Inflow values for each Monte-Carlo year.
+#' @param decision_space Simulation values?
+#' @param level_high Numeric. Highest possible reservoir value.
+#' @param level_low Numeric. Lowest possible reservoir value.
+#' @param value_node_next_week Numeric. Bellman values at step i+1.
+#' @param niveau_max Numeric of length 1. Reservoir capacity.
+#' @param E_max Numeric of length 1. Maximum energy that can be generated by
+#'   hydro storage over one step of time.
+#' @param method Character. Perform mean grid algorithm or grid mean algorithm?
+#' @param na_rm Boolean. Remove NAs
 
 calculate_value_node <- function(states, states_next, value_reward, value_inflow, decision_space, 
                                  level_high, level_low, value_node_next_week, niveau_max = 10, E_max = 1.344, method, na_rm = FALSE) {
@@ -339,7 +369,7 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   temp <- vector(mode = "numeric", length = length(decisions))
   count_x <- 0
   
-  for(l in decisions) { # l <- 0
+  for (l in decisions) { # l <- 0
     
     count_x <- count_x + 1
     
@@ -383,13 +413,6 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   if (method == "mean-grid") {
     max(temp, na.rm = TRUE)
   } else {
-    mean_finite <- function(x, na.rm = FALSE) {
-      if (all(!is.finite(x))) {
-        -Inf
-      } else {
-        mean(x[is.finite(x)], na.rm = na.rm)
-      }
-    }
     mean_finite(temp, na.rm = TRUE)
   }
 }

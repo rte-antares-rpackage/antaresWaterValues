@@ -16,7 +16,7 @@ getReservoirCapacity(area, force = FALSE,
 \code{antaresRead::setSimulationPath}}
 }
 \value{
-the reservoir capacity (in Wh), or \code{NULL} if none.
+the reservoir capacity (in TWh), or \code{NULL} if none.
 }
 \description{
 Get the reservoir capacity for an area

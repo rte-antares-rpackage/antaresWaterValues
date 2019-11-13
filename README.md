@@ -1,23 +1,22 @@
-[![Travis-CI Build Status](https://travis-ci.org/rte-antares-rpackage/antaresWaterValues.svg?branch=master)](https://travis-ci.org/rte-antares-rpackage/antaresWaterValues)
-
 # antaresWaterValues
 
+> Calculate Water Values to use in Antares V7.
 
-> Calculate Water Values.
+[![Travis-CI Build Status](https://travis-ci.org/rte-antares-rpackage/antaresWaterValues.svg?branch=master)](https://travis-ci.org/rte-antares-rpackage/antaresWaterValues)
 
 
-Install the package (you'll also need `antaresEditObject`):
+## Installation
 
+You can install the package from [GitHub](https://github.com/) with:
 
 ```r
-# Install package from Github
-# source("https://install-github.me/rte-antares-rpackage/antaresWaterValues")
-
-library( "antaresWaterValues" )
+# install.packages("devtools")
+devtools::install_github("rte-antares-rpackage/antaresWaterValues")
 ```
 
 
-# Simple use
+
+## Usage
 
 You can run a water values simulation with the command :
 
@@ -41,6 +40,7 @@ Function's argument:
 By default, **10 simulations** are run in Antares by discretizing the stock level for the area concerned from 0 to the maximum value. The algorithm to calculate the average of the grids is **run 3 times**.
 
 
+
 ### Setup simulation and solver path manually
 
 You can setup path to the simulation and to the Antares solver before running water values simulation like this :
@@ -54,9 +54,9 @@ setSolverPath(path = "D:/Program Files/RTE/Antares/6.0.0/bin/antares-6.0-solver.
 ```
 
 
-# Advanced use
+## Advanced usage
 
-## Running water values simulation
+### Running water values simulation
 
 
 ```r

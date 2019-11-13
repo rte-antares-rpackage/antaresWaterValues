@@ -32,7 +32,7 @@ A dialog box will be launched to choose the directory containing the Antares sim
 Function's argument:
 
 * **area** : area for which perform the simulation.
-* **nb_disc_stock** : number of values to discretize the stock level between 0 and the the maximum value for the given area.
+* **nb_disc_stock** : number of values to discretize the stock level between 0 and the maximum value for the given area.
 * **nb_cycle** : number of cycle for performing the mean grid layer algorithm.
 * **nb_scenario** : number of Monte-Carlo years to use for each simulation.
 

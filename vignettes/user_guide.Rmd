@@ -40,7 +40,7 @@ Next, it's necessary to run a number of simulations in Antares. These simulation
 are launched from R with the `runWaterValuesSimulation()` function and are run by
 the Antares solver.
 
-```{r}
+```{r eval=FALSE}
 simulation_res <- runWaterValuesSimulation(
   area = "fr",
   nb_mcyears = 20,
@@ -66,6 +66,41 @@ simulation_res <- runWaterValuesSimulation(
 
 Water values are generated in R with the `meanGridLayer()` function, using the results
 of the above simulations.
+
+```{r eval=FALSE}
+value_nodes_2017 <- meanGridLayer(
+  area = "fr",
+  simulation_names = simulation_res$simulation_names, 
+  simulation_values = simulation_res$simulation_values,
+  week_53 = 0,
+  nb_cycle = 2
+)
+```
+
+ * `area` is the relevant area.
+ * `simulation_names` are the names of the simulations (see the note below).
+ * `simulation_values` are their values.
+ * `week_53` are the water values for the last week of the year.
+ * `nb_cycle` is the number of times to run the algorithm in a loop from the last
+ week of the year to the first, in order to obtain more realistic start values for 
+ week 53.
+
+Note: If simulations have not been run just before, their names and values can be
+retrieved this way:
+
+```{r eval=FALSE}
+simulation_names <- getSimulationNames(pattern = "decision")
+simulation_names <- gsub(pattern = ".*eco-", replacement = "", x = simulation_names)
+
+simulation_values <- gsub("decision|twh", "", simulation_names)
+simulation_values <- gsub(",", ".", simulation_values)
+simulation_values <- as.numeric(simulation_values)
+```
+
+
+## Plotting results
+
+## Exporting results
 
 
 

@@ -11,140 +11,20 @@ You can install the package from [GitHub](https://github.com/) with:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("rte-antares-rpackage/antaresWaterValues")
+devtools::install_github("rte-antares-rpackage/antaresWaterValues", build_vignettes = TRUE)
 ```
 
+
+## Goal
+
+This package aims at generating water values for Antares. It allows to run specific
+simulations in Antares from within R, and to use the results of these simulations
+to compute Bellman values and water values for each stock level and each week of the
+year. The obtained values can be exported to Antares and used in any study (since
+Antares v7).
 
 
 ## Usage
 
-You can run a water values simulation with the command :
-
-```r
-res <- waterValues(area = "fr", nb_disc_stock = 10, nb_cycle = 2, nb_scenario = 30)
-
-# Plot
-waterValuesViz(res)
-```
-
-A dialog box will be launched to choose the directory containing the Antares simulation, a second one to choose the path of the Antares solver in order to launch the simulations.
-
-Function's argument:
-
-* **area** : area for which perform the simulation.
-* **nb_disc_stock** : number of values to discretize the stock level between 0 and the maximum value for the given area.
-* **nb_cycle** : number of cycle for performing the mean grid layer algorithm.
-* **nb_scenario** : number of Monte-Carlo years to use for each simulation.
-
-
-By default, **10 simulations** are run in Antares by discretizing the stock level for the area concerned from 0 to the maximum value. The algorithm to calculate the average of the grids is **run 3 times**.
-
-
-
-### Setup simulation and solver path manually
-
-You can setup path to the simulation and to the Antares solver before running water values simulation like this :
-
-```r
-# simulation path
-antaresRead::setSimulationPath(path = "inputs/my_study/", simulation = "input")
-
-# solver path
-setSolverPath(path = "D:/Program Files/RTE/Antares/6.0.0/bin/antares-6.0-solver.exe")
-```
-
-
-## Advanced usage
-
-### Running water values simulation
-
-
-```r
-library( antaresRead )
-library( antaresEditObject )
-library( antaresWaterValues )
-
-# Set simulation path to an Antares study in Input mode
-setSimulationPath(path = "path/to/simulation/", simulation = "input")
-
-# For speed, we limit the number of MC years to 20
-updateGeneralSettings(nbyears = 20)
-
-
-# Run several simulation with different constraint values
-
-# here 10 simulations with binding constraints values from 0 to 1.344 (max hydro storage on a week)
-
-# This function will run Antares with parameters specified for calculate water values
-# (create a fictive area, a link between the area studied and the fictive area,
-# a binding constraints, set to 0 the hydro storage times series, ...)
-# and return the names of the simulations run
-
-simulation_res <- runWaterValuesSimulation(
-  area = "fr",
-  nb_disc_stock = 10,
-  path_solver = "C:/antares/bin/antares-6.0-solver.exe", 
-  overwrite = TRUE
-)
-```
-
-When each simulation has run, we can use result to calculate a mean grid layer :
-
-
-```r
-# Parameters
-
-# Values and names for simulations
-simulation_names <- simulation_res$simulation_names
-simulation_values <- simulation_res$simulation_values
-
-# If you don't have run 'runWaterValuesSimulation' before, you can retrieve names and values like this :
-simulation_names <- getSimulationNames(pattern = "decision")
-simulation_names <- gsub(pattern = ".*eco-", replacement = "", x = simulation_names)
-
-simulation_values <- gsub("decision|twh", "", simulation_names)
-simulation_values <- gsub(",", ".", simulation_values)
-simulation_values <- as.numeric(simulation_values)
-
-
-
-# Nodes values calculation
-value_nodes_2017 <- meanGridLayer(
-  area = "fr",
-  simulation_names = simulation_names, 
-  simulation_values = simulation_values,
-  nb_cycle = 2
-)
-```
-
-Result is a `data.table` with 3 columns, the number of the weeks, the levels of states and the nodes values.
-
-You can tranform this table in a matrix states X weeks like this :
-
-```
-library(data.table)
-value_nodes_dc <- dcast(
-  data = value_nodes, 
-  formula = statesid ~ weeks, 
-  value.var = "value_node"
-)
-```
-
-Here's a representation of the result :
-
-```r
-waterValuesViz(value_nodes_2017)
-```
-![mean grid layer](inst/img/mean_grid_layer.png)
-
-
-
-
-Adding bands around water values :
-
-```r
-waterValuesViz(value_nodes_2017, add_band = TRUE, bandwidth = 100, failure_cost = 100)
-```
-
-![mean grid layer bands](inst/img/mean_grid_layer_bands.png)
+Usage of the package is detailed in the vignette: `vignette("antaresWaterValues")`.
 

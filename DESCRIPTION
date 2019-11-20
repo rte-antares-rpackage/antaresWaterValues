@@ -24,5 +24,6 @@ Imports: antaresRead (>= 2.2.3.900),
 Suggests: 
     stats,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 2.1.0)
 VignetteBuilder: knitr

@@ -5,3 +5,6 @@
 test_case/
 ^doc$
 ^Meta$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

@@ -1,0 +1,49 @@
+---
+title: "User guide"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{user_guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+The `antaresWaterValues` package aims at generating and exporting water values for
+Antares v7. In this vignette, we detail how to use it step by step.
+
+
+## Setup
+
+First we have to load `antaresWaterValues` and two helper packages. We also setup
+the paths to the Antares study and to the solver:
+
+```{r eval=FALSE}
+library(antaresWaterValues)
+library(antaresRead)
+library(antaresEditObject)
+
+# simulation path
+antaresRead::setSimulationPath(path = "inputs/my_study/", simulation = "input")
+
+# solver path
+setSolverPath(path = "D:/Program Files/RTE/Antares/7.0.0/bin/antares-7.0-solver.exe")
+```
+
+
+## Simulations
+
+Next, it's necessary to run a number of simulations in Antares. These simulations
+are launched from R with the `runWaterValuesSimulation()` function and are run by
+the Antares solver.
+
+
+
+
+

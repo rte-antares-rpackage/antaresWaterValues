@@ -22,7 +22,7 @@ Antares v7. In this vignette, we detail how to use it step by step.
 ## Setup
 
 First we have to load `antaresWaterValues` and two helper packages. We also setup
-the paths to the Antares study and to the solver:
+the path to the Antares study:
 
 ```{r eval=FALSE}
 library(antaresWaterValues)
@@ -31,9 +31,6 @@ library(antaresEditObject)
 
 # simulation path
 antaresRead::setSimulationPath(path = "inputs/my_study/", simulation = "input")
-
-# solver path
-setSolverPath(path = "D:/Program Files/RTE/Antares/7.0.0/bin/antares-7.0-solver.exe")
 ```
 
 
@@ -43,6 +40,32 @@ Next, it's necessary to run a number of simulations in Antares. These simulation
 are launched from R with the `runWaterValuesSimulation()` function and are run by
 the Antares solver.
 
+```{r}
+simulation_res <- runWaterValuesSimulation(
+  area = "fr",
+  nb_mcyears = 20,
+  path_solver = "D:/Program Files/RTE/Antares/7.0.0/bin/antares-7.0-solver.exe",
+  nb_disc_stock = 10,
+  overwrite = TRUE
+)
+```
+
+ * `area` is the relevant area.
+ * `nb_mcyears` is the number of Monte-carlo year that will be generated. Here we
+ limit it to 10 to increase speed.
+ * `path_solver` is the path to the Antares solver.
+ * `nb_disc_stock` is the number of values used to discretize the stock level between
+ 0 and the maximum value for the given area. Here 10 simulations are run, with 10
+ binding constraints ranging from 0 to 1.344 TWh, which is the maximum of hydro
+ energy that can be produced in France over a week.
+ * `overwrite` allows to overwrite the area, cluster and binding constraint if they
+ already exist.
+
+
+## Water values
+
+Water values are generated in R with the `meanGridLayer()` function, using the results
+of the above simulations.
 
 
 

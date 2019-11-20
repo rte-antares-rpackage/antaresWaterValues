@@ -4,8 +4,7 @@
 \alias{getSimulationNames}
 \title{Utility function to get simulation's name}
 \usage{
-getSimulationNames(pattern, studyPath = NULL,
-  opts = antaresRead::simOptions())
+getSimulationNames(pattern, studyPath = NULL, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{pattern}{A pattern to match among the simulation.}

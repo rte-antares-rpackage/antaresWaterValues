@@ -4,8 +4,14 @@
 \alias{addBandVU}
 \title{Add Band to Value Nodes}
 \usage{
-addBandVU(value_nodes, type = c("linear", "spline"), bandwidth = 100,
-  failure_cost = NULL, area = NULL, opts = antaresRead::simOptions())
+addBandVU(
+  value_nodes,
+  type = c("linear", "spline"),
+  bandwidth = 100,
+  failure_cost = NULL,
+  area = NULL,
+  opts = antaresRead::simOptions()
+)
 }
 \arguments{
 \item{value_nodes}{\code{data.table} in output of \code{\link{meanGridLayer}}.}

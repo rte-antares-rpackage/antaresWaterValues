@@ -4,9 +4,20 @@
 \alias{calculate_value_node}
 \title{Compute Bellman values at step i from step i+1}
 \usage{
-calculate_value_node(states, states_next, value_reward, value_inflow,
-  decision_space, level_high, level_low, value_node_next_week,
-  niveau_max = 10, E_max = 1.344, method, na_rm = FALSE)
+calculate_value_node(
+  states,
+  states_next,
+  value_reward,
+  value_inflow,
+  decision_space,
+  level_high,
+  level_low,
+  value_node_next_week,
+  niveau_max = 10,
+  E_max = 1.344,
+  method,
+  na_rm = FALSE
+)
 }
 \arguments{
 \item{states}{Numeric. All the water values that can be set, listed in

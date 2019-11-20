@@ -100,8 +100,23 @@ simulation_values <- as.numeric(simulation_values)
 
 ## Plotting results
 
-## Exporting results
+Results can be visualised with `waterValueViz()`:
 
+```{r eval=FALSE}
+waterValuesViz(value_nodes_2017)
+```
+![mean grid layer](mean_grid_layer.png)
+
+It's also possible to add bands around the values:
+
+```{r eval=FALSE}
+waterValuesViz(value_nodes_2017, add_band = TRUE, bandwidth = 100, failure_cost = 100)
+```
+
+![mean grid layer bands](mean_grid_layer_bands.png)
+
+
+## Exporting results
 
 
 

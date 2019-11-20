@@ -1,3 +1,6 @@
+<img src="man/figures/antares_simulator.png" align="right" width=250 />
+<br/>
+
 # antaresWaterValues
 
 > Calculate Water Values to use in Antares V7.

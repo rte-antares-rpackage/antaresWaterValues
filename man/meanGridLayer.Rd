@@ -37,7 +37,8 @@ meanGridLayer(
 
 \item{method}{Perform mean grid algorithm or grid mean algorithm ?}
 
-\item{states_steps}{Steps to discretize steps levels between the reservoir capacity and zero.}
+\item{states_steps}{Steps to discretize steps levels between the reservoir
+capacity and zero (in TWh). Defaults to 0.05}
 
 \item{reservoir_capacity}{Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
 value in Antares is used if available else a prompt ask the user the value to be used.}

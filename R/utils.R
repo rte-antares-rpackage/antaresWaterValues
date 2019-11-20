@@ -45,7 +45,7 @@ correct_outliers <- function(u) {
 }
 
 # expand a vector of 52 weekly water values to a vector of 365 (= 7*52+1) daily
-#   values, taking NA's, NaN' and +-Inf's into account
+#   values, taking NA's, NaN's and +-Inf's into account
 expand_to_days <- function(v) {
   v[!is.finite(v)] <- NaN
   v <- sapply(v, function(x) c(rep(if (is.finite(x)) NA else NaN, 6), x))

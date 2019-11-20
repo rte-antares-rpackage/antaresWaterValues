@@ -84,6 +84,9 @@ value_nodes_2017 <- meanGridLayer(
  * `nb_cycle` is the number of times to run the algorithm in a loop from the last
  week of the year to the first, in order to obtain more realistic start values for 
  week 53.
+ 
+The result is a 7-column `data.table`: Bellman values are in the `value_node` column,
+and water values in the `vu` column.
 
 Note: If simulations have not been run just before, their names and values can be
 retrieved this way:
@@ -117,6 +120,27 @@ waterValuesViz(value_nodes_2017, add_band = TRUE, bandwidth = 100, failure_cost 
 
 
 ## Exporting results
+
+In Antares, water values can be found in the
+`Hydro > Local Data > Reservoir levels and water values`
+section. They are formatted in a 365*101 matrix: days in rows and reservoir levels
+in columns.
+Hence the results of `meanGridLayer()` have to be rescaled on both dimensions and
+reshaped in order to fit into this matrix.
+
+The function `toAntaresFormat()` allows to perform rescaling and reshaping in one
+single step. Then results can be written into Antares with
+`antaresEditObject::writeWaterValues()`.
+
+```{r eval=FALSE}
+reshaped_values <- toAntaresFormat(value_nodes_2017)
+
+writeWaterValues(
+  area = "fr",
+  data = reshaped_values
+)
+```
+
 
 
 

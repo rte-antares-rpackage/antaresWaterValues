@@ -21,11 +21,11 @@ hasName <- function(x, name) {
   match(name, names(x), nomatch = 0L) > 0L
 }
 
-mean_finite <- function(x, na.rm = FALSE) {
+mean_finite <- function(x) {
   if (all(!is.finite(x))) {
     -Inf
   } else {
-    mean(x[is.finite(x)], na.rm = na.rm)
+    mean(x[is.finite(x)])
   }
 }
 

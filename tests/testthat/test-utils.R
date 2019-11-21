@@ -32,3 +32,10 @@ test_that("mean_finite() works", {
   expect_equal(mean_finite(c(Inf, 1:3, NA)), 2)
 })
 
+test_that("expand_to_days() works", {
+  expect_equal(expand_to_days(rep(1000, 52)), rep(1000, 365))
+  expect_equal(
+    expand_to_days(c(rep(NA, 20), 2000, 2000, rep(Inf, 30))),
+    c(rep(0, 20*7), rep(2000, 2*7), rep(0, 30*7 + 1))
+  )
+})

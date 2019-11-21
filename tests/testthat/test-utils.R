@@ -20,3 +20,15 @@ test_that("%||% works", {
 test_that("num_equal() works", {
   expect_true(num_equal(1/2 - 1/3, 1/6))
 })
+
+test_that("hasName() works", {
+  x <- list(abc = 1, def = 2)
+  expect_true(hasName(x, "abc"))
+  expect_false(hasName(x, "a"))
+})
+
+test_that("mean_finite() works", {
+  expect_identical(mean_finite(c(Inf, -Inf, Inf, NA)), -Inf)
+  expect_equal(mean_finite(c(Inf, 1:3, NA)), 2)
+})
+

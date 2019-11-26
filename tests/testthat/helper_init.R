@@ -21,3 +21,10 @@ setup_study <- function(path, sourcedir) {
   }
 }
 
+fake_water_values <- data.table::data.table(
+  weeks = rep(1:52, each = 201),
+  statesid = rep(201:1, 52),
+  states = seq(0, 10, by = 0.05),
+  vu = runif(n = 52*201, min = 0, max = 150)
+)
+fake_water_values[states > 7.5 | states < 4, vu := NaN]

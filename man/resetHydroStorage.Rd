@@ -28,7 +28,7 @@ An updated list containing various information about the simulation.
 Reset to 0 the hydro storage time series
 }
 \note{
-The function make a copy of the original hydro storage time series,
+The function makes a copy of the original hydro storage time series,
  you can restore these with \code{restoreHydroStorage}.
 }
 \seealso{

@@ -8,7 +8,7 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'   
-#' @note The function make a copy of the original hydro storage time series,
+#' @note The function makes a copy of the original hydro storage time series,
 #'  you can restore these with \code{restoreHydroStorage}.
 #'  
 #' @seealso \link{restoreHydroStorage}

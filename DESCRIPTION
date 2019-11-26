@@ -12,7 +12,7 @@ Depends: R (>= 3.1.0)
 License: GPL (>= 2) | file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.0
+RoxygenNote: 7.0.1
 Imports: antaresRead (>= 2.2.3.900),
     antaresEditObject (>= 0.1.5.960),
     assertthat,

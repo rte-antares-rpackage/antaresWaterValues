@@ -13,7 +13,7 @@ setup_study <- function(path, sourcedir) {
     #   untar(file.path(sourcedir, "antares-test-study.tar.gz"), exdir = path, 
     #         extras = "--force-local")
     # } else {
-      untar(file.path(sourcedir, "test-study-water-values.tar.gz"), exdir = path)
+      untar(file.path(sourcedir, "antares-test-study-v7.tar.gz"), exdir = path)
     # }
     
     assign("studyPath", file.path(path, "test_case"), envir = globalenv())

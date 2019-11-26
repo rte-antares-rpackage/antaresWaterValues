@@ -414,7 +414,7 @@ calculate_value_node <- function(states, states_next, value_reward, value_inflow
   if (method == "mean-grid") {
     max(temp, na.rm = TRUE)
   } else {
-    mean_finite(temp, na.rm = TRUE)
+    mean_finite(temp)
   }
 }
 

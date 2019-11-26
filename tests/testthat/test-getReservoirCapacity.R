@@ -14,5 +14,5 @@ opts <- antaresRead::setSimulationPath(studyPath, "input")
 # Tests -------------------------------------------------------------------
 
 test_that("getReservoirCapacity() works", {
-  expect_equal(getReservoirCapacity("fr"), 1e7)
+  expect_equal(getReservoirCapacity("c"), 1234)
 })

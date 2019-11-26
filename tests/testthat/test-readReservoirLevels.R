@@ -47,8 +47,8 @@ test_that("readReservoirLevels() works for a v7 study", {
   )
   
   expect_equal(
-    a <<- readReservoirLevels("c", timeStep = "monthly", byReservoirCapacity = FALSE),
-    b <<- data.table(
+    readReservoirLevels("c", timeStep = "monthly", byReservoirCapacity = FALSE),
+    data.table(
       timeId = as.character(seq.Date(as.Date("2018-01-01"), by = "month", length.out = 12)),
       level_low = rep(0, 12),
       level_avg = rep(0.5, 12),

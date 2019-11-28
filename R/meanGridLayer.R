@@ -67,24 +67,21 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   # assertthat::assert_that(ncol(states) == n_week)
   
   # max hydro (E_max, fr = 1.344)
-  monthly_hydroStorage <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
-  if (hasName(monthly_hydroStorage, "hstorPMaxHigh")) {
-    max_hydro <- monthly_hydroStorage[, max(hstorPMaxHigh)] * 168 / 1e6
-  } else {
-    max_hydro <- monthly_hydroStorage[, max(generatingMaxPower)] * 168 / 1e6
-  }
+  max_hydro <- getWeeklyMaxHydro(area)
+  
   if (is.null(simulation_values)) {
     simulation_values <- seq(from = 0, to = max_hydro, length.out = length(simulation_names))
     message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))
   }
   
-  if (is.null(max_mcyears))
+  if (is.null(max_mcyears)) {
     max_mcyears <- opts$parameters$general$nbyears
+  }
   max_mcyears <- seq_len(max_mcyears)
   
   # Niveau max
   if (is.null(reservoir_capacity)) {
-    niveau_max <- getReservoirCapacity(area = "fr")/1e6
+    niveau_max <- getReservoirCapacity(area = area)/1e6
     if (length(niveau_max) == 0) {
       ask_niveau_max <- "Failed to retrieve reservoir capacity from Antares, please specify value (in GWh, e.g. 10000 for France):\n"
       niveau_max <- readline(prompt = ask_niveau_max)
@@ -95,6 +92,7 @@ meanGridLayer <- function(area, simulation_names, simulation_values = NULL, nb_c
   } else {
     niveau_max <- reservoir_capacity/1e3
   }
+
   # niveau_max <- max(states)
   # rev_week <- rev(seq_len(n_week))
   

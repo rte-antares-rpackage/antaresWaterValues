@@ -7,14 +7,13 @@ sourcedir <- system.file("testdata", package = "antaresWaterValues")
 # the R CMD CHECK before package is correctly installed and tests actually run. 
 # The following "if" prevents errors at this step
 
-setup_study <- function(path, sourcedir) {
+setup_study <- function(path, sourcedir, version = "v7") {
   if (sourcedir != "") {
-    # if (Sys.info()['sysname'] == "Windows") {
-    #   untar(file.path(sourcedir, "antares-test-study.tar.gz"), exdir = path, 
-    #         extras = "--force-local")
-    # } else {
+    if (version == "v7") {
       untar(file.path(sourcedir, "antares-test-study-v7.tar.gz"), exdir = path)
-    # }
+    } else if (version == "v6") {
+      untar(file.path(sourcedir, "antares-test-study.tar.gz"), exdir = path)
+    }
     
     assign("studyPath", file.path(path, "test_case"), envir = globalenv())
     assign("nweeks", 2, envir = globalenv())

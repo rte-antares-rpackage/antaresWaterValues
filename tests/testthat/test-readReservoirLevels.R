@@ -1,5 +1,5 @@
 
-# Setup study -------------------------------------------------------------
+# Setup study v7 -------------------------------------------------------------
 
 
 path <- tempdir()
@@ -11,7 +11,7 @@ opts <- antaresRead::setSimulationPath(studyPath, "input")
 
 
 
-# Tests -------------------------------------------------------------------
+# Tests v7 -------------------------------------------------------------------
 
 test_that("readReservoirLevels() works for a v7 study", {
   expect_error(readReservoirLevels("z"), regexp = "Not a valid area")
@@ -56,3 +56,34 @@ test_that("readReservoirLevels() works for a v7 study", {
     )
   )
 })
+
+
+
+# Setup study v6 -------------------------------------------------------------
+
+
+path <- tempdir()
+# Unzip the study
+setup_study(path, sourcedir, version = "v6")
+# set simulation path in mode input
+opts <- antaresRead::setSimulationPath(studyPath, "input")
+
+
+
+# Tests v6 ----------------------------------------------------------------
+
+test_that("readReservoirLevels() works for a v6 study", {
+  expect_error(readReservoirLevels("z"), regexp = "Not a valid area")
+  
+  expect_equal(
+    readReservoirLevels("c", timeStep = "monthly", byReservoirCapacity = FALSE),
+    data.table(
+      date = seq.Date(as.Date("2018-01-01"), by = "month", length.out = 12),
+      level_low = rep(0, 12),
+      level_avg = rep(0.5, 12),
+      level_high = rep(1, 12)
+    )
+  )
+})
+
+

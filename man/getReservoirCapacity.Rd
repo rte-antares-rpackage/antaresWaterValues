@@ -4,8 +4,7 @@
 \alias{getReservoirCapacity}
 \title{Get the reservoir capacity for an area}
 \usage{
-getReservoirCapacity(area, force = FALSE,
-  opts = antaresRead::simOptions())
+getReservoirCapacity(area, force = FALSE, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}

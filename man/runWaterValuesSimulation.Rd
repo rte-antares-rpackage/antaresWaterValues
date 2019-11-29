@@ -4,12 +4,20 @@
 \alias{runWaterValuesSimulation}
 \title{Run a simulation for calculating water values for a specific area}
 \usage{
-runWaterValuesSimulation(area,
-  simulation_name = "weekly_water_amount_\%s", nb_disc_stock = 10,
-  nb_mcyears = NULL, binding_constraint = "WeeklyWaterAmount",
-  fictive_area = NULL, thermal_cluster = NULL, path_solver,
-  wait = TRUE, show_output_on_console = FALSE, overwrite = FALSE,
-  opts = antaresRead::simOptions())
+runWaterValuesSimulation(
+  area,
+  simulation_name = "weekly_water_amount_\%s",
+  nb_disc_stock = 10,
+  nb_mcyears = NULL,
+  binding_constraint = "WeeklyWaterAmount",
+  fictive_area = NULL,
+  thermal_cluster = NULL,
+  path_solver,
+  wait = TRUE,
+  show_output_on_console = FALSE,
+  overwrite = FALSE,
+  opts = antaresRead::simOptions()
+)
 }
 \arguments{
 \item{area}{The area concerned by the simulation.}

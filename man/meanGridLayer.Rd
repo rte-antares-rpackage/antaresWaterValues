@@ -4,12 +4,21 @@
 \alias{meanGridLayer}
 \title{Calculate grid mean layer matrix}
 \usage{
-meanGridLayer(area, simulation_names, simulation_values = NULL,
-  nb_cycle = 2L, district_name = "water values district",
-  max_mcyears = NULL, week_53 = 0, method = c("mean-grid",
-  "grid-mean"), states_steps = 0.05, reservoir_capacity = NULL,
-  na_rm = FALSE, correct_outliers = FALSE,
-  opts = antaresRead::simOptions())
+meanGridLayer(
+  area,
+  simulation_names,
+  simulation_values = NULL,
+  nb_cycle = 2L,
+  district_name = "water values district",
+  max_mcyears = NULL,
+  week_53 = 0,
+  method = c("mean-grid", "grid-mean"),
+  states_steps = 0.05,
+  reservoir_capacity = NULL,
+  na_rm = FALSE,
+  correct_outliers = FALSE,
+  opts = antaresRead::simOptions()
+)
 }
 \arguments{
 \item{area}{An 'antares' area.}
@@ -28,7 +37,8 @@ meanGridLayer(area, simulation_names, simulation_values = NULL,
 
 \item{method}{Perform mean grid algorithm or grid mean algorithm ?}
 
-\item{states_steps}{Steps to discretize steps levels between the reservoir capacity and zero.}
+\item{states_steps}{Steps to discretize steps levels between the reservoir
+capacity and zero (in TWh). Defaults to 0.05}
 
 \item{reservoir_capacity}{Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
 value in Antares is used if available else a prompt ask the user the value to be used.}

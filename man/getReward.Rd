@@ -4,9 +4,12 @@
 \alias{getReward}
 \title{Get the reward matrix from simulations}
 \usage{
-getReward(simulation_names = NULL, pattern = NULL,
+getReward(
+  simulation_names = NULL,
+  pattern = NULL,
   district_name = "water values district",
-  opts = antaresRead::simOptions())
+  opts = antaresRead::simOptions()
+)
 }
 \arguments{
 \item{simulation_names}{Names of the simulation to obtain the reward.}

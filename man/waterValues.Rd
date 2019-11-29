@@ -4,9 +4,14 @@
 \alias{waterValues}
 \title{Run Water Values Simulation and Calculate Value Node}
 \usage{
-waterValues(area, nb_disc_stock = 10, nb_cycle = 3,
-  nb_scenario = NULL, overwrite = TRUE,
-  opts = antaresRead::simOptions())
+waterValues(
+  area,
+  nb_disc_stock = 10,
+  nb_cycle = 3,
+  nb_scenario = NULL,
+  overwrite = TRUE,
+  opts = antaresRead::simOptions()
+)
 }
 \arguments{
 \item{area}{The area concerned by the simulation.}

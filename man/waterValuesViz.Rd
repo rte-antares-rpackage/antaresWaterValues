@@ -4,8 +4,13 @@
 \alias{waterValuesViz}
 \title{Visualize mean grid layer}
 \usage{
-waterValuesViz(value_nodes, add_band = FALSE, type = c("linear",
-  "spline"), bandwidth = 100, failure_cost = 3000)
+waterValuesViz(
+  value_nodes,
+  add_band = FALSE,
+  type = c("linear", "spline"),
+  bandwidth = 100,
+  failure_cost = 3000
+)
 }
 \arguments{
 \item{value_nodes}{Output from \code{waterValues} or \code{meanGridLayer}.}

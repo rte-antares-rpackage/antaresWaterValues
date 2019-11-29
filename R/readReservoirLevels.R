@@ -105,10 +105,10 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
     data.table::setcolorder(x = reservoir, neworder = c("date", vars))
     reservoir <- reservoir[order(date)]
     reservoir[, timeId := format(date, format = "%Y-%m-01")]
-    reservoir <- reservoir[, lapply(.SD, mean), by = timeId]
+    reservoir <- reservoir[, lapply(.SD, mean), by = timeId, .SDcols = vars]
   }
   if (timeStep == "weekly") {
-    reservoir <- reservoir[, timeId := c(rep(seq_len(52), each = 7), 52)]
+    reservoir[, timeId := c(rep(seq_len(52), each = 7), 52)]
     reservoir <- reservoir[, lapply(.SD, mean), by = timeId, .SDcols = vars]
   }
   if (byReservoirCapacity) {

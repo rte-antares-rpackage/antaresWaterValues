@@ -65,7 +65,33 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu"){
   if (param=="vu") {
      print(p1)
   }else if(param=="both") {
-    plot_grid(p1,p2,labels=c("VU","Bellman"))
+
+    tit <- sprintf("VU and Bellman for Week %d",i)
+    title <- ggdraw() + draw_label(tit, fontface='bold')
+    p <- plot_grid(p1,p2)
+    plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1)) # rel_heights values control title margins
     }else print(p2)
 
 }
+
+#----------- Bellman monotonicity---------
+
+check_Bellman_inc <- function(results){
+print("-----Check Bellman values Monotonicity-----")
+for (i in 1:52){
+  temp <- results[weeks==i]
+  temp <- temp[is.finite(value_node)&(!is.nan(value_node))]
+  print(sprintf("week %d --> %s ",i,incr(temp$value_node))
+  )}
+}
+
+check_vu_dec <- function(results){
+  print("-----Check Water Values Monotonicity-----")
+  for (i in 1:52){
+    temp <- results[weeks==i]
+    temp <- temp[is.finite(vu)&(!is.nan(vu))]
+    print(sprintf("week %d --> %s ",i,decr(temp$vu))
+    )}
+}
+
+

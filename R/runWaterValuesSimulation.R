@@ -117,7 +117,7 @@ for (i in constraint_values) {
   } else {
     coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
   }
-    # Create binding constraint
+    # Implement binding constraint
   opts <- antaresEditObject::createBindingConstraint(
     name = name_bc,
     values = data.frame(less = rep(constraint_value, times = 366)),
@@ -146,7 +146,7 @@ for (i in constraint_values) {
   simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
   #remove the Binding Constraints
-  opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
+  opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
 }
 
 

@@ -41,61 +41,30 @@ return(max_hydro)
 
 
 
-
-
-
-#' Restore the hydro storage time series
+#' Utility function to get simulation's name
 #'
-#' @param area A valid Antares area.
-#' @param path Path to a manual backup.
+#' @param pattern A pattern to match among the simulation.
+#' @param studyPath Path to study outputs, used if \code{setSimulationPath} is not set.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
-#' @return An updated list containing various information about the simulation.
+#' @return A character vector.
 #' @export
 #'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead setSimulationPath
-#'
-# @examples
-restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions()) {
-  assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
-
-  # Input path
-  inputPath <- opts$inputPath
-
-  if (is.null(path)) {
-    # Hydro storage ----
-    path_hydro_storage_backup <- file.path(inputPath, "hydro", "series", area, "mod_backup.txt")
-
-    if (file.exists(path_hydro_storage_backup)) {
-      file.copy(
-        from = path_hydro_storage_backup,
-        to = file.path(inputPath, "hydro", "series", area, "mod.txt"),
-        overwrite = TRUE
-      )
-      unlink(x = path_hydro_storage_backup)
-    } else {
-      message("No backup found")
-    }
-  } else {
-    file.copy(
-      from = path,
-      to = file.path(inputPath, "hydro", "series", area, "mod.txt"),
-      overwrite = TRUE
-    )
-  }
-
-  # Maj simulation
-  res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
-
-  invisible(res)
+#' @examples
+#' \dontrun{
+#' getSimulationNames("eco")
+#' }
+getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::simOptions()) {
+  studyPath <- tryCatch({
+    opts$studyPath
+  }, error = function(e) {
+    studyPath
+  })
+  if (is.null(studyPath))
+    stop("Default antares options are not set, you must specify 'studyPath'.")
+  list.files(path = file.path(studyPath, "output"), pattern = pattern)
 }
-
-
-
 
 

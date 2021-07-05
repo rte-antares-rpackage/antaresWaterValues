@@ -49,22 +49,23 @@ all(diff(vector1) >= 0)}
 decr <- function(vector1){
   all(diff(vector1) <= 0)}
 
+
+#----------Bellman Plot--------------
+
 plot_Bellman <- function(value_nodes_dt,week_number,param="vu"){
 
-  state <- value_nodes_dt[weeks ==week_number]$states
+  temp <- value_nodes_dt[weeks ==week_number]
+  temp <- temp[is.finite(vu)&(!is.nan(vu))]
+
+  p1 <- ggplot(data = temp, aes(states , vu)) +geom_line(size=1,color="purple 4")
+
+  setnames(temp,"value_node","Bellman_Value")
+  p2 <- ggplot(data = temp, aes(states ,Bellman_Value)) +geom_line(size=1,color="red 4")
 
   if (param=="vu") {
-    VU <-value_nodes_dt[weeks==week_number]$vu
-    my_data <- data.frame(state,VU)
-    p <- ggplot(data = my_data, aes(state , VU)) +geom_line(size=2)
-
-  }else{
-    Bellman <- value_nodes_dt[weeks==week_number]$value_node
-    my_data <- data.frame(state,Bellman)
-    p <- ggplot(data = my_data, aes(state , Bellman)) +geom_line(size=2)
-  }
-  # plot (x,y,type='o')
-
-  print(p)
+     print(p1)
+  }else if(param=="both") {
+    plot_grid(p1,p2,labels=c("VU","Bellman"))
+    }else print(p2)
 
 }

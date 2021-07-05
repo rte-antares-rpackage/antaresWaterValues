@@ -163,7 +163,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   #here we added the lvl_high and low of the reservoir
 
   # add empty columns ---------------------
-  watervalues$value_node <- NA
+  watervalues$value_node <- NA_real_
   # set(watervalues,j=10L,value=NA_real_)
 
 
@@ -197,7 +197,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         temp <- Bellman(temp,next_week_values,decision_space,E_max,niveau_max,method,na_rm,max_mcyear = max_mcyear)
 
-        watervalues[weeks==i,value_node:=temp$value_node]
+        watervalues[weeks==i,value_node :=temp$value_node]
 
         # watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
 
@@ -235,4 +235,5 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   value_nodes_dt[weeks==53,vu:=0]
 
   return(value_nodes_dt)
+  # return(watervalues)
 }

@@ -14,6 +14,8 @@ library(zoo)
 library(dplyr)
 library(tibble)
 library(ggplot2)
+library(cowplot)
+
 
 # put the parameters.env file path------------------
 load_dot_env("D:/Users/gharsallaouidhi/Documents/R coding/watervalues/parameters.env")
@@ -53,7 +55,7 @@ results <- Grid_Matrix(      area = area,
                              week_53 = 0,
                              district_name = "water values district",
                              method="mean-grid",
-                             states_step_ratio=0.1,
+                             states_step_ratio=0.01,
                              max_mcyears=NULL,
                              reservoir_capacity=NULL
 )
@@ -112,7 +114,7 @@ for (i in 1:52){
 # test Bellman values Monotonicity
 for (i in 1:52){
     temp <- results[weeks==i]$value_node
-     temp <- temp[1:(length(temp)-1)]
+    temp <- temp[1:(length(temp)-1)]
     temp[!is.finite(temp)] <- 0
     print(incr(temp))
 }
@@ -120,4 +122,4 @@ for (i in 1:52){
 
 
 # vu for usages values and any other thing for Bellman values
-  plot_Bellman(results,17,"v")
+  plot_Bellman(results,20,"y")

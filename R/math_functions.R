@@ -110,5 +110,6 @@ plot_reward_variation <- function(reward_base,week_id)
   setnames(temp,"t","Turbining transistion")
   p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="purple 4")
   print(p1)
+  return(temp)
 }
 

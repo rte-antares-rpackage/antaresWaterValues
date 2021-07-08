@@ -225,8 +225,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
   #add reservoir
-  names(reservoir)[1] <- "statesid"
-  value_nodes_dt <- left_join(value_nodes_dt,reservoir,by="statesid")
+  names(reservoir)[1] <- "weeks"
+  value_nodes_dt <- left_join(value_nodes_dt,reservoir,by="weeks")
 
 
 
@@ -240,5 +240,5 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   value_nodes_dt[weeks==53,vu:=0]
 
   return(value_nodes_dt)
-   # return(watervalues)
+  # return(watervalues)
 }

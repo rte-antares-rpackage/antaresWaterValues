@@ -1,4 +1,4 @@
-Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max,method,na_rm=TRUE,max_mcyear){
+Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,j,...){
 
 
   # delet this after testing
@@ -48,7 +48,7 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
 
 
   # max possible decision --------
-  largest_decision <- min(c(states + value_inflow, E_max), na.rm = TRUE)
+  largest_decision <- min(c(states + value_inflow, E_max,niveau_max), na.rm = TRUE)
   largest_decision <- round(largest_decision, decimals) ###
 
   # the decisions that respect the max possible decision used in simulation constraints
@@ -64,10 +64,11 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
   # Turbaned energy per transition
   decisions_benef_to_go <- states - next_states + value_inflow
   decisions_benef_to_go <- round(decisions_benef_to_go, decimals) ###
+  decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go<=largest_decision]
+  decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go<=max(decisions_current_benef)]
 
 
-
-  if(length(largest_decision)<length(decisions_benef_to_go)) decisions_current_benef <- decision_space[1:(length(decisions_current_benef)+1)]
+  if((largest_decision)>max(decisions_benef_to_go)) decisions_current_benef <- decision_space[1:(length(decisions_current_benef)+1)]
 
   # List of accessible Rewards
   if(largest_decision>E_max){ provisional_steps <- unique(c(decisions_current_benef, E_max) )
@@ -76,6 +77,10 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
 
   decisions <- unique(sort(c(decisions_benef_to_go, decisions_current_benef), decreasing = FALSE))
 
+
+
+  #testing rmv NA
+  provisional_steps <- provisional_steps[!is.na(provisional_steps)]
 
   if (length(setdiff(decisions_benef_to_go, decisions_current_benef)) > 0) {
 
@@ -179,6 +184,18 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
     Data_week$value_node[i] <- (mean_finite(tempo))
   }
 
+
+
+  if(print_test){
+   if (j==51){
+   print(sprintf("******Week %d *********",j))
+   print(sprintf("State: %d",states))
+   print(sprintf("Decisions :  "))
+   print(decisions)
+   print(sprintf("Rewards : "))
+   print(tempo)
+   print(sprintf("BELLMAN >>>>> %f",Data_week$value_node[i]))
+ }}
 
 
   }

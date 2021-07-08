@@ -74,12 +74,13 @@ opts <- setupWaterValuesSimulation(
 
 # Get max hydro power that can be generated in a week
 
-max_hydro=get_max_hydro(area,opts)
-
+max_hydro <- get_max_hydro(area,opts)
+res_cap <- get_reservoir_capacity(area,opts)
+maxi <- min(max_hydro,res_cap)
 
 # Generate Binding constraints of the flows capacities
 
-constraint_values <- seq(from = 0, to = max_hydro, length.out = nb_disc_stock)
+constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
 constraint_values <- round(constraint_values, 3)
 
 

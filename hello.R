@@ -35,7 +35,7 @@ simulation_res <- runWaterValuesSimulation(
   fictive_area = "watervalues_fr",    # nom de l'area fictive qui sera créée
   nb_disc_stock = n,                  # nombre de simulations à lancer
   overwrite = TRUE,
-  nb_mcyears=3
+  nb_mcyears=2
 )
 end.time <- Sys.time()
 
@@ -43,7 +43,6 @@ opts <- antaresRead::setSimulationPath(path = study, simulation = "input")
 options("antares" = opts)
 
 
-reward_dt <- get_Reward(simulation_names=simulation_res$simulation_names,district_name ="water values district" ,opts = opts)
 
 
 
@@ -55,18 +54,21 @@ results <- Grid_Matrix(      area = area,
                              week_53 = 0,
                              district_name = "water values district",
                              method="mean-grid",
-                             states_step_ratio=0.01,
+                             states_step_ratio=0.05,
                              max_mcyears=NULL,
                              reservoir_capacity=NULL
 )
 
 
 
-post_process(results)
-
 #viz
 
 waterValuesViz(results)
+
+
+post_process(results)
+
+
 
 #write to antares
 
@@ -89,37 +91,21 @@ time.taken
 #----------------------------testing scripts-----------------
 
 
-for (i in 1:52){
- for (j in 1:5){ # max mcyear
- temp <- watervalues[weeks==i&years==j]$value_node
- temp <- temp[2:length(temp)]
- temp[!is.finite(temp)] <- 0
- print(decr(temp))
- }
-}
-
-
-
 # test VU Monotonicity
-for (i in 1:52){
-  temp <- results[weeks==i]$vu
-  temp <- temp[1:(length(temp)-1)]
-  temp[is.na(temp)] <- Inf
-  print(incr(temp))
-}
-
-
-
+check_vu_dec(results)
 
 # test Bellman values Monotonicity
-for (i in 1:52){
-    temp <- results[weeks==i]$value_node
-    temp <- temp[1:(length(temp)-1)]
-    temp[!is.finite(temp)] <- 0
-    print(incr(temp))
-}
+check_Bellman_inc(results)
 
 
+# vu for usages values ,"both" for bellman and VU
+# and any other thing for Bellman values
+  plot_Bellman(results,50,"both")
 
-# vu for usages values and any other thing for Bellman values
-  plot_Bellman(results,20,"y")
+
+# reward variance test
+  reward_dt <- get_Reward(simulation_names=simulation_res$simulation_names,district_name ="water values district" ,opts = opts)
+
+
+  plot_reward_variation(reward_base=reward_dt,week_id=52)
+

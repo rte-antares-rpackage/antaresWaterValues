@@ -4,7 +4,7 @@ monotonic_VU <- function(results,noise_ratio=0.001)
   qm <- quantile(results$vu,0.95,na.rm = TRUE)
   temp <- results[vu>1.5*qm]
 
-  if (length(temp)>noise_ratio*nrow(results)){
+  if (dim(temp)[1]>noise_ratio*nrow(results)){
     results[vu>1.5*qm,vu:=NaN]
   }
   temp <- NULL

@@ -236,8 +236,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
   value_nodes_dt[, vu := abs(value_node_dif / states_dif )]
 
-  # value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
-  value_nodes_dt[weeks==53,vu:=0]
 
   return(value_nodes_dt)
   # return(watervalues)

@@ -73,10 +73,11 @@ opts <- setupWaterValuesSimulation(
 
 
 # Get max hydro power that can be generated in a week
-
 max_hydro <- get_max_hydro(area,opts)
 res_cap <- get_reservoir_capacity(area,opts)
-maxi <- min(max_hydro,res_cap)
+max_app <- max(readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
+
+maxi <- min(max_hydro+max_app,res_cap)
 
 # Generate Binding constraints of the flows capacities
 

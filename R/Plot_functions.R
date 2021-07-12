@@ -40,3 +40,54 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu"){
   }else print(p2)
 
 }
+
+
+#--------- Reservoir Guide graph Plot---------------
+
+plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions()){
+
+reservoir <- readReservoirLevels(area, timeStep = timeStep, byReservoirCapacity = FALSE, opts = opts)
+reservoir$level_avg <- NULL
+reservoir$level_high <- reservoir$level_high*100
+reservoir$level_low <- reservoir$level_low*100
+
+if(is.null(simulation_name)){
+
+  sim_names <- getSimulationNames("",opts = opts)
+  for (i in 1:length(sim_names))
+   { t <- sprintf("[%d] ==> %s",i,sim_names[i])
+    cat(t,sep="\n")}
+
+  sim_nb <- 0
+  while(sim_nb < 1|(sim_nb >length(sim_names)))
+    {sim_nb <- readline(prompt="Enter simulation number: ")
+    sim_nb <- as.integer(sim_nb)
+    }
+  simulation_name <- sim_names[sim_nb]
+
+ }
+
+
+#read reservoir actual levels:
+tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+inflow <- readAntares(areas = area, hydroStorage = TRUE, timeStep = timeStep , mcYears = mcyear, opts = tmp_opt)
+if (!is.null(mcyear)){
+  inflow <- inflow[order(mcYear, timeId)]
+  inflow <- inflow[, list(timeId,`H. LEV` )]
+}else{
+  inflow <- inflow[order(timeId)]
+  inflow <- inflow[, list(timeId,`H. LEV` )]
+  }
+
+
+
+temp <- left_join(x=reservoir,y=inflow,by="timeId")
+p <- ggplot(data=temp, aes(x=timeId)) +
+ geom_line(aes(y = level_low ), color = "darkred") +
+  geom_line(aes(y = level_high ), color="darkred")+
+  geom_line(aes(y = `H. LEV` ), color="darkblue")
+
+print(p)
+
+return(temp)
+}

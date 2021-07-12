@@ -45,4 +45,6 @@ toAntaresFormat <- function(data) {
 
   # rescale weekly values to daily values (interpolation)
   apply(value_nodes_matrix, 2, expand_to_days)
+
+  return(value_nodes_matrix)
 }

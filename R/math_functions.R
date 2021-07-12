@@ -58,7 +58,7 @@ check_Bellman_inc <- function(results){
   print("-----Check Bellman values Monotonicity-----")
   for (i in 1:52){
     temp <- results[weeks==i]
-    temp <- temp[is.finite(value_node)&(!is.nan(value_node))]
+    temp <- temp[!is.na(temp$value_node)&is.finite(temp$value_node)]
     print(sprintf("week %d --> %s ",i,incr(temp$value_node))
     )}
   }

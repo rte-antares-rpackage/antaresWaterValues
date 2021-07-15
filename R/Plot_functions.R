@@ -59,18 +59,27 @@ plot_reward <- function(reward_base,week_id)
 #'   * "both" to plot both water and bellman values
 #'   Default "vu"
 #'
+#' @param states_step_ratio put the ratio to change reservoir discretization in percent
+#' 0.01 to augment by 1%
 #' @import ggplot2
 
 
-plot_Bellman <- function(value_nodes_dt,week_number,param="vu"){
+plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio=0.01){
 
   temp <- value_nodes_dt[weeks ==week_number]
+
+  temp <- states_to_percent(temp,states_step_ratio)
+
   temp <- temp[is.finite(vu)&(!is.nan(vu))]
 
-  p1 <- ggplot(data = temp, aes(states , vu)) +geom_line(size=1,color="purple 4")
 
   setnames(temp,"value_node","Bellman_Value")
-  p2 <- ggplot(data = temp, aes(states ,Bellman_Value)) +geom_line(size=1,color="red 4")
+  setnames(temp,"states_round_percent","Reservoir_percent")
+
+
+  p1 <- ggplot(data = temp, aes(Reservoir_percent , vu)) +geom_line(size=1,color="purple 4")
+
+  p2 <- ggplot(data = temp, aes(Reservoir_percent ,Bellman_Value)) +geom_line(size=1,color="red 4")
 
   if (param=="vu") {
     print(p1)

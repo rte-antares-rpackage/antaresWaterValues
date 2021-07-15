@@ -73,14 +73,13 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
     if (!is.null(reservoirCapacity)) {
       vars <- c("level_low", "level_avg", "level_high")
       reservoir <- reservoir[,
-                             (vars) := lapply(.SD, function(x) {x * reservoirCapacity/1e6}),
+                             (vars) := lapply(.SD, function(x) {x * reservoirCapacity}),
                              .SDcols = vars
       ]
     }
   }
   reservoir[]
 }
-
 
 
 readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
@@ -124,4 +123,3 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
   }
   reservoir[]
 }
-

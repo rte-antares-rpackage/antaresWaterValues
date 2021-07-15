@@ -30,7 +30,7 @@ correct_outliers <- function(u) {
   v[ind_na] <- w[ind_na]
 
   u[ind_v] <- v
-  u
+  return(u)
 }
 
 #----- Mean of finite values

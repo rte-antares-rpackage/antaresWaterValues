@@ -206,7 +206,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         temp <- watervalues[weeks==i]
 
-        temp <- Bellman(temp,next_week_values,decision_space,E_max,niveau_max,method,max_mcyear = max_mcyear,j=i)
+        temp <- Bellman(temp,next_week_values,decision_space,E_max,niveau_max,method,max_mcyear = max_mcyear,j=i,correct_outliers = correct_outliers)
 
         watervalues[weeks==i,value_node :=temp$value_node]
 

@@ -37,7 +37,7 @@ plot_reward <- function(reward_base,week_id)
   reward <- aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
   temp <- (unlist(reward[week_id,]))
-  t <- seq(from=1,to=length(temp))
+  t <- names_reward(reward_dt)
   temp <- data.frame(t,temp)
   setnames(temp,"temp","Reward")
   setnames(temp,"t","Turbining capacity")

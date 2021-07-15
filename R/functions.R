@@ -68,3 +68,16 @@ getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::si
 }
 
 
+#------------- get turbaned capacity from reward table-----
+
+names_reward <-function(reward_dt){
+  j <- 3
+  names <- names(reward_dt)
+  if (names[1]=="weekly_water_amount_0")
+    {j <- 1}
+  values <- gsub("weekly_water_amount_","",names[3:length(names)])
+  values <- as.numeric(sub(",", ".", values, fixed = TRUE))
+  values <- as.integer(values)
+  return(values)
+}
+

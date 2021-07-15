@@ -185,6 +185,7 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
   }
 
 
+#----- little test -----
 
   if(print_test){
    if (j==51){
@@ -199,5 +200,13 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
 
 
   }
+
+#------ grid-mean method---------
+
+# regroup VB by years:
+if(method=="grid-mean"){
+  Data_week$value_node <- ave(Data_week$value_node, Data_week$years, FUN=function(x)mean(x, na.rm = TRUE))
+}
+
   return(Data_week)
   }

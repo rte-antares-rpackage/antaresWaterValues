@@ -16,6 +16,22 @@ plot_reward_variation <- function(reward_base,week_id)
   return(temp)
 }
 
+#--------- Plot reward -----------
+
+plot_reward <- function(reward_base,week_id)
+{
+  reward <- aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
+  reward$Group.1 <- NULL
+  temp <- (unlist(reward[week_id,]))
+  t <- seq(from=1,to=length(temp))
+  temp <- data.frame(t,temp)
+  setnames(temp,"temp","Reward")
+  setnames(temp,"t","Turbining capacity")
+  p1 <- ggplot(data = temp,aes(`Turbining capacity` , `Reward`)) +geom_line(size=1,color="purple 4")
+  print(p1)
+  return(temp)
+}
+
 
 #----------Bellman Plot--------------
 

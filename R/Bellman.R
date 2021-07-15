@@ -20,6 +20,7 @@
 #'  used in simulations
 #' @param print_test Boolean. print Bellman values.
 #' @param test_week Numeric of length 1. number of the week to print in test.
+#' @return A "data.table" like Data_week with the Bellman values
 
 
 

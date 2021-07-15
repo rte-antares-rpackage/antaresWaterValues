@@ -220,7 +220,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
       }
       close(pb)
-      next_week_values <- temp[weeks==52]$value_node
+      next_week_values <- temp[weeks==1]$value_node
 
     }
   }

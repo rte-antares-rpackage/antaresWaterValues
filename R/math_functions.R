@@ -85,4 +85,29 @@ check_vu_dec <- function(results){
 
 
 
+#------- states to percent -----
+
+states_to_percent <- function(data,states_step_ratio=0.01){
+
+
+  # rescale levels to round percentages ranging from 0 to 100
+  states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
+  states_ref[, states_percent := 100*states/max(states)]
+
+  interv <- seq(from=0,to=100,by=round(100*states_step_ratio))
+  nearest_states <- states_ref$statesid[sapply(interv, function(x) which.min(abs(x - states_ref$states_percent)))]
+
+  states_ref_0_100 <- data.table(
+    states_round_percent = interv,
+    statesid = nearest_states
+  )
+
+  res <- CJ(weeks = unique(data$weeks), states_round_percent = interv)
+
+  res[states_ref_0_100, on = "states_round_percent", statesid := i.statesid]
+
+  res[data, on = c("weeks", "statesid"), value_node := i.value_node]
+  res[data, on = c("weeks", "statesid"), vu := i.vu]
+  return(res)
+  }
 

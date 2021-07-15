@@ -1,5 +1,12 @@
 
 #---------Plot reward variation--------
+#' Plot the reward variation and return the results in table
+#'
+#' @param reward_base A data.table contains the rewards.
+#' Obtained using the function get_Reward()
+#' @param week_id Numeric of length 1. number of the week to plot.
+#'
+#' @import ggplot2
 
 
 plot_reward_variation <- function(reward_base,week_id)
@@ -17,6 +24,13 @@ plot_reward_variation <- function(reward_base,week_id)
 }
 
 #--------- Plot reward -----------
+#' Plot the reward and return the results in table
+#'
+#' @param reward_base A data.table contains the rewards.
+#' Obtained using the function get_Reward()
+#' @param week_id Numeric of length 1. number of the week to plot.
+#'
+#' @import ggplot2
 
 plot_reward <- function(reward_base,week_id)
 {
@@ -34,6 +48,19 @@ plot_reward <- function(reward_base,week_id)
 
 
 #----------Bellman Plot--------------
+#' Plot Bellman and Water values
+#'
+#' @param value_nodes_dt A data.table contains the Bellman and water values .
+#' Obtained using the function Grid_Matrix()
+#' @param week_id Numeric of length 1. number of the week to plot.
+#' @param param string contains the element to plot
+#'   * "vu" to plot only water values
+#'   * "b" to plot only bellman values
+#'   * "both" to plot both water and bellman values
+#'   Default "vu"
+#'
+#' @import ggplot2
+
 
 plot_Bellman <- function(value_nodes_dt,week_number,param="vu"){
 
@@ -59,6 +86,24 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu"){
 
 
 #--------- Reservoir Guide graph Plot---------------
+#' Plot Reservoir Guide Graph and return result table
+#'
+#' @param area An 'antares' area.
+#' @param timeStep Resolution of the data to import:
+#' weekly (default, a linear interpolation is done on the data),
+#' monthly (original data).
+#' @param mcyear precise the MC year to plot.
+#' Null plot the synthesis. Default NULL
+#' @param simulation_name simulation name to plot.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @import ggplot2
+#' @import readReservoirLevels
+#' @import dplyr
+#' @import antaresRead
+
 
 plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions()){
 

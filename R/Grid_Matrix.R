@@ -1,4 +1,4 @@
-#' Calculate grid mean layer matrix
+#' Calculate grid layer matrix of Bellman values and water values
 #'
 #' @param area An 'antares' area.
 #' @param simulation_names Names of simulations to retrieve.
@@ -8,13 +8,15 @@
 #' @param max_mcyears Number of MC years to consider, by default all of them.
 #' @param week_53 Water values for week 53, by default 0.
 #' @param method Perform mean grid algorithm or grid mean algorithm ?
-#' @param states_steps Steps to discretize steps levels between the reservoir
-#'   capacity and zero (in TWh). Defaults to 0.05
+#' @param states_step_ratio Discretization ratio to generate steps levels
+#' between the reservoir capacity and zero . Defaults to 0.05
 #' @param reservoir_capacity Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
 #'  value in Antares is used if available else a prompt ask the user the value to be used.
 #' @param na_rm Remove NAs
 #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
 #'   interpolations. Defaults to FALSE.
+#' @param only_input if TRUE skip bellman values calculation and return the input
+#' provided to calculate. Used mainly to verify for tests. Default FALSE
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -28,15 +30,18 @@
 #' @import tibble
 #'
 #'
+
+
 Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", max_mcyears = NULL,
                              week_53 = 0,
-                             states_step_ratio = 0.1,
+                             states_step_ratio = 0.01,
                              reservoir_capacity = NULL,
                              na_rm = FALSE,
                              overwrite=TRUE,
                              correct_outliers = FALSE,
                              method ,
+                             only_input=FALSE,
                              opts = antaresRead::simOptions()) {
 
 
@@ -76,7 +81,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   }}
 
 
-  # synchronizing between the simulations and the states
+  # synchronizing between the simulations and the states discretisation
   if ((!is.numeric(states_step_ratio))|(states_step_ratio<0)|(states_step_ratio<0))
     stop("Failed Not valid States_step_ratio, please change it between 0 and 1.")
 
@@ -185,8 +190,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   ####
 
+  if (only_input) return(watervalues)
   # here we are supposed to calculate the bellman values using the function Bellman !!!!!!
   {
+    next_week_values <- rep_len(next_week_values, nrow(watervalues[weeks==52]))
+
     for (n_cycl in seq_len(nb_cycle)) {
 
       cat("Calculating value nodes, cycle number:", n_cycl, "\n")
@@ -198,13 +206,13 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         temp <- watervalues[weeks==i]
 
-        if (i==52)  next_week_values <- rep_len(next_week_values, nrow(temp))
-
         temp <- Bellman(temp,next_week_values,decision_space,E_max,niveau_max,method,max_mcyear = max_mcyear,j=i)
 
         watervalues[weeks==i,value_node :=temp$value_node]
 
-        # watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
+        if (correct_outliers) {
+          watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
+        }
 
         # next_week_values <- correct_outliers(temp$value_node)
         next_week_values <- temp$value_node
@@ -212,6 +220,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
       }
       close(pb)
+      next_week_values <- temp[weeks==52]$value_node
+
     }
   }
 

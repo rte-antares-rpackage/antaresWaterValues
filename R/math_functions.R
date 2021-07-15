@@ -13,7 +13,6 @@ expand_to_days <- function(v) {
     v[!is.nan(v)] <- na.spline(u)
   }
   v[is.nan(v)] <- 0
-  v[v < 0] <- 0
   v
 }
 
@@ -34,8 +33,19 @@ correct_outliers <- function(u) {
   u
 }
 
+#----- Mean of finite values
+mean_finite <- function(x) {
+  if (all(!is.finite(x))) {
+    -Inf
+  } else {
+    mean(x[is.finite(x)])
+  }
+}
 
 
+
+
+#------ simple interpolation -----
 interp <- function(x,x1,y1,x2,y2){
 
   t <- y2-y1
@@ -43,6 +53,7 @@ interp <- function(x,x1,y1,x2,y2){
   return(y1+(x-x1)*(t/tt))
 }
 
+#---- monotonicity check functions-----
 incr <- function(vector1){
   all(diff(vector1) >= 0)}
 
@@ -59,17 +70,17 @@ check_Bellman_inc <- function(results){
   for (i in 1:52){
     temp <- results[weeks==i]
     temp <- temp[!is.na(temp$value_node)&is.finite(temp$value_node)]
-    print(sprintf("week %d --> %s ",i,incr(temp$value_node))
-    )}
+    print(sprintf("week %d --> %s ",i,incr(temp$value_node)))
+    }
   }
 
-  check_vu_dec <- function(results){
-    print("-----Check Water Values Monotonicity-----")
-    for (i in 1:52){
-      temp <- results[weeks==i]
-      temp <- temp[is.finite(vu)&(!is.nan(vu))]
-      print(sprintf("week %d --> %s ",i,decr(temp$vu))
-      )}
+check_vu_dec <- function(results){
+  print("-----Check Water Values Monotonicity-----")
+  for (i in 1:52){
+    temp <- results[weeks==i]
+    temp <- temp[is.finite(vu)&(!is.nan(vu))]
+    print(sprintf("week %d --> %s ",i,decr(temp$vu)))
+    }
 }
 
 

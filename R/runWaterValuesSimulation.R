@@ -151,7 +151,10 @@ for (i in constraint_values) {
   opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
 }
 
+# remove the fictive area
 
+fictive_area = paste0("watervalue_", area)
+removeArea(fictive_area,opts = opts)
 
 # restore hydrostorage
 

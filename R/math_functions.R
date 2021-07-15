@@ -67,20 +67,33 @@ decr <- function(vector1){
 
 check_Bellman_inc <- function(results){
   print("-----Check Bellman values Monotonicity-----")
+  count <- 0
   for (i in 1:52){
     temp <- results[weeks==i]
     temp <- temp[!is.na(temp$value_node)&is.finite(temp$value_node)]
-    print(sprintf("week %d --> %s ",i,incr(temp$value_node)))
-    }
+    t <- incr(temp$value_node)
+    print(sprintf("week %d --> %s ",i,t))
+    if(t) count <- count+1
+  }
+
+  print(sprintf("success rate %.0f %% ",(100*count/52)))
+
+
   }
 
 check_vu_dec <- function(results){
   print("-----Check Water Values Monotonicity-----")
+  count <- 0
   for (i in 1:52){
     temp <- results[weeks==i]
     temp <- temp[is.finite(vu)&(!is.nan(vu))]
-    print(sprintf("week %d --> %s ",i,decr(temp$vu)))
+    t <- decr(temp$vu)
+    print(sprintf("week %d --> %s ",i,t))
+    if(t) count <- count+1
+
     }
+
+  print(sprintf("success rate %.0f %% ",(100*count/52)))
 }
 
 

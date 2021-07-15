@@ -21,7 +21,7 @@
 #' @param print_test Boolean. print Bellman values.
 #' @param test_week Numeric of length 1. number of the week to print in test.
 #' @return A "data.table" like Data_week with the Bellman values
-
+#' @export
 
 
 Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,test_week,...){

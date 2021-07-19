@@ -59,8 +59,8 @@ plot_reward <- function(reward_base,week_id)
 plot_reward_mc <- function(reward_base,week_id,Mc_year)
 {
   reward <- reward_base[timeId==week_id&mcYear==Mc_year]
-  reward <- reward_base[,3:ncol(reward_base)]
-  temp <- (unlist(reward[week_id,]))
+  reward <- reward[,3:ncol(reward_base)]
+  temp <- (unlist(reward))
   t <- names_reward(reward_dt)
   temp <- data.frame(t,temp)
   setnames(temp,"temp","Reward")
@@ -82,9 +82,10 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 {
   reward <- reward_base[timeId==week_id&mcYear==Mc_year]
-  reward <- reward_base[,3:ncol(reward_base)]
-  temp <- diff(unlist(reward[week_id,]))
+  reward <- reward[,3:ncol(reward_base)]
+  temp <- diff(unlist(reward))
   t <- names_reward(reward_dt)
+  t <- t[t!=0]
   temp <- data.frame(t,temp)
   setnames(temp,"temp","Reward Transition")
   setnames(temp,"t","Turbining transistion")

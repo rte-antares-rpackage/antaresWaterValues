@@ -46,7 +46,52 @@ plot_reward <- function(reward_base,week_id)
   return(temp)
 }
 
+#--------- Plot reward by MC year -----------
+#' Plot the reward and return the results in table
+#'
+#' @param reward_base A data.table contains the rewards.
+#' Obtained using the function get_Reward()
+#' @param week_id Numeric of length 1. number of the week to plot.
+#' @param Mc_year Numeric of length 1. number of thr MC year to plot
+#'
+#' @import ggplot2
 
+plot_reward_mc <- function(reward_base,week_id,Mc_year)
+{
+  reward <- reward_base[timeId==week_id&mcYear==Mc_year]
+  reward <- reward_base[,3:ncol(reward_base)]
+  temp <- (unlist(reward[week_id,]))
+  t <- names_reward(reward_dt)
+  temp <- data.frame(t,temp)
+  setnames(temp,"temp","Reward")
+  setnames(temp,"t","Turbining capacity")
+  p1 <- ggplot(data = temp,aes(`Turbining capacity` , `Reward`)) +geom_line(size=1,color="purple 4")
+  print(p1)
+  return(temp)
+}
+#--------- Plot reward variation by MC year -----------
+#' Plot the reward and return the results in table
+#'
+#' @param reward_base A data.table contains the rewards.
+#' Obtained using the function get_Reward()
+#' @param week_id Numeric of length 1. number of the week to plot.
+#' @param Mc_year Numeric of length 1. number of thr MC year to plot
+#'
+#' @import ggplot2
+
+plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
+{
+  reward <- reward_base[timeId==week_id&mcYear==Mc_year]
+  reward <- reward_base[,3:ncol(reward_base)]
+  temp <- diff(unlist(reward[week_id,]))
+  t <- names_reward(reward_dt)
+  temp <- data.frame(t,temp)
+  setnames(temp,"temp","Reward Transition")
+  setnames(temp,"t","Turbining transistion")
+  p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="red 4")
+  print(p1)
+  return(temp)
+}
 #----------Bellman Plot--------------
 #' Plot Bellman and Water values
 #'

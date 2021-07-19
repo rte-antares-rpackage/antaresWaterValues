@@ -18,7 +18,7 @@ plot_reward_variation <- function(reward_base,week_id)
   temp <- data.frame(t,temp)
   setnames(temp,"temp","Reward Transition")
   setnames(temp,"t","Turbining transistion")
-  p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="purple 4")
+  p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="red 4")
   print(p1)
   return(temp)
 }

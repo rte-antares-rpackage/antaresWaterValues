@@ -26,7 +26,9 @@
 #' @export
 
 
-Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,test_week,correct_outliers=FALSE,...){
+Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,
+                    niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,
+                    correct_outliers=FALSE,q_ratio=0.75,test_week,...){
 
 
 
@@ -48,6 +50,8 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
 
       value_reward <- unlist(reward, use.names = FALSE)
       states_next <- unlist(states_next, use.names = FALSE)
+
+      # if (Data_week$years[i]==3&Data_week$statesid[i]==18&Data_week$weeks==52){browser()}
 
 
       if (i%% (nrow(Data_week)/max_mcyear) ==1){
@@ -223,6 +227,9 @@ Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,niveau_max
 #------ mean-grid method---------
 
 if (method == "mean-grid") {
+  if (correct_outliers) {
+    Data_week[, value_node := correct_outliers(value_node), by = years]
+  }
     return(Data_week)
 }
 
@@ -233,7 +240,16 @@ if(method=="grid-mean"){
     Data_week[, value_node := correct_outliers(value_node)]
   }
   Data_week$value_node <- ave(Data_week$value_node, Data_week$statesid, FUN=mean_finite)
+  return(Data_week)
 }
 
+if (method=="quantile"){
+  if (correct_outliers) {
+    Data_week[, value_node := correct_outliers(value_node)]
+  }
+  Data_week$value_node <- ave(Data_week$value_node, Data_week$statesid, FUN=function(x) quantile(x, q_ratio))
   return(Data_week)
+}
+  return(Data_week)
+
   }

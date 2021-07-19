@@ -42,6 +42,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              correct_outliers = FALSE,
                              method ,
                              only_input=FALSE,
+                             q_ratio=0.5,
                              opts = antaresRead::simOptions()) {
 
 
@@ -206,7 +207,9 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         temp <- watervalues[weeks==i]
 
-        temp <- Bellman(temp,next_week_values,decision_space,E_max,niveau_max,method,max_mcyear = max_mcyear,j=i,correct_outliers = correct_outliers)
+        temp <- Bellman(temp,next_week_values,decision_space,E_max,niveau_max,
+                        method, max_mcyear = max_mcyear, j=i,
+                        q_ratio= q_ratio, correct_outliers = correct_outliers)
 
         watervalues[weeks==i,value_node :=temp$value_node]
 
@@ -221,6 +224,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
       }
       close(pb)
       next_week_values <- temp[weeks==1]$value_node
+      watervalues[!is.finite(value_node),value_node:=NaN]
 
     }
   }

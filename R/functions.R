@@ -83,7 +83,7 @@ names_reward <-function(reward_dt){
 
 
 #------------- to antares format -------
-to_Antares_Format <- function(results){
+to_Antares_Format <- function(data){
 
   # rescale levels to round percentages ranging from 0 to 100
   states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]

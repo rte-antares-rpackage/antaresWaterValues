@@ -153,7 +153,6 @@ for (i in constraint_values) {
 
 # remove the fictive area
 
-fictive_area = paste0("watervalue_", area)
 removeArea(fictive_area,opts = opts)
 
 # restore hydrostorage

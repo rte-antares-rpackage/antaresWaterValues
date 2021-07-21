@@ -81,3 +81,49 @@ names_reward <-function(reward_dt){
   return(values)
 }
 
+
+#------------- to antares format -------
+to_Antares_Format <- function(results){
+
+  # rescale levels to round percentages ranging from 0 to 100
+  states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
+  states_ref[, states_percent := 100*states/max(states)]
+
+  nearest_states <- states_ref$statesid[sapply(0:100, function(x) which.min(abs(x - states_ref$states_percent)))]
+
+  states_ref_0_100 <- data.table(
+    states_round_percent = 0:100,
+    statesid = nearest_states
+  )
+
+  res <- CJ(weeks = unique(data$weeks), states_round_percent = 0:100)
+
+  res[states_ref_0_100, on = "states_round_percent", statesid := i.statesid]
+
+  res[data, on = c("weeks", "statesid"), vu := i.vu]
+
+  # reshape
+  value_nodes_matrix <- dcast(
+    data = res,
+    formula = weeks ~ states_round_percent,
+    value.var = "vu"
+  )
+
+  value_nodes_matrix$weeks <- NULL
+
+  reshaped_matrix <- double(length = 0)
+  last <- value_nodes_matrix[52,]
+  for(i in 1:52){
+  v <- unlist(value_nodes_matrix[i,])
+  v[!is.finite(v)] <- NaN
+  v <- sapply(v, function(x) c(rep(if (is.finite(x)) NA else NaN, 7), x))
+  v[1,] <- unlist(last)
+  tab <- apply(v,2,na.spline)
+  tab <- tab[2:8,]
+  reshaped_matrix <-rbind(reshaped_matrix,tab)
+  last <-unlist(value_nodes_matrix[i,])
+  }
+  reshaped_matrix <- rbind(reshaped_matrix,value_nodes_matrix[1,])
+
+return(reshaped_matrix)
+}

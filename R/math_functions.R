@@ -124,3 +124,19 @@ states_to_percent <- function(data,states_step_ratio=0.01){
   return(res)
   }
 
+#----- check VU decrease in reshaped values ------
+
+
+check_resh_vu_dec <- function(reshaped_results){
+  print("-----Check Water Values Monotonicity-----")
+  count <- 0
+  for (i in 1:365){
+    t <- decr(reshaped_results[i,])
+    print(sprintf("week %d --> %s ",i,t))
+    if(t) count <- count+1
+
+  }
+
+  print(sprintf("success rate %.0f %% ",(100*count/365)))
+}
+

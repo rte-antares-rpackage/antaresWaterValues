@@ -45,7 +45,7 @@ monotonic_VU <- function(results,noise_ratio=0.001)
 
 
 
-post_process <- function(results){
+post_process <- function(results,down_cost=0){
 
   results[vu==Inf|is.na(vu),vu:=NaN]
   maxid <- max(results$statesid)
@@ -57,6 +57,9 @@ post_process <- function(results){
     mini <- min(results[weeks==i]$vu,na.rm = TRUE)
 
     results[weeks==i&!is.finite(vu)&states>=level_high,vu:=interp_up(mini,statesid)]
+    if (down_cost>0){
+      results[weeks==i&!is.finite(vu)&states<=level_low,vu:=down_cost]
+    }
     results[weeks==i&!is.finite(vu)&states<=level_low,vu:=interp_down(maxi,statesid,q3)]
     results[weeks==i&!is.finite(vu),vu:=mini]
 

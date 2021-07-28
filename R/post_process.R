@@ -59,10 +59,19 @@ post_process <- function(results,down_cost=0){
     results[weeks==i&!is.finite(vu)&states>=level_high,vu:=interp_up(mini,statesid)]
     if (down_cost>0){
       results[weeks==i&!is.finite(vu)&states<=level_low,vu:=down_cost]
+      results[weeks==i&states<=level_low,vu:=down_cost]
     }
     results[weeks==i&!is.finite(vu)&states<=level_low,vu:=interp_down(maxi,statesid,q3)]
-    results[weeks==i&!is.finite(vu),vu:=mini]
 
+    temp <- results[weeks==i]
+    temp <- temp %>% select(states,vu)
+    if (any(is.na(temp))){
+
+      imputed_Data <- mice(temp, m=1, maxit = 50, method = 'pmm', seed = 500)
+      completeData <- complete(imputed_Data,1)
+      results[weeks==i]$vu <- completeData$vu
+
+    }
   }
 
 return(results)

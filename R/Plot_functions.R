@@ -9,7 +9,7 @@
 #' @import ggplot2
 
 
-plot_reward_variation <- function(reward_base,week_id)
+plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_")
 {
   reward <- aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
@@ -19,6 +19,7 @@ plot_reward_variation <- function(reward_base,week_id)
   setnames(temp,"temp","Reward Transition")
   setnames(temp,"t","Turbining transistion")
   p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="red 4")
+  p1 <- p1+ggtitle(sprintf("Reward variation week %d",week_id))+theme(plot.title = element_text(hjust = 0.5))
   print(p1)
   return(temp)
 }
@@ -32,16 +33,17 @@ plot_reward_variation <- function(reward_base,week_id)
 #'
 #' @import ggplot2
 
-plot_reward <- function(reward_base,week_id)
+plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_")
 {
+  t <- names_reward(reward_base,simulation_name_pattern)
   reward <- aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
   temp <- (unlist(reward[week_id,]))
-  t <- names_reward(reward_dt)
   temp <- data.frame(t,temp)
   setnames(temp,"temp","Reward")
   setnames(temp,"t","Turbining capacity")
   p1 <- ggplot(data = temp,aes(`Turbining capacity` , `Reward`)) +geom_line(size=1,color="purple 4")
+  p1 <- p1+ggtitle(sprintf("Reward week %d",week_id))+theme(plot.title = element_text(hjust = 0.5))
   print(p1)
   return(temp)
 }
@@ -56,16 +58,17 @@ plot_reward <- function(reward_base,week_id)
 #'
 #' @import ggplot2
 
-plot_reward_mc <- function(reward_base,week_id,Mc_year)
+plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
 {
+  t <- names_reward(reward_base,simulation_name_pattern)
   reward <- reward_base[timeId==week_id&mcYear==Mc_year]
   reward <- reward[,3:ncol(reward_base)]
   temp <- (unlist(reward))
-  t <- names_reward(reward_dt)
   temp <- data.frame(t,temp)
   setnames(temp,"temp","Reward")
   setnames(temp,"t","Turbining capacity")
   p1 <- ggplot(data = temp,aes(`Turbining capacity` , `Reward`)) +geom_line(size=1,color="purple 4")
+  p1 <- p1+ggtitle(sprintf("Reward week %d MC Year %d",week_id,Mc_year))+theme(plot.title = element_text(hjust = 0.5))
   print(p1)
   return(temp)
 }
@@ -79,17 +82,19 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 #'
 #' @import ggplot2
 
-plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
+plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
 {
   reward <- reward_base[timeId==week_id&mcYear==Mc_year]
   reward <- reward[,3:ncol(reward_base)]
   temp <- diff(unlist(reward))
-  t <- names_reward(reward_dt)
+  t <- names_reward(reward_base,simulation_name_pattern)
   t <- t[t!=0]
   temp <- data.frame(t,temp)
   setnames(temp,"temp","Reward Transition")
   setnames(temp,"t","Turbining transistion")
   p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="red 4")
+  p1 <- p1+ggtitle(sprintf("Reward variation week %d MC Year %d",week_id,Mc_year))+theme(plot.title = element_text(hjust = 0.5))
+
   print(p1)
   return(temp)
 }
@@ -124,8 +129,10 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 
 
   p1 <- ggplot(data = temp, aes(Reservoir_percent , vu)) +geom_line(size=1,color="purple 4")
+  p1 <- p1+ggtitle(sprintf("Water Values"))+theme(plot.title = element_text(hjust = 0.5))
 
   p2 <- ggplot(data = temp, aes(Reservoir_percent ,Bellman_Value)) +geom_line(size=1,color="red 4")
+  p2 <- p2+ggtitle(sprintf("Bellman Values"))+theme(plot.title = element_text(hjust = 0.5))
 
   if (param=="vu") {
     print(p1)
@@ -194,9 +201,11 @@ if(is.null(mcyear)){
   inflow <- inflow[, list(timeId,`H. LEV` )]
   temp <- left_join(x=reservoir,y=inflow,by="timeId")
   p <- ggplot(data=temp, aes(x=timeId)) +
-    geom_line(aes(y = level_low ), color = "darkred") +
-    geom_line(aes(y = level_high ), color="darkred")+
-    geom_line(aes(y = `H. LEV` ), color="darkblue")
+    geom_line(aes(y = level_low ), color = "red") +
+    geom_line(aes(y = level_high ), color="red")+
+    geom_line(aes(y = `H. LEV` ), color="blue")
+  p <- p+ggtitle(sprintf("Reservoir Path for MC synthesis"))+theme(plot.title = element_text(hjust = 0.5))
+
   print(p)
   return(temp)
 }else{
@@ -215,14 +224,18 @@ if(is.numeric(mcyear)){
   temp1 <- temp1[,list(timeId,level_low,MC_year,level_high)]
 
   p <- ggplot(data=temp1, aes(x=timeId)) +
-    geom_line(aes(y = level_low ), color = "darkred") +
-    geom_line(aes(y = level_high ), color="darkred")+
-    geom_line(aes(y =MC_year ), color="darkblue")
+    geom_line(aes(y = level_low ), color = "red") +
+    geom_line(aes(y = level_high ), color="red")+
+    geom_line(aes(y =MC_year ), color="blue")
+  p <- p+ggtitle(sprintf("Reservoir Path for MC year %d",mcyear))+theme(plot.title = element_text(hjust = 0.5))
+
 
 }else{
   p <- ggplot(temp, aes(x = timeId, y = value, colour = variable)) +
     geom_line(lwd=1) + scale_color_manual(values =c("level_low" = "red",
                                                     "level_high" = "red"))
+  p <- p+ggtitle(sprintf("Reservoir Path for all MC year "))+theme(plot.title = element_text(hjust = 0.5))
+
 }
 print(p)
 

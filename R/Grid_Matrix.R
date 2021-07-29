@@ -47,7 +47,10 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
 
-
+  methods <- c("mean-grid","grid-mean","quantile")
+  if (!method %in% methods){
+    stop("Unknown method. available methods: ('mean-grid','grid-mean','quantile') ")
+  }
 
   assertthat::assert_that(class(opts) == "simOptions")
 

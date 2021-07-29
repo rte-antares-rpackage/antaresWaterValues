@@ -148,6 +148,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' weekly (default, a linear interpolation is done on the data),
 #' monthly (original data).
 #' @param mcyear precise the MC year to plot.
+#' all to plot all years.
 #' Null plot the synthesis. Default NULL
 #' @param simulation_name simulation name to plot.
 #' @param opts
@@ -186,24 +187,50 @@ if(is.null(simulation_name)){
 
 #read reservoir actual levels:
 tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = simulation_name)
-inflow <- readAntares(areas = area, hydroStorage = TRUE, timeStep = timeStep , mcYears = mcyear, opts = tmp_opt)
-if (!is.null(mcyear)){
-  inflow <- inflow[order(mcYear, timeId)]
-  inflow <- inflow[, list(timeId,`H. LEV` )]
-}else{
+
+if(is.null(mcyear)){
+  inflow <- readAntares(areas = area, timeStep = timeStep , mcYears = mcyear, opts = tmp_opt)
   inflow <- inflow[order(timeId)]
   inflow <- inflow[, list(timeId,`H. LEV` )]
-  }
+  temp <- left_join(x=reservoir,y=inflow,by="timeId")
+  p <- ggplot(data=temp, aes(x=timeId)) +
+    geom_line(aes(y = level_low ), color = "darkred") +
+    geom_line(aes(y = level_high ), color="darkred")+
+    geom_line(aes(y = `H. LEV` ), color="darkblue")
+  print(p)
+  return(temp)
+}else{
+  inflow <- readAntares(areas = area, timeStep = timeStep , mcYears = "all", opts = tmp_opt)
+  inflow <- inflow[order(mcYear, timeId)]
+  inflow <- inflow[, list(mcYear,timeId,`H. LEV` )]
+  d <- pivot_wider(inflow, names_from = mcYear, values_from = "H. LEV")
+  temp1 <- left_join(x=reservoir,y=d,by="timeId")
+  temp <- melt(temp1, id.vars="timeId")
 
+}
 
+if(is.numeric(mcyear)){
+  mc <- sprintf("MC_year")
+  setnames(temp1,mcyear,mc)
+  temp1 <- temp1[,list(timeId,level_low,MC_year,level_high)]
 
-temp <- left_join(x=reservoir,y=inflow,by="timeId")
-p <- ggplot(data=temp, aes(x=timeId)) +
- geom_line(aes(y = level_low ), color = "darkred") +
-  geom_line(aes(y = level_high ), color="darkred")+
-  geom_line(aes(y = `H. LEV` ), color="darkblue")
+  p <- ggplot(data=temp1, aes(x=timeId)) +
+    geom_line(aes(y = level_low ), color = "darkred") +
+    geom_line(aes(y = level_high ), color="darkred")+
+    geom_line(aes(y =MC_year ), color="darkblue")
 
+}else{
+  p <- ggplot(temp, aes(x = timeId, y = value, colour = variable)) +
+    geom_line(lwd=1) + scale_color_manual(values =c("level_low" = "red",
+                                                    "level_high" = "red"))
+}
 print(p)
 
-return(temp)
+return(temp1)
+
+
+
+
+
+
 }

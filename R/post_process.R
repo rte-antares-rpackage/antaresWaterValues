@@ -68,7 +68,7 @@ post_process <- function(results,down_cost=0,impute_method='pmm'){
     results[weeks==i&!is.finite(vu)&states<=level_low,vu:=interp_down(maxi,statesid,q3)]
 
     temp <- results[weeks==i]
-    temp <- temp %>% select(states,vu)
+    temp <- dplyr::select(temp,states,vu)
     if (any(is.na(temp))){
 
       imputed_Data <- mice(temp, m=1, maxit = 50, method = impute_method, seed = 500,print = F)

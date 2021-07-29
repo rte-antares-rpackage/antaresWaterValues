@@ -29,7 +29,7 @@ waterValuesViz <- function(Data, filtre_ratio=1, add_band = FALSE,
     ), by = weeks]
   }
   q <- quantile(value_nodes$vu,filtre_ratio,na.rm = TRUE)
-  value_nodes[vu>q,vu:=NA]
+  value_nodes[vu>q,vu:=q]
 
 
   p <- ggplot2::ggplot(data = value_nodes)

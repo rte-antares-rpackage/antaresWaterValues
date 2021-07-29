@@ -149,6 +149,15 @@ for (i in constraint_values) {
 
   #remove the Binding Constraints
   opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
+
+  #Simulation Control
+  sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
+  sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
+  sim_check <- paste0(opts$studyPath,"/output")
+  sim_check <- paste(sim_check,sim_name,sep="/")
+  if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
+    stop("Simulation Error. Please check simulation log.")
+  }
 }
 
 # remove the fictive area

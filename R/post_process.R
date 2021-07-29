@@ -45,14 +45,18 @@ monotonic_VU <- function(results,noise_ratio=0.001)
 
 
 
-post_process <- function(results,down_cost=0){
+post_process <- function(results,down_cost=0,impute_method='pmm'){
 
   results[vu==Inf|is.na(vu),vu:=NaN]
   maxid <- max(results$statesid)
   q3 <- quantile(results$statesid,0.75)
-  for (i in 1:53){
 
 
+  cat("Prepare Water Values:\n")
+
+  pb <- txtProgressBar(min = 0, max = 51, style = 3)
+
+   for (i in 1:52){
     maxi <- max(results[weeks==i]$vu,na.rm = TRUE)
     mini <- min(results[weeks==i]$vu,na.rm = TRUE)
 
@@ -67,13 +71,14 @@ post_process <- function(results,down_cost=0){
     temp <- temp %>% select(states,vu)
     if (any(is.na(temp))){
 
-      imputed_Data <- mice(temp, m=1, maxit = 50, method = 'pmm', seed = 500)
+      imputed_Data <- mice(temp, m=1, maxit = 50, method = impute_method, seed = 500,print = F)
       completeData <- complete(imputed_Data,1)
       results[weeks==i]$vu <- completeData$vu
 
     }
+    setTxtProgressBar(pb = pb, value = i)
   }
-
+  close(pb)
 return(results)
 
 }

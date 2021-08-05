@@ -43,6 +43,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              method ,
                              only_input=FALSE,
                              q_ratio=0.5,
+                             monotonic_bellman=FALSE,
                              opts = antaresRead::simOptions()) {
 
 
@@ -174,7 +175,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   # add empty columns ---------------------
   watervalues$value_node <- NA_real_
 
-  #----- Test
+  #----- monotonic bellman
+
 
 
 
@@ -214,11 +216,43 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                         method, max_mcyear = max_mcyear, j=i,
                         q_ratio= q_ratio, correct_outliers = correct_outliers)
 
+
+        # monotonic Bellman
+        {
+
+          if(monotonic_bellman){
+            for (k in 1:max_mcyear){
+              temp1 <- temp[weeks==i&years==k]
+              m <- 0
+              M <- 0
+
+              for (j in 1:nrow(temp1)){
+
+                if (is.na(temp1$value_node[j])|!is.finite(temp1$value_node[j])) next
+
+                if(m==0)m <- j
+
+                M <- j
+
+              }
+
+
+              temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
+              temp[(weeks==i&years==k),value_node :=temp1$value_node]
+            }}
+
+
+
+        }
+
+
         watervalues[weeks==i,value_node :=temp$value_node]
 
         if (correct_outliers) {
           watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
         }
+
+
 
         # next_week_values <- correct_outliers(temp$value_node)
         next_week_values <- temp$value_node
@@ -253,7 +287,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
   value_nodes_dt[, vu := abs(value_node_dif / states_dif )]
 
-
+  waterValuesViz(value_nodes_dt)
   return(value_nodes_dt)
   # return(watervalues)
 }

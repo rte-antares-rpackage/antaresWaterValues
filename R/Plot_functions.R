@@ -204,7 +204,7 @@ if(is.null(mcyear)){
     geom_line(aes(y = level_low ), color = "red") +
     geom_line(aes(y = level_high ), color="red")+
     geom_line(aes(y = `H. LEV` ), color="blue")
-  p <- p+ggtitle(sprintf("Reservoir Path for MC synthesis"))+theme(plot.title = element_text(hjust = 0.5))
+  p <- p+ggtitle(sprintf("%s Reservoir Path for MC synthesis",area))+theme(plot.title = element_text(hjust = 0.5))
 
   print(p)
   return(temp)
@@ -227,14 +227,14 @@ if(is.numeric(mcyear)){
     geom_line(aes(y = level_low ), color = "red") +
     geom_line(aes(y = level_high ), color="red")+
     geom_line(aes(y =MC_year ), color="blue")
-  p <- p+ggtitle(sprintf("Reservoir Path for MC year %d",mcyear))+theme(plot.title = element_text(hjust = 0.5))
+  p <- p+ggtitle(sprintf("%s Reservoir Path for MC year %d",area,mcyear))+theme(plot.title = element_text(hjust = 0.5))
 
 
 }else{
   p <- ggplot(temp, aes(x = timeId, y = value, colour = variable)) +
     geom_line(lwd=1) + scale_color_manual(values =c("level_low" = "red",
                                                     "level_high" = "red"))
-  p <- p+ggtitle(sprintf("Reservoir Path for all MC year "))+theme(plot.title = element_text(hjust = 0.5))
+  p <- p+ggtitle(sprintf("%s Reservoir Path for all MC year ",area))+theme(plot.title = element_text(hjust = 0.5))
 
 }
 print(p)

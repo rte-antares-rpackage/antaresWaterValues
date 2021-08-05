@@ -1,3 +1,5 @@
+#' @export
+
 monotonic_VU <- function(results,noise_ratio=0.001)
 
 {
@@ -44,6 +46,7 @@ monotonic_VU <- function(results,noise_ratio=0.001)
 
 
 
+#' @export
 
 post_process <- function(results,down_cost=3000,full_imputation=FALSE,impute_method='pmm'){
 

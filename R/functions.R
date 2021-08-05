@@ -3,7 +3,8 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#'
+#' @export
+
 get_reservoir_capacity <- function(area, opts=antaresRead::simOptions())
 
 {
@@ -26,6 +27,7 @@ return(reservoir_capacity)
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
+#' @export
 
 get_max_hydro <- function(area, opts=antaresRead::simOptions())
 {
@@ -56,6 +58,8 @@ return(max_hydro)
 #' \dontrun{
 #' getSimulationNames("eco")
 #' }
+#' @export
+
 getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::simOptions()) {
   studyPath <- tryCatch({
     opts$studyPath
@@ -69,6 +73,7 @@ getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::si
 
 
 #------------- get turbaned capacity from reward table-----
+#' @export
 
 names_reward <-function(reward_dt,sim_name_pattern="weekly_water_amount_"){
   j <- 3
@@ -83,6 +88,8 @@ names_reward <-function(reward_dt,sim_name_pattern="weekly_water_amount_"){
 
 
 #------------- to antares format -------
+#' @export
+
 to_Antares_Format <- function(data){
 
   # rescale levels to round percentages ranging from 0 to 100

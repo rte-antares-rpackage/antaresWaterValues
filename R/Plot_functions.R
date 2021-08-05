@@ -7,6 +7,7 @@
 #' @param week_id Numeric of length 1. number of the week to plot.
 #'
 #' @import ggplot2
+#' @export
 
 
 plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_")
@@ -32,6 +33,7 @@ plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_w
 #' @param week_id Numeric of length 1. number of the week to plot.
 #'
 #' @import ggplot2
+#' @export
 
 plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_")
 {
@@ -57,6 +59,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #'
 #' @import ggplot2
+#' @export
 
 plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
 {
@@ -81,6 +84,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #'
 #' @import ggplot2
+#' @export
 
 plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
 {
@@ -113,6 +117,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
 #' @param states_step_ratio put the ratio to change reservoir discretization in percent
 #' 0.01 to augment by 1%
 #' @import ggplot2
+#' @export
 
 
 plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio=0.01){

@@ -1,9 +1,13 @@
+#' @export
+
 num_equal <- function(x, y, tol = sqrt(.Machine$double.eps)) {
   abs(x - y) < tol
 }
 
 # expand a vector of 52 weekly water values to a vector of 365 (= 7*52+1) daily
 #   values, taking NA's, NaN's and +-Inf's into account
+#' @export
+
 expand_to_days <- function(v) {
   v[!is.finite(v)] <- NaN
   v <- sapply(v, function(x) c(rep(if (is.finite(x)) NA else NaN, 6), x))
@@ -17,6 +21,7 @@ expand_to_days <- function(v) {
 }
 
 
+#' @export
 
 correct_outliers <- function(u) {
   ind_v <- which(is.finite(u)) # NaN and Inf values shall not be corrected
@@ -34,6 +39,8 @@ correct_outliers <- function(u) {
 }
 
 #----- Mean of finite values
+#' @export
+
 mean_finite <- function(x) {
   if (all(!is.finite(x))) {
     -Inf
@@ -46,6 +53,8 @@ mean_finite <- function(x) {
 
 
 #------ simple interpolation -----
+#' @export
+
 interp <- function(x,x1,y1,x2,y2){
 
   t <- y2-y1
@@ -54,8 +63,12 @@ interp <- function(x,x1,y1,x2,y2){
 }
 
 #---- monotonicity check functions-----
+#' @export
+
 incr <- function(vector1){
   all(diff(vector1) >= 0)}
+
+#' @export
 
 decr <- function(vector1){
   all(diff(vector1) <= 0)}
@@ -64,6 +77,7 @@ decr <- function(vector1){
 
 
 #----------- Bellman monotonicity---------
+#' @export
 
 check_Bellman_inc <- function(results){
   print("-----Check Bellman values Monotonicity-----")
@@ -80,6 +94,8 @@ check_Bellman_inc <- function(results){
 
 
   }
+
+#' @export
 
 check_vu_dec <- function(results){
   print("-----Check Water Values Monotonicity-----")
@@ -99,6 +115,7 @@ check_vu_dec <- function(results){
 
 
 #------- states to percent -----
+#' @export
 
 states_to_percent <- function(data,states_step_ratio=0.01){
 
@@ -126,6 +143,7 @@ states_to_percent <- function(data,states_step_ratio=0.01){
 
 #----- check VU decrease in reshaped values ------
 
+#' @export
 
 check_resh_vu_dec <- function(reshaped_results){
   print("-----Check Water Values Monotonicity-----")

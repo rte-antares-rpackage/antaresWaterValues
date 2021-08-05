@@ -45,11 +45,13 @@ monotonic_VU <- function(results,noise_ratio=0.001)
 
 
 
-post_process <- function(results,down_cost=0,impute_method='pmm'){
+post_process <- function(results,down_cost=3000,impute_method='pmm'){
 
   results[vu==Inf|is.na(vu),vu:=NaN]
   maxid <- max(results$statesid)
   q3 <- quantile(results$statesid,0.75)
+
+  results[vu>down_cost,vu:=down_cost]
 
 
   cat("Prepare Water Values:\n")
@@ -60,7 +62,9 @@ post_process <- function(results,down_cost=0,impute_method='pmm'){
     maxi <- max(results[weeks==i]$vu,na.rm = TRUE)
     mini <- min(results[weeks==i]$vu,na.rm = TRUE)
 
-    results[weeks==i&!is.finite(vu)&states>=level_high,vu:=interp_up(mini,statesid)]
+    # results[weeks==i&!is.finite(vu)&states>=level_high,vu:=interp_up(mini,statesid)]
+    results[weeks==i&!is.finite(vu)&states>=level_high,vu:=-down_cost]
+
     if (down_cost>0){
       results[weeks==i&!is.finite(vu)&states<=level_low,vu:=down_cost]
       results[weeks==i&states<=level_low,vu:=down_cost]
@@ -77,7 +81,8 @@ post_process <- function(results,down_cost=0,impute_method='pmm'){
 
     }
     setTxtProgressBar(pb = pb, value = i)
-  }
+   }
+  results[(vu< (-down_cost)&vu<0),vu:=-down_cost]
   close(pb)
 return(results)
 

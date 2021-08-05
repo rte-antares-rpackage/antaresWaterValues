@@ -288,7 +288,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   value_nodes_dt[, vu := abs(value_node_dif / states_dif )]
   value_nodes_dt[value_node_dif<0,vu:=0]
 
-  waterValuesViz(value_nodes_dt)
+  print(waterValuesViz(value_nodes_dt))
   return(value_nodes_dt)
   # return(watervalues)
 }

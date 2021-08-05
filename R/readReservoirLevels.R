@@ -40,6 +40,7 @@ readReservoirLevels <- function(area,
   }
 }
 
+#' @export
 
 readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly"))
@@ -81,7 +82,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
   reservoir[]
 }
 
-
+#' @export
 readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly", "daily"))
   if (!area %in% antaresRead::getAreas(opts = opts))

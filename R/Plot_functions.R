@@ -163,9 +163,10 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @import ggplot2
-#' @import readReservoirLevels
+#' @importFrom watervalues readReservoirLevels
 #' @import dplyr
 #' @import antaresRead
+#' @export
 
 
 plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions()){

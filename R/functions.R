@@ -36,7 +36,7 @@ max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "h
 if (hasName(max_hydro, "hstorPMaxHigh")) {
   max_hydro <- max_hydro[, max(hstorPMaxHigh)] * 168
 } else {
-  max_hydro <- max_hydro[, max(generatingMaxPower)] * 168    }
+  max_hydro <- max(max_hydro$generatingMaxPower) * 168    }
 return(max_hydro)
 }
 

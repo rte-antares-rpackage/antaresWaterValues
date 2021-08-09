@@ -106,7 +106,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
     tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
     tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = tmp_name)
     inflow <- readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = "all", opts = tmp_opt)
-    inflow <- inflow[order(mcYear, timeId)]
+    # inflow <- inflow[order(mcYear, timeId)]
+    inflow[with(inflow, order(mcYear, timeId)),]
     inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
     inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
     inflow[, timeId := as.numeric(timeId)]

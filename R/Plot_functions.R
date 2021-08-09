@@ -371,7 +371,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     p <- p+theme(plot.title = element_text(hjust = 0.5))
     p <- p+ labs(x = "hour",
                  y = "MWh")
-
+    otp <- generation_hourly
   }
 
   if(timestep=="daily"){
@@ -395,8 +395,9 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     p <- p+theme(plot.title = element_text(hjust = 0.5))
     p <- p+ labs(x = "day",
                  y = "MWh")
-  }
-  p
-  return(p)
+    otp <- generation_daily
+    }
+  print(p)
+  return(otp)
   }
 

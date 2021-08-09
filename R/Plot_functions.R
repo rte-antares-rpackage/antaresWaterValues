@@ -168,7 +168,6 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @import ggplot2
-#' @importFrom watervalues readReservoirLevels
 #' @import dplyr
 #' @import tidyr
 #' @import antaresRead
@@ -270,9 +269,8 @@ return(temp1)
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#'
+#' @import data.table
 #' @import ggplot2
-#' @importFrom watervalues readReservoirLevels
 #' @import dplyr
 #' @import tidyr
 #' @import antaresRead
@@ -333,8 +331,8 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     Pmin <- Pmin  %>% select(c-4,c-1,c)
     Pmin <- setNames(Pmin,c("Pmin","hour","day"))
   }else{
-    P <- P[order(mcYear, timeId)]
-    P <- P[, list(mcYear,timeId,`H. STOR` )]
+    P <- P[order(P$mcYear, P$timeId),]
+    P <- P[,list(mcYear,timeId,`H. STOR` )]
     P$mcYear <- NULL
     Pmin <- Pmin  %>% select(Mcyear,c-1,c)
     Pmin <- setNames(Pmin,c("Pmin","hour","day"))

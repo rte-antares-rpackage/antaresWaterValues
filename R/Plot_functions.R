@@ -170,6 +170,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' @import ggplot2
 #' @importFrom watervalues readReservoirLevels
 #' @import dplyr
+#' @import tidyr
 #' @import antaresRead
 #' @export
 
@@ -253,3 +254,149 @@ return(temp1)
 
 
 }
+
+
+#--------- Turbining power graph Plot---------------
+#' Plot Turbining power  Graph and return result table
+#'
+#' @param area An 'antares' area.
+#' @param timeStep Resolution of the data to import:
+#' weekly (default, a linear interpolation is done on the data),
+#' monthly (original data).
+#' @param mcyear precise the MC year to plot.
+#' Null plot the synthesis. Default NULL
+#' @param min_path pathe of Pmin file "/user/Pmin **.txt"
+#' @param simulation_name simulation name to plot.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @import ggplot2
+#' @importFrom watervalues readReservoirLevels
+#' @import dplyr
+#' @import tidyr
+#' @import antaresRead
+#' @export
+
+
+
+
+plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
+                            simulation_name=NULL,opts=antaresRead::simOptions())
+
+
+{
+  min_path <- "/user/Pmin nom2.txt"
+  path <- paste0(opts$studyPath,min_path)
+  Pmin <- read.table(path, header = FALSE, sep = "", dec = ".")
+  max_path <- "/user/Pmax nom2.txt"
+  path <- paste0(opts$studyPath,max_path)
+  Pmax <- read.table(path, header = FALSE, sep = "", dec = ".")
+  Pmax <- Pmax[-365,]
+
+
+  Pmin$hours <- seq(length.out=nrow(Pmin))
+  tmp <- NULL
+  for(i in 1:365){
+    tmp <- append(tmp,rep(i,24))
+  }
+  Pmin$day <- tmp
+  Pmin <- Pmin[Pmin$day<365,]
+
+
+  #---- Select simulation---
+  if(is.null(simulation_name)){
+
+    sim_names <- getSimulationNames("",opts = opts)
+    for (i in 1:length(sim_names))
+    { t <- sprintf("[%d] ==> %s",i,sim_names[i])
+    cat(t,sep="\n")}
+
+    sim_nb <- 0
+    while(sim_nb < 1|(sim_nb >length(sim_names)))
+    {sim_nb <- readline(prompt="Enter simulation number: ")
+    sim_nb <- as.integer(sim_nb)
+    }
+    simulation_name <- sim_names[sim_nb]
+
+  }
+
+  tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+
+  #----- Read hydro generation power
+  P <- antaresRead::readAntares(areas = area_nom, timeStep = timestep,
+                                mcYears = Mcyear, opts=tmp_opt,select = "H. STOR" )
+  c <- ncol(Pmin)
+  if(is.null(Mcyear)){
+    P <- P[order(timeId)]
+    P <- P[, list(timeId,`H. STOR` )]
+    Pmin <- Pmin  %>% select(c-4,c-1,c)
+    Pmin <- setNames(Pmin,c("Pmin","hour","day"))
+  }else{
+    P <- P[order(mcYear, timeId)]
+    P <- P[, list(mcYear,timeId,`H. STOR` )]
+    P$mcYear <- NULL
+    Pmin <- Pmin  %>% select(Mcyear,c-1,c)
+    Pmin <- setNames(Pmin,c("Pmin","hour","day"))
+  }
+
+  # == time id + H. stor
+
+
+
+
+
+  if(timestep=="hourly"){
+    Pmax$hourly <- Pmax$V1
+    Pmax_hourly <- NULL
+    for(i in 1:nrow(Pmax)){
+      Pmax_hourly <- append(Pmax_hourly,rep(Pmax$hourly[i],24))
+    }
+    generation_hourly <-data.frame(P$timeId)
+    setnames(x = generation_hourly,"P.timeId","hour")
+    generation_hourly$Pmax <- Pmax_hourly
+    generation_hourly$generation <- P$`H. STOR`
+    Pmin$day <- NULL
+    generation_hourly <- left_join(generation_hourly,Pmin,by="hour")
+
+    p <- ggplot(data=generation_hourly, aes(x=hour)) +
+      geom_line(aes(y = Pmin ), color = "red") +
+      geom_line(aes(y = Pmax ), color="red")+
+      geom_line(aes(y =generation ), color="blue")
+    if(is.null(Mcyear))
+    { p <- p+ggtitle(sprintf("Hourly Generation for Synthesis year"))
+    }else{
+      p <- p+ggtitle(sprintf("Hourly Generation for MC year %d",Mcyear))
+    }
+    p <- p+theme(plot.title = element_text(hjust = 0.5))
+    p <- p+ labs(x = "hour",
+                 y = "MWh")
+
+  }
+
+  if(timestep=="daily"){
+    generation_daily <-data.frame(P$timeId)
+    setnames(x = generation_daily,"P.timeId","day")
+    generation_daily$Pmax <- Pmax$V1*Pmax$V2
+    generation_daily$generation <- P$`H. STOR`
+    t <- aggregate(Pmin~day, data=Pmin, FUN=sum)
+    generation_daily$Pmin <- t$Pmin
+
+    p <- ggplot(data=generation_daily, aes(x=day)) +
+      geom_line(aes(y = Pmin ), color = "red") +
+      geom_line(aes(y = Pmax ), color="red")+
+      geom_line(aes(y =generation ), color="blue")
+    if(is.null(Mcyear))
+    { p <- p+ggtitle(sprintf("Daily Generation for Synthesis year"))
+    }else{
+      p <- p+ggtitle(sprintf("Daily Generation for MC year %d",Mcyear))
+      }
+
+    p <- p+theme(plot.title = element_text(hjust = 0.5))
+    p <- p+ labs(x = "day",
+                 y = "MWh")
+  }
+  p
+  return(p)
+  }
+

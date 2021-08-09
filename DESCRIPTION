@@ -15,10 +15,10 @@ Imports:
         dotenv,
         data.table,
         zoo,
-        dplyr,
+        tidyr,
         tibble,
         ggplot2,
         cowplot,
         mice,
-        tidyr
+        dplyr
 

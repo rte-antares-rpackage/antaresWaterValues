@@ -63,7 +63,6 @@ post_process <- function(results,down_cost=3000,full_imputation=FALSE,impute_met
   pb <- txtProgressBar(min = 0, max = 51, style = 3)
 
    for (i in 1:52){
-    if (i==7) browser()
     maxi <- max(results[weeks==i]$vu,na.rm = TRUE)
     mini <- min(results[weeks==i]$vu,na.rm = TRUE)
 

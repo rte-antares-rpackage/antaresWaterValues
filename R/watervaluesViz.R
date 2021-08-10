@@ -13,7 +13,7 @@
 #' @importFrom viridis scale_fill_viridis
 #'
 # @examples
-waterValuesViz <- function(Data, filtre_ratio=1, add_band = FALSE,
+waterValuesViz <- function(Data, filtre_ratio=1,show_negative=TRUE, add_band = FALSE,
                            type = c("linear", "spline"),
                            bandwidth = 100, failure_cost = 3000) {
 
@@ -30,9 +30,12 @@ waterValuesViz <- function(Data, filtre_ratio=1, add_band = FALSE,
   }
   q <- quantile(value_nodes$vu,filtre_ratio,na.rm = TRUE)
   value_nodes[vu>q,vu:=q]
-  value_nodes[vu<0,vu:=0]
-
-
+  q_down <- quantile(value_nodes$vu,1-filtre_ratio,na.rm = TRUE)
+  value_nodes[vu<q_down,vu:=q_down]
+  if(!show_negative){  value_nodes[vu<0,vu:=0]
+}
+  value_nodes <- states_to_percent(value_nodes,states_step_ratio=0.025)
+  setnames(value_nodes,"states_round_percent","states")
   p <- ggplot2::ggplot(data = value_nodes)
   if (add_band) {
     p <- p + ggplot2::aes(x = weeks, y = states, fill = vu_band)

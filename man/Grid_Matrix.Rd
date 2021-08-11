@@ -21,6 +21,7 @@ Grid_Matrix(
   only_input = FALSE,
   q_ratio = 0.5,
   monotonic_bellman = FALSE,
+  test_week = NULL,
   opts = antaresRead::simOptions()
 )
 }

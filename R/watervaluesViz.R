@@ -46,6 +46,7 @@ waterValuesViz <- function(Data, filtre_ratio=1,show_negative=TRUE, add_band = F
   p <- p + viridis::scale_fill_viridis(na.value = "transparent")
   p <- p + ggplot2::theme_minimal()
   p <- p + ggplot2::labs(x = "Weeks", y = "States")
+  p <- p+ggtitle(sprintf("Water Values Plot"))+theme(plot.title = element_text(hjust = 0.5))
 
   return(p)
 }

@@ -28,6 +28,8 @@
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @import dplyr
 #' @import tibble
+#' @import stats
+#' @import grDevices
 #'
 #'
 

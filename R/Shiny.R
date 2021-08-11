@@ -1,15 +1,19 @@
+#' Open watervalues Calculator in APP Web
+#'
+#' @param simulation_res
+#'   List of simulation results returned by the function
+#'   \code{watervalues::runWaterValuesSimulation}
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @import  shiny
+#' @import shinythemes
+#' @export
 
+shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
 
-# library(shiny)
-library(shinythemes)
-
-#Shiny_Grid_matrix <- function(simulation_res,opts)
-
-#
-# simulation_res <- simulation_res_se
-# opts
-
-
+{
 
 
 
@@ -129,3 +133,4 @@ server <- function(input, output) {
 
 #------Run-----
 shinyApp(ui = ui, server = server)
+}

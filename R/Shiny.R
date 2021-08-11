@@ -22,10 +22,14 @@ shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
 #------User interface-----
 
 ui <- fluidPage(
+
   shinyjs::useShinyjs(),
   theme = shinytheme("cerulean"),
   titlePanel("Calculate Water Values"),
 
+  sidebarLayout(
+
+  sidebarPanel(
   #area
   selectInput("Area",
     "choose the area",
@@ -73,11 +77,12 @@ ui <- fluidPage(
   checkboxInput("show_negative","Show negative Water values",
                 value=T),
 
+  ),
 
   mainPanel(
     plotOutput("Watervalues")
 
-),
+),),
 
 )
 

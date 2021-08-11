@@ -138,6 +138,7 @@ states_to_percent <- function(data,states_step_ratio=0.01){
   res[states_ref_0_100, on = "states_round_percent", statesid := i.statesid]
 
   res[data, on = c("weeks", "statesid"), value_node := i.value_node]
+  res[data, on = c("weeks", "statesid"), value_node_dif := i.value_node_dif]
   res[data, on = c("weeks", "statesid"), vu := i.vu]
   return(res)
   }

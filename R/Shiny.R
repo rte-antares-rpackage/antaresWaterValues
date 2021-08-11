@@ -72,11 +72,19 @@ ui <- fluidPage(
 
   actionButton("Calculate","launch caulculs"),
 
-  actionButton("plot","Show"),
-
   checkboxInput("show_negative","Show negative Water values",
                 value=T),
 
+
+  checkboxInput("filter","Filter water values",value=F),
+  conditionalPanel(
+    condition = "input.filter",
+    sliderInput("filtre_ratio",label="Filter extreme water values ratio",min=0,
+                max=1,value=1),
+  )
+  ,
+
+  actionButton("plot","Show"),
   ),
 
   mainPanel(
@@ -113,7 +121,9 @@ server <- function(input, output) {
       }
     )
 
-    watervalues <- eventReactive(input$plot,{waterValuesViz(rv$results,
+    watervalues <- eventReactive(input$plot,
+                                 {waterValuesViz(rv$results,
+                                    filtre_ratio =input$filtre_ratio,
                                     show_negative=input$show_negative)})
 
     output$Watervalues <- renderPlot(watervalues())

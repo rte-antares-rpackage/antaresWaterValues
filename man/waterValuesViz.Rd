@@ -7,6 +7,7 @@
 waterValuesViz(
   Data,
   filtre_ratio = 1,
+  show_negative = TRUE,
   add_band = FALSE,
   type = c("linear", "spline"),
   bandwidth = 100,

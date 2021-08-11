@@ -117,12 +117,22 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
 #' @param states_step_ratio put the ratio to change reservoir discretization in percent
 #' 0.01 to augment by 1%
 #' @import ggplot2
+#' @import cowplot
+
 #' @export
 
 
 plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio=0.01){
 
-  temp <- value_nodes_dt[weeks ==week_number]
+  if(week_number<52){
+    next_week_number <- week_number+1
+  }else{
+    next_week_number ==1
+  }
+
+  temp <- value_nodes_dt[weeks ==next_week_number]
+
+  temp$vu <- value_nodes_dt[weeks ==week_number]$vu
 
   temp <- states_to_percent(temp,states_step_ratio)
 
@@ -137,15 +147,18 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
   p1 <- p1+ggtitle(sprintf("Water Values"))+theme(plot.title = element_text(hjust = 0.5))
 
   p2 <- ggplot(data = temp, aes(Reservoir_percent ,Bellman_Value)) +geom_line(size=1,color="red 4")
-  p2 <- p2+ggtitle(sprintf("Bellman Values"))+theme(plot.title = element_text(hjust = 0.5))
+  p2 <- p2+ggtitle(sprintf("Bellman Values %d",next_week_number))+theme(plot.title = element_text(hjust = 0.5))
+
+  p3 <- ggplot(data = temp, aes(Reservoir_percent ,value_node_dif)) +geom_line(size=1,color="green 4")
+  p3 <- p3+ggtitle(sprintf("Gradien Bellman %d",next_week_number))+theme(plot.title = element_text(hjust = 0.5))
 
   if (param=="vu") {
     print(p1)
   }else if(param=="both") {
 
-    tit <- sprintf("VU and Bellman for Week %d",week_number)
+    tit <- sprintf("VU for Week %d",week_number)
     title <- ggdraw() + draw_label(tit, fontface='bold')
-    p <- plot_grid(p1,p2)
+    p <- plot_grid(p1,p2,p3)
     plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1)) # rel_heights values control title margins
   }else print(p2)
 

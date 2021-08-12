@@ -17,6 +17,7 @@ Bellman(
   correct_outliers = FALSE,
   q_ratio = 0.75,
   test_week,
+  counter,
   ...
 )
 }

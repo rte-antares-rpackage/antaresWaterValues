@@ -106,6 +106,31 @@ return(results)
 
 }
 
+
+#' @export
+
+remove_out <- function(results,min=NULL,max=NULL,repl="NaN"){
+
+  if(is.numeric(max)){
+    if (repl=="NaN"){
+      results[vu>max,vu:=NaN]
+    }else{
+      results[vu>max,vu:=max]
+
+    }
+  }
+
+  if(is.numeric(min)){
+    if (repl=="NaN"){
+      results[vu<min,vu:=NaN]
+    }else{
+      results[vu<min,vu:=min]
+
+    }
+  }
+  return(results)
+}
+
 interp_up <- function(mini,statesid){
 
   mini*(1+(exp(-statesid)))*-1

@@ -46,9 +46,17 @@ ui <- fluidPage(
 
 
           # Algorithm
+          radioGroupButtons(
+            inputId = "method",
+            label = "Select algorithm to use",
+            choices = c("grid-mean","mean-grid","quantile"),
+            individual = TRUE,
+            justified = TRUE,
+            checkIcon = list(
+              yes = icon("ok",
+                         lib = "glyphicon"))
+          ),
 
-          selectInput("method","Select algorithm to use",
-                      c("grid-mean","mean-grid","quantile")),
           conditionalPanel(
             condition = "input.method=='quantile'",
             sliderInput("q_ratio",label=NULL,min=0,max=1,value=0.5),
@@ -236,8 +244,16 @@ ui <- fluidPage(
                   label = "Reset",
                   style = "pill",
                   color = "danger"
-                )
+                ),
 
+                tags$button(
+                  id = "to_antares",
+                  type="button",
+                  class = "btn action-button btn-large btn-primary",
+                  img(src = "https://antares-simulator.org/static/img/antares-256.png",
+                  height = "50px",
+                  HTML('<i class="icon-star"></i>To Antares'))
+                )
 
                 ),#sidebarPanel
 
@@ -412,6 +428,25 @@ server <- function(input, output) {
     output$post_process <- renderPlot(
       waterValuesViz(final_result())
       )
+
+    observeEvent(input$to_antares,{
+
+                 results <- final_result()
+                 results <- results[results$weeks!=53,]
+
+                 reshaped_values <- to_Antares_Format(results)
+                 writeWaterValues(
+                   area = input$Area,
+                   data = reshaped_values
+                 )
+                 show_alert(
+                   title = "Implement water values in Antares",
+                   text = " Done !!",
+                   type = "success"
+                 )
+                 }
+
+    )
 
 }
 

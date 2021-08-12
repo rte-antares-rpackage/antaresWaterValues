@@ -122,7 +122,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
 #' @export
 
 
-plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio=0.01){
+plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio=0.01,bellman_week=NULL,...){
 
   if(week_number<52){
     next_week_number <- week_number+1
@@ -130,6 +130,8 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
     next_week_number ==1
   }
 
+  if(param=="bell"){next_week_number <- week_number}
+  if(is.numeric(bellman_week)){next_week_number <- bellman_week}
   temp <- value_nodes_dt[weeks ==next_week_number]
 
   temp$vu <- value_nodes_dt[weeks ==week_number]$vu
@@ -153,14 +155,22 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
   p3 <- p3+ggtitle(sprintf("Gradien Bellman %d",next_week_number))+theme(plot.title = element_text(hjust = 0.5))
 
   if (param=="vu") {
-    print(p1)
+    return(p1)
   }else if(param=="both") {
 
     tit <- sprintf("VU for Week %d",week_number)
     title <- ggdraw() + draw_label(tit, fontface='bold')
-    p <- plot_grid(p1,p2,p3)
+    p <- plot_grid(p1,p2)
     plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1)) # rel_heights values control title margins
-  }else print(p2)
+  }else if(param=="bell")
+  {return(p2)
+  }else {
+    tit <- sprintf("VU for Week %d",week_number)
+    title <- ggdraw() + draw_label(tit, fontface='bold')
+    p <- plot_grid(p1,p2,p3)
+    plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
+    }
+
 
 }
 

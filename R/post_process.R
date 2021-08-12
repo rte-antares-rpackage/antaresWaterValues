@@ -1,8 +1,9 @@
 #' @export
 
-monotonic_VU <- function(results,noise_ratio=0.001)
+monotonic_VU <- function(results_dt,noise_ratio=10)
 
 {
+  results <- copy(results_dt)
   results[vu==Inf|is.na(vu),vu:=NaN]
   qm <- quantile(results$vu,0.95,na.rm = TRUE)
   temp <- results[vu>1.5*qm]
@@ -12,7 +13,7 @@ monotonic_VU <- function(results,noise_ratio=0.001)
   }
   temp <- NULL
 
-  for (i in 1:53){
+  for (i in 1:52){
 
     temp <- results[weeks==i]
     maxi <- max(temp$vu,na.rm = TRUE)
@@ -48,13 +49,16 @@ monotonic_VU <- function(results,noise_ratio=0.001)
 
 #' @export
 
-post_process <- function(results,down_cost=3000,full_imputation=FALSE,impute_method='pmm'){
+post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FALSE,impute_method='pmm'){
 
+  results <- copy(results_dt)
   results[vu==Inf|is.na(vu),vu:=NA]
   maxid <- max(results$statesid)
   q3 <- quantile(results$statesid,0.75)
 
-  results[abs(vu)>down_cost,vu:=NA]
+  results[vu>max_cost,vu:=NA]
+  results[vu<min_cost,vu:=NA]
+
   # results[vu<-down_cost,vu:=NA]
 
 
@@ -70,16 +74,16 @@ post_process <- function(results,down_cost=3000,full_imputation=FALSE,impute_met
       # results[weeks==i&!is.finite(vu)&states>=level_high,vu:=interp_up(mini,statesid)]
       results[weeks==i&!is.finite(vu)&states>=level_high,vu:=0]
 
-      if (down_cost>0){
-        results[weeks==i&!is.finite(vu)&states<=level_low,vu:=down_cost]
-        results[weeks==i&states<=level_low,vu:=down_cost]
+      if (max_cost>0){
+        results[weeks==i&!is.finite(vu)&states<=level_low,vu:=max_cost]
+        results[weeks==i&states<=level_low,vu:=max_cost]
       }
       results[weeks==i&!is.finite(vu)&states<=level_low,vu:=interp_down(maxi,statesid,q3)]
     }else{
       results[weeks==i&states>level_high,vu:=NA]
       results[weeks==i&states<level_low,vu:=NA]
-      results[weeks==i&statesid==maxid,vu:=down_cost]
-      results[weeks==i&statesid==1,vu:=-down_cost]
+      results[weeks==i&statesid==maxid,vu:=max_cost]
+      results[weeks==i&statesid==1,vu:=-min_cost]
 
 
 
@@ -109,10 +113,11 @@ return(results)
 
 #' @export
 
-remove_out <- function(results,min=NULL,max=NULL,repl="NaN"){
+remove_out <- function(results_dt,min=NULL,max=NULL,NAN=T){
 
+  results <- copy(results_dt)
   if(is.numeric(max)){
-    if (repl=="NaN"){
+    if (NAN){
       results[vu>max,vu:=NaN]
     }else{
       results[vu>max,vu:=max]
@@ -121,7 +126,7 @@ remove_out <- function(results,min=NULL,max=NULL,repl="NaN"){
   }
 
   if(is.numeric(min)){
-    if (repl=="NaN"){
+    if (NAN){
       results[vu<min,vu:=NaN]
     }else{
       results[vu<min,vu:=min]

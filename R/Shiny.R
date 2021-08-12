@@ -10,6 +10,7 @@
 #' @import  shiny
 #' @import shinythemes
 #' @import watervalues
+#' @import shinyWidgets
 #' @export
 
 shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
@@ -19,6 +20,7 @@ shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
 
 
 #------User interface-----
+linebreaks <- function(n){HTML(strrep(br(), n))}
 
 ui <- fluidPage(
   shinyjs::useShinyjs(),
@@ -68,17 +70,17 @@ ui <- fluidPage(
                       value=opts$parameters$general$nbyears,step=1),
 
           # correct outliers option
-          checkboxInput("correct_outliers","Use correct outlier to remove noise",
-                        value=T),
+          materialSwitch("correct_outliers","Use correct outlier to remove noise",
+                        value=T,status = "success"),
 
 
           actionButton("Calculate","launch caulculs"),
 
-          checkboxInput("show_negative","Show negative Water values",
-                        value=T),
+          materialSwitch("show_negative","Show negative Water values",
+                        value=T,status = "danger"),
 
 
-          checkboxInput("filter","Filter water values",value=F),
+          materialSwitch("filter","Filter water values",value=F,status = "success"),
           conditionalPanel(
             condition = "input.filter",
             sliderInput("filtre_ratio",label="Filter extreme water values ratio",min=0,
@@ -162,7 +164,92 @@ ui <- fluidPage(
              )
 
 
-             )
+             ),#end tabpanel 3
+
+    tabPanel("Post Process",
+
+             sidebarLayout(fluid = TRUE,
+
+               sidebarPanel(
+                 h3(strong("Remove outlier water values")),
+                 switchInput("Run_remove_out",
+                               value=F, offStatus = "danger",
+                             onStatus = "success"),
+
+                 conditionalPanel(
+
+                   condition = "input.Run_remove_out",
+                   column(4, numericInput(inputId = "min_rm",
+                                          label = "Min",
+                                          value = 0,
+                                          step = 1,
+                                          width = '100%')),
+                   column(4, numericInput(inputId = "max_rm",
+                                          label = "Max",
+                                          value = 200,
+                                          step = 1,
+                                          width = '100%')),
+                   column(4, materialSwitch("rm_NaN",
+                                          label = "NaN",
+                                          value = T,
+                                          status = "info",
+                                          width = '100%'))),
+                 linebreaks(3),
+
+                 h3(strong("Fill The rest of water values")),
+
+                 switchInput("Run_post_process",
+                             value=F, offStatus = "danger",
+                             onStatus = "success"),
+
+                conditionalPanel(
+
+                  condition="input.Run_post_process",
+
+                column(12,conditionalPanel(
+                   condition = "input.Run_remove_out",
+                    materialSwitch("use_filtred",label = "Use Filtred",
+                             value=F, status="info"))),
+
+                numericInput("max_cost","Max Water value price",value=3000),
+
+                numericInput("min_cost","Min Water value price",value=-150),
+
+                materialSwitch("full_imputation","Impute NaN values",
+                          value=T,status = "success"),
+
+                selectInput("impute_method","Impute method",
+                    c("pmm", "midastouch", "sample", "cart","rf","mean","norm",
+                      "norm.nob","norm.boot","norm.predict","quadratic","ri",
+                      "2l.norm","2l.lmer","2l.pan","2lonly.mean","2lonly.norm"),
+                    selected="norm.predict")),
+
+
+                h3(strong("Force Monotonic")),
+
+                switchInput("force_monotonic",
+                            value=F, offStatus = "danger",
+                            onStatus = "success"),
+
+                actionBttn(
+                  inputId = "reset",
+                  label = "Reset",
+                  style = "pill",
+                  color = "danger"
+                )
+
+
+                ),#sidebarPanel
+
+
+
+
+               mainPanel(
+                 plotOutput("post_process")
+               )
+             ) #sidebarLayout
+
+             ) #end tabpanel "Post Process"
 
 
 ) #navbar
@@ -189,7 +276,16 @@ server <- function(input, output) {
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio)
-      rv$results <- results
+      isolate(rv$results <- results)
+
+      show_alert(
+        title = "Water Values",
+        text = "Calculation Done !!",
+        type = "success"
+      )
+
+      pp_results <- copy(results)
+      rv$pp_results <- pp_results
       removeModal()
 
       }
@@ -218,6 +314,11 @@ server <- function(input, output) {
                                             opts)
                     rv$reward_dt <- reward_dt
                     removeModal()
+                    show_alert(
+                      title = "Rewards",
+                      text = "Importation Done !!",
+                      type = "success"
+                    )
 
                   }
                 )
@@ -248,8 +349,69 @@ server <- function(input, output) {
        ) # end rewardplot
 
 
+    #post process
+    results_temp <- reactive({
+
+      if(input$Run_remove_out){
+      remove_out(rv$results,min = input$min_rm,max=input$max_rm,NAN=input$rm_NaN)
+      }else{
+        rv$results
+      }
+      })
+
+    post_result <- reactive({
+
+      if(input$use_filtred){
+        withProgress( post_process(results = results_temp(),max_cost=input$max_cost,
+                     min_cost =input$min_cost,
+                     full_imputation=input$full_imputation,
+                     impute_method=input$impute_method ))
+      }else{
+        withProgress(post_process(results = rv$results,max_cost=input$max_cost,
+                     min_cost =input$min_cost,
+                     full_imputation=input$full_imputation,
+                     impute_method=input$impute_method ))
+      }
+
+    })
 
 
+    final_result <- reactive({
+
+
+      if(!input$Run_post_process){
+        if(input$force_monotonic){
+          monotonic_VU(results_temp())
+        }else{
+          results_temp()
+        }
+      }else{
+        if(input$force_monotonic){
+          monotonic_VU(post_result())
+        }else{
+          post_result()
+        }
+     }
+
+    })
+
+    observeEvent(input$reset,
+                 {
+                   rv$result <-rv$pp_results
+                   show_alert(
+                     title = "Post process",
+                     text = "Reset Done !!",
+                     type = "success"
+                   )
+                 }
+
+                 )
+
+
+
+    output$post_process <- renderPlot(
+      waterValuesViz(final_result())
+      )
 
 }
 
@@ -264,3 +426,4 @@ server <- function(input, output) {
 #------Run-----
 shinyApp(ui = ui, server = server)
 }
+

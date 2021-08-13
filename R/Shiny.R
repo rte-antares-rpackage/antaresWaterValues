@@ -265,8 +265,76 @@ ui <- fluidPage(
                )
              ) #sidebarLayout
 
-             ) #end tabpanel "Post Process"
+             ), #end tabpanel "Post Process"
 
+
+   tabPanel("Results",
+
+
+            sidebarLayout(
+              sidebarPanel(
+
+
+                pickerInput(
+                  inputId = "res_sim_name",
+                  label = "Choose your simulation",
+                  choices = getSimulationNames("",opts = opts),
+                  options = list(
+                    `live-search` = TRUE)
+                ),
+
+                pickerInput(
+                  inputId = "res_area",
+                  label = "Choose your Area",
+                  choices = opts$areaList,
+                  options = list(
+                    `live-search` = TRUE)
+                ),
+
+                radioGroupButtons(
+                  inputId = "res_timeStep",
+                  label = "Select Time Step",
+                  choices = c("daily","weekly","monthly"),
+                  individual = TRUE,
+                  justified = TRUE,
+                  checkIcon = list(
+                    yes = icon("ok",
+                               lib = "glyphicon"))
+                ),
+
+
+                radioGroupButtons(
+                  inputId = "res_MC",
+                  label = "Select Monte Carlo Year",
+                  choices = c("Synthesis Year"="NULL","All"='all',"Custom"),
+                  individual = TRUE,
+                  justified = TRUE,
+                  checkIcon = list(
+                    yes = icon("ok",
+                               lib = "glyphicon"))
+                ),
+
+                conditionalPanel(
+                  condition="input.res_MC=='Custom'",
+                  sliderInput("res_mc_year",label="choose the MC years to use",min=1,
+                              max=opts$parameters$general$nbyears,
+                              value=opts$parameters$general$nbyears,step=1)
+                )
+
+
+
+              ),   # end sidebarpanel
+
+              mainPanel(
+
+                plotOutput("reservoir")
+
+
+              )
+
+              ) #end sidebar Panel
+
+           )  #end tabpanel "Post Process"
 
 ) #navbar
 ) #UI
@@ -447,6 +515,22 @@ server <- function(input, output) {
                  }
 
     )
+
+    # Results page
+
+    output$reservoir <- renderPlot({
+
+      if(input$res_MC=="Custom"){
+        mc_year <- input$res_mc_year
+      }else{
+        if(input$res_MC=="all"){mc_year <- "all"
+        }else{mc_year <- NULL}
+      }
+
+      plot_reservoir(input$res_area,input$res_timeStep,
+                     simulation_name = input$res_sim_name,
+                     mcyear=mc_year,opts = opts, shiny = TRUE)
+    })
 
 }
 

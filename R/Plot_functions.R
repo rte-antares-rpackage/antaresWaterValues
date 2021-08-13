@@ -197,28 +197,30 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' @export
 
 
-plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions()){
+plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions(),shiny=F,...){
 
 reservoir <- readReservoirLevels(area, timeStep = timeStep, byReservoirCapacity = FALSE, opts = opts)
 reservoir$level_avg <- NULL
 reservoir$level_high <- reservoir$level_high*100
 reservoir$level_low <- reservoir$level_low*100
 
-if(is.null(simulation_name)){
 
-  sim_names <- getSimulationNames("",opts = opts)
-  for (i in 1:length(sim_names))
-   { t <- sprintf("[%d] ==> %s",i,sim_names[i])
-    cat(t,sep="\n")}
+if(!shiny){
+  if(is.null(simulation_name)){
 
-  sim_nb <- 0
-  while(sim_nb < 1|(sim_nb >length(sim_names)))
-    {sim_nb <- readline(prompt="Enter simulation number: ")
-    sim_nb <- as.integer(sim_nb)
-    }
-  simulation_name <- sim_names[sim_nb]
+    sim_names <- getSimulationNames("",opts = opts)
+    for (i in 1:length(sim_names))
+     { t <- sprintf("[%d] ==> %s",i,sim_names[i])
+      cat(t,sep="\n")}
 
- }
+    sim_nb <- 0
+    while(sim_nb < 1|(sim_nb >length(sim_names)))
+      {sim_nb <- readline(prompt="Enter simulation number: ")
+      sim_nb <- as.integer(sim_nb)
+      }
+    simulation_name <- sim_names[sim_nb]
+
+   }}
 
 
 #read reservoir actual levels:

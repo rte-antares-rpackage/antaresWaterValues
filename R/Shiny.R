@@ -9,7 +9,6 @@
 #'
 #' @import  shiny
 #' @import shinythemes
-#' @import watervalues
 #' @import shinyWidgets
 #' @export
 
@@ -35,14 +34,18 @@ ui <- fluidPage(
 
         sidebarPanel(
           #area
-          selectInput("Area",
+          pickerInput("Area",
             "choose the area",
-            opts$areaList),
+            opts$areaList,
+            options = list(
+              `live-search` = TRUE)),
 
           #District List
-          selectInput("district_name",
+          pickerInput("district_name",
                       "choose the District",
-                      opts$districtList),
+                      opts$districtList,
+                      options = list(
+                        `live-search` = TRUE)),
 
 
           # Algorithm
@@ -139,9 +142,11 @@ ui <- fluidPage(
 
             sidebarPanel(
 
-              selectInput("district_name_rew",
+              pickerInput("district_name_rew",
                           "choose the District",
-                          opts$districtList),
+                          opts$districtList,
+                          options = list(
+                            `live-search` = TRUE)),
               actionButton("import_reward","Import reward"),
 
               textInput("simulation_name_pattern","simulation name patern"
@@ -226,11 +231,13 @@ ui <- fluidPage(
                 materialSwitch("full_imputation","Impute NaN values",
                           value=T,status = "success"),
 
-                selectInput("impute_method","Impute method",
+                pickerInput("impute_method","Impute method",
                     c("pmm", "midastouch", "sample", "cart","rf","mean","norm",
                       "norm.nob","norm.boot","norm.predict","quadratic","ri",
                       "2l.norm","2l.lmer","2l.pan","2lonly.mean","2lonly.norm"),
-                    selected="norm.predict")),
+                    selected="norm.predict",
+                    options = list(
+                      `live-search` = TRUE))),
 
 
                 h3(strong("Force Monotonic")),
@@ -319,7 +326,30 @@ ui <- fluidPage(
                   sliderInput("res_mc_year",label="choose the MC years to use",min=1,
                               max=opts$parameters$general$nbyears,
                               value=opts$parameters$general$nbyears,step=1)
-                )
+                ),
+
+
+                h3(strong("Check Pmin and Pmax")),
+                switchInput("Run_P_check",
+                            value=F, offStatus = "danger",
+                            onStatus = "success"),
+                conditionalPanel(
+
+                  condition = "input.Run_P_check",
+                  fileInput("Pmin_file","select your Pmin txt file",accept=".txt"),
+                  fileInput("Pmax_file","select your Pmax txt file",accept=".txt"),
+                  radioGroupButtons(
+                    inputId = "P_timeStep",
+                    label = "Select Time Step",
+                    choices = c("hourly","daily"),
+                    individual = TRUE,
+                    justified = TRUE,
+                    checkIcon = list(
+                      yes = icon("ok",
+                                 lib = "glyphicon"))  )
+
+
+                  )
 
 
 
@@ -327,7 +357,8 @@ ui <- fluidPage(
 
               mainPanel(
 
-                plotOutput("reservoir")
+                plotOutput("reservoir"),
+                plotOutput("pmin_pmax")
 
 
               )
@@ -531,6 +562,33 @@ server <- function(input, output) {
                      simulation_name = input$res_sim_name,
                      mcyear=mc_year,opts = opts, shiny = TRUE)
     })
+
+
+    output$pmin_pmax <- renderPlot({
+
+      ext_Pmin <- tools::file_ext(input$Pmin_file$datapath)
+      ext_Pmax <- tools::file_ext(input$Pmax_file$datapath)
+
+      req(input$Pmin_file)
+      validate(need(ext_Pmin == "txt", "Please upload a txt file"))
+      req(input$Pmax_file)
+      validate(need(ext_Pmax == "txt", "Please upload a txt file"))
+
+      if(input$res_MC=="Custom"){
+        mc_year <- input$res_mc_year
+      }else{
+        if(input$res_MC=="all"){mc_year <- "all"
+        }else{mc_year <- NULL}
+      }
+
+      plot_generation(input$res_area,timestep = input$P_timeStep,Mcyear = mc_year,
+                      simulation_name=input$res_sim_name,min_path = input$Pmin_file$datapath,
+                      max_path = input$Pmax_file$datapath,opts = opts)
+
+
+
+    })
+
 
 }
 

@@ -8,7 +8,9 @@ plot_Bellman(
   value_nodes_dt,
   week_number,
   param = "vu",
-  states_step_ratio = 0.01
+  states_step_ratio = 0.01,
+  bellman_week = NULL,
+  ...
 )
 }
 \arguments{

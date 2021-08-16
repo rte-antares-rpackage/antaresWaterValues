@@ -9,7 +9,9 @@ plot_reservoir(
   timeStep = "weekly",
   mcyear = NULL,
   simulation_name = NULL,
-  opts = antaresRead::simOptions()
+  opts = antaresRead::simOptions(),
+  shiny = F,
+  ...
 )
 }
 \arguments{

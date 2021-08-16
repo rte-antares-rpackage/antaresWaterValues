@@ -47,7 +47,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              q_ratio=0.5,
                              monotonic_bellman=FALSE,
                              test_week=NULL,
-                             opts = antaresRead::simOptions()) {
+                             opts = antaresRead::simOptions(),shiny=F,...) {
 
 
 
@@ -179,7 +179,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   # add empty columns ---------------------
   watervalues$value_node <- NA_real_
 
-  #----- monotonic bellman
+  #----- shiny Loader
+
+  if(shiny){
+    show_modal_spinner(spin = "atom",color = "#0039f5")
+  }
 
 
 
@@ -298,7 +302,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   value_nodes_dt[weeks==52]$vu <- temp1
   value_nodes_dt[weeks<52]$vu <- temp2
 
+  if(shiny){
 
+    remove_modal_spinner()
+
+  }
 
 
 

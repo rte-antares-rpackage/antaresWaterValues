@@ -12,6 +12,7 @@
 #' @import shinyWidgets
 #' @import shinycustomloader
 #' @importFrom shinybusy add_busy_gif
+#' @import spsComps
 #' @export
 
 shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
@@ -433,10 +434,10 @@ server <- function(input, output) {
 
     rv <- reactiveValues()
     observeEvent( input$Calculate,
-     {
-       show_modal_spinner(spin = "atom")
-        # remove it when done
-      # showModal(modalDialog("Calculating....", footer=NULL))
+
+    {
+
+    shinyCatch({
       results <-     Grid_Matrix(
         area = input$Area,
         simulation_names = simulation_res$simulation_names,
@@ -450,9 +451,10 @@ server <- function(input, output) {
         max_mcyears=input$max_mcyears,
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
-        q_ratio=input$q_ratio)
+        q_ratio=input$q_ratio,
+        shiny=T)
+
       isolate(rv$results <- results)
-      remove_modal_spinner()
       show_alert(
         title = "Water Values",
         text = "Calculation Done !!",
@@ -461,10 +463,16 @@ server <- function(input, output) {
 
       pp_results <- copy(results)
       rv$pp_results <- pp_results
-      removeModal()
+      },blocking_level="error" )
 
-      }
-    )
+        }
+
+
+      )
+
+
+
+
 
     watervalues <- eventReactive(input$plot,
                                  {waterValuesViz(rv$results,
@@ -483,12 +491,12 @@ server <- function(input, output) {
     #plot reward page
 
     observeEvent( input$import_reward,
-                  { showModal(modalDialog("Importing....", footer=NULL))
+                  {  show_modal_spinner(spin = "atom",color = "#0039f5")
                     reward_dt <- get_Reward(simulation_res$simulation_names,
                                             district_name =input$district_name_rew,
                                             opts)
                     rv$reward_dt <- reward_dt
-                    removeModal()
+                    remove_modal_spinner()
                     show_alert(
                       title = "Rewards",
                       text = "Importation Done !!",

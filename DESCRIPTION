@@ -14,7 +14,10 @@ Depends:
         methods,
         data.table,
         stats,
-        grDevices
+        grDevices,
+        shiny,
+        shinyWidgets,
+        shinythemes
 Imports:
         assertthat,
         viridis,

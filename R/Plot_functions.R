@@ -30,7 +30,7 @@ plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_w
   p1 <- p1+ggtitle(sprintf("Reward variation"))+theme(plot.title = element_text(hjust = 0.5))
 
   print(p1)
-  return(temp)
+  return(p1)
 }
 
 #--------- Plot reward -----------
@@ -56,7 +56,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
   p1 <- ggplot(data = temp,aes(x=`Turbining capacity`,Reward, col=week)) +geom_line(size=0.5)
   p1 <- p1+ggtitle(sprintf("Reward week"))+theme(plot.title = element_text(hjust = 0.5))
   print(p1)
-  return(temp)
+  return(p1)
 }
 
 #--------- Plot reward by MC year -----------
@@ -87,7 +87,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
   p1 <- ggplot(data = temp,aes(x=`Turbining capacity`,Reward, col=week)) +geom_line(size=0.5)
   p1 <- p1+ggtitle(sprintf("Reward week  MC Year %s",paste(as.character(week_id),collapse =" ")))+theme(plot.title = element_text(hjust = 0.5))
   print(p1)
-  return(temp)
+  return(p1)
 }
 
 
@@ -126,10 +126,10 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
   # temp <- data.frame(t,temp)
   # setnames(temp,"temp","Reward Transition")
   p1 <- ggplot(data = temp,aes(x=`Turbining transistion`,value, col=week)) +geom_line(size=0.5)
-  p1 <- p1+ggtitle(sprintf("Reward variation week %d MC Year %d",week_id,Mc_year))+theme(plot.title = element_text(hjust = 0.5))
+  p1 <- p1+ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(week_id),collapse =" ")))+theme(plot.title = element_text(hjust = 0.5))
 
   print(p1)
-  return(temp)
+  return(p1)
 }
 #----------Bellman Plot--------------
 #' Plot Bellman and Water values
@@ -299,7 +299,7 @@ if(is.numeric(mcyear)&(length(mcyear)==1)){
 }
 print(p)
 
-return(temp1)
+return(p)
 
 
 
@@ -450,6 +450,6 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     otp <- generation_daily
     }
   print(p)
-  return(otp)
+  return(p)
   }
 

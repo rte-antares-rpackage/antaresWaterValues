@@ -51,6 +51,12 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
 
+  #----- shiny Loader
+
+  if(shiny){
+    show_modal_spinner(spin = "atom",color = "#0039f5")
+  }
+
   methods <- c("mean-grid","grid-mean","quantile")
   if (!method %in% methods){
     stop("Unknown method. available methods: ('mean-grid','grid-mean','quantile') ")
@@ -71,8 +77,9 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   if (is.null(max_mcyears)) {
     max_mcyears <- opts$parameters$general$nbyears
+    max_mcyears <- seq_len(max_mcyears)
+
   }
-  max_mcyears <- seq_len(max_mcyears)
 
   # Niveau max
   {if (is.null(reservoir_capacity)) {
@@ -108,7 +115,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   {
     tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
     tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = tmp_name)
-    inflow <- readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = "all", opts = tmp_opt)
+    inflow <- readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = max_mcyears, opts = tmp_opt)
     # inflow <- inflow[order(mcYear, timeId)]
     inflow[with(inflow, order(mcYear, timeId)),]
     inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
@@ -179,11 +186,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   # add empty columns ---------------------
   watervalues$value_node <- NA_real_
 
-  #----- shiny Loader
-
-  if(shiny){
-    show_modal_spinner(spin = "atom",color = "#0039f5")
-  }
 
 
 

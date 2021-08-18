@@ -109,7 +109,7 @@ ui <- fluidPage(
           #MC years:
           sliderInput("max_mcyears",label="choose the number of MC years to use",min=1,
                       max=opts$parameters$general$nbyears,
-                      value=opts$parameters$general$nbyears,step=1),
+                      value=c(1,opts$parameters$general$nbyears),step=1),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
@@ -168,6 +168,8 @@ ui <- fluidPage(
        ), # Siderbar
   ),#tabpanel 2
 
+
+  #------ Reward Plot ------------
     tabPanel("Rewards Plot",
 
           sidebarLayout(
@@ -184,7 +186,7 @@ ui <- fluidPage(
               textInput("simulation_name_pattern","simulation name patern"
                         ,value="weekly_water_amount_"),
 
-              numericInput("week_id_rew","Week to show",value=2,
+              sliderInput("week_id_rew","Week to show",value=c(2,2),
                            min=1,max = 52),
 
               selectInput("param_rew","Type",c("Reward"="r",
@@ -195,7 +197,8 @@ ui <- fluidPage(
               conditionalPanel(
                 condition = "['rv1','r1'].includes(input.param_rew)",
                 sliderInput("Mc_year",label="Monte-Carlo year",min=1,
-                            max=opts$parameters$general$nbyears,value=1,step = 1)
+                            max=opts$parameters$general$nbyears,value=c(1,1)
+                            ,step = 1)
               ),
 
               ),
@@ -514,7 +517,9 @@ server <- function(input, output) {
     #plot reward page
 
     observeEvent( input$import_reward,
-                  {  show_modal_spinner(spin = "atom",color = "#0039f5")
+                  {
+
+                    shinyCatch({
                     reward_dt <- get_Reward(simulation_res$simulation_names,
                                             district_name =input$district_name_rew,
                                             opts)
@@ -525,33 +530,35 @@ server <- function(input, output) {
                       text = "Importation Done !!",
                       type = "success"
                     )
-
+                    })
                   }
                 )
 
 
     output$rewardplot <- renderPlot(
 
+      {week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
+       Mc_year <- input$Mc_year[1]:input$Mc_year[2]
       if(input$param_rew=="r")
-      {plot_reward(rv$reward_dt,input$week_id_rew,input$simulation_name_pattern)
+      {plot_reward(rv$reward_dt,week_id_rew,input$simulation_name_pattern)
       }else{
         if(input$param_rew=="rv")
-          {plot_reward_variation(rv$reward_dt,input$week_id_rew,
+          {plot_reward_variation(rv$reward_dt,week_id_rew,
                                    input$simulation_name_pattern)
         }else{
 
         if(input$param_rew=="r1")
-          {plot_reward_mc(rv$reward_dt,input$week_id_rew,
-                          input$Mc_year,input$simulation_name_pattern)
+          {plot_reward_mc(rv$reward_dt,week_id_rew,
+                          Mc_year,input$simulation_name_pattern)
         }else{
 
           if(input$param_rew=="rv1")
-          {plot_reward_variation_mc(rv$reward_dt,input$week_id_rew,
-                              input$Mc_year,input$simulation_name_pattern)}
+          {plot_reward_variation_mc(rv$reward_dt,week_id_rew,
+                              Mc_year,input$simulation_name_pattern)}
         }
         }
         }
-
+}
        ) # end rewardplot
 
 

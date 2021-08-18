@@ -14,13 +14,21 @@ plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_w
 {
   reward <- aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
-  temp <- diff(unlist(reward[week_id,]))
-  t <- seq(from=1,to=length(temp))
-  temp <- data.frame(t,temp)
-  setnames(temp,"temp","Reward Transition")
+  # temp <- diff(unlist(reward[week_id,]))
+  temp <- reward[week_id,]
+  temp <- as.data.table(t(temp))
+  t <- seq(from=1,to=(nrow(temp)-1))
+  temp <- sapply(temp, diff)
+
+  temp <- data.table(t,temp)
+  # setnames(temp,"temp","Reward Transition")
   setnames(temp,"t","Turbining transistion")
-  p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="red 4")
-  p1 <- p1+ggtitle(sprintf("Reward variation week %d",week_id))+theme(plot.title = element_text(hjust = 0.5))
+  temp <- melt(temp,id.vars="Turbining transistion",variable.name="week")
+  setnames(temp,"value","Reward transition")
+
+  p1 <- ggplot(data = temp,aes(x=`Turbining transistion`,`Reward transition`, col=week)) +geom_line(size=0.5)
+  p1 <- p1+ggtitle(sprintf("Reward variation"))+theme(plot.title = element_text(hjust = 0.5))
+
   print(p1)
   return(temp)
 }
@@ -40,12 +48,13 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
   t <- names_reward(reward_base,simulation_name_pattern)
   reward <- aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
-  temp <- (unlist(reward[week_id,]))
-  temp <- data.frame(t,temp)
-  setnames(temp,"temp","Reward")
-  setnames(temp,"t","Turbining capacity")
-  p1 <- ggplot(data = temp,aes(`Turbining capacity` , `Reward`)) +geom_line(size=1,color="purple 4")
-  p1 <- p1+ggtitle(sprintf("Reward week %d",week_id))+theme(plot.title = element_text(hjust = 0.5))
+  temp <- reward[week_id,]
+  temp <- as.data.table(t(temp))
+  temp$"Turbining capacity" <- t
+  temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
+  setnames(temp,"value","Reward")
+  p1 <- ggplot(data = temp,aes(x=`Turbining capacity`,Reward, col=week)) +geom_line(size=0.5)
+  p1 <- p1+ggtitle(sprintf("Reward week"))+theme(plot.title = element_text(hjust = 0.5))
   print(p1)
   return(temp)
 }
@@ -64,17 +73,26 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
 {
   t <- names_reward(reward_base,simulation_name_pattern)
-  reward <- reward_base[timeId==week_id&mcYear==Mc_year]
-  reward <- reward[,3:ncol(reward_base)]
-  temp <- (unlist(reward))
-  temp <- data.frame(t,temp)
-  setnames(temp,"temp","Reward")
-  setnames(temp,"t","Turbining capacity")
-  p1 <- ggplot(data = temp,aes(`Turbining capacity` , `Reward`)) +geom_line(size=1,color="purple 4")
-  p1 <- p1+ggtitle(sprintf("Reward week %d MC Year %d",week_id,Mc_year))+theme(plot.title = element_text(hjust = 0.5))
+
+  reward <- reward_base[timeId %in% week_id&mcYear%in%Mc_year]
+  names <- unlist(reward[,legend:=paste(sprintf("week %d",timeId),sprintf("MC year %d",mcYear))]$legend)
+  temp <- reward[,3:ncol(reward_base)]
+
+  temp <- as.data.table(t(temp))
+  setnames(temp,colnames(temp),names)
+  temp$"Turbining capacity" <- t
+  # temp$"Legend" <- reward$legend
+  temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
+  setnames(temp,"value","Reward")
+  p1 <- ggplot(data = temp,aes(x=`Turbining capacity`,Reward, col=week)) +geom_line(size=0.5)
+  p1 <- p1+ggtitle(sprintf("Reward week  MC Year %s",paste(as.character(week_id),collapse =" ")))+theme(plot.title = element_text(hjust = 0.5))
   print(p1)
   return(temp)
 }
+
+
+
+
 #--------- Plot reward variation by MC year -----------
 #' Plot the reward and return the results in table
 #'
@@ -88,15 +106,26 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 
 plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
 {
-  reward <- reward_base[timeId==week_id&mcYear==Mc_year]
-  reward <- reward[,3:ncol(reward_base)]
-  temp <- diff(unlist(reward))
-  t <- names_reward(reward_base,simulation_name_pattern)
-  t <- t[t!=0]
-  temp <- data.frame(t,temp)
-  setnames(temp,"temp","Reward Transition")
+  reward <- reward_base[timeId %in% week_id&mcYear%in%Mc_year]
+  names <- unlist(reward[,legend:=paste(sprintf("week %d",timeId),sprintf("MC year %d",mcYear))]$legend)
+  temp <- reward[,3:ncol(reward_base)]
+
+  temp <- as.data.table(t(temp))
+  t <- seq(from=1,to=(nrow(temp)-1))
+
+  temp <- sapply(temp, diff)
+
+  temp <- data.table(t,temp)
+  setnames(temp,colnames(temp)[-1],names)
   setnames(temp,"t","Turbining transistion")
-  p1 <- ggplot(data = temp,aes(`Turbining transistion` , `Reward Transition`)) +geom_line(size=1,color="red 4")
+
+  temp <- melt(temp,id.vars="Turbining transistion",variable.name="week")
+
+  # t <- names_reward(reward_base,simulation_name_pattern)
+  # t <- t[t!=0]
+  # temp <- data.frame(t,temp)
+  # setnames(temp,"temp","Reward Transition")
+  p1 <- ggplot(data = temp,aes(x=`Turbining transistion`,value, col=week)) +geom_line(size=0.5)
   p1 <- p1+ggtitle(sprintf("Reward variation week %d MC Year %d",week_id,Mc_year))+theme(plot.title = element_text(hjust = 0.5))
 
   print(p1)

@@ -49,7 +49,8 @@ monotonic_VU <- function(results_dt,noise_ratio=10)
 
 #' @export
 
-post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FALSE,impute_method='pmm'){
+post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FALSE,
+                         impute_method='pmm',fix=F,min_vu=0,max_vu=1000){
 
   results <- copy(results_dt)
   results[vu==Inf|is.na(vu),vu:=NA]
@@ -83,11 +84,16 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
       results[weeks==i&states>level_high,vu:=NA]
       results[weeks==i&states<level_low,vu:=NA]
       results[weeks==i&statesid==maxid,vu:=max_cost]
-      results[weeks==i&statesid==1,vu:=-min_cost]
-
-
-
+      results[weeks==i&statesid==1,vu:=min_cost]
     }
+
+
+    if(fix){
+      results[weeks==i&states>level_high,vu:=min_vu]
+      results[weeks==i&states<level_low,vu:=max_vu]
+    }
+
+
 
 
     temp <- results[weeks==i]

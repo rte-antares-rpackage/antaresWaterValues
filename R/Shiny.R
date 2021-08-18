@@ -141,7 +141,7 @@ ui <- fluidPage(
       )
     ), #tabpanel 1
 
-  # Bellman graphs
+  #--------- Bellman graphs UI -----
     tabPanel("Bellman plot",
        sidebarLayout(
          sidebarPanel(
@@ -211,6 +211,8 @@ ui <- fluidPage(
 
              ),#end tabpanel 3
 
+
+  #----------Post process -----
     tabPanel("Post Process",
 
              sidebarLayout(fluid = TRUE,
@@ -243,13 +245,20 @@ ui <- fluidPage(
 
                  h3(strong("Fill The rest of water values")),
 
-                 switchInput("Run_post_process",
-                             value=F, offStatus = "danger",
-                             onStatus = "success"),
+                 radioGroupButtons(
+                   inputId = "method_post_process",
+                   label = "Select method",
+                   choices = c("Imputation","Constant values"),
+                   individual = TRUE,
+                   justified = TRUE,
+                   checkIcon = list(
+                     yes = icon("ok",
+                                lib = "glyphicon"))  ),
+
 
                 conditionalPanel(
 
-                  condition="input.Run_post_process",
+                  condition="input.method_post_process=='Imputation'",
 
                 column(12,conditionalPanel(
                    condition = "input.Run_remove_out",
@@ -270,6 +279,20 @@ ui <- fluidPage(
                     selected="norm.predict",
                     options = list(
                       `live-search` = TRUE))),
+
+
+                conditionalPanel(
+
+                  condition="input.method_post_process=='Constant values'",
+
+
+                  numericInput("max_vu","Max Water value price",value=3000),
+
+                  numericInput("min_vu","Min Water value price",value=-150),
+
+                  ),
+
+
 
 
                 h3(strong("Force Monotonic")),
@@ -307,7 +330,7 @@ ui <- fluidPage(
 
              ), #end tabpanel "Post Process"
 
-
+  #----------Results UI-------
    tabPanel("Results",
 
 
@@ -358,7 +381,7 @@ ui <- fluidPage(
                   condition="input.res_MC=='Custom'",
                   sliderInput("res_mc_year",label="choose the MC years to use",min=1,
                               max=opts$parameters$general$nbyears,
-                              value=opts$parameters$general$nbyears,step=1)
+                              value=c(1,opts$parameters$general$nbyears),step=1)
                 ),
 
 
@@ -543,17 +566,25 @@ server <- function(input, output) {
       })
 
     post_result <- reactive({
+      fix_v <- FALSE
+      if(input$method_post_process=="Constant values"){
+        fix_v <- TRUE
+      }
+
+
 
       if(input$use_filtred){
         withProgress( post_process(results = results_temp(),max_cost=input$max_cost,
                      min_cost =input$min_cost,
                      full_imputation=input$full_imputation,
-                     impute_method=input$impute_method ))
+                     impute_method=input$impute_method,fix = fix_v,
+                     max_vu =input$max_vu,min_vu = input$min_vu ))
       }else{
         withProgress(post_process(results = rv$results,max_cost=input$max_cost,
                      min_cost =input$min_cost,
                      full_imputation=input$full_imputation,
-                     impute_method=input$impute_method ))
+                     impute_method=input$impute_method,fix = fix_v,
+                     max_vu =input$max_vu,min_vu = input$min_vu ))
       }
 
     })
@@ -620,7 +651,7 @@ server <- function(input, output) {
     output$reservoir <- renderPlot({
 
       if(input$res_MC=="Custom"){
-        mc_year <- input$res_mc_year
+        mc_year <- input$res_mc_year[1]:input$res_mc_year[2]
       }else{
         if(input$res_MC=="all"){mc_year <- "all"
         }else{mc_year <- NULL}

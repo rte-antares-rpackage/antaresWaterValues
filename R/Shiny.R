@@ -13,6 +13,7 @@
 #' @import shinycustomloader
 #' @importFrom shinybusy add_busy_gif
 #' @import spsComps
+#' @import periscope
 #' @export
 
 shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
@@ -204,7 +205,12 @@ ui <- fluidPage(
               ),
 
               mainPanel(
-                plotOutput("rewardplot")
+                plotOutput("rewardplot"),
+                downloadBttn(
+                  outputId = "downloadrewardplot",
+                  style = "unite",
+                  color = "primary"
+                ),
 
               )
 
@@ -535,7 +541,7 @@ server <- function(input, output) {
                 )
 
 
-    output$rewardplot <- renderPlot(
+    rewardplot <- reactive(
 
       {week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
        Mc_year <- input$Mc_year[1]:input$Mc_year[2]
@@ -559,7 +565,20 @@ server <- function(input, output) {
         }
         }
 }
-       ) # end rewardplot
+       )
+
+    output$rewardplot <- renderPlot(rewardplot())
+
+    output$downloadrewardplot <- downloadHandler(
+      filename = function() {
+        paste('Reward-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+        ggsave(plot = rewardplot(),con , device = "png")
+      }
+    )
+
+    # end reward Plot
 
 
     #post process

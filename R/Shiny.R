@@ -209,7 +209,8 @@ ui <- fluidPage(
                 downloadBttn(
                   outputId = "downloadrewardplot",
                   style = "unite",
-                  color = "primary"
+                  color = "primary",
+                  block = T
                 ),
 
               )

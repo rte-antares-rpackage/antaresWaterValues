@@ -225,9 +225,9 @@ if(!shiny){
 
 #read reservoir actual levels:
 tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+inflow <- readAntares(areas = area, timeStep = timeStep , mcYears = mcyear, opts = tmp_opt)
 
 if(is.null(mcyear)){
-  inflow <- readAntares(areas = area, timeStep = timeStep , mcYears = mcyear, opts = tmp_opt)
   inflow <- inflow[order(timeId)]
   inflow <- inflow[, list(timeId,`H. LEV` )]
   temp <- left_join(x=reservoir,y=inflow,by="timeId")
@@ -240,7 +240,6 @@ if(is.null(mcyear)){
   print(p)
   return(temp)
 }else{
-  inflow <- readAntares(areas = area, timeStep = timeStep , mcYears = "all", opts = tmp_opt)
   inflow <- inflow[order(mcYear, timeId)]
   inflow <- inflow[, list(mcYear,timeId,`H. LEV` )]
   d <- pivot_wider(inflow, names_from = mcYear, values_from = "H. LEV")
@@ -249,9 +248,10 @@ if(is.null(mcyear)){
 
 }
 
-if(is.numeric(mcyear)){
+if(is.numeric(mcyear)&(length(mcyear)==1)){
   mc <- sprintf("MC_year")
-  setnames(temp1,mcyear,mc)
+  old <- colnames(temp1)
+  setnames(temp1,old[4],mc)
   temp1 <- temp1[,list(timeId,level_low,MC_year,level_high)]
 
   p <- ggplot(data=temp1, aes(x=timeId)) +
@@ -265,7 +265,7 @@ if(is.numeric(mcyear)){
   p <- ggplot(temp, aes(x = timeId, y = value, colour = variable)) +
     geom_line(lwd=1) + scale_color_manual(values =c("level_low" = "red",
                                                     "level_high" = "red"))
-  p <- p+ggtitle(sprintf("%s Reservoir Path for all MC year ",area))+theme(plot.title = element_text(hjust = 0.5))
+  p <- p+ggtitle(sprintf("%s Reservoir Path",area))+theme(plot.title = element_text(hjust = 0.5))
 
 }
 print(p)

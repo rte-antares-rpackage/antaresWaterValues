@@ -266,13 +266,17 @@ ui <- fluidPage(
                  linebreaks(3),
 
                  h3(strong("Fill The rest of water values")),
-
+                 column(12,conditionalPanel(
+                   condition = "input.Run_remove_out",
+                   materialSwitch("use_filtred",label = "Use Filtred",
+                                  value=F, status="info")),
                  radioGroupButtons(
                    inputId = "method_post_process",
                    label = "Select method",
-                   choices = c("Imputation","Constant values"),
+                   choices = c("Imputation","Constant values","None"),
                    individual = TRUE,
                    justified = TRUE,
+                   selected ="None",
                    checkIcon = list(
                      yes = icon("ok",
                                 lib = "glyphicon"))  ),
@@ -282,10 +286,7 @@ ui <- fluidPage(
 
                   condition="input.method_post_process=='Imputation'",
 
-                column(12,conditionalPanel(
-                   condition = "input.Run_remove_out",
-                    materialSwitch("use_filtred",label = "Use Filtred",
-                             value=F, status="info"))),
+
 
                 numericInput("max_cost","Max Water value price",value=3000),
 
@@ -307,12 +308,12 @@ ui <- fluidPage(
 
                   condition="input.method_post_process=='Constant values'",
 
-
                   numericInput("max_vu","Max Water value price",value=3000),
 
                   numericInput("min_vu","Min Water value price",value=-150),
 
                   ),
+                ),
 
 
 
@@ -511,7 +512,7 @@ server <- function(input, output) {
         district_name =input$district_name ,
         method=input$method,
         states_step_ratio=(1/input$nb_states),
-        max_mcyears=input$max_mcyears,
+        max_mcyears=input$max_mcyears[1]:input$max_mcyears[2],
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio,
@@ -556,7 +557,7 @@ server <- function(input, output) {
       }
     )
 
-    #Plot Bellman page
+#--------Plot Bellman page----
 
     output$plot_Bellman <- renderPlot(plot_Bellman(rv$results,input$week_id,
                                                    input$param,states_step_ratio =
@@ -577,7 +578,7 @@ server <- function(input, output) {
       }
     )
 
-    #plot reward page
+#--------plot reward page------
 
     observeEvent( input$import_reward,
                   {
@@ -641,7 +642,7 @@ server <- function(input, output) {
     # end reward Plot
 
 
-    #post process
+#--------post process----------
     results_temp <- reactive({
 
       if(input$Run_remove_out){
@@ -666,6 +667,7 @@ server <- function(input, output) {
                      impute_method=input$impute_method,fix = fix_v,
                      max_vu =input$max_vu,min_vu = input$min_vu ))
       }else{
+
         withProgress(post_process(results = rv$results,max_cost=input$max_cost,
                      min_cost =input$min_cost,
                      full_imputation=input$full_imputation,
@@ -679,7 +681,7 @@ server <- function(input, output) {
     final_result <- reactive({
 
 
-      if(!input$Run_post_process){
+      if(input$method_post_process=="None"){
         if(input$force_monotonic){
           monotonic_VU(results_temp())
         }else{
@@ -744,7 +746,7 @@ server <- function(input, output) {
 
     )
 
-    # Results page
+#------Results page--------
 
     reservoir <- reactive({
 

@@ -77,9 +77,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   if (is.null(max_mcyears)) {
     max_mcyears <- opts$parameters$general$nbyears
-    max_mcyears <- seq_len(max_mcyears)
-
   }
+
+  if(length(max_mcyears)==1){
+    max_mcyears <- seq_len(max_mcyears)
+      }
 
   # Niveau max
   {if (is.null(reservoir_capacity)) {

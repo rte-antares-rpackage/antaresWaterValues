@@ -62,6 +62,23 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
 
   # results[vu<-down_cost,vu:=NA]
 
+  if(fix){
+
+    results[states>level_high,vu:=min_vu]
+    results[states<level_low,vu:=max_vu]
+    results$nvu <- NA_real_
+    for (i in 1:52){
+      temp <- results[weeks==i]
+      temp <- dplyr::select(temp,statesid,vu)
+      reg <- lm(vu ~ statesid, temp)
+      temp$vu <- predict(reg,temp)
+      results[weeks==i]$nvu <-temp$vu
+    }
+    results[is.na(vu),vu:=nvu]
+    results$nvu <- NULL
+    return(results)
+
+  }
 
   cat("Prepare Water Values:\n")
 
@@ -88,10 +105,6 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
     }
 
 
-    if(fix){
-      results[weeks==i&states>level_high,vu:=min_vu]
-      results[weeks==i&states<level_low,vu:=max_vu]
-    }
 
 
 
@@ -101,7 +114,7 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
         if (any(is.na(temp))){
 
       imputed_Data <- mice(temp, m=1, maxit = 50, method = impute_method,
-                           seed = 500,print = F)
+                           seed = 500,print = F,remove.collinear=FALSE)
       completeData <- complete(imputed_Data,1)
 
 

@@ -267,7 +267,7 @@ if(is.null(mcyear)){
   p <- p+ggtitle(sprintf("%s Reservoir Path for MC synthesis",area))+theme(plot.title = element_text(hjust = 0.5))
 
   print(p)
-  return(temp)
+  return(p)
 }else{
   inflow <- inflow[order(mcYear, timeId)]
   inflow <- inflow[, list(mcYear,timeId,`H. LEV` )]
@@ -338,12 +338,12 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 
 
 {
-  min_path <- "/user/Pmin nom2.txt"
-  path <- paste0(opts$studyPath,min_path)
-  Pmin <- read.table(path, header = FALSE, sep = "", dec = ".")
-  max_path <- "/user/Pmax nom2.txt"
-  path <- paste0(opts$studyPath,max_path)
-  Pmax <- read.table(path, header = FALSE, sep = "", dec = ".")
+  # min_path <- "/user/Pmin nom2.txt"
+  # path <- paste0(opts$studyPath,min_path)
+  Pmin <- read.table(min_path, header = FALSE, sep = "", dec = ".")
+  # max_path <- "/user/Pmax nom2.txt"
+  # path <- paste0(opts$studyPath,max_path)
+  Pmax <- read.table(max_path, header = FALSE, sep = "", dec = ".")
   Pmax <- Pmax[-365,]
 
 
@@ -378,17 +378,17 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
   #----- Read hydro generation power
   P <- antaresRead::readAntares(areas = area_nom, timeStep = timestep,
                                 mcYears = Mcyear, opts=tmp_opt,select = "H. STOR" )
-  c <- ncol(Pmin)
+  ncol <- ncol(Pmin)
   if(is.null(Mcyear)){
     P <- P[order(timeId)]
     P <- P[, list(timeId,`H. STOR` )]
-    Pmin <- Pmin  %>% select(c-4,c-1,c)
+    Pmin <- Pmin  %>% select(ncol-4,ncol-1,ncol)
     Pmin <- setNames(Pmin,c("Pmin","hour","day"))
   }else{
     P <- P[order(P$mcYear, P$timeId),]
     P <- P[,list(mcYear,timeId,`H. STOR` )]
     P$mcYear <- NULL
-    Pmin <- Pmin  %>% select(Mcyear,c-1,c)
+    Pmin <- Pmin  %>% select(Mcyear,ncol-1,ncol)
     Pmin <- setNames(Pmin,c("Pmin","hour","day"))
   }
 

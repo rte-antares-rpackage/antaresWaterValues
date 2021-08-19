@@ -136,7 +136,13 @@ ui <- fluidPage(
           ),
 
         mainPanel(
-          withLoader( plotOutput("Watervalues"), type="html", loader="dnaspin")
+          withLoader( plotOutput("Watervalues"), type="html", loader="dnaspin"),
+          downloadBttn(
+            outputId = "download_wv_plot",
+            style = "unite",
+            color = "primary",
+            block = T
+          )
 
       )
       )
@@ -164,6 +170,12 @@ ui <- fluidPage(
          mainPanel(
 
             plotOutput("plot_Bellman"),
+            downloadBttn(
+              outputId = "download_Bellman_plot",
+              style = "unite",
+              color = "primary",
+              block = T
+            ),
 
          )
        ), # Siderbar
@@ -207,7 +219,7 @@ ui <- fluidPage(
               mainPanel(
                 plotOutput("rewardplot"),
                 downloadBttn(
-                  outputId = "downloadrewardplot",
+                  outputId = "download_reward_plot",
                   style = "unite",
                   color = "primary",
                   block = T
@@ -333,7 +345,13 @@ ui <- fluidPage(
 
 
                mainPanel(
-                 withLoader(plotOutput("post_process"), type="html", loader="dnaspin")
+                 withLoader(plotOutput("post_process"), type="html", loader="dnaspin"),
+                 downloadBttn(
+                   outputId = "download_pp_plot",
+                   style = "unite",
+                   color = "primary",
+                   block = T
+                 ),
 
                )
              ) #sidebarLayout
@@ -449,7 +467,19 @@ ui <- fluidPage(
               mainPanel(
 
                 plotOutput("reservoir"),
-                plotOutput("pmin_pmax")
+                downloadBttn(
+                  outputId = "download_reservoir_plot",
+                  style = "unite",
+                  color = "primary",
+                  block = T
+                ),
+                plotOutput("pmin_pmax"),
+                downloadBttn(
+                  outputId = "download_pmin_pmax_plot",
+                  style = "unite",
+                  color = "primary",
+                  block = T
+                )
 
 
               )
@@ -514,12 +544,38 @@ server <- function(input, output) {
 
     output$Watervalues <- renderPlot(watervalues())
 
+    output$download_wv_plot <- downloadHandler(
+      filename = function() {
+        paste('watervalues-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+        png(con ,width = 1200,
+            height = 766)
+        print(watervalues())
+        dev.off()
+      }
+    )
 
     #Plot Bellman page
 
     output$plot_Bellman <- renderPlot(plot_Bellman(rv$results,input$week_id,
                                                    input$param,states_step_ratio =
                                                    1/input$states_step_ratio))
+
+    output$download_Bellman_plot <- downloadHandler(
+      filename = function() {
+        paste('Bellman-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+
+        png(con ,width = 1200,
+            height = 766)
+        print(plot_Bellman(rv$results,input$week_id,
+                           input$param,states_step_ratio =
+                             1/input$states_step_ratio))
+        dev.off()
+      }
+    )
 
     #plot reward page
 
@@ -570,12 +626,15 @@ server <- function(input, output) {
 
     output$rewardplot <- renderPlot(rewardplot())
 
-    output$downloadrewardplot <- downloadHandler(
+    output$download_reward_plot <- downloadHandler(
       filename = function() {
         paste('Reward-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        ggsave(plot = rewardplot(),con , device = "png")
+       png(con ,width = 1200,
+            height = 766)
+        print(rewardplot())
+        dev.off()
       }
     )
 
@@ -654,6 +713,18 @@ server <- function(input, output) {
       waterValuesViz(final_result())
       )
 
+    output$download_pp_plot <- downloadHandler(
+      filename = function() {
+        paste('full water values-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+        png(con ,width = 1200,
+            height = 766)
+        print(waterValuesViz(final_result()))
+        dev.off()
+      }
+    )
+
     observeEvent(input$to_antares,{
 
                  results <- final_result()
@@ -675,7 +746,7 @@ server <- function(input, output) {
 
     # Results page
 
-    output$reservoir <- renderPlot({
+    reservoir <- reactive({
 
       if(input$res_MC=="Custom"){
         mc_year <- input$res_mc_year[1]:input$res_mc_year[2]
@@ -690,7 +761,22 @@ server <- function(input, output) {
     })
 
 
-    output$pmin_pmax <- renderPlot({
+    output$reservoir <- renderPlot(reservoir())
+
+    output$download_reservoir_plot <- downloadHandler(
+      filename = function() {
+        paste('Reservoir-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+        png(con ,width = 1200,
+            height = 766)
+        print(reservoir())
+        dev.off()
+      }
+    )
+
+
+    pmin_pmax <- reactive({
 
       ext_Pmin <- tools::file_ext(input$Pmin_file$datapath)
       ext_Pmax <- tools::file_ext(input$Pmax_file$datapath)
@@ -711,9 +797,21 @@ server <- function(input, output) {
                       simulation_name=input$res_sim_name,min_path = input$Pmin_file$datapath,
                       max_path = input$Pmax_file$datapath,opts = opts)
 
-
-
     })
+
+    output$pmin_pmax <- renderPlot(pmin_pmax())
+
+    output$download_pmin_pmax_plot <- downloadHandler(
+      filename = function() {
+        paste('pmin_pmax-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+        png(con ,width = 1200,
+               height = 766)
+        print(pmin_pmax())
+        dev.off()
+      }
+    )
 
 
 }

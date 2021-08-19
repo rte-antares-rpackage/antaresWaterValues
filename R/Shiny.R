@@ -20,31 +20,12 @@ shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
 
 {
 
-otp_variables <- c("OV. COST", "OP. COST", "OP. COST_std", "OP. COST_min", "OP. COST_max",
-    "MRG. PRICE", "MRG. PRICE_std", "MRG. PRICE_min", "MRG. PRICE_max",
-    "CO2 EMIS.", "BALANCE", "BALANCE_std", "BALANCE_min", "BALANCE_max",
-    "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "LOAD_std", "LOAD_min",
-    "LOAD_max", "H. ROR", "H. ROR_std", "H. ROR_min", "H. ROR_max",
-    "WIND", "WIND_std", "WIND_min", "WIND_max", "SOLAR", "SOLAR_std",
-    "SOLAR_min", "SOLAR_max", "NUCLEAR", "NUCLEAR_std", "NUCLEAR_min",
-    "NUCLEAR_max", "LIGNITE", "LIGNITE_std", "LIGNITE_min", "LIGNITE_max",
-    "COAL", "COAL_std", "COAL_min", "COAL_max", "GAS", "GAS_std",
-    "GAS_min", "GAS_max", "OIL", "OIL_std", "OIL_min", "OIL_max",
-    "MIX. FUEL", "MIX. FUEL_std", "MIX. FUEL_min", "MIX. FUEL_max",
-    "MISC. DTG", "MISC. DTG_std", "MISC. DTG_min", "MISC. DTG_max",
-    "H. STOR", "H. STOR_std", "H. STOR_min", "H. STOR_max", "H. PUMP",
-    "H. PUMP_std", "H. PUMP_min", "H. PUMP_max", "H. LEV", "H. LEV_std",
-    "H. LEV_min", "H. LEV_max", "H. INFL", "H. INFL_std", "H. INFL_min",
-    "H. INFL_max", "H. OVFL", "H. OVFL_std", "H. OVFL_min", "H. OVFL_max",
-    "H. VAL", "H. VAL_std", "H. VAL_min", "H. VAL_max", "H. COST",
-    "H. COST_std", "H. COST_min", "H. COST_max", "UNSP. ENRG", "UNSP. ENRG_std",
-    "UNSP. ENRG_min", "UNSP. ENRG_max", "SPIL. ENRG", "SPIL. ENRG_std",
-    "SPIL. ENRG_min", "SPIL. ENRG_max", "LOLD", "LOLD_std", "LOLD_min",
-    "LOLD_max", "LOLP", "AVL DTG", "AVL DTG_std", "AVL DTG_min",
-    "AVL DTG_max", "DTG MRG", "DTG MRG_std", "DTG MRG_min", "DTG MRG_max",
-    "MAX MRG", "MAX MRG_std", "MAX MRG_min", "MAX MRG_max", "NP COST",
-    "NP COST_std", "NP COST_min", "NP COST_max", "NODU", "NODU_std",
-    "NODU_min", "NODU_max")
+otp_variables <- c("OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
+    "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
+    "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
+    "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
+    "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST",
+    "NODU")
 
 #------User interface-----
 linebreaks <- function(n){HTML(strrep(br(), n))}
@@ -308,9 +289,9 @@ ui <- fluidPage(
 
                   condition="input.method_post_process=='Constant values'",
 
-                  numericInput("max_vu","Max Water value price",value=3000),
+                  numericInput("max_vu","Max Water value price",value=NULL),
 
-                  numericInput("min_vu","Min Water value price",value=-150),
+                  numericInput("min_vu","Min Water value price",value=NULL),
 
                   ),
                 ),

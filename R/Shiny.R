@@ -20,7 +20,7 @@ shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
 
 {
 
-otp_variables <- c("OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
+otp_variables <- c("Real OV. COST","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
     "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
     "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
     "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
@@ -415,6 +415,7 @@ ui <- fluidPage(
                                  lib = "glyphicon"))  ) ),
 
                   h3(strong("Reporting")),
+
                   pickerInput(inputId = "report_sim",
                               label = "Select simulations",
                               choices = getSimulationNames("",opts = opts),
@@ -422,6 +423,13 @@ ui <- fluidPage(
                                 `actions-box` = TRUE,
                                 `live-search` = TRUE),
                               multiple = TRUE),
+
+                pickerInput("report_district_name",
+                            "choose the District",
+                            opts$districtList,
+                            options = list(
+                              `live-search` = TRUE)),
+
                   pickerInput(
 
                               inputId = "report_vars",
@@ -430,16 +438,38 @@ ui <- fluidPage(
                               options = list(
                                 `actions-box` = TRUE,
                                 `live-search` = TRUE),
-                              multiple = TRUE)
+                              multiple = TRUE),
+
+                conditionalPanel(
+
+                  condition = "input.report_vars.indexOf('Real OV. COST') > -1",
+                  pickerInput(inputId = "watervalues_areas",
+                            label = "Select areas using watervalues",
+                            choices = opts$areaList,
+                            options = list(
+                              `actions-box` = TRUE,
+                              `live-search` = TRUE),
+                            multiple = TRUE)),
 
 
+                radioGroupButtons(
+                  inputId = "report_mcyear_mode",
+                  label = "Select Time Step",
+                  choices = c("Synthesis","Custom"),
+                  individual = TRUE,
+                  justified = TRUE,
+                  checkIcon = list(
+                    yes = icon("ok",
+                               lib = "glyphicon"))),
 
+                  conditionalPanel(
+                    condition = "input.report_mcyear_mode=='Custom'",
 
-
-
-
-
-
+                    sliderInput("report_mcyear",
+                                label="choose the number of MC years to use",
+                                min=1,max=opts$parameters$general$nbyears,
+                                value=1, step=1)
+                  )
 
 
 
@@ -448,20 +478,35 @@ ui <- fluidPage(
 
               mainPanel(
 
-                plotOutput("reservoir"),
+                withLoader(plotOutput("reservoir"), type="html", loader="dnaspin"),
                 downloadBttn(
                   outputId = "download_reservoir_plot",
                   style = "unite",
                   color = "primary",
                   block = T
                 ),
-                plotOutput("pmin_pmax"),
+
+
+                withLoader(plotOutput("pmin_pmax"), type="html", loader="dnaspin"),
                 downloadBttn(
                   outputId = "download_pmin_pmax_plot",
                   style = "unite",
                   color = "primary",
                   block = T
-                )
+                ),
+
+
+                withLoader(plotOutput("report"), type="html", loader="dnaspin"),
+                downloadBttn(
+                  outputId = "download_report_plot",
+                  style = "unite",
+                  color = "primary",
+                  block = T
+                ),
+
+
+
+
 
 
               )
@@ -792,6 +837,37 @@ server <- function(input, output) {
         png(con ,width = 1200,
                height = 766)
         print(pmin_pmax())
+        dev.off()
+      }
+    )
+
+
+
+
+
+    report <- reactive({
+      if(input$report_mcyear_mode=="Custom"){
+        mc_year <- input$report_mcyear
+      }else{
+        mc_year <- NULL
+      }
+
+      plot_results(simulations=input$report_sim,district_name=input$report_district_name,
+                   mcyears=mc_year,opts=opts,plot_var=input$report_vars,
+                   watervalues_areas=input$watervalues_areas)
+
+    })
+
+    output$report <- renderPlot(report())
+
+    output$download_reward_plot <- downloadHandler(
+      filename = function() {
+        paste('report-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+        png(con ,width = 1200,
+            height = 766)
+        print(report())
         dev.off()
       }
     )

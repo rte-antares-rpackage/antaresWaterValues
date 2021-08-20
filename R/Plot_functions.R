@@ -453,3 +453,69 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
   return(p)
   }
 
+
+#--------- Reporting graph Plot---------------
+#' Plot simulation variables comparison and real Ov. cost (for watervalues)
+#'
+#' @param simulations list of simulation names.
+#' @param timeStep Resolution of the data to import.
+#' @param district_name district name that contains the all domain to study.
+#' @param mcyears precise the MC year to plot.
+#' #' Null plot the synthesis. Default NULL
+#' @param plot_var list of variables to plot.
+#' @param watervalues_areas list of areas name that used water values.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @import data.table
+#' @import ggplot2
+#' @import antaresRead
+#' @export
+
+
+
+plot_results <- function(simulations,district_name="all",timeStep="annual",mcyears,opts,plot_var,watervalues_areas,water_value=50,...) {
+
+  {column_names <- c("sim_name","area", "timeId", "time","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
+                     "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
+                     "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
+                     "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
+                     "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST","NODU")}
+
+  data <- data.table(matrix(nrow = 0, ncol = length(column_names)))
+  setnames(data,column_names)
+  hydro <- copy(data)
+  for(simulation_name in simulations){
+    tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+    row <- readAntares(districts = district_name, timeStep = timeStep ,
+                       mcYears = mcyears, opts = opts,showProgress = F)
+    row$sim_name <- stringr::str_trunc(simulation_name, 20, "left")
+    if(length(watervalues_areas)>0)
+    {
+      row_h <- readAntares(areas =watervalues_areas , timeStep = timeStep ,
+                           mcYears = mcyears, opts = opts,showProgress = F)
+
+      for (area_name in watervalues_areas)
+      {row_h[area==area_name,hydro_cost:=hydro_cost(area=area_name,
+                                                    mcyears=mcyears,simulation_name,opts)]}
+      row$total_hydro_cost <- sum(row_h$hydro_cost)
+      row$`Real OV. COST` <- row$`OV. COST`-row$total_hydro_cost
+    }
+
+
+    data <- rbind(data,row,fill=T)
+  }
+  data <- select(data,append(plot_var,"sim_name"))
+
+  fin_data = melt(data, id.vars="sim_name")
+
+  p = ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name)) +
+    geom_col() +
+    scale_fill_viridis_d() +
+    facet_grid(. ~ variable)
+  print(p)
+  return(p)
+
+
+
+}

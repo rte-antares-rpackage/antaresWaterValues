@@ -181,11 +181,13 @@ hydro_cost <- function(area,mcyears,simulation_name,opts){
                 mcYears = mcyears, opts = opts,showProgress = F)
    }
 
-  hydro_stockDiff <- data$`H. LEV`[1]-data$`H. LEV`[nrow(data)]
+  hydro_stockDiff <- data$`H. LEV`[nrow(data)]-data$`H. LEV`[1]
   res_cap <- get_reservoir_capacity(area,opts)
   hydro_stockDiff <- hydro_stockDiff*res_cap
   hydro_stockDiff_cost <- hydro_stockDiff*mean(data$`MRG. PRICE`)
-  hydro_cost <- sum(data$`H. COST`)
+  hydro_cost <- readAntares(area = area, timeStep = "annual" ,
+                            mcYears = mcyears, opts = opts,showProgress = F,
+                            select = "H. COST")$`H. COST`
   total_hydro_cost <- hydro_cost+hydro_stockDiff_cost
   return(total_hydro_cost)
 }

@@ -152,3 +152,40 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
 
   invisible(res)
 }
+
+
+
+#' Calculate  the hydro cost
+#'
+#' @param area A valid Antares area.
+#' @param simulation_name simulation name in output folder.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @return A real. the cost of hydro: stock Diff cost and hydro cost.
+#' @export
+#'
+#'
+
+hydro_cost <- function(area,mcyears,simulation_name,opts){
+
+  tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+
+  data <-readAntares(area = area, timeStep = "monthly",mcYears = mcyears,
+                     opts = opts, showProgress = F)
+
+  if(length(data)==0)
+    {
+    data <- readAntares(area = area, timeStep = "weekly" ,
+                mcYears = mcyears, opts = opts,showProgress = F)
+   }
+
+  hydro_stockDiff <- data$`H. LEV`[1]-data$`H. LEV`[nrow(data)]
+  res_cap <- get_reservoir_capacity(area,opts)
+  hydro_stockDiff <- hydro_stockDiff*res_cap
+  hydro_stockDiff_cost <- hydro_stockDiff*mean(data$`MRG. PRICE`)
+  hydro_cost <- sum(data$`H. COST`)
+  total_hydro_cost <- hydro_cost+hydro_stockDiff_cost
+  return(total_hydro_cost)
+}

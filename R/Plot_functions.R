@@ -220,9 +220,9 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @import ggplot2
-#' @import dplyr
-#' @import tidyr
-#' @import antaresRead
+#' @importFrom dplyr left_join
+#' @importFrom tidyr pivot_wider
+#' @importFrom  antaresRead setSimulationPath readAntares
 #' @export
 
 
@@ -259,7 +259,7 @@ inflow <- readAntares(areas = area, timeStep = timeStep , mcYears = mcyear, opts
 if(is.null(mcyear)){
   inflow <- inflow[order(timeId)]
   inflow <- inflow[, list(timeId,`H. LEV` )]
-  temp <- left_join(x=reservoir,y=inflow,by="timeId")
+  temp <- dplyr::left_join(x=reservoir,y=inflow,by="timeId")
   p <- ggplot(data=temp, aes(x=timeId)) +
     geom_line(aes(y = level_low ), color = "red") +
     geom_line(aes(y = level_high ), color="red")+
@@ -272,7 +272,7 @@ if(is.null(mcyear)){
   inflow <- inflow[order(mcYear, timeId)]
   inflow <- inflow[, list(mcYear,timeId,`H. LEV` )]
   d <- pivot_wider(inflow, names_from = mcYear, values_from = "H. LEV")
-  temp1 <- left_join(x=reservoir,y=d,by="timeId")
+  temp1 <- dplyr::left_join(x=reservoir,y=d,by="timeId")
   temp <- melt(temp1, id.vars="timeId")
 
 }
@@ -325,9 +325,10 @@ return(p)
 #'   \code{antaresRead::setSimulationPath}
 #' @import data.table
 #' @import ggplot2
-#' @import dplyr
+#' @importFrom  dplyr left_join
 #' @import tidyr
-#' @import antaresRead
+#' @importFrom  antaresRead setSimulationPath readAntares
+#' @importFrom stats setNames aggregate
 #' @export
 
 
@@ -338,11 +339,8 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 
 
 {
-  # min_path <- "/user/Pmin nom2.txt"
-  # path <- paste0(opts$studyPath,min_path)
+
   Pmin <- read.table(min_path, header = FALSE, sep = "", dec = ".")
-  # max_path <- "/user/Pmax nom2.txt"
-  # path <- paste0(opts$studyPath,max_path)
   Pmax <- read.table(max_path, header = FALSE, sep = "", dec = ".")
   Pmax <- Pmax[-365,]
 
@@ -383,13 +381,13 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     P <- P[order(timeId)]
     P <- P[, list(timeId,`H. STOR` )]
     Pmin <- Pmin  %>% select(ncol-4,ncol-1,ncol)
-    Pmin <- setNames(Pmin,c("Pmin","hour","day"))
+    Pmin <- stats::setNames(Pmin,c("Pmin","hour","day"))
   }else{
     P <- P[order(P$mcYear, P$timeId),]
     P <- P[,list(mcYear,timeId,`H. STOR` )]
     P$mcYear <- NULL
     Pmin <- Pmin  %>% select(Mcyear,ncol-1,ncol)
-    Pmin <- setNames(Pmin,c("Pmin","hour","day"))
+    Pmin <- stats::setNames(Pmin,c("Pmin","hour","day"))
   }
 
   # == time id + H. stor
@@ -409,7 +407,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     generation_hourly$Pmax <- Pmax_hourly
     generation_hourly$generation <- P$`H. STOR`
     Pmin$day <- NULL
-    generation_hourly <- left_join(generation_hourly,Pmin,by="hour")
+    generation_hourly <- dplyr::left_join(generation_hourly,Pmin,by="hour")
 
     p <- ggplot(data=generation_hourly, aes(x=hour)) +
       geom_line(aes(y = Pmin ), color = "red") +
@@ -431,7 +429,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     setnames(x = generation_daily,"P.timeId","day")
     generation_daily$Pmax <- Pmax$V1*Pmax$V2
     generation_daily$generation <- P$`H. STOR`
-    t <- aggregate(Pmin~day, data=Pmin, FUN=sum)
+    t <- stats::aggregate(Pmin~day, data=Pmin, FUN=sum)
     generation_daily$Pmin <- t$Pmin
 
     p <- ggplot(data=generation_daily, aes(x=day)) +

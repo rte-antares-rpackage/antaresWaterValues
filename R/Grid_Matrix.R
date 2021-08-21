@@ -24,12 +24,13 @@
 #' @return a \code{data.table}
 #' @export
 #'
-#' @importFrom antaresRead readInputTS
+#' @importFrom antaresRead readInputTS readAntares setSimulationPath
 #' @importFrom utils txtProgressBar setTxtProgressBar
-#' @import dplyr
+#' @importFrom dplyr left_join
 #' @import tibble
 #' @import stats
 #' @import grDevices
+#' @importFrom shinybusy show_modal_spinner remove_modal_spinner
 #'
 #'
 
@@ -54,7 +55,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   #----- shiny Loader
 
   if(shiny){
-    show_modal_spinner(spin = "atom",color = "#0039f5")
+    shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
   }
 
   methods <- c("mean-grid","grid-mean","quantile")
@@ -116,9 +117,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   decimals <- 6
   {
     tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
-    tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = tmp_name)
-    inflow <- readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = max_mcyears, opts = tmp_opt)
-    # inflow <- inflow[order(mcYear, timeId)]
+    tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = tmp_name)
+    inflow <- antaresRead::readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = max_mcyears, opts = tmp_opt)
     inflow[with(inflow, order(mcYear, timeId)),]
     inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
     inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
@@ -160,29 +160,25 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
     statesplus1 <- copy(statesdt)
     statesplus1[, weeks := weeks - 1]
     statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = weeks]
-    statesplus1 <- left_join(x = statesdt, y = statesplus1, by = c("weeks"), all.x = TRUE)
-    watervalues <- left_join(x = watervalues, y = statesplus1, by = "weeks", all.x = TRUE, all.y = FALSE, allow.cartesian = TRUE)
+    statesplus1 <- dplyr::left_join(x = statesdt, y = statesplus1, by = c("weeks"), all.x = TRUE)
+    watervalues <- dplyr::left_join(x = watervalues, y = statesplus1, by = "weeks", all.x = TRUE, all.y = FALSE, allow.cartesian = TRUE)
   }
 
   # add inflow
-  watervalues <- left_join(x = watervalues, y = inflow[, list(weeks = timeId, years = tsId, hydroStorage)], by = c("weeks", "years"))
+  watervalues <- dplyr::left_join(x = watervalues, y = inflow[, list(weeks = timeId, years = tsId, hydroStorage)], by = c("weeks", "years"))
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
 
   #add reward
   reward_l <- reward[, list(reward = list(unlist(.SD))), .SDcols = simulation_names, by = list(weeks = timeId, years = mcYear)]
 
 
-  watervalues <- left_join(x = watervalues, y = reward_l, by = c("weeks","years"))
-
-   # watervalues <- left_join(x = watervalues, y = reward_l, by = c("weeks"))
-  # watervalues[,years.y:= NULL]
-  # setnames(watervalues,"years.x","years")
+  watervalues <- dplyr::left_join(x = watervalues, y = reward_l, by = c("weeks","years"))
 
 
   #at this point we added the rewards for each weekly_amount
 
   # add reservoir
-  watervalues <- left_join(x = watervalues, y = reservoir[, list(weeks = timeId, level_low, level_high)], by = "weeks", all = TRUE)
+  watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = timeId, level_low, level_high)], by = "weeks", all = TRUE)
   #here we added the lvl_high and low of the reservoir
 
   # add empty columns ---------------------
@@ -289,7 +285,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   #add reservoir
   names(reservoir)[1] <- "weeks"
-  value_nodes_dt <- left_join(value_nodes_dt,reservoir,by="weeks")
+  value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by="weeks")
 
 
 
@@ -308,7 +304,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   if(shiny){
 
-    remove_modal_spinner()
+    shinybusy::remove_modal_spinner()
 
   }
 

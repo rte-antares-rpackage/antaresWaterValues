@@ -11,10 +11,13 @@
 #' @import shinyWidgets
 #' @importFrom  shinythemes shinytheme
 #' @importFrom shinycustomloader withLoader
-#' @importFrom shinybusy add_busy_gif
-#' @import spsComps
+#' @importFrom shinybusy add_busy_gif remove_modal_spinner
+#' @importFrom  spsComps shinyCatch
 #' @import periscope
 #' @importFrom  shinyjs useShinyjs
+#' @importFrom antaresEditObject writeWaterValues
+#' @importFrom data.table copy
+#' @importFrom grDevices dev.off png
 #' @export
 
 shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
@@ -528,7 +531,7 @@ server <- function(input, output) {
 
     {
 
-    shinyCatch({
+    spsComps::shinyCatch({
       results <-     Grid_Matrix(
         area = input$Area,
         simulation_names = simulation_res$simulation_names,
@@ -552,7 +555,7 @@ server <- function(input, output) {
         type = "success"
       )
 
-      pp_results <- copy(results)
+      pp_results <- data.table::copy(results)
       rv$pp_results <- pp_results
       },blocking_level="error" )
 
@@ -577,10 +580,10 @@ server <- function(input, output) {
         paste('watervalues-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        png(con ,width = 1200,
+        grDevices::dev.png(con ,width = 1200,
             height = 766)
         print(watervalues())
-        dev.off()
+        grDevices::dev.off()
       }
     )
 
@@ -596,12 +599,12 @@ server <- function(input, output) {
       },
       content = function(con) {
 
-        png(con ,width = 1200,
+        grDevices::dev.png(con ,width = 1200,
             height = 766)
         print(plot_Bellman(rv$results,input$week_id,
                            input$param,states_step_ratio =
                              1/input$states_step_ratio))
-        dev.off()
+        grDevices::dev.off()
       }
     )
 
@@ -610,12 +613,12 @@ server <- function(input, output) {
     observeEvent( input$import_reward,
                   {
 
-                    shinyCatch({
+                    spsComps::shinyCatch({
                     reward_dt <- get_Reward(simulation_res$simulation_names,
                                             district_name =input$district_name_rew,
                                             opts)
                     rv$reward_dt <- reward_dt
-                    remove_modal_spinner()
+                    shinybusy::remove_modal_spinner()
                     show_alert(
                       title = "Rewards",
                       text = "Importation Done !!",
@@ -659,10 +662,10 @@ server <- function(input, output) {
         paste('Reward-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-       png(con ,width = 1200,
+       grDevices::dev.png(con ,width = 1200,
             height = 766)
         print(rewardplot())
-        dev.off()
+        grDevices::dev.off()
       }
     )
 
@@ -747,10 +750,10 @@ server <- function(input, output) {
         paste('full water values-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        png(con ,width = 1200,
+        grDevices::dev.png(con ,width = 1200,
             height = 766)
         print(waterValuesViz(final_result()))
-        dev.off()
+        grDevices::dev.off()
       }
     )
 
@@ -760,7 +763,7 @@ server <- function(input, output) {
                  results <- results[results$weeks!=53,]
 
                  reshaped_values <- to_Antares_Format(results)
-                 writeWaterValues(
+                 antaresEditObject::writeWaterValues(
                    area = input$Area,
                    data = reshaped_values
                  )
@@ -797,10 +800,10 @@ server <- function(input, output) {
         paste('Reservoir-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        png(con ,width = 1200,
+        grDevices::dev.png(con ,width = 1200,
             height = 766)
         print(reservoir())
-        dev.off()
+        grDevices::dev.off()
       }
     )
 
@@ -835,10 +838,10 @@ server <- function(input, output) {
         paste('pmin_pmax-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        png(con ,width = 1200,
+        grDevices::dev.png(con ,width = 1200,
                height = 766)
         print(pmin_pmax())
-        dev.off()
+        grDevices::dev.off()
       }
     )
 
@@ -866,10 +869,10 @@ server <- function(input, output) {
         paste('report-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        png(con ,width = 1200,
+        grDevices::dev.png(con ,width = 1200,
             height = 766)
         print(report())
-        dev.off()
+        grDevices::dev.off()
       }
     )
 

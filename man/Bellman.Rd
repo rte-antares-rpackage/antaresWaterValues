@@ -56,7 +56,7 @@ interpolations. Defaults to FALSE.}
 used in simulations}
 }
 \value{
-A "data.table" like Data_week with the Bellman values
+a \code{data.table} like Data_week with the Bellman values
 }
 \description{
 Compute Bellman values at step i from step i+1

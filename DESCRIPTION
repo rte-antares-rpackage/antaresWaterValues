@@ -7,15 +7,13 @@ Maintainer: The package maintainer <safedhia@gmail.com>
 Description: This package aims at generating water values for Antares.
 License: MIT + file LICENSE
 Depends:
-    data.table,
-    grDevices,
-    methods,
-    stats
+    data.table
 Imports:
     antaresEditObject,
     antaresRead,
     assertthat,
     cowplot,
+    mice,
     dplyr,
     ggplot2,
     periscope,
@@ -33,7 +31,10 @@ Imports:
     usethis,
     utils,
     viridis,
-    zoo
+    zoo,
+    grDevices,
+    methods,
+    stats
 Suggests: 
     knitr,
     rmarkdown

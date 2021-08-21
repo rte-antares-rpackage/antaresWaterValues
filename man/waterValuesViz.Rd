@@ -23,7 +23,7 @@ waterValuesViz(
 
 \item{failure_cost}{Cost of failure.}
 
-\item{value_nodes}{Output from \code{waterValues} or \code{meanGridLayer}.}
+\item{value_nodes}{Output from \code{watervalues} or \code{Grid_Matrix}.}
 }
 \value{
 a \code{ggplot} object

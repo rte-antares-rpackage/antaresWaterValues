@@ -12,6 +12,9 @@ Obtained using the function get_Reward()}
 
 \item{week_id}{Numeric of length 1. number of the week to plot.}
 }
+\value{
+a \code{ggplot} object
+}
 \description{
 Plot the reward and return the results in table
 }

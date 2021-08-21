@@ -31,6 +31,9 @@ monthly (original data).}
 \item{mcyear}{precise the MC year to plot.
 Null plot the synthesis. Default NULL}
 }
+\value{
+a \code{ggplot} object
+}
 \description{
 Plot Turbining power  Graph and return result table
 }

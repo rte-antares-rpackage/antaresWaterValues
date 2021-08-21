@@ -28,6 +28,9 @@ Default "vu"}
 
 \item{week_id}{Numeric of length 1. number of the week to plot.}
 }
+\value{
+a \code{ggplot} object
+}
 \description{
 Plot Bellman and Water values
 }

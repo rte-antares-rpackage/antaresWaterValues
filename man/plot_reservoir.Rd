@@ -30,6 +30,9 @@ Null plot the synthesis. Default NULL}
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 }
+\value{
+a \code{ggplot} object
+}
 \description{
 Plot Reservoir Guide Graph and return result table
 }

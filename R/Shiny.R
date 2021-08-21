@@ -8,12 +8,13 @@
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @import  shiny
-#' @import shinythemes
 #' @import shinyWidgets
-#' @import shinycustomloader
+#' @importFrom  shinythemes shinytheme
+#' @importFrom shinycustomloader withLoader
 #' @importFrom shinybusy add_busy_gif
 #' @import spsComps
 #' @import periscope
+#' @importFrom  shinyjs useShinyjs
 #' @export
 
 shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
@@ -32,7 +33,7 @@ linebreaks <- function(n){HTML(strrep(br(), n))}
 
 ui <- fluidPage(
   shinyjs::useShinyjs(),
-  theme = shinytheme("cerulean"),
+  theme = shinythemes::shinytheme("cerulean"),
   shinybusy::add_busy_gif(src = "https://github.com/dhia-gharsallaoui/watervalues/blob/main/static/calculating 3.gif?raw=true",
                           position="bottom-right",height = 70, width = 70)
   ,
@@ -117,7 +118,7 @@ ui <- fluidPage(
           ),
 
         mainPanel(
-          withLoader( plotOutput("Watervalues"), type="html", loader="dnaspin"),
+          shinycustomloader::withLoader( plotOutput("Watervalues"), type="html", loader="dnaspin"),
           downloadBttn(
             outputId = "download_wv_plot",
             style = "unite",
@@ -327,7 +328,7 @@ ui <- fluidPage(
 
 
                mainPanel(
-                 withLoader(plotOutput("post_process"), type="html", loader="dnaspin"),
+                 shinycustomloader::withLoader(plotOutput("post_process"), type="html", loader="dnaspin"),
                  downloadBttn(
                    outputId = "download_pp_plot",
                    style = "unite",
@@ -478,7 +479,7 @@ ui <- fluidPage(
 
               mainPanel(
 
-                withLoader(plotOutput("reservoir"), type="html", loader="dnaspin"),
+                shinycustomloader::withLoader(plotOutput("reservoir"), type="html", loader="dnaspin"),
                 downloadBttn(
                   outputId = "download_reservoir_plot",
                   style = "unite",
@@ -487,7 +488,7 @@ ui <- fluidPage(
                 ),
 
 
-                withLoader(plotOutput("pmin_pmax"), type="html", loader="dnaspin"),
+                shinycustomloader::withLoader(plotOutput("pmin_pmax"), type="html", loader="dnaspin"),
                 downloadBttn(
                   outputId = "download_pmin_pmax_plot",
                   style = "unite",
@@ -496,7 +497,7 @@ ui <- fluidPage(
                 ),
 
 
-                withLoader(plotOutput("report"), type="html", loader="dnaspin"),
+                shinycustomloader::withLoader(plotOutput("report"), type="html", loader="dnaspin"),
                 downloadBttn(
                   outputId = "download_report_plot",
                   style = "unite",

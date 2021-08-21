@@ -154,6 +154,40 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
 }
 
 
+#' Get the reservoir capacity for an area
+#'
+#' @param area An 'antares' area.
+#' @param force If "reservoir management" is disabled, return anyway the reservoir capacity?
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @return the reservoir capacity (in MWh), or \code{NULL} if none.
+#' @export
+#'
+#' @importFrom assertthat assert_that
+#' @importFrom antaresRead getAreas
+#' @importFrom antaresEditObject readIniFile
+#'
+#' @examples
+#' \dontrun{
+#'
+#' getReservoirCapacity("fr")
+#'
+#' }
+getReservoirCapacity <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
+  assertthat::assert_that(class(opts) == "simOptions")
+  if (!area %in% antaresRead::getAreas(opts = opts))
+    stop("Not a valid area!")
+  hydro_ini <- antaresEditObject::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
+  if (isTRUE(hydro_ini$reservoir[[area]]) | force) {
+    reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
+  } else {
+    reservoir_capacity <- NULL
+  }
+  reservoir_capacity
+}
+
 
 #' Calculate  the hydro cost
 #'
@@ -164,20 +198,22 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @return A real. the cost of hydro: stock Diff cost and hydro cost.
+#'
+#' @importFrom antaresRead readAntares setSimulationPath
 #' @export
 #'
 #'
 
 hydro_cost <- function(area,mcyears,simulation_name,opts){
 
-  tmp_opt <- setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+  tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
 
-  data <-readAntares(area = area, timeStep = "monthly",mcYears = mcyears,
+  data <-antaresRead::readAntares(area = area, timeStep = "monthly",mcYears = mcyears,
                      opts = opts, showProgress = F)
 
   if(length(data)==0)
     {
-    data <- readAntares(area = area, timeStep = "weekly" ,
+    data <- antaresRead::readAntares(area = area, timeStep = "weekly" ,
                 mcYears = mcyears, opts = opts,showProgress = F)
    }
 
@@ -185,7 +221,7 @@ hydro_cost <- function(area,mcyears,simulation_name,opts){
   res_cap <- get_reservoir_capacity(area,opts)
   hydro_stockDiff <- hydro_stockDiff*res_cap
   hydro_stockDiff_cost <- hydro_stockDiff*mean(data$`MRG. PRICE`)
-  hydro_cost <- readAntares(area = area, timeStep = "annual" ,
+  hydro_cost <- antaresRead::readAntares(area = area, timeStep = "annual" ,
                             mcYears = mcyears, opts = opts,showProgress = F,
                             select = "H. COST")$`H. COST`
   total_hydro_cost <- hydro_cost+hydro_stockDiff_cost

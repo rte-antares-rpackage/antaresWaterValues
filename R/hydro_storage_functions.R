@@ -209,12 +209,12 @@ hydro_cost <- function(area,mcyears,simulation_name,opts){
   tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
 
   data <-antaresRead::readAntares(area = area, timeStep = "monthly",mcYears = mcyears,
-                     opts = opts, showProgress = F)
+                     opts = tmp_opt, showProgress = F)
 
   if(length(data)==0)
     {
     data <- antaresRead::readAntares(area = area, timeStep = "weekly" ,
-                mcYears = mcyears, opts = opts,showProgress = F)
+                mcYears = mcyears, opts = tmp_opt,showProgress = F)
    }
 
   hydro_stockDiff <- data$`H. LEV`[nrow(data)]-data$`H. LEV`[1]
@@ -222,7 +222,7 @@ hydro_cost <- function(area,mcyears,simulation_name,opts){
   hydro_stockDiff <- hydro_stockDiff*res_cap
   hydro_stockDiff_cost <- hydro_stockDiff*mean(data$`MRG. PRICE`)
   hydro_cost <- antaresRead::readAntares(area = area, timeStep = "annual" ,
-                            mcYears = mcyears, opts = opts,showProgress = F,
+                            mcYears = mcyears, opts = tmp_opt,showProgress = F,
                             select = "H. COST")$`H. COST`
   total_hydro_cost <- hydro_cost+hydro_stockDiff_cost
   return(total_hydro_cost)

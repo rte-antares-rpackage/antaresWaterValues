@@ -501,12 +501,12 @@ plot_results <- function(simulations,district_name="all",timeStep="annual",mcyea
   for(simulation_name in simulations){
     tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
     row <- antaresRead::readAntares(districts = district_name, timeStep = timeStep ,
-                       mcYears = mcyears, opts = opts,showProgress = F)
+                       mcYears = mcyears, opts = tmp_opt,showProgress = F)
     row$sim_name <- stringr::str_trunc(simulation_name, 20, "left")
     if(length(watervalues_areas)>0)
     {
       row_h <- antaresRead::readAntares(areas =watervalues_areas , timeStep = timeStep ,
-                           mcYears = mcyears, opts = opts,showProgress = F)
+                           mcYears = mcyears, opts = tmp_opt,showProgress = F)
 
       for (area_name in watervalues_areas)
       {row_h[area==area_name,hydro_cost:=hydro_cost(area=area_name,

@@ -13,7 +13,6 @@
 #' @importFrom shinycustomloader withLoader
 #' @importFrom shinybusy add_busy_gif remove_modal_spinner
 #' @importFrom  spsComps shinyCatch
-#' @import periscope
 #' @importFrom  shinyjs useShinyjs
 #' @importFrom antaresEditObject writeWaterValues
 #' @importFrom data.table copy

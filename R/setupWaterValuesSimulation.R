@@ -13,7 +13,7 @@
 #'
 #' @importFrom assertthat assert_that
 #' @importFrom antaresRead simOptions readInputTS
-#' @import antaresEditObject
+#' @importFrom antaresEditObject createArea createCluster createDistrict createLink propertiesLinkOptions updateGeneralSettings
 #' @import data.table
 #' @importFrom utils tail hasName
 #'
@@ -82,7 +82,7 @@ setupWaterValuesSimulation <- function(area,
     opts <- antaresEditObject::createLink(
       from = area,
       to = fictive_area,
-      propertiesLink = propertiesLinkOptions(transmission_capacities = "infinite"), #
+      propertiesLink = antaresEditObject::propertiesLinkOptions(transmission_capacities = "infinite"), #
       dataLink = NULL,
       overwrite = overwrite,
       opts = opts
@@ -92,13 +92,13 @@ setupWaterValuesSimulation <- function(area,
 
   # Activate output year by year
   suppressWarnings({
-    updateGeneralSettings(year.by.year = TRUE, opts = opts)
+    antaresEditObject::updateGeneralSettings(year.by.year = TRUE, opts = opts)
   })
 
 
   # Create a water values district
   suppressWarnings({
-    createDistrict(
+    antaresEditObject::createDistrict(
       name = "water values district",
       caption = "water values district",
       comments = "Used for calculate water values",

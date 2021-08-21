@@ -1,4 +1,3 @@
-#' @import methods
 #' @export
 
 num_equal <- function(x, y, tol = sqrt(.Machine$double.eps)) {

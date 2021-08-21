@@ -1,6 +1,6 @@
 #' Visualize mean grid layer
 #'
-#' @param value_nodes Output from \code{waterValues} or \code{meanGridLayer}.
+#' @param value_nodes Output from \code{watervalues} or \code{Grid_Matrix}.
 #' @param add_band Add band around water values, \code{TRUE} or \code{FALSE}.
 #' @param type Perform a linear or a spline interpolation.
 #' @param bandwidth Ith of the band to add.

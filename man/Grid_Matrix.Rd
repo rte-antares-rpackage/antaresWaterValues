@@ -22,7 +22,9 @@ Grid_Matrix(
   q_ratio = 0.5,
   monotonic_bellman = FALSE,
   test_week = NULL,
-  opts = antaresRead::simOptions()
+  opts = antaresRead::simOptions(),
+  shiny = F,
+  ...
 )
 }
 \arguments{

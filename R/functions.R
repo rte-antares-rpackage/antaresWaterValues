@@ -3,6 +3,7 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @importFrom antaresEditObject readIniFile
 #' @export
 
 get_reservoir_capacity <- function(area, opts=antaresRead::simOptions())
@@ -27,13 +28,15 @@ return(reservoir_capacity)
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
+#' @importFrom antaresRead readInputTS
+#' @importFrom utils hasName
 #' @export
 
 get_max_hydro <- function(area, opts=antaresRead::simOptions())
 {
 #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
 max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
-if (hasName(max_hydro, "hstorPMaxHigh")) {
+if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
   max_hydro <- max_hydro[, max(hstorPMaxHigh)] * 168
 } else {
   max_hydro <- max(max_hydro$generatingMaxPower) * 168    }

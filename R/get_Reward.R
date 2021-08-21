@@ -9,9 +9,9 @@
 #'
 #' @return a data.table {timeid,MCyear,simulation overall cost}
 #' @export
-#'
+#' @import data.table
 #' @importFrom assertthat assert_that
-#' @importFrom antaresRead setSimulationPath readAntares
+#' @importFrom antaresRead setSimulationPath readAntares getDistricts
 #'
 
 

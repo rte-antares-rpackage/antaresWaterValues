@@ -24,12 +24,11 @@
 #' @return a \code{data.table}
 #' @export
 #'
-#' @importFrom antaresRead readInputTS readAntares setSimulationPath
+#' @importFrom assertthat assert_that
+#' @importFrom antaresRead readAntares setSimulationPath
 #' @importFrom utils txtProgressBar setTxtProgressBar
 #' @importFrom dplyr left_join
-#' @import tibble
-#' @import stats
-#' @import grDevices
+#' @import data.table
 #' @importFrom shinybusy show_modal_spinner remove_modal_spinner
 #'
 #'

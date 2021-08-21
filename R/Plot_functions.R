@@ -8,6 +8,7 @@
 #'
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
+#' @return a \code{ggplot} object
 #' @export
 
 
@@ -43,6 +44,8 @@ plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_w
 #'
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
+#'
+#' @return a \code{ggplot} object
 #' @export
 
 plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_")
@@ -70,6 +73,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #'
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
+#' @return a \code{ggplot} object
 #' @export
 
 plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
@@ -104,6 +108,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #'
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
+#' @return a \code{ggplot} object
 #' @export
 
 plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
@@ -152,6 +157,8 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
 #' @import data.table
 #' @importFrom  cowplot draw_label ggdraw plot_grid
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
+#'
+#' @return a \code{ggplot} object
 #' @export
 
 
@@ -227,6 +234,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' @importFrom dplyr left_join
 #' @importFrom tidyr pivot_wider
 #' @importFrom  antaresRead setSimulationPath readAntares
+#' @return a \code{ggplot} object
 #' @export
 
 
@@ -333,6 +341,7 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
 #' @importFrom  tidyr pivot_wider
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom stats setNames aggregate
+#' @return a \code{ggplot} object
 #' @export
 
 
@@ -473,6 +482,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom dplyr select
+#' @return a \code{ggplot} object
 #' @export
 
 

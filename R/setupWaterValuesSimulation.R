@@ -15,7 +15,7 @@
 #' @importFrom antaresRead simOptions readInputTS
 #' @import antaresEditObject
 #' @import data.table
-#' @importFrom utils tail
+#' @importFrom utils tail hasName
 #'
 #'
 # @examples
@@ -41,7 +41,7 @@ setupWaterValuesSimulation <- function(area,
   )
 
   # Create thermal cluster
-  if (hasName(hydro_storage_max, "hstorPMaxHigh")) {
+  if (utils::hasName(hydro_storage_max, "hstorPMaxHigh")) {
     prepro_modulation <- matrix(
       data = c(rep(1, times = 365 * 24 * 2),
                hydro_storage_max[, c(hstorPMaxHigh)]/hydro_storage_max[, max(hstorPMaxHigh)],

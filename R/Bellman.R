@@ -22,7 +22,8 @@
   #' @param test_week Numeric of length 1. number of the week to print in test.
   #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
   #'   interpolations. Defaults to FALSE.
-  #' @return A "data.table" like Data_week with the Bellman values
+  #' @return a \code{data.table} like Data_week with the Bellman values
+  #' @importFrom stats ave quantile
   #' @export
 
 
@@ -242,7 +243,7 @@
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
-    Data_week$value_node <- ave(Data_week$value_node, Data_week$statesid, FUN=mean_finite)
+    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean_finite)
     return(Data_week)
   }
 
@@ -250,7 +251,7 @@
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
-    Data_week$value_node <- ave(Data_week$value_node, Data_week$statesid, FUN=function(x) quantile(x, q_ratio))
+    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio))
     return(Data_week)
   }
     return(Data_week)

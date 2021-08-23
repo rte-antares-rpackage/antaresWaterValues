@@ -415,65 +415,7 @@ ui <- fluidPage(
                     justified = TRUE,
                     checkIcon = list(
                       yes = icon("ok",
-                                 lib = "glyphicon"))  ) ),
-
-                  h3(strong("Reporting")),
-
-                  pickerInput(inputId = "report_sim",
-                              label = "Select simulations",
-                              choices = getSimulationNames("",opts = opts),
-                              options = list(
-                                `actions-box` = TRUE,
-                                `live-search` = TRUE),
-                              multiple = TRUE),
-
-                pickerInput("report_district_name",
-                            "choose the District",
-                            opts$districtList,
-                            options = list(
-                              `live-search` = TRUE)),
-
-                  pickerInput(
-
-                              inputId = "report_vars",
-                              label = "Select variables",
-                              choices = otp_variables,
-                              options = list(
-                                `actions-box` = TRUE,
-                                `live-search` = TRUE),
-                              multiple = TRUE),
-
-                conditionalPanel(
-
-                  condition = "input.report_vars.indexOf('Real OV. COST') > -1",
-                  pickerInput(inputId = "watervalues_areas",
-                            label = "Select areas using watervalues",
-                            choices = opts$areaList,
-                            options = list(
-                              `actions-box` = TRUE,
-                              `live-search` = TRUE),
-                            multiple = TRUE)),
-
-
-                radioGroupButtons(
-                  inputId = "report_mcyear_mode",
-                  label = "Select Time Step",
-                  choices = c("Synthesis","Custom"),
-                  individual = TRUE,
-                  justified = TRUE,
-                  checkIcon = list(
-                    yes = icon("ok",
-                               lib = "glyphicon"))),
-
-                  conditionalPanel(
-                    condition = "input.report_mcyear_mode=='Custom'",
-
-                    sliderInput("report_mcyear",
-                                label="choose the number of MC years to use",
-                                min=1,max=opts$parameters$general$nbyears,
-                                value=1, step=1)
-                  )
-
+                                 lib = "glyphicon"))  ) )
 
 
 
@@ -496,27 +438,99 @@ ui <- fluidPage(
                   style = "unite",
                   color = "primary",
                   block = T
-                ),
-
-
-                shinycustomloader::withLoader(plotOutput("report"), type="html", loader="dnaspin"),
-                downloadBttn(
-                  outputId = "download_report_plot",
-                  style = "unite",
-                  color = "primary",
-                  block = T
-                ),
-
-
-
-
+                )
 
 
               )
 
               ) #end sidebar Panel
 
-           )  #end tabpanel "Post Process"
+           ),  #end tabpanel "Results"
+
+  #---- Reporting ------
+
+  tabPanel("Reporting",
+
+           sidebarLayout(
+
+             sidebarPanel(
+
+               pickerInput(inputId = "report_sim",
+                           label = "Select simulations",
+                           choices = getSimulationNames("",opts = opts),
+                           options = list(
+                             `actions-box` = TRUE,
+                             `live-search` = TRUE),
+                           multiple = TRUE),
+
+               pickerInput("report_district_name",
+                           "choose the District",
+                           opts$districtList,
+                           options = list(
+                             `live-search` = TRUE)),
+
+               pickerInput(
+
+                 inputId = "report_vars",
+                 label = "Select variables",
+                 choices = otp_variables,
+                 options = list(
+                   `actions-box` = TRUE,
+                   `live-search` = TRUE),
+                 multiple = TRUE),
+
+               conditionalPanel(
+
+                 condition = "input.report_vars.indexOf('Real OV. COST') > -1",
+                 pickerInput(inputId = "watervalues_areas",
+                             label = "Select areas using watervalues",
+                             choices = opts$areaList,
+                             options = list(
+                               `actions-box` = TRUE,
+                               `live-search` = TRUE),
+                             multiple = TRUE)),
+
+
+               radioGroupButtons(
+                 inputId = "report_mcyear_mode",
+                 label = "Select Time Step",
+                 choices = c("Synthesis","Custom"),
+                 individual = TRUE,
+                 justified = TRUE,
+                 checkIcon = list(
+                   yes = icon("ok",
+                              lib = "glyphicon"))),
+
+               conditionalPanel(
+                 condition = "input.report_mcyear_mode=='Custom'",
+
+                 sliderInput("report_mcyear",
+                             label="choose the number of MC years to use",
+                             min=1,max=opts$parameters$general$nbyears,
+                             value=1, step=1)
+                )
+               ),
+
+             ),
+
+             mainPanel(
+
+               shinycustomloader::withLoader(plotOutput("report"), type="html", loader="dnaspin"),
+               downloadBttn(
+                 outputId = "download_report_plot",
+                 style = "unite",
+                 color = "primary",
+                 block = T
+               ) ,
+
+           tableOutput(report_table)
+             )
+
+
+  )#end tabpanel Reporing
+
+
+
 
 ) #navbar
 ) #UI
@@ -874,6 +888,19 @@ server <- function(input, output) {
         grDevices::dev.off()
       }
     )
+
+    report <- reactive({
+      if(input$report_mcyear_mode=="Custom"){
+        mc_year <- input$report_mcyear
+      }else{
+        mc_year <- NULL
+      }
+
+      report_table(simulations=input$report_sim,district_name=input$report_district_name,
+                   mcyears=mc_year,opts=opts,plot_var=input$report_vars,
+                   watervalues_areas=input$watervalues_areas,return_table=TRUE)
+
+    })
 
 
 }

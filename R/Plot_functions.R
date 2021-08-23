@@ -276,7 +276,7 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
       ggplot2::geom_line(ggplot2::aes(y = level_low ), color = "red") +
       ggplot2::geom_line(ggplot2::aes(y = level_high ), color="red")+
       ggplot2::geom_line(ggplot2::aes(y = `H. LEV` ), color="blue")
-    p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path for MC synthesis",area))+ggplot2:theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path for MC synthesis",area))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
     print(p)
     return(p)
@@ -299,7 +299,7 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
       ggplot2::geom_line(ggplot2::aes(y = level_low ), color = "red") +
       ggplot2::geom_line(ggplot2::aes(y = level_high ), color="red")+
       ggplot2::geom_line(ggplot2::aes(y =MC_year ), color="blue")
-    p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path for MC year %d",area,mcyear))+ggplot2:theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path for MC year %d",area,mcyear))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
 
   }else{
@@ -470,11 +470,13 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #'
 #' @param simulations list of simulation names.
 #' @param timeStep Resolution of the data to import.
-#' @param district_name district name that contains the all domain to study.
+#' @param area_list list of area to plot. assign "all" to use the district
+#'  that contains the all domain to study.
 #' @param mcyears precise the MC year to plot.
 #' #' Null plot the synthesis. Default NULL
 #' @param plot_var list of variables to plot.
 #' @param watervalues_areas list of areas name that used water values.
+#' @paraù return_table boolean. return table or plot.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -482,12 +484,12 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom dplyr select
-#' @return a \code{ggplot} object
+#' @return a \code{ggplot} or \code{data.table} object
 #' @export
 
 
 
-plot_results <- function(simulations,district_name="all",timeStep="annual",
+plot_results <- function(simulations,area_list="all",timeStep="annual",
                          mcyears,opts,plot_var,watervalues_areas,return_table=F,
                          water_value=50,...) {
 
@@ -495,15 +497,23 @@ plot_results <- function(simulations,district_name="all",timeStep="annual",
                      "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
                      "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
                      "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
-                     "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST","NODU")}
-
+                     "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST","NODU",
+                     "sim_name","total_hydro_cost","Real OV. COST")}
+  if (is.null(simulations)) return(NULL)
   data <- data.table(matrix(nrow = 0, ncol = length(column_names)))
   setnames(data,column_names)
   hydro <- copy(data)
+
+
   for(simulation_name in simulations){
     tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
-    row <- antaresRead::readAntares(districts = district_name, timeStep = timeStep ,
+    if(area_list=="all") {
+      row <- antaresRead::readAntares(districts = area_list, timeStep = timeStep ,
                        mcYears = mcyears, opts = tmp_opt,showProgress = F)
+    }else{
+      row <- antaresRead::readAntares(areas = area_list, timeStep = timeStep ,
+                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
+      }
     row$sim_name <- stringr::str_trunc(simulation_name, 20, "left")
     if(length(watervalues_areas)>0)
     {
@@ -514,15 +524,18 @@ plot_results <- function(simulations,district_name="all",timeStep="annual",
       {row_h[area==area_name,hydro_cost:=hydro_cost(area=area_name,
                                                     mcyears=mcyears,simulation_name,opts)]}
       row$total_hydro_cost <- sum(row_h$hydro_cost)
-      row$`Real OV. COST` <- row$`OV. COST`-row$total_hydro_cost
+    }else{
+      row$total_hydro_cost <- 0
     }
+    row$`Real OV. COST` <- row$`OV. COST`-row$total_hydro_cost
+
 
 
     data <- base::rbind(data,row,fill=T)
   }
-  data <- dplyr::select(data,append(plot_var,"sim_name"))
+  data1 <- dplyr::select(data,append(plot_var,"sim_name"))
 
-  fin_data = melt(data, id.vars="sim_name")
+  fin_data = melt(data1, id.vars="sim_name")
 
   p = ggplot2::ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name)) +
     ggplot2::geom_col() +
@@ -530,9 +543,38 @@ plot_results <- function(simulations,district_name="all",timeStep="annual",
     ggplot2::facet_grid(. ~ variable)+
     ggplot2::scale_fill_brewer(palette="Paired")
   print(p)
-  if(return_table) {return(data)}
+  if(return_table) {return(as.data.table(data))}
   return(p)
 
 
 
+}
+
+#--------- Reporting graph Plot---------------
+#' Plot simulation variables comparison and real Ov. cost (for watervalues)
+#'
+#' @param data A data.table contains the simulation results and  real Ov. cost.
+#' Obtained using the function plot_results()
+#' @param plot_var list of variables to plot.
+#' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
+#' @importFrom dplyr select
+#' @return a \code{ggplot} object
+#' @export
+
+
+just_plot_report <- function(data,plot_var){
+
+
+  data1 <- dplyr::select(data,append(plot_var,"sim_name"))
+
+  fin_data <-  melt(data1, id.vars="sim_name")
+
+  p <-  ggplot2::ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name)) +
+    ggplot2::geom_col() +
+    ggplot2::scale_fill_viridis_d() +
+    ggplot2::facet_grid(. ~ variable)+
+    ggplot2::scale_fill_brewer(palette="Paired")
+  print(p)
+
+  return(p)
 }

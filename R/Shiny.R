@@ -17,18 +17,20 @@
 #' @importFrom antaresEditObject writeWaterValues
 #' @importFrom data.table copy
 #' @importFrom grDevices dev.off png
+#' @importFrom DT dataTableOutput renderDataTable
 #' @export
 
 shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
 
 {
 
-otp_variables <- c("Real OV. COST","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
+otp_variables <- c("Real OV. COST","total_hydro_cost","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
     "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
     "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
     "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
     "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST",
     "NODU")
+
 
 #------User interface-----
 linebreaks <- function(n){HTML(strrep(br(), n))}
@@ -455,40 +457,57 @@ ui <- fluidPage(
 
              sidebarPanel(
 
-               pickerInput(inputId = "report_sim",
-                           label = "Select simulations",
-                           choices = getSimulationNames("",opts = opts),
-                           options = list(
-                             `actions-box` = TRUE,
-                             `live-search` = TRUE),
-                           multiple = TRUE),
-
-               pickerInput("report_district_name",
-                           "choose the District",
-                           opts$districtList,
+              pickerInput("report_district_name",
+                           "choose the area",
+                           append(opts$areaList,"All",after=0),
                            options = list(
                              `live-search` = TRUE)),
 
-               pickerInput(
+              pickerInput(inputId = "report_sim1",
+                          label = "Select simulations Set 1",
+                          choices = getSimulationNames("",opts = opts),
+                          options = list(
+                            `actions-box` = TRUE,
+                            `live-search` = TRUE),
+                          multiple = TRUE),
 
-                 inputId = "report_vars",
-                 label = "Select variables",
-                 choices = otp_variables,
-                 options = list(
-                   `actions-box` = TRUE,
-                   `live-search` = TRUE),
-                 multiple = TRUE),
 
-               conditionalPanel(
 
-                 condition = "input.report_vars.indexOf('Real OV. COST') > -1",
-                 pickerInput(inputId = "watervalues_areas",
-                             label = "Select areas using watervalues",
+                 pickerInput(inputId = "watervalues_areas1",
+                             label = "Select areas using watervalues in Set 1",
                              choices = opts$areaList,
                              options = list(
                                `actions-box` = TRUE,
                                `live-search` = TRUE),
-                             multiple = TRUE)),
+                             multiple = TRUE),
+
+              pickerInput(inputId = "report_sim2",
+                          label = "Select simulations Set 2",
+                          choices = getSimulationNames("",opts = opts),
+                          options = list(
+                            `actions-box` = TRUE,
+                            `live-search` = TRUE),
+                          multiple = TRUE),
+
+
+
+              pickerInput(inputId = "watervalues_areas2",
+                          label = "Select areas using watervalues in Set 2",
+                          choices = opts$areaList,
+                          options = list(
+                            `actions-box` = TRUE,
+                            `live-search` = TRUE),
+                          multiple = TRUE),
+
+              pickerInput(
+
+                inputId = "report_vars",
+                label = "Select variables",
+                choices = otp_variables,
+                options = list(
+                  `actions-box` = TRUE,
+                  `live-search` = TRUE),
+                multiple = TRUE),
 
 
                radioGroupButtons(
@@ -508,10 +527,19 @@ ui <- fluidPage(
                              label="choose the number of MC years to use",
                              min=1,max=opts$parameters$general$nbyears,
                              value=1, step=1)
-                )
+                ),
+
+               pickerInput(
+
+                 inputId = "table_vars",
+                 label = "Select table variables",
+                 choices = otp_variables,
+                 options = list(
+                   `actions-box` = TRUE,
+                   `live-search` = TRUE),
+                 multiple = TRUE)
                ),
 
-             ),
 
              mainPanel(
 
@@ -523,8 +551,9 @@ ui <- fluidPage(
                  block = T
                ) ,
 
-           tableOutput(report_table)
-             )
+               DT::dataTableOutput("report_table")
+             ) #end mainPanel
+           )
 
 
   )#end tabpanel Reporing
@@ -869,13 +898,21 @@ server <- function(input, output) {
         mc_year <- NULL
       }
 
-      plot_results(simulations=input$report_sim,district_name=input$report_district_name,
+      tab1 <- plot_results(simulations=input$report_sim1,district_name=input$report_district_name,
                    mcyears=mc_year,opts=opts,plot_var=input$report_vars,
-                   watervalues_areas=input$watervalues_areas)
+                   watervalues_areas=input$watervalues_areas1,return_table = T)
+      tab2 <- plot_results(simulations=input$report_sim2,district_name=input$report_district_name,
+                           mcyears=mc_year,opts=opts,plot_var=input$report_vars,
+                           watervalues_areas=input$watervalues_areas2,return_table = T)
+      if(is.null(tab2))  data <- tab1
+      if(is.null(tab1))  data <- tab2
+      if(!(is.null(tab1)|is.null(tab2))) data <- rbind(tab1,tab2)
+
+      data
 
     })
 
-    output$report <- renderPlot(report())
+    output$report <- renderPlot(just_plot_report(report(),input$report_vars))
 
     output$download_reward_plot <- downloadHandler(
       filename = function() {
@@ -884,23 +921,17 @@ server <- function(input, output) {
       content = function(con) {
         grDevices::dev.png(con ,width = 1200,
             height = 766)
-        print(report())
+        print(just_plot_report(report(),input$report_vars))
         grDevices::dev.off()
       }
     )
 
-    report <- reactive({
-      if(input$report_mcyear_mode=="Custom"){
-        mc_year <- input$report_mcyear
-      }else{
-        mc_year <- NULL
-      }
-
-      report_table(simulations=input$report_sim,district_name=input$report_district_name,
-                   mcyears=mc_year,opts=opts,plot_var=input$report_vars,
-                   watervalues_areas=input$watervalues_areas,return_table=TRUE)
+    report_table <- reactive({
+         table <- select(report(),dput(append(input$table_vars,c("sim_name"),after = 0)))
 
     })
+
+    output$report_table <- DT::renderDataTable(report_table())
 
 
 }

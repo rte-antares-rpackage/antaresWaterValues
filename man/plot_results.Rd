@@ -6,12 +6,15 @@
 \usage{
 plot_results(
   simulations,
-  district_name = "all",
+  type = "area",
+  district_list = "all",
+  area_list = "all",
   timeStep = "annual",
   mcyears,
   opts,
   plot_var,
   watervalues_areas,
+  return_table = F,
   water_value = 50,
   ...
 )
@@ -19,7 +22,12 @@ plot_results(
 \arguments{
 \item{simulations}{list of simulation names.}
 
-\item{district_name}{district name that contains the all domain to study.}
+\item{type}{"area" to import areas and "district" to import districts.}
+
+\item{district_list}{list of district to plot. assign "all" to import all districts.}
+
+\item{area_list}{list of area to plot. assign "all" to import all areas.
+that contains the all domain to study.}
 
 \item{timeStep}{Resolution of the data to import.}
 
@@ -32,9 +40,11 @@ plot_results(
 \item{plot_var}{list of variables to plot.}
 
 \item{watervalues_areas}{list of areas name that used water values.}
+
+\item{return_table}{boolean. return table or plot.}
 }
 \value{
-a \code{ggplot} object
+a \code{ggplot} or \code{data.table} object
 }
 \description{
 Plot simulation variables comparison and real Ov. cost (for watervalues)

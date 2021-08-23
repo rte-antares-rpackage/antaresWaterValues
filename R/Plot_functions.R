@@ -480,7 +480,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #' #' Null plot the synthesis. Default NULL
 #' @param plot_var list of variables to plot.
 #' @param watervalues_areas list of areas name that used water values.
-#' @paraù return_table boolean. return table or plot.
+#' @param return_table boolean. return table or plot.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}

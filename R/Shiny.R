@@ -16,7 +16,7 @@
 #' @importFrom  shinyjs useShinyjs
 #' @importFrom antaresEditObject writeWaterValues
 #' @importFrom data.table copy
-#' @importFrom grDevices dev.off png
+#' @importFrom grDevices dev.off png rgb
 #' @importFrom DT dataTableOutput renderDataTable
 #' @export
 
@@ -457,11 +457,36 @@ ui <- fluidPage(
 
              sidebarPanel(
 
-              pickerInput("report_district_name",
-                           "choose the area",
-                           append(opts$areaList,"All",after=0),
-                           options = list(
-                             `live-search` = TRUE)),
+
+               radioGroupButtons(
+                 inputId = "report_type",
+                 label = "Select ",
+                 choices = c("area","district"),
+                 individual = TRUE,
+                 justified = TRUE,
+                 checkIcon = list(
+                   yes = icon("ok",
+                              lib = "glyphicon"))),
+
+              conditionalPanel(
+                condition = "input.report_type=='area'",
+                pickerInput("report_area",
+                            "choose the area",
+                            append(opts$areaList,"all",after=0),
+                            options = list(
+                              `live-search` = TRUE),
+                            multiple = TRUE)
+              ),
+
+              conditionalPanel(
+                condition = "input.report_type=='district'",
+                pickerInput("report_district",
+                            "choose the district",
+                            append(opts$districtList,"all",after=0),
+                            options = list(
+                              `live-search` = TRUE),
+                            multiple = TRUE)
+              ),
 
               pickerInput(inputId = "report_sim1",
                           label = "Select simulations Set 1",
@@ -533,7 +558,7 @@ ui <- fluidPage(
 
                  inputId = "table_vars",
                  label = "Select table variables",
-                 choices = otp_variables,
+                 choices = append(otp_variables,"area",after=0),
                  options = list(
                    `actions-box` = TRUE,
                    `live-search` = TRUE),
@@ -622,7 +647,7 @@ server <- function(input, output) {
         paste('watervalues-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        grDevices::dev.png(con ,width = 1200,
+        grDevices::png(con ,width = 1200,
             height = 766)
         print(watervalues())
         grDevices::dev.off()
@@ -641,7 +666,7 @@ server <- function(input, output) {
       },
       content = function(con) {
 
-        grDevices::dev.png(con ,width = 1200,
+        grDevices::png(con ,width = 1200,
             height = 766)
         print(plot_Bellman(rv$results,input$week_id,
                            input$param,states_step_ratio =
@@ -704,7 +729,7 @@ server <- function(input, output) {
         paste('Reward-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-       grDevices::dev.png(con ,width = 1200,
+       grDevices::png(con ,width = 1200,
             height = 766)
         print(rewardplot())
         grDevices::dev.off()
@@ -792,7 +817,7 @@ server <- function(input, output) {
         paste('full water values-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        grDevices::dev.png(con ,width = 1200,
+        grDevices::png(con ,width = 1200,
             height = 766)
         print(waterValuesViz(final_result()))
         grDevices::dev.off()
@@ -842,7 +867,7 @@ server <- function(input, output) {
         paste('Reservoir-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        grDevices::dev.png(con ,width = 1200,
+        grDevices::png(con ,width = 1200,
             height = 766)
         print(reservoir())
         grDevices::dev.off()
@@ -880,7 +905,7 @@ server <- function(input, output) {
         paste('pmin_pmax-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        grDevices::dev.png(con ,width = 1200,
+        grDevices::png(con ,width = 1200,
                height = 766)
         print(pmin_pmax())
         grDevices::dev.off()
@@ -898,10 +923,12 @@ server <- function(input, output) {
         mc_year <- NULL
       }
 
-      tab1 <- plot_results(simulations=input$report_sim1,district_name=input$report_district_name,
+      tab1 <- plot_results(simulations=input$report_sim1,type=input$report_type,
+                           area_list = input$report_area,district_name=input$report_district,
                    mcyears=mc_year,opts=opts,plot_var=input$report_vars,
                    watervalues_areas=input$watervalues_areas1,return_table = T)
-      tab2 <- plot_results(simulations=input$report_sim2,district_name=input$report_district_name,
+      tab2 <- plot_results(simulations=input$report_sim2,type=input$report_type,
+                           area_list = input$report_area,district_name=input$report_district,
                            mcyears=mc_year,opts=opts,plot_var=input$report_vars,
                            watervalues_areas=input$watervalues_areas2,return_table = T)
       if(is.null(tab2))  data <- tab1
@@ -912,16 +939,18 @@ server <- function(input, output) {
 
     })
 
-    output$report <- renderPlot(just_plot_report(report(),input$report_vars))
+    output$report <- renderPlot(just_plot_report(report(),input$report_vars,
+                                    plot_type=(input$report_type=="district")))
 
     output$download_reward_plot <- downloadHandler(
       filename = function() {
         paste('report-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-        grDevices::dev.png(con ,width = 1200,
+        grDevices::png(con ,width = 1200,
             height = 766)
-        print(just_plot_report(report(),input$report_vars))
+        print(just_plot_report(report(),input$report_vars,
+                               plot_type=(input$report_type=="district")))
         grDevices::dev.off()
       }
     )

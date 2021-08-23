@@ -20,7 +20,7 @@ expand_to_days <- function(v) {
   v
 }
 
-
+#' @importFrom grDevices boxplot.stats
 #' @export
 
 correct_outliers <- function(u) {

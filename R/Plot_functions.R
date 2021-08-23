@@ -306,7 +306,7 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
     p <- ggplot2::ggplot(temp, ggplot2::aes(x = timeId, y = value, colour = variable)) +
       ggplot2::geom_line(lwd=1) + ggplot2::scale_color_manual(values =c("level_low" = "red",
                                                                         "level_high" = "red"))
-    p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path",area))+ggplot2:theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path",area))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
   }
   print(p)
@@ -479,7 +479,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @import data.table
-#' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid
+#' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom dplyr select
 #' @return a \code{ggplot} object
@@ -487,7 +487,9 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 
 
 
-plot_results <- function(simulations,district_name="all",timeStep="annual",mcyears,opts,plot_var,watervalues_areas,water_value=50,...) {
+plot_results <- function(simulations,district_name="all",timeStep="annual",
+                         mcyears,opts,plot_var,watervalues_areas,return_table=F,
+                         water_value=50,...) {
 
   {column_names <- c("sim_name","area", "timeId", "time","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
                      "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
@@ -525,8 +527,10 @@ plot_results <- function(simulations,district_name="all",timeStep="annual",mcyea
   p = ggplot2::ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name)) +
     ggplot2::geom_col() +
     ggplot2::scale_fill_viridis_d() +
-    ggplot2::facet_grid(. ~ variable)
+    ggplot2::facet_grid(. ~ variable)+
+    ggplot2::scale_fill_brewer(palette="Paired")
   print(p)
+  if(return_table) {return(data)}
   return(p)
 
 

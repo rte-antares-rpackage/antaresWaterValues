@@ -5,7 +5,7 @@
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
-#'
+#' @importFrom grDevices rgb
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
@@ -44,7 +44,7 @@ plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_w
 #'
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
-#'
+#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
@@ -71,7 +71,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
-#'
+#' @importFrom grDevices rgb
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
@@ -106,7 +106,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
-#'
+#' @importFrom grDevices rgb
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
@@ -157,7 +157,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
 #' @import data.table
 #' @importFrom  cowplot draw_label ggdraw plot_grid
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
-#'
+#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
@@ -233,6 +233,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
 #' @importFrom dplyr left_join
 #' @importFrom tidyr pivot_wider
+#' @importFrom grDevices rgb
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @return a \code{ggplot} object
 #' @export
@@ -341,6 +342,7 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
 #' @importFrom  tidyr pivot_wider
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom stats setNames aggregate
+#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
@@ -470,7 +472,9 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #'
 #' @param simulations list of simulation names.
 #' @param timeStep Resolution of the data to import.
-#' @param area_list list of area to plot. assign "all" to use the district
+#' @param type "area" to import areas and "district" to import districts.
+#' @param district_list list of district to plot. assign "all" to import all districts.
+#' @param area_list list of area to plot. assign "all" to import all areas.
 #'  that contains the all domain to study.
 #' @param mcyears precise the MC year to plot.
 #' #' Null plot the synthesis. Default NULL
@@ -484,12 +488,13 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom dplyr select
+#' @importFrom grDevices rgb
 #' @return a \code{ggplot} or \code{data.table} object
 #' @export
 
 
 
-plot_results <- function(simulations,area_list="all",timeStep="annual",
+plot_results <- function(simulations,type="area",district_list="all",area_list="all",timeStep="annual",
                          mcyears,opts,plot_var,watervalues_areas,return_table=F,
                          water_value=50,...) {
 
@@ -507,7 +512,7 @@ plot_results <- function(simulations,area_list="all",timeStep="annual",
 
   for(simulation_name in simulations){
     tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
-    if(area_list=="all") {
+    if(type=="district") {
       row <- antaresRead::readAntares(districts = area_list, timeStep = timeStep ,
                        mcYears = mcyears, opts = tmp_opt,showProgress = F)
     }else{
@@ -556,21 +561,32 @@ plot_results <- function(simulations,area_list="all",timeStep="annual",
 #' @param data A data.table contains the simulation results and  real Ov. cost.
 #' Obtained using the function plot_results()
 #' @param plot_var list of variables to plot.
+#' @param plot_type boolean. True to plot by area. False to plot by simulation
 #' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
 #' @importFrom dplyr select
+#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
 
-just_plot_report <- function(data,plot_var){
+just_plot_report <- function(data,plot_var,plot_type=T){
+
+  if(plot_type) {
+    var <- "sim_name"
+  }else{
+    var <- "area"
+  }
 
 
-  data1 <- dplyr::select(data,append(plot_var,"sim_name"))
+  data1 <- dplyr::select(data,append(plot_var,var))
+  fin_data <-  melt(data1, id.vars=var)
 
-  fin_data <-  melt(data1, id.vars="sim_name")
-
-  p <-  ggplot2::ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name)) +
-    ggplot2::geom_col() +
+  if(plot_type) {
+    p <-  ggplot2::ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name))
+  }else{
+    p <-  ggplot2::ggplot(data=fin_data, aes(x=area, y=value, fill=area))
+  }
+    p <- p+ggplot2::geom_col() +
     ggplot2::scale_fill_viridis_d() +
     ggplot2::facet_grid(. ~ variable)+
     ggplot2::scale_fill_brewer(palette="Paired")

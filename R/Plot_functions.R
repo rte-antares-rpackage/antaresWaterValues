@@ -50,7 +50,7 @@ plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_w
 
 plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_")
 {
-  t <- names_reward(reward_base,simulation_name_pattern)
+  t <- names_reward(reward_base,sim_name_pattern)
   reward <- stats::aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
   temp <- reward[week_id,]
@@ -78,7 +78,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 
 plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
 {
-  t <- names_reward(reward_base,simulation_name_pattern)
+  t <- names_reward(reward_base,sim_name_pattern)
 
   reward <- reward_base[timeId %in% week_id&mcYear%in%Mc_year]
   names <- unlist(reward[,legend:=paste(sprintf("week %d",timeId),sprintf("MC year %d",mcYear))]$legend)
@@ -507,7 +507,6 @@ plot_results <- function(simulations,type="area",district_list="all",area_list="
   if (is.null(simulations)) return(NULL)
   data <- data.table(matrix(nrow = 0, ncol = length(column_names)))
   setnames(data,column_names)
-  hydro <- copy(data)
 
 
   for(simulation_name in simulations){
@@ -526,10 +525,30 @@ plot_results <- function(simulations,type="area",district_list="all",area_list="
                            mcYears = mcyears, opts = tmp_opt,showProgress = F)
 
       for (area_name in watervalues_areas)
-      {row_h[area==area_name,hydro_cost:=hydro_cost(area=area_name,
-                                                    mcyears=mcyears,simulation_name,opts)]}
-      row$total_hydro_cost <- sum(row_h$hydro_cost)
+
+        hydro_list <- hydro_cost(area=area_name,mcyears=mcyears,simulation_name,opts)
+
+      row_h[area==area_name,stockDiff:=hydro_list$stockDiff]
+      row_h[area==area_name,hydro_price:=hydro_list$hydro_price]
+      row_h[area==area_name,hydro_stockDiff_cost:=hydro_list$hydro_stockDiff_cost]
+      row_h[area==area_name,hydro_cost:=hydro_list$hydro_cost]
+      row_h[area==area_name,total_hydro_cost:= hydro_list$total_hydro_cost]
+
+      if(area_name==watervalues_areas[length(watervalues_areas)])
+      {
+        row$stockDiff <- sum(row_h$stockDiff)
+        row$hydro_price <- mean(row_h$hydro_price)
+        row$hydro_stockDiff_cost <- sum(row_h$hydro_stockDiff_cost)
+        row$hydro_cost <- sum(row_h$hydro_cost)
+        row$total_hydro_cost <- sum(row_h$total_hydro_cost)
+
+
+      }
     }else{
+      row$stockDiff <- 0
+      row$hydro_price <- 0
+      row$hydro_stockDiff_cost <- 0
+      row$hydro_cost <- 0
       row$total_hydro_cost <- 0
     }
     row$`Real OV. COST` <- row$`OV. COST`-row$total_hydro_cost

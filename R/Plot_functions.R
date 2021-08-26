@@ -467,7 +467,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
   }
 
 
-#--------- Reporting graph Plot---------------
+#--------- Reporting data---------------
 #' Plot simulation variables comparison and real Ov. cost (for watervalues)
 #'
 #' @param simulations list of simulation names.
@@ -494,9 +494,8 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 
 
 
-plot_results <- function(simulations,type="area",district_list="all",area_list="all",timeStep="annual",
-                         mcyears,opts,plot_var,watervalues_areas,return_table=F,
-                         water_value=50,...) {
+report_data <- function(simulations,type="area",district_list="all",area_list="all",timeStep="annual",
+                         mcyears,opts,plot_var,watervalues_areas,...) {
 
   {column_names <- c("sim_name","area", "timeId", "time","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
                      "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
@@ -511,20 +510,19 @@ plot_results <- function(simulations,type="area",district_list="all",area_list="
 
   for(simulation_name in simulations){
     tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
-    if(type=="district") {
-      row <- antaresRead::readAntares(districts = area_list, timeStep = timeStep ,
-                       mcYears = mcyears, opts = tmp_opt,showProgress = F)
-    }else{
-      row <- antaresRead::readAntares(areas = area_list, timeStep = timeStep ,
-                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
-      }
-    row$sim_name <- stringr::str_trunc(simulation_name, 20, "left")
+
     if(length(watervalues_areas)>0)
     {
       row_h <- antaresRead::readAntares(areas =watervalues_areas , timeStep = timeStep ,
                            mcYears = mcyears, opts = tmp_opt,showProgress = F)
 
-      for (area_name in watervalues_areas)
+      row_h$stockDiff <- 0
+      row_h$hydro_price <- 0
+      row_h$hydro_stockDiff_cost <- 0
+      row_h$hydro_cost <- 0
+      row_h$total_hydro_cost <- 0
+
+      for (area_name in watervalues_areas){
 
         hydro_list <- hydro_cost(area=area_name,mcyears=mcyears,simulation_name,opts)
 
@@ -536,39 +534,51 @@ plot_results <- function(simulations,type="area",district_list="all",area_list="
 
       if(area_name==watervalues_areas[length(watervalues_areas)])
       {
-        row$stockDiff <- sum(row_h$stockDiff)
-        row$hydro_price <- mean(row_h$hydro_price)
-        row$hydro_stockDiff_cost <- sum(row_h$hydro_stockDiff_cost)
-        row$hydro_cost <- sum(row_h$hydro_cost)
-        row$total_hydro_cost <- sum(row_h$total_hydro_cost)
+        stockDiff <- sum(row_h$stockDiff)
+        hydro_price <- mean(row_h$hydro_price)
+        hydro_stockDiff_cost <- sum(row_h$hydro_stockDiff_cost)
+        hydro_cost <- sum(row_h$hydro_cost)
+        total_hydro_cost <- sum(row_h$total_hydro_cost)
 
 
-      }
+      }}
     }else{
-      row$stockDiff <- 0
-      row$hydro_price <- 0
-      row$hydro_stockDiff_cost <- 0
-      row$hydro_cost <- 0
-      row$total_hydro_cost <- 0
+      stockDiff <- 0
+      hydro_price <- 0
+      hydro_stockDiff_cost <- 0
+      hydro_cost <- 0
+      total_hydro_cost <- 0
     }
+
+
+    if(type=="district") {
+      row <- antaresRead::readAntares(districts = district_list, timeStep = timeStep ,
+                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
+
+      row$stockDiff <- stockDiff
+      row$hydro_price <- hydro_price
+      row$hydro_stockDiff_cost <- hydro_stockDiff_cost
+      row$hydro_cost <- hydro_cost
+      row$total_hydro_cost <- total_hydro_cost
+
+    }else{
+      row <- antaresRead::readAntares(areas = area_list, timeStep = timeStep ,
+                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
+      row <- dplyr::left_join(row,row_h)
+
+    }
+
+
+    row$sim_name <- stringr::str_trunc(simulation_name, 20, "left")
+
     row$`Real OV. COST` <- row$`OV. COST`-row$total_hydro_cost
 
 
 
     data <- base::rbind(data,row,fill=T)
   }
-  data1 <- dplyr::select(data,append(plot_var,"sim_name"))
 
-  fin_data = melt(data1, id.vars="sim_name")
-
-  p = ggplot2::ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name)) +
-    ggplot2::geom_col() +
-    ggplot2::scale_fill_viridis_d() +
-    ggplot2::facet_grid(. ~ variable)+
-    ggplot2::scale_fill_brewer(palette="Paired")
-  print(p)
-  if(return_table) {return(as.data.table(data))}
-  return(p)
+  return(data)
 
 
 

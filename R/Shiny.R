@@ -88,6 +88,9 @@ ui <- fluidPage(
           numericInput("nb_cycle","number of cycle to calculate",value=2,
                        min=1),
 
+          #week 53 value
+          numericInput("week_53","water value initial condition",value=0),
+
 
           #number of states:
           sliderInput("nb_states",label="choose the number of states",min=5,
@@ -558,7 +561,8 @@ ui <- fluidPage(
 
                  inputId = "table_vars",
                  label = "Select table variables",
-                 choices = append(otp_variables,"area",after=0),
+                 choices = append(otp_variables,c("area","stockDiff","hydro_price",
+                                      "hydro_stockDiff_cost","hydro_cost","total_hydro_cost"),after=0),
                  options = list(
                    `actions-box` = TRUE,
                    `live-search` = TRUE),
@@ -605,7 +609,7 @@ server <- function(input, output) {
         simulation_values = simulation_res$simulation_values,
         nb_cycle = input$nb_cycle,
         opts = opts,
-        week_53 = 0,
+        week_53 = input$week_53,
         district_name =input$district_name ,
         method=input$method,
         states_step_ratio=(1/input$nb_states),

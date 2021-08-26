@@ -24,7 +24,9 @@ shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
 
 {
 
-otp_variables <- c("Real OV. COST","total_hydro_cost","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
+otp_variables <- c("Real OV. COST","stockDiff","hydro_price",
+                   "hydro_stockDiff_cost","hydro_cost","total_hydro_cost"
+                   ,"OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
     "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
     "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
     "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
@@ -561,8 +563,7 @@ ui <- fluidPage(
 
                  inputId = "table_vars",
                  label = "Select table variables",
-                 choices = append(otp_variables,c("area","stockDiff","hydro_price",
-                                      "hydro_stockDiff_cost","hydro_cost","total_hydro_cost"),after=0),
+                 choices = append(otp_variables,c("area"),after=0),
                  options = list(
                    `actions-box` = TRUE,
                    `live-search` = TRUE),
@@ -918,7 +919,7 @@ server <- function(input, output) {
 
 
 
-
+#------ Reporting------
 
     report <- reactive({
       if(input$report_mcyear_mode=="Custom"){
@@ -927,12 +928,12 @@ server <- function(input, output) {
         mc_year <- NULL
       }
 
-      tab1 <- plot_results(simulations=input$report_sim1,type=input$report_type,
-                           area_list = input$report_area,district_name=input$report_district,
+      tab1 <- report_data(simulations=input$report_sim1,type=input$report_type,
+                           area_list = input$report_area,district_list=input$report_district,
                    mcyears=mc_year,opts=opts,plot_var=input$report_vars,
                    watervalues_areas=input$watervalues_areas1,return_table = T)
-      tab2 <- plot_results(simulations=input$report_sim2,type=input$report_type,
-                           area_list = input$report_area,district_name=input$report_district,
+      tab2 <- report_data(simulations=input$report_sim2,type=input$report_type,
+                           area_list = input$report_area,district_list=input$report_district,
                            mcyears=mc_year,opts=opts,plot_var=input$report_vars,
                            watervalues_areas=input$watervalues_areas2,return_table = T)
       if(is.null(tab2))  data <- tab1

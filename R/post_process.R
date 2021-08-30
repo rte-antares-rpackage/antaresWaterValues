@@ -181,6 +181,30 @@ remove_out <- function(results_dt,min=NULL,max=NULL,NAN=T){
 }
 
 
+
+#' Adjust  water Values
+#'
+#' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
+#' @param value value to add to water values
+#' @import data.table
+#' @return a \code{data.table}
+#' @export
+
+adjust_wv <- function(results_dt,value=0){
+  if(value==0){
+    return(results_dt)
+  }
+  results <- copy(results_dt)
+
+    results[,vu:=vu+value]
+
+
+  return(results)
+}
+
+
+
+
 #' @export
 
 interp_up <- function(mini,statesid){

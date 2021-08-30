@@ -307,7 +307,7 @@ ui <- fluidPage(
                 ),
 
 
-
+                numericInput("adjust","Adjust value",value=0),
 
                 h3(strong("Force Monotonic")),
 
@@ -787,7 +787,7 @@ server <- function(input, output) {
     })
 
 
-    final_result <- reactive({
+    pre_final_result <- reactive({
 
 
       if(input$method_post_process=="None"){
@@ -805,6 +805,12 @@ server <- function(input, output) {
      }
 
     })
+
+    final_result <- reactive(
+      {
+        adjust_wv(pre_final_result(),value=input$adjust)
+      }
+    )
 
     observeEvent(input$reset,
                  {

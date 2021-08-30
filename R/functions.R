@@ -228,6 +228,7 @@ names_reward <-function(reward_dt,sim_name_pattern="weekly_water_amount_"){
 #' @export
 #'
 #' @importFrom data.table data.table CJ dcast
+#' @importFrom zoo na.spline
 #' @export
 
 to_Antares_Format <- function(data){
@@ -265,7 +266,7 @@ to_Antares_Format <- function(data){
   v[!is.finite(v)] <- NaN
   v <- sapply(v, function(x) c(rep(if (is.finite(x)) NA else NaN, 7), x))
   v[1,] <- unlist(last)
-  tab <- apply(v,2,na.spline)
+  tab <- apply(v,2,zoo::na.spline)
   tab <- tab[2:8,]
   reshaped_matrix <-rbind(reshaped_matrix,tab)
   last <-unlist(value_nodes_matrix[i,])

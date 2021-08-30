@@ -438,6 +438,13 @@ ui <- fluidPage(
                   block = T
                 ),
 
+                shinycustomloader::withLoader(plotOutput("flow"), type="html", loader="dnaspin"),
+                downloadBttn(
+                  outputId = "download_flow",
+                  style = "unite",
+                  color = "primary",
+                  block = T
+                ),
 
                 shinycustomloader::withLoader(plotOutput("pmin_pmax"), type="html", loader="dnaspin"),
                 downloadBttn(
@@ -850,6 +857,7 @@ server <- function(input, output) {
 
 #------Results page--------
 
+
     reservoir <- reactive({
 
       if(input$res_MC=="Custom"){
@@ -864,7 +872,6 @@ server <- function(input, output) {
                      mcyear=mc_year,opts = opts, shiny = TRUE)
     })
 
-
     output$reservoir <- renderPlot(reservoir())
 
     output$download_reservoir_plot <- downloadHandler(
@@ -875,6 +882,37 @@ server <- function(input, output) {
         grDevices::png(con ,width = 1200,
             height = 766)
         print(reservoir())
+        grDevices::dev.off()
+      }
+    )
+
+
+    flow <- reactive({
+
+      if(input$res_MC=="Custom"){
+        mc_year <- input$res_mc_year[1]:input$res_mc_year[2]
+      }else{
+        if(input$res_MC=="all"){mc_year <- "all"
+        }else{mc_year <- NULL}
+      }
+
+      plot_flow(input$res_area,input$res_timeStep,
+                     simulation_name = input$res_sim_name,
+                     mcyear=mc_year,opts = opts, shiny = TRUE)
+    })
+
+
+
+    output$flow <- renderPlot(flow())
+
+    output$download_flow <- downloadHandler(
+      filename = function() {
+        paste('Flow-', Sys.Date(), '.png', sep='')
+      },
+      content = function(con) {
+        grDevices::png(con ,width = 1200,
+                       height = 766)
+        print(flow())
         grDevices::dev.off()
       }
     )

@@ -1,3 +1,123 @@
+
+#--------- Reporting data---------------
+#' Plot simulation variables comparison and real Ov. cost (for watervalues)
+#'
+#' @param simulations list of simulation names.
+#' @param timeStep Resolution of the data to import.
+#' @param type "area" to import areas and "district" to import districts.
+#' @param district_list list of district to plot. assign "all" to import all districts.
+#' @param area_list list of area to plot. assign "all" to import all areas.
+#'  that contains the all domain to study.
+#' @param mcyears precise the MC year to plot.
+#' #' Null plot the synthesis. Default NULL
+#' @param plot_var list of variables to plot.
+#' @param watervalues_areas list of areas name that used water values.
+#' @param return_table boolean. return table or plot.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @import data.table
+#' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
+#' @importFrom  antaresRead setSimulationPath readAntares
+#' @importFrom dplyr select
+#' @importFrom grDevices rgb
+#' @return a \code{ggplot} or \code{data.table} object
+#' @export
+
+
+
+report_data <- function(simulations,type="area",district_list="all",area_list="all",timeStep="annual",
+                        mcyears,opts,plot_var,watervalues_areas,...) {
+
+  {column_names <- c("sim_name","area", "timeId", "time","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
+                     "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
+                     "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
+                     "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
+                     "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST","NODU",
+                     "sim_name","total_hydro_cost","Real OV. COST")}
+  if (is.null(simulations)) return(NULL)
+  data <- data.table(matrix(nrow = 0, ncol = length(column_names)))
+  setnames(data,column_names)
+
+
+  for(simulation_name in simulations){
+    tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+
+    if(length(watervalues_areas)>0)
+    {
+      row_h <- antaresRead::readAntares(areas =watervalues_areas , timeStep = timeStep ,
+                                        mcYears = mcyears, opts = tmp_opt,showProgress = F)
+
+      row_h$stockDiff <- 0
+      row_h$hydro_price <- 0
+      row_h$hydro_stockDiff_cost <- 0
+      row_h$hydro_cost <- 0
+      row_h$total_hydro_cost <- 0
+
+      for (area_name in watervalues_areas){
+
+        hydro_list <- hydro_cost(area=area_name,mcyears=mcyears,simulation_name,opts)
+
+        row_h[area==area_name,stockDiff:=hydro_list$stockDiff]
+        row_h[area==area_name,hydro_price:=hydro_list$hydro_price]
+        row_h[area==area_name,hydro_stockDiff_cost:=hydro_list$hydro_stockDiff_cost]
+        row_h[area==area_name,hydro_cost:=hydro_list$hydro_cost]
+        row_h[area==area_name,total_hydro_cost:= hydro_list$total_hydro_cost]
+
+        if(area_name==watervalues_areas[length(watervalues_areas)])
+        {
+          stockDiff <- sum(row_h$stockDiff)
+          hydro_price <- mean(row_h$hydro_price)
+          hydro_stockDiff_cost <- sum(row_h$hydro_stockDiff_cost)
+          hydro_cost <- sum(row_h$hydro_cost)
+          total_hydro_cost <- sum(row_h$total_hydro_cost)
+
+
+        }}
+    }else{
+      stockDiff <- 0
+      hydro_price <- 0
+      hydro_stockDiff_cost <- 0
+      hydro_cost <- 0
+      total_hydro_cost <- 0
+    }
+
+
+    if(type=="district") {
+      row <- antaresRead::readAntares(districts = district_list, timeStep = timeStep ,
+                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
+
+      row$stockDiff <- stockDiff
+      row$hydro_price <- hydro_price
+      row$hydro_stockDiff_cost <- hydro_stockDiff_cost
+      row$hydro_cost <- hydro_cost
+      row$total_hydro_cost <- total_hydro_cost
+
+    }else{
+      row <- antaresRead::readAntares(areas = area_list, timeStep = timeStep ,
+                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
+      row <- dplyr::left_join(row,row_h)
+
+    }
+
+
+    row$sim_name <- stringr::str_trunc(simulation_name, 20, "left")
+
+    row$`Real OV. COST` <- row$`OV. COST`-row$total_hydro_cost
+
+
+
+    data <- base::rbind(data,row,fill=T)
+  }
+
+  return(data)
+
+
+
+}
+
+
+
 #' Get reservoir capacity for concerned area
 #' @param area The area concerned by the simulation.
 #' @param opts

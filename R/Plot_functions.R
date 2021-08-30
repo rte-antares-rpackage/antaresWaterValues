@@ -209,6 +209,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
     title <- cowplot::ggdraw() + cowplot::draw_label(tit, fontface='bold')
     p <- cowplot::plot_grid(p1,p2,p3)
     cowplot::plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
+    return(p)
   }
 
 
@@ -467,123 +468,6 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
   }
 
 
-#--------- Reporting data---------------
-#' Plot simulation variables comparison and real Ov. cost (for watervalues)
-#'
-#' @param simulations list of simulation names.
-#' @param timeStep Resolution of the data to import.
-#' @param type "area" to import areas and "district" to import districts.
-#' @param district_list list of district to plot. assign "all" to import all districts.
-#' @param area_list list of area to plot. assign "all" to import all areas.
-#'  that contains the all domain to study.
-#' @param mcyears precise the MC year to plot.
-#' #' Null plot the synthesis. Default NULL
-#' @param plot_var list of variables to plot.
-#' @param watervalues_areas list of areas name that used water values.
-#' @param return_table boolean. return table or plot.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @import data.table
-#' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
-#' @importFrom  antaresRead setSimulationPath readAntares
-#' @importFrom dplyr select
-#' @importFrom grDevices rgb
-#' @return a \code{ggplot} or \code{data.table} object
-#' @export
-
-
-
-report_data <- function(simulations,type="area",district_list="all",area_list="all",timeStep="annual",
-                         mcyears,opts,plot_var,watervalues_areas,...) {
-
-  {column_names <- c("sim_name","area", "timeId", "time","OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
-                     "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
-                     "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
-                     "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
-                     "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST","NODU",
-                     "sim_name","total_hydro_cost","Real OV. COST")}
-  if (is.null(simulations)) return(NULL)
-  data <- data.table(matrix(nrow = 0, ncol = length(column_names)))
-  setnames(data,column_names)
-
-
-  for(simulation_name in simulations){
-    tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
-
-    if(length(watervalues_areas)>0)
-    {
-      row_h <- antaresRead::readAntares(areas =watervalues_areas , timeStep = timeStep ,
-                           mcYears = mcyears, opts = tmp_opt,showProgress = F)
-
-      row_h$stockDiff <- 0
-      row_h$hydro_price <- 0
-      row_h$hydro_stockDiff_cost <- 0
-      row_h$hydro_cost <- 0
-      row_h$total_hydro_cost <- 0
-
-      for (area_name in watervalues_areas){
-
-        hydro_list <- hydro_cost(area=area_name,mcyears=mcyears,simulation_name,opts)
-
-      row_h[area==area_name,stockDiff:=hydro_list$stockDiff]
-      row_h[area==area_name,hydro_price:=hydro_list$hydro_price]
-      row_h[area==area_name,hydro_stockDiff_cost:=hydro_list$hydro_stockDiff_cost]
-      row_h[area==area_name,hydro_cost:=hydro_list$hydro_cost]
-      row_h[area==area_name,total_hydro_cost:= hydro_list$total_hydro_cost]
-
-      if(area_name==watervalues_areas[length(watervalues_areas)])
-      {
-        stockDiff <- sum(row_h$stockDiff)
-        hydro_price <- mean(row_h$hydro_price)
-        hydro_stockDiff_cost <- sum(row_h$hydro_stockDiff_cost)
-        hydro_cost <- sum(row_h$hydro_cost)
-        total_hydro_cost <- sum(row_h$total_hydro_cost)
-
-
-      }}
-    }else{
-      stockDiff <- 0
-      hydro_price <- 0
-      hydro_stockDiff_cost <- 0
-      hydro_cost <- 0
-      total_hydro_cost <- 0
-    }
-
-
-    if(type=="district") {
-      row <- antaresRead::readAntares(districts = district_list, timeStep = timeStep ,
-                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
-
-      row$stockDiff <- stockDiff
-      row$hydro_price <- hydro_price
-      row$hydro_stockDiff_cost <- hydro_stockDiff_cost
-      row$hydro_cost <- hydro_cost
-      row$total_hydro_cost <- total_hydro_cost
-
-    }else{
-      row <- antaresRead::readAntares(areas = area_list, timeStep = timeStep ,
-                                      mcYears = mcyears, opts = tmp_opt,showProgress = F)
-      row <- dplyr::left_join(row,row_h)
-
-    }
-
-
-    row$sim_name <- stringr::str_trunc(simulation_name, 20, "left")
-
-    row$`Real OV. COST` <- row$`OV. COST`-row$total_hydro_cost
-
-
-
-    data <- base::rbind(data,row,fill=T)
-  }
-
-  return(data)
-
-
-
-}
-
 #--------- Reporting graph Plot---------------
 #' Plot simulation variables comparison and real Ov. cost (for watervalues)
 #'
@@ -623,3 +507,106 @@ just_plot_report <- function(data,plot_var,plot_type=T){
 
   return(p)
 }
+
+
+
+
+#--------- Water Flow Plot---------------
+#' Plot water flow Graph
+#'
+#' @param area An 'antares' area.
+#' @param timeStep Resolution of the data to import:
+#' weekly (default, a linear interpolation is done on the data),
+#' monthly (original data).
+#' @param mcyear precise the MC year to plot.
+#' all to plot all years.
+#' Null plot the synthesis. Default NULL
+#' @param simulation_name simulation name to plot.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @import data.table
+#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
+#' @importFrom dplyr left_join
+#' @importFrom tidyr pivot_wider
+#' @importFrom grDevices rgb
+#' @importFrom  antaresRead setSimulationPath readAntares
+#' @return a \code{ggplot} object
+#' @export
+
+
+plot_flow <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions(),shiny=F,...){
+
+
+  if(!shiny){
+    if(is.null(simulation_name)){
+
+      sim_names <- getSimulationNames("",opts = opts)
+      for (i in 1:length(sim_names))
+      { t <- sprintf("[%d] ==> %s",i,sim_names[i])
+      cat(t,sep="\n")}
+
+      sim_nb <- 0
+      while(sim_nb < 1|(sim_nb >length(sim_names)))
+      {sim_nb <- readline(prompt="Enter simulation number: ")
+      sim_nb <- as.integer(sim_nb)
+      }
+      simulation_name <- sim_names[sim_nb]
+
+    }}
+
+
+  #read reservoir actual levels:
+  tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
+  inflow <- antaresRead::readAntares(areas = area, timeStep = timeStep ,
+                                     mcYears = mcyear, opts = tmp_opt, hydroStorage = T)
+
+  if(is.null(mcyear)){
+    inflow <- inflow[order(timeId)]
+    inflow <- inflow[, list(timeId,hydroStorage )]
+    temp <- inflow
+    p <- ggplot2::ggplot(data=temp, ggplot2::aes(x=timeId)) +
+      ggplot2::geom_line(ggplot2::aes(y = hydroStorage ), color="blue")
+    p <- p+ggplot2::ggtitle(sprintf("%s Water flow Path for MC synthesis",area))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+
+    print(p)
+    return(p)
+  }else{
+    inflow <- inflow[order(mcYear, timeId)]
+    inflow <- inflow[, list(mcYear,timeId,hydroStorage )]
+    d <- tidyr::pivot_wider(inflow, names_from = mcYear, values_from = "hydroStorage")
+    temp1 <- as.data.table(d)
+    temp <- melt(temp1, id.vars="timeId")
+
+  }
+
+  if(is.numeric(mcyear)&(length(mcyear)==1)){
+    mc <- sprintf("Water_Flow")
+    old <- colnames(temp1)
+    setnames(temp1,old[2],mc)
+    temp1 <- temp1[,list(timeId,Water_Flow)]
+
+    p <- ggplot2::ggplot(data=temp1, ggplot2::aes(x=timeId)) +
+      ggplot2::geom_line(ggplot2::aes(y =Water_Flow ), color="blue")
+    p <- p+ggplot2::ggtitle(sprintf("%s Water Flow for MC year %d",area,mcyear))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+
+
+  }else{
+    names <- unlist(temp[,legend:=sprintf("MC year %d",variable)]$legend)
+
+    p <- ggplot2::ggplot(data = temp,ggplot2::aes(x=timeId,value, col=legend)) +ggplot2::geom_line(size=0.5)
+    p <- p+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    p <- p+ggplot2::ggtitle(sprintf("%s Water Flow for MC years",area))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+
+  }
+  print(p)
+
+  return(p)
+
+
+
+
+
+
+}
+

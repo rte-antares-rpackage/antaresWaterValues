@@ -49,7 +49,16 @@ mean_finite <- function(x) {
   }
 }
 
+#-----Mean or inf
+#' @export
+mean_or_inf <- function(x){
+  if(any(is.infinite(x))){
+    return(-Inf)
+  }else{
+    return(mean(x, na.rm = TRUE))
+  }
 
+}
 
 
 #------ simple interpolation -----

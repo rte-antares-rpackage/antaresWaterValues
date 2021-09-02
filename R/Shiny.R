@@ -99,7 +99,7 @@ ui <- fluidPage(
                       max=100,value=40,step=1),
 
           #MC years:
-          sliderInput("max_mcyears",label="choose the number of MC years to use",min=1,
+          sliderInput("mcyears",label="choose the number of MC years to use",min=1,
                       max=opts$parameters$general$nbyears,
                       value=c(1,opts$parameters$general$nbyears),step=1),
 
@@ -621,7 +621,7 @@ server <- function(input, output) {
         district_name =input$district_name ,
         method=input$method,
         states_step_ratio=(1/input$nb_states),
-        max_mcyears=input$max_mcyears[1]:input$max_mcyears[2],
+        mcyears=input$mcyears[1]:input$mcyears[2],
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio,

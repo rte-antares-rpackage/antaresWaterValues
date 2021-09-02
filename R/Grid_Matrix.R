@@ -5,7 +5,7 @@
 #' @param simulation_values Values for the simulation.
 #' @param nb_cycle Number of times to run the algorithm.
 #' @param district_name Name of the district used to store output.
-#' @param max_mcyears Number of MC years to consider, by default all of them.
+#' @param mcyears MC years to consider, by default all of them.
 #' @param week_53 Water values for week 53, by default 0.
 #' @param method Perform mean grid algorithm or grid mean algorithm ?
 #' @param states_step_ratio Discretization ratio to generate steps levels
@@ -35,7 +35,7 @@
 
 
 Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cycle = 1L,
-                             district_name = "water values district", max_mcyears = NULL,
+                             district_name = "water values district", mcyears = NULL,
                              week_53 = 0,
                              states_step_ratio = 0.01,
                              reservoir_capacity = NULL,
@@ -75,13 +75,12 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
     message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))
   }
 
-  if (is.null(max_mcyears)) {
-    max_mcyears <- opts$parameters$general$nbyears
+  if (is.null(mcyears)) {
+    mcyears <- opts$parameters$general$nbyears
+    mcyears <- seq(0,mcyears)
   }
 
-  if(length(max_mcyears)==1){
-    max_mcyears <- seq_len(max_mcyears)
-      }
+
 
   # Niveau max
   {if (is.null(reservoir_capacity)) {
@@ -117,7 +116,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   {
     tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
     tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = tmp_name)
-    inflow <- antaresRead::readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = max_mcyears, opts = tmp_opt)
+    inflow <- antaresRead::readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = mcyears, opts = tmp_opt)
     inflow[with(inflow, order(mcYear, timeId)),]
     inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
     inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
@@ -143,7 +142,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   }
 
   # preparation DATA (generate a table of weeks and years)
-  watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = max_mcyears))
+  watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = mcyears))
 
   # add states
   {
@@ -198,7 +197,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   next_week_values <- week_53
   niveau_max = niveau_max
   E_max = max_hydro
-  max_mcyear <- max(max_mcyears)
+  max_mcyear <- length(mcyears)
   }
 
   ####
@@ -218,7 +217,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
         temp <- watervalues[weeks==i]
-        temp <- Bellman(temp,next_week_values,decision_space,E_max,niveau_max,
+        temp <- Bellman(temp,next_week_values_l = next_week_values,decision_space,E_max,niveau_max,
                         method, max_mcyear = max_mcyear,
                         q_ratio= q_ratio, correct_outliers = correct_outliers,
                         test_week = test_week,counter = i)
@@ -257,6 +256,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         if (correct_outliers) {
           watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
+          watervalues[weeks==i&value_node<0&is.finite(value_node),value_node:=NaN]
         }
 
 
@@ -274,7 +274,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   }
 
   # group the years using the mean
-  value_nodes_dt <- watervalues[, list(value_node = mean(value_node, na.rm = TRUE)),
+  value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),
                                 by = list(weeks, statesid)]
 
 
@@ -296,10 +296,15 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   # value_nodes_dt[value_node_dif<0,vu:=0]
 
   value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
+  inacc <- is.finite(value_nodes_dt$value_node)
   temp1 <- value_nodes_dt[weeks==1]$vu
   temp2 <- value_nodes_dt[weeks>1&weeks<53]$vu
   value_nodes_dt[weeks==52]$vu <- temp1
   value_nodes_dt[weeks<52]$vu <- temp2
+
+  value_nodes_dt$inacc <- inacc
+  value_nodes_dt[,vu:=vu*inacc]
+
 
   if(shiny){
 

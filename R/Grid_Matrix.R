@@ -16,6 +16,7 @@
 #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
 #'   interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
+#' @param parallel Boolean. True o use parallel computing.
 #' provided to calculate. Used mainly to verify for tests. Default FALSE
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -30,7 +31,9 @@
 #' @importFrom dplyr left_join
 #' @import data.table
 #' @importFrom shinybusy show_modal_spinner remove_modal_spinner
-#'
+#' @importFrom parallelly supportsMulticore
+#' @importFrom parallel detectCores makeCluster  stopCluster
+#' @import doParallel
 #'
 
 
@@ -47,6 +50,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              q_ratio=0.5,
                              monotonic_bellman=FALSE,
                              test_week=NULL,
+                             parallel=FALSE,
                              opts = antaresRead::simOptions(),shiny=F,...) {
 
 
@@ -186,8 +190,14 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
 
-  # set(watervalues,j=10L,value=NA_real_)
-
+  # prepare paralell cluster
+  para_meth <- "PSOCK"  # if windows
+  if( parallelly::supportsMulticore()){
+    para_meth <- "FORK" # if Unix
+  }
+  cores=parallel::detectCores()
+  cl <-parallel::makeCluster(cores[1]-1, type = para_meth)
+  doParallel::registerDoParallel(cl)
 
 
 
@@ -220,7 +230,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
         temp <- Bellman(temp,next_week_values_l = next_week_values,decision_space,E_max,niveau_max,
                         method, max_mcyear = max_mcyear,
                         q_ratio= q_ratio, correct_outliers = correct_outliers,
-                        test_week = test_week,counter = i)
+                        test_week = test_week,counter = i,parallel_mode=parallel)
 
 
         # monotonic Bellman
@@ -272,6 +282,9 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
     }
   }
+
+  #stop parallel cluster
+  stopCluster(cl)
 
   # group the years using the mean
   value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),

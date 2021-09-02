@@ -107,6 +107,8 @@ ui <- fluidPage(
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
                         value=T,status = "success"),
 
+          materialSwitch("parallel","Use parallel computing",
+                         value=T,status = "success"),
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),
@@ -625,6 +627,7 @@ server <- function(input, output) {
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio,
+        parallel = input$parallel,
         shiny=T)
 
       isolate(rv$results <- results)

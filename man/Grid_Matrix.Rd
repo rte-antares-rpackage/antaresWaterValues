@@ -10,7 +10,7 @@ Grid_Matrix(
   simulation_values = NULL,
   nb_cycle = 1L,
   district_name = "water values district",
-  max_mcyears = NULL,
+  mcyears = NULL,
   week_53 = 0,
   states_step_ratio = 0.01,
   reservoir_capacity = NULL,
@@ -22,6 +22,7 @@ Grid_Matrix(
   q_ratio = 0.5,
   monotonic_bellman = FALSE,
   test_week = NULL,
+  parallel = FALSE,
   opts = antaresRead::simOptions(),
   shiny = F,
   ...
@@ -38,7 +39,7 @@ Grid_Matrix(
 
 \item{district_name}{Name of the district used to store output.}
 
-\item{max_mcyears}{Number of MC years to consider, by default all of them.}
+\item{mcyears}{MC years to consider, by default all of them.}
 
 \item{week_53}{Water values for week 53, by default 0.}
 
@@ -55,7 +56,9 @@ interpolations. Defaults to FALSE.}
 
 \item{method}{Perform mean grid algorithm or grid mean algorithm ?}
 
-\item{only_input}{if TRUE skip bellman values calculation and return the input
+\item{only_input}{if TRUE skip bellman values calculation and return the input}
+
+\item{parallel}{Boolean. True o use parallel computing.
 provided to calculate. Used mainly to verify for tests. Default FALSE}
 
 \item{opts}{List of simulation parameters returned by the function

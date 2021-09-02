@@ -18,6 +18,7 @@ Bellman(
   q_ratio = 0.75,
   test_week,
   counter,
+  parallel_mode = F,
   ...
 )
 }
@@ -51,6 +52,8 @@ hydro storage over one step of time.}
 interpolations. Defaults to FALSE.}
 
 \item{test_week}{Numeric of length 1. number of the week to print in test.}
+
+\item{parallel_mode}{Boolean. True o use parallel computing.}
 
 \item{max_mcyearNumeric}{of length 1. Number of Monte-Carlo year
 used in simulations}

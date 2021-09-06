@@ -1046,6 +1046,7 @@ server <- function(input, output) {
 
 #------Run-----
 options(shiny.launch.browser=TRUE)
+options(shiny.sanitize.errors = FALSE)
 shinyApp(ui = ui, server = server)
 }
 

@@ -19,6 +19,7 @@ You can install the package from [GitHub](https://github.com/) with:
 devtools::install_github("dhia-gharsallaoui/watervalues", build_vignettes = TRUE)
 ```
 
+To install all the package dependencies you can run the script `inst/dependencies.R`
 
 ## Load the package
 ```{r Load the package, eval=TRUE}

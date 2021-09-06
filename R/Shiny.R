@@ -85,6 +85,9 @@ ui <- fluidPage(
 
              uiOutput("dir"),
 
+             textInput("file_name","File name",value="simulation results"),
+
+
 
              actionButton("simulate","Launch simulations"),
 
@@ -667,7 +670,7 @@ server <- function(input, output) {
     textInput("sim_output_dir","Saving directory",value=global$datapath)
 
   })
-  observeEvent( input$simulate,
+  observeEvent(input$simulate,
 
                 {
 
@@ -683,7 +686,9 @@ server <- function(input, output) {
                      # path_solver=input$sim_path_solver$datapath,
                      overwrite = T,
                      opts = opts,
-                     shiny=T,otp_dest=NULL)})})
+                     shiny=T,
+                     otp_dest=input$sim_output_dir,
+                     file_name=input$file_name)})})
 
 
 

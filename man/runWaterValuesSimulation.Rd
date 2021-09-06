@@ -16,7 +16,11 @@ runWaterValuesSimulation(
   wait = TRUE,
   show_output_on_console = FALSE,
   overwrite = FALSE,
-  opts = antaresRead::simOptions()
+  opts = antaresRead::simOptions(),
+  shiny = F,
+  otp_dest = NULL,
+  file_name = NULL,
+  ...
 )
 }
 \arguments{

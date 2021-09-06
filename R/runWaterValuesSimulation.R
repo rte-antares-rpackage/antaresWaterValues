@@ -39,7 +39,7 @@ runWaterValuesSimulation <- function(area,
                                      show_output_on_console = FALSE,
                                      overwrite = FALSE,
                                      opts = antaresRead::simOptions(),
-                                     shiny=F,otp_dest=NULL,...) {
+                                     shiny=F,otp_dest=NULL,file_name=NULL,...) {
 
 
 
@@ -173,14 +173,15 @@ simulation_res <- list(
   simulation_values = constraint_values
 )
 
-  main_path <- getwd()
+ if(!is.null(otp_dest))
+{ main_path <- getwd()
 
   setwd(otp_dest)
 
-  save(simulation_res,file="simulation_res.RData")
+  save(simulation_res,file=paste0(file_name,".RData"))
 
 
-  setwd(main_path)
+  setwd(main_path)}
 
   return(simulation_res)
 

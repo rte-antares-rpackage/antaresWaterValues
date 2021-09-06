@@ -85,9 +85,7 @@ shiny_Grid_matrix(simulation_res,opts)
  ![tutorial](https://github.com/dhia-gharsallaoui/watervalues/blob/main/vignettes/images/calculate%20water%20values.gif?raw=true)
  
  * `area` is the relevant area.
- * `simulation_names` are the names of the simulations .
- * `simulation_values` are their values.
- * `week_53` are the water values for the last week of the year.
+ * `water value initial condition` are the water values for the last week of the year.
  * `nb_cycle` is the number of times to run the algorithm in a loop from the last
  week of the year to the first, in order to obtain more realistic start values for 
  week 53.

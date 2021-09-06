@@ -57,9 +57,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   #----- shiny Loader
 
-  if(shiny){
-    shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
-  }
 
   methods <- c("mean-grid","grid-mean","quantile")
   if (!method %in% methods){
@@ -237,6 +234,10 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                         method, max_mcyear = max_mcyear,
                         q_ratio= q_ratio, correct_outliers = correct_outliers,
                         test_week = test_week,counter = i)
+        if(shiny&n_cycl==1&i==52){
+          shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
+        }
+
         }
 
         if(parallel){
@@ -252,6 +253,12 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                                           niveau_max,method, max_mcyear = max_mcyear,
                                           correct_outliers=correct_outliers),
                by = list(years, statesid)]
+
+
+
+          if(shiny&n_cycl==1&i==52){
+            shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
+          }
 
 
 

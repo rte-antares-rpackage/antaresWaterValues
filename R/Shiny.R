@@ -20,7 +20,7 @@
 #' @importFrom DT dataTableOutput renderDataTable
 #' @export
 
-shiny_Grid_matrix <- function(simulation_res,opts=antaresRead::simOptions())
+shiny_Grid_matrix <- function(simulation_res=NULL,opts=antaresRead::simOptions(),...)
 
 {
 
@@ -52,7 +52,10 @@ ui <- fluidPage(
 
       sidebarLayout(
 
+
         sidebarPanel(
+          fileInput("ini_file", label = "Rdata file containing the simulations"),
+
           #area
           pickerInput("Area",
             "choose the area",
@@ -606,6 +609,22 @@ ui <- fluidPage(
 #------Server functions ------
 server <- function(input, output) {
 
+    simulation_res <- reactive({
+
+
+      if ( is.null(input$ini_file)) {
+        simulation_res
+      }else{
+      inFile <- input$ini_file
+      file <- inFile$datapath
+      # load the file into new environment and get it from there
+      e = new.env()
+      name <- load(file, envir = e)
+      simulation_res <- e[[name]]
+      simulation_res
+      }
+    })
+
 
     rv <- reactiveValues()
     observeEvent( input$Calculate,
@@ -615,8 +634,8 @@ server <- function(input, output) {
     spsComps::shinyCatch({
       results <-     Grid_Matrix(
         area = input$Area,
-        simulation_names = simulation_res$simulation_names,
-        simulation_values = simulation_res$simulation_values,
+        simulation_names = simulation_res()$simulation_names,
+        simulation_values = simulation_res()$simulation_values,
         nb_cycle = input$nb_cycle,
         opts = opts,
         week_53 = input$week_53,
@@ -639,7 +658,7 @@ server <- function(input, output) {
 
       pp_results <- data.table::copy(results)
       rv$pp_results <- pp_results
-      },blocking_level="error" )
+      },blocking_level="error",position = "top-center", shiny = TRUE )
 
         }
 
@@ -696,7 +715,7 @@ server <- function(input, output) {
                   {
 
                     spsComps::shinyCatch({
-                    reward_dt <- get_Reward(simulation_res$simulation_names,
+                    reward_dt <- get_Reward(simulation_res()$simulation_names,
                                             district_name =input$district_name_rew,
                                             opts)
                     rv$reward_dt <- reward_dt

@@ -275,3 +275,10 @@ to_Antares_Format <- function(data){
 
 return(reshaped_matrix)
 }
+
+#' release parallel parameters
+#' @export
+unregister <- function() {
+  env <- foreach:::.foreachGlobals
+  rm(list=ls(name=env), pos=env)
+}

@@ -132,8 +132,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   options("antares" = opts)
 
   # Reward
-  {reward <- get_Reward(simulation_names = simulation_names, district_name = district_name, opts = opts)
-    reward <- reward[timeId %in% seq_len(n_week)]}
+  {reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name, opts = opts)
+    reward_db <- reward_db[timeId %in% seq_len(n_week)]}
 
   # Reservoir (calque)
   {
@@ -171,7 +171,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
 
   #add reward
-  reward_l <- reward[, list(reward = list(unlist(.SD))), .SDcols = simulation_names, by = list(weeks = timeId, years = mcYear)]
+  reward_l <- reward_db[, list(reward_db = list(unlist(.SD))), .SDcols = simulation_names, by = list(weeks = timeId, years = mcYear)]
 
 
   watervalues <- dplyr::left_join(x = watervalues, y = reward_l, by = c("weeks","years"))
@@ -189,17 +189,20 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
 
-
+  if(parallel){
   # prepare paralell cluster
-  para_meth <- "PSOCK"  # if windows
-  if( parallelly::supportsMulticore()){
-    para_meth <- "FORK" # if Unix
-  }
-  cores=parallel::detectCores()
-  cl <-parallel::makeCluster(cores[1]-1, type = para_meth)
-  doParallel::registerDoParallel(cl)
+  # para_meth <- "PSOCK"  # if windows
+  # if( parallelly::supportsMulticore()){
+  #   para_meth <- "FORK" # if Unix
+  # }
+  # cores=parallel::detectCores()
+  # cl <-parallel::makeCluster(cores[1]-1, type = para_meth)
+  # doParallel::registerDoParallel(cl)
 
+  setnames(watervalues,"states_next","states_n")
 
+  setnames(watervalues,"reward_db","reward")
+}
 
   # prepare next function inputs
   {
@@ -227,10 +230,61 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
         temp <- watervalues[weeks==i]
-        temp <- Bellman(temp,next_week_values_l = next_week_values,decision_space,E_max,niveau_max,
+
+        if(!parallel){
+        temp <- Bellman(temp,next_week_values_l = next_week_values,
+                        decision_space,E_max,niveau_max,
                         method, max_mcyear = max_mcyear,
                         q_ratio= q_ratio, correct_outliers = correct_outliers,
-                        test_week = test_week,counter = i,parallel_mode=parallel)
+                        test_week = test_week,counter = i)
+        }
+
+        if(parallel){
+
+          mc_col <- temp$years
+          next_week <- as.data.table(mc_col)
+          next_week <- cbind(next_week,next_week_values)
+
+          temp[,value_node:=Bellman_value(states,statesid,level_high,level_low,
+                                          hydroStorage,reward, states_n,
+                                          next_week_values_l=next_week[mc_col==years]$next_week_values,
+                                          decision_space,E_max,
+                                          niveau_max,method, max_mcyear = max_mcyear,
+                                          correct_outliers=correct_outliers),
+               by = list(years, statesid)]
+
+
+
+          #------ mean-grid method---------
+
+          if (method == "mean-grid") {
+            if (correct_outliers) {
+              temp[, value_node := correct_outliers(value_node), by = years]
+            }
+          }
+
+          #------ grid-mean method---------
+
+          if(method=="grid-mean"){
+            if (correct_outliers) {
+              temp[, value_node := correct_outliers(value_node)]
+            }
+            temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=mean_finite)
+          }
+
+          if (method=="quantile"){
+            if (correct_outliers) {
+              temp[, value_node := correct_outliers(value_node)]
+            }
+            temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=function(x) stats::quantile(x, q_ratio))
+          }
+
+        }
+
+
+
+
+
 
 
         # monotonic Bellman
@@ -281,11 +335,14 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
       watervalues[!is.finite(value_node),value_node:=NaN]
 
     }
-  }
+
+}
 
   #stop parallel cluster
-  stopCluster(cl)
-
+  if(parallel)
+ { parallel::stopCluster(cl)
+  unregister()
+}
   # group the years using the mean
   value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),
                                 by = list(weeks, statesid)]

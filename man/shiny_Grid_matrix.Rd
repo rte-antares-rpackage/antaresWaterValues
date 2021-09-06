@@ -4,14 +4,13 @@
 \alias{shiny_Grid_matrix}
 \title{Open watervalues Calculator in APP Web}
 \usage{
-shiny_Grid_matrix(simulation_res, opts = antaresRead::simOptions())
+shiny_Grid_matrix(simulation_res = NULL, study_path, ...)
 }
 \arguments{
 \item{simulation_res}{List of simulation results returned by the function
 \code{watervalues::runWaterValuesSimulation}}
 
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{study_path}{the path of the Antares study}
 }
 \description{
 Open watervalues Calculator in APP Web

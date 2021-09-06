@@ -32,14 +32,14 @@ runWaterValuesSimulation <- function(area,
                                      nb_disc_stock = 10,
                                      nb_mcyears = NULL,
                                      binding_constraint = "WeeklyWaterAmount",
-                                     # constraint_values,
                                      fictive_area = NULL,
                                      thermal_cluster = NULL,
                                      path_solver,
                                      wait = TRUE,
                                      show_output_on_console = FALSE,
                                      overwrite = FALSE,
-                                     opts = antaresRead::simOptions()) {
+                                     opts = antaresRead::simOptions(),
+                                     shiny=F,otp_dest=NULL,...) {
 
 
 
@@ -168,9 +168,20 @@ removeArea(fictive_area,opts = opts)
 
 restoreHydroStorage(area = area, opts = opts)
 
-list(
+simulation_res <- list(
   simulation_names = simulation_names,
   simulation_values = constraint_values
 )
+
+  main_path <- getwd()
+
+  setwd(otp_dest)
+
+  save(simulation_res,file="simulation_res.RData")
+
+
+  setwd(main_path)
+
+  return(simulation_res)
 
 }

@@ -3,9 +3,8 @@
 #' @param simulation_res
 #'   List of simulation results returned by the function
 #'   \code{watervalues::runWaterValuesSimulation}
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
+#' @param study_path the path of the Antares study
+#'
 #'
 #' @import  shiny
 #' @import shinyWidgets
@@ -18,11 +17,15 @@
 #' @importFrom data.table copy
 #' @importFrom grDevices dev.off png rgb
 #' @importFrom DT dataTableOutput renderDataTable
+#' @importFrom antaresRead setSimulationPath
 #' @export
 
-shiny_Grid_matrix <- function(simulation_res=NULL,opts=antaresRead::simOptions(),...)
+shiny_Grid_matrix <- function(simulation_res=NULL,study_path,...)
 
 {
+
+opts <- antaresRead::setSimulationPath(path = study_path, simulation = "input")
+options("antares" = opts)
 
 otp_variables <- c("Real OV. COST","stockDiff","hydro_price",
                    "hydro_stockDiff_cost","hydro_cost","total_hydro_cost"
@@ -47,7 +50,56 @@ ui <- fluidPage(
 
   navbarPage("Water Values !",
 
-    #Grid matrix page
+
+  #---- simulation page -----
+    tabPanel("SImulations",
+
+          sidebarLayout(
+
+
+           sidebarPanel(
+             pickerInput("sim_area",
+                         "Choose the area",
+                         opts$areaList,
+                         options = list(
+                           `live-search` = TRUE)),
+
+             textInput("sim_simulation_name","Simulation name "
+                       ,value="weekly_water_amount_%s"),
+
+             numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
+                          min=1),
+             sliderInput("sim_mcyears",label="choose the number of MC years to simulate",min=1,
+                         max=opts$parameters$general$nbyears,
+                         value=opts$parameters$general$nbyears,step=1),
+
+             textInput("sim_binding_constraint","Name of the binding constraint "
+                       ,value="WeeklyWaterAmount"),
+
+             textInput("sim_fictive_area","Name of the fictive area to create "
+                       ,value="fictive_watervalues"),
+
+             textInput("sim_thermal_cluster","Name of the thermal cluster to create"),
+
+             # fileInput("sim_solver", label = "Select your solver"),
+
+             uiOutput("dir"),
+
+
+             actionButton("simulate","Launch simulations"),
+
+
+             ), #end sidebarPanel
+
+           mainPanel()
+
+           )# end sidebar layout
+
+          ), #end page
+
+
+
+    #-------calculate water values page ------
     tabPanel("Calculate Water Values",
 
       sidebarLayout(
@@ -608,6 +660,34 @@ ui <- fluidPage(
 
 #------Server functions ------
 server <- function(input, output) {
+
+  global <- reactiveValues(datapath = getwd())
+
+  output$dir <- renderUI({
+    textInput("sim_output_dir","Saving directory",value=global$datapath)
+
+  })
+  observeEvent( input$simulate,
+
+                {
+
+                  spsComps::shinyCatch({
+                     simulation_res <-    runWaterValuesSimulation(
+                     area=input$sim_area,
+                     simulation_name = input$sim_simulation_name,
+                     nb_disc_stock = input$sim_nb_disc_stock,
+                     nb_mcyears = input$sim_nb_mcyears,
+                     binding_constraint = input$sim_binding_constraint,
+                     fictive_area = input$sim_fictive_area,
+                     thermal_cluster = input$sim_thermal_cluster,
+                     # path_solver=input$sim_path_solver$datapath,
+                     overwrite = T,
+                     opts = opts,
+                     shiny=T,otp_dest=NULL)})})
+
+
+
+
 
     simulation_res <- reactive({
 

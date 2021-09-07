@@ -20,7 +20,7 @@
 #' @importFrom antaresRead setSimulationPath
 #' @export
 
-shiny_Grid_matrix <- function(simulation_res=NULL,study_path,...)
+shiny_water_values <- function(simulation_res=NULL,study_path,...)
 
 {
 

@@ -5,8 +5,8 @@
 # Watervalues
 
 The R package watervalues allows to :
-Prepare the Antares study by creating the fictive area
-Launch the simulations by updating the coupling constraints
+Prepare the Antares study by creating the fictive area,
+Launch the simulations by updating the coupling constraints,
 Read the results and calculate the water values
 
 ## Install package

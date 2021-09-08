@@ -204,7 +204,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   # prepare next function inputs
   {
   if (length(week_53) == 1) week_53 <- rep_len(week_53, length(states))
-  next_week_values <- week_53
+  next_week_values <- (week_53 * niveau_max)/2   # approximation to get initial bellman values from initial water values
   niveau_max = niveau_max
   E_max = max_hydro
   max_mcyear <- length(mcyears)

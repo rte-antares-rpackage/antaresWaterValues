@@ -12,7 +12,7 @@ runWaterValuesSimulation(
   binding_constraint = "WeeklyWaterAmount",
   fictive_area = NULL,
   thermal_cluster = NULL,
-  path_solver,
+  path_solver = NULL,
   wait = TRUE,
   show_output_on_console = FALSE,
   overwrite = FALSE,

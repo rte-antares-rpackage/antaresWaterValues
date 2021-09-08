@@ -34,7 +34,10 @@ Imports:
     zoo,
     grDevices,
     methods,
-    stats
+    stats,
+    DT,
+    doParallel,
+    parallelly
 Suggests: 
     knitr,
     rmarkdown

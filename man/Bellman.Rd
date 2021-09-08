@@ -18,6 +18,7 @@ Bellman(
   q_ratio = 0.75,
   test_week,
   counter,
+  inaccessible_states = F,
   ...
 )
 }
@@ -54,6 +55,8 @@ used in simulations}
 interpolations. Defaults to FALSE.}
 
 \item{test_week}{Numeric of length 1. number of the week to print in test.}
+
+\item{inaccessible_states}{Boolean. True to delete unaccessible states of any scenario in the result.}
 }
 \value{
 a \code{data.table} like Data_week with the Bellman values

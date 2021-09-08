@@ -161,12 +161,15 @@ ui <- fluidPage(
                       max=opts$parameters$general$nbyears,
                       value=c(1,opts$parameters$general$nbyears),step=1),
 
+          materialSwitch("inaccessible_states","Eliminate all inaccessible states",
+                         value=F,status = "success"),
+
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
-                        value=T,status = "success"),
+                        value=F,status = "success"),
 
           materialSwitch("parallel","Use parallel computing",
-                         value=T,status = "success"),
+                         value=F,status = "success"),
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),
@@ -732,7 +735,8 @@ server <- function(input, output) {
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio,
         parallel = input$parallel,
-        shiny=T)
+        shiny=T,
+        inaccessible_states = input$inaccessible_states)
 
       isolate(rv$results <- results)
       show_alert(

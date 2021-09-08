@@ -25,6 +25,7 @@ Grid_Matrix(
   parallel = FALSE,
   opts = antaresRead::simOptions(),
   shiny = F,
+  inaccessible_states = F,
   ...
 )
 }
@@ -58,11 +59,13 @@ interpolations. Defaults to FALSE.}
 
 \item{only_input}{if TRUE skip bellman values calculation and return the input}
 
-\item{parallel}{Boolean. True o use parallel computing.
-provided to calculate. Used mainly to verify for tests. Default FALSE}
+\item{parallel}{Boolean. True o use parallel computing.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{inaccessible_states}{Boolean. True to delete unaccessible states of any scenario in the result.
+provided to calculate. Used mainly to verify for tests. Default FALSE}
 }
 \value{
 a \code{data.table}

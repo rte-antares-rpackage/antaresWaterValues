@@ -17,6 +17,7 @@
 #'   interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
 #' @param parallel Boolean. True o use parallel computing.
+#' @param inaccessible_states Boolean. True to delete unaccessible states of any scenario in the result.
 #' provided to calculate. Used mainly to verify for tests. Default FALSE
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -51,7 +52,9 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              monotonic_bellman=FALSE,
                              test_week=NULL,
                              parallel=FALSE,
-                             opts = antaresRead::simOptions(),shiny=F,...) {
+                             opts = antaresRead::simOptions(),shiny=F,
+                             inaccessible_states=F,
+                        ...) {
 
 
 
@@ -233,7 +236,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                         decision_space,E_max,niveau_max,
                         method, max_mcyear = max_mcyear,
                         q_ratio= q_ratio, correct_outliers = correct_outliers,
-                        test_week = test_week,counter = i)
+                        test_week = test_week,counter = i,
+                        inaccessible_states=inaccessible_states)
+
+
+
         if(shiny&n_cycl==1&i==52){
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
@@ -351,9 +358,13 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   unregister()
 }
   # group the years using the mean
+  if(inaccessible_states){
   value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),
                                 by = list(weeks, statesid)]
-
+  }else{
+    value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
+                                  by = list(weeks, statesid)]
+  }
 
   # add states levels
   value_nodes_dt <- merge(x = value_nodes_dt, y = statesdt, by = c("weeks", "statesid"))

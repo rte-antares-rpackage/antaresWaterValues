@@ -22,6 +22,7 @@
   #' @param test_week Numeric of length 1. number of the week to print in test.
   #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
   #'   interpolations. Defaults to FALSE.
+  #' @param inaccessible_states Boolean. True to delete unaccessible states of any scenario in the result.
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @importFrom stats ave quantile
   #' @export
@@ -29,7 +30,7 @@
 
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,
                       niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,
-                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,...){
+                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=F,...){
 
 
 
@@ -245,18 +246,33 @@
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
-    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean_finite)
-    return(Data_week)
+    if(inaccessible_states){
+      Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean_or_inf)
+    }else{
+      Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean_finite)
+    }
+      return(Data_week)
   }
 
   if (method=="quantile"){
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
+    if(inaccessible_states){
+    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) quantile_or_inf(x,q_ratio))
+    }else{
     Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio))
+
+    }
+
+
     return(Data_week)
   }
-    return(Data_week)
+
+
+
+
+     return(Data_week)
 
     }
 

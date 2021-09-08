@@ -61,6 +61,19 @@ mean_or_inf <- function(x){
 }
 
 
+#-----quantile or inf
+#' @importFrom stats quantile
+#' @export
+quantile_or_inf <- function(x,q_ratio){
+  if(any(is.infinite(x))){
+    return(-Inf)
+  }else{
+    return(stats::quantile(x,q_ratio))
+  }
+
+}
+
+
 #------ simple interpolation -----
 #' @export
 

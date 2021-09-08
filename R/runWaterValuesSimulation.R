@@ -45,7 +45,7 @@ runWaterValuesSimulation <- function(area,
 
 #set study
 
-antaresRead::setSimulationPath(path = study, simulation = "input")
+# antaresRead::setSimulationPath(path = study, simulation = "input")
 
 
 #generating the fictive area parameters

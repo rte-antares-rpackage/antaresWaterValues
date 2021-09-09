@@ -191,17 +191,17 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   if(parallel){
   # prepare paralell cluster
-  # para_meth <- "PSOCK"  # if windows
-  # if( parallelly::supportsMulticore()){
-  #   para_meth <- "FORK" # if Unix
-  # }
-  # cores=parallel::detectCores()
-  # cl <-parallel::makeCluster(cores[1]-1, type = para_meth)
-  # doParallel::registerDoParallel(cl)
+  para_meth <- "PSOCK"  # if windows
+  if( parallelly::supportsMulticore()){
+    para_meth <- "FORK" # if Unix
+  }
+  cores=parallel::detectCores()
+  cl <-parallel::makeCluster(cores[1]-1, type = para_meth)
+  doParallel::registerDoParallel(cl)
 
-  setnames(watervalues,"states_next","states_n")
-
-  setnames(watervalues,"reward_db","reward")
+  # setnames(watervalues,"states_next","states_n")
+  #
+  # setnames(watervalues,"reward_db","reward")
 }
 
   # prepare next function inputs
@@ -237,63 +237,70 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                         method, max_mcyear = max_mcyear,
                         q_ratio= q_ratio, correct_outliers = correct_outliers,
                         test_week = test_week,counter = i,
-                        inaccessible_states=inaccessible_states)
+                        inaccessible_states=inaccessible_states)}
 
+        if(parallel){
 
+          temp <- Bellman_parallel(temp,next_week_values_l = next_week_values,
+                          decision_space,E_max,niveau_max,
+                          method, max_mcyear = max_mcyear,
+                          q_ratio= q_ratio, correct_outliers = correct_outliers,
+                          test_week = test_week,counter = i,
+                          inaccessible_states=inaccessible_states)}
 
         if(shiny&n_cycl==1&i==52){
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
 
-        }
-
-        if(parallel){
-
-          mc_col <- temp$years
-          next_week <- as.data.table(mc_col)
-          next_week <- cbind(next_week,next_week_values)
-
-          temp[,value_node:=Bellman_value(states,statesid,level_high,level_low,
-                                          hydroStorage,reward, states_n,
-                                          next_week_values_l=next_week[mc_col==years]$next_week_values,
-                                          decision_space,E_max,
-                                          niveau_max,method, max_mcyear = max_mcyear,
-                                          correct_outliers=correct_outliers),
-               by = list(years, statesid)]
 
 
+        # if(parallel){
+        #
+        #   mc_col <- temp$years
+        #   next_week <- as.data.table(mc_col)
+        #   next_week <- cbind(next_week,next_week_values)
+        #
+        #   temp[weeks == i,value_node:=Bellman_value(states,statesid,level_high,level_low,
+        #                                   hydroStorage,reward, states_n,
+        #                                   next_week_values_l=next_week[mc_col==years]$next_week_values,
+        #                                   decision_space,E_max,
+        #                                   niveau_max,method, max_mcyear = max_mcyear,
+        #                                   correct_outliers=correct_outliers),
+        #        by = list(years, statesid)]
+        #
+        #
+        #
+        #   if(shiny&n_cycl==1&i==52){
+        #     shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
+        #   }
+        #
+        #
+        #
+        #   #------ mean-grid method---------
+        #
+        #   if (method == "mean-grid") {
+        #     if (correct_outliers) {
+        #       temp[, value_node := correct_outliers(value_node), by = years]
+        #     }
+        #   }
+        #
+        #   #------ grid-mean method---------
+        #
+        #   if(method=="grid-mean"){
+        #     if (correct_outliers) {
+        #       temp[, value_node := correct_outliers(value_node)]
+        #     }
+        #     temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=mean_finite)
+        #   }
+        #
+        #   if (method=="quantile"){
+        #     if (correct_outliers) {
+        #       temp[, value_node := correct_outliers(value_node)]
+        #     }
+        #     temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=function(x) stats::quantile(x, q_ratio))
+        #   }
+        #
 
-          if(shiny&n_cycl==1&i==52){
-            shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
-          }
-
-
-
-          #------ mean-grid method---------
-
-          if (method == "mean-grid") {
-            if (correct_outliers) {
-              temp[, value_node := correct_outliers(value_node), by = years]
-            }
-          }
-
-          #------ grid-mean method---------
-
-          if(method=="grid-mean"){
-            if (correct_outliers) {
-              temp[, value_node := correct_outliers(value_node)]
-            }
-            temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=mean_finite)
-          }
-
-          if (method=="quantile"){
-            if (correct_outliers) {
-              temp[, value_node := correct_outliers(value_node)]
-            }
-            temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=function(x) stats::quantile(x, q_ratio))
-          }
-
-        }
 
 
 
@@ -354,9 +361,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   #stop parallel cluster
   if(parallel)
- { parallel::stopCluster(cl)
-  unregister()
-}
+     { parallel::stopCluster(cl)
+      unregister()
+  }
+
+
   # group the years using the mean
   if(inaccessible_states){
   value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),
@@ -365,6 +374,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
     value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
                                   by = list(weeks, statesid)]
   }
+
+  value_nodes_dt[!is.finite(value_node),value_node:=NaN]
 
   # add states levels
   value_nodes_dt <- merge(x = value_nodes_dt, y = statesdt, by = c("weeks", "statesid"))

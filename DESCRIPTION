@@ -37,7 +37,8 @@ Imports:
     stats,
     DT,
     doParallel,
-    parallelly
+    parallelly,
+    foreach
 Suggests: 
     knitr,
     rmarkdown

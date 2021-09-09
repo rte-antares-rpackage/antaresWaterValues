@@ -20,10 +20,9 @@
 #' @note This function have side effects on the Antares study used, a fictive area is created and a new district as well.
 #'
 #' @export
-#'
 #' @importFrom assertthat assert_that
-#' @importFrom antaresEditObject createBindingConstraint removeBindingConstraint readIniFile writeIni runSimulation
-#' @importFrom antaresRead readClusterDesc
+#' @importFrom antaresEditObject createBindingConstraint updateGeneralSettings removeBindingConstraint readIniFile writeIni runSimulation removeArea
+#' @importFrom antaresRead readClusterDesc readInputTS
 #' @importFrom stats setNames
 #'
 
@@ -43,9 +42,7 @@ runWaterValuesSimulation <- function(area,
 
 
 
-#set study
 
-# antaresRead::setSimulationPath(path = study, simulation = "input")
 
 
 #generating the fictive area parameters
@@ -57,7 +54,7 @@ fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue
 thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
 
 if (!is.null(nb_mcyears)) {
-  updateGeneralSettings(nbyears = nb_mcyears, opts = opts)
+  antaresEditObject::updateGeneralSettings(nbyears = nb_mcyears, opts = opts)
   }
 
 
@@ -75,7 +72,7 @@ opts <- setupWaterValuesSimulation(
 # Get max hydro power that can be generated in a week
 max_hydro <- get_max_hydro(area,opts)
 res_cap <- get_reservoir_capacity(area,opts)
-max_app <- max(readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
+max_app <- max(antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
 
 maxi <- min(max_hydro+max_app,res_cap)
 
@@ -162,7 +159,7 @@ for (i in constraint_values) {
 
 # remove the fictive area
 
-removeArea(fictive_area,opts = opts)
+antaresEditObject::removeArea(fictive_area,opts = opts)
 
 # restore hydrostorage
 

@@ -24,7 +24,7 @@ shiny_water_values <- function(simulation_res=NULL,study_path,...)
 
 {
 
-opts <- antaresRead::setSimulationPath(path = study_path, simulation = "input")
+opts <- antaresRead::setSimulationPath(simulation = "input")
 options("antares" = opts)
 
 otp_variables <- c("Real OV. COST","stockDiff","hydro_price",
@@ -63,6 +63,12 @@ ui <- fluidPage(
                          opts$areaList,
                          options = list(
                            `live-search` = TRUE)),
+             pickerInput("remove_areas",
+                         "choose the areas to eliminate from result calculation",
+                         opts$areaList,
+                         options = list(
+                           `live-search` = TRUE),
+                         multiple = TRUE),
 
              textInput("sim_simulation_name","Simulation name "
                        ,value="weekly_water_amount_%s"),
@@ -81,7 +87,6 @@ ui <- fluidPage(
 
              textInput("sim_thermal_cluster","Name of the thermal cluster to create"),
 
-             # fileInput("sim_solver", label = "Select your solver"),
 
              uiOutput("dir"),
 
@@ -686,7 +691,7 @@ server <- function(input, output) {
                      binding_constraint = input$sim_binding_constraint,
                      fictive_area = input$sim_fictive_area,
                      thermal_cluster = input$sim_thermal_cluster,
-                     # path_solver=input$sim_path_solver$datapath,
+                     remove_areas=input$remove_areas,
                      overwrite = T,
                      opts = opts,
                      shiny=T,

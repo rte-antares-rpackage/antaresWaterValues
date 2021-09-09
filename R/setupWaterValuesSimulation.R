@@ -4,6 +4,7 @@
 #' @param fictive_area Name of the fictive area to create.
 #' @param thermal_cluster Name of the thermal cluster to create.
 #' @param overwrite If area or cluster already exists, overwrite them ?
+#' @param remove_areas 	Character vector of area(s) to remove from the created district.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -23,7 +24,8 @@ setupWaterValuesSimulation <- function(area,
                                        fictive_area = paste0("watervalue_", area),
                                        thermal_cluster = "WaterValueCluster",
                                        overwrite = FALSE,
-                                       opts = antaresRead::simOptions()) {
+                                       remove_areas = NULL,
+                                       opts = antaresRead::simOptions(),...) {
   assertthat::assert_that(class(opts) == "simOptions")
 
   # Create fictive area
@@ -103,6 +105,7 @@ setupWaterValuesSimulation <- function(area,
       caption = "water values district",
       comments = "Used for calculate water values",
       apply_filter = "add-all",
+      remove_area = remove_areas,
       output = TRUE,
       overwrite = TRUE,
       opts = opts

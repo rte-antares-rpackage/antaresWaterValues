@@ -13,6 +13,7 @@
 #' @param wait Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param show_output_on_console Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param overwrite If area or cluster already exists, should they be overwritten?
+#' @param remove_areas 	Character vector of area(s) to remove from the created district.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -37,6 +38,7 @@ runWaterValuesSimulation <- function(area,
                                      wait = TRUE,
                                      show_output_on_console = FALSE,
                                      overwrite = FALSE,
+                                     remove_areas=NULL,
                                      opts = antaresRead::simOptions(),
                                      shiny=F,otp_dest=NULL,file_name=NULL,...) {
 
@@ -65,6 +67,7 @@ opts <- setupWaterValuesSimulation(
     fictive_area = fictive_area,
     thermal_cluster = thermal_cluster,
     overwrite = overwrite,
+    remove_areas=remove_areas,
     opts = opts
   )
 

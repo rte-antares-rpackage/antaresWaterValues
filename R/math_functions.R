@@ -52,7 +52,7 @@ mean_finite <- function(x) {
 #-----Mean or inf
 #' @export
 mean_or_inf <- function(x){
-  if(any(is.infinite(x))){
+  if(any(is.infinite(x)|any(is.nan(x)))){
     return(-Inf)
   }else{
     return(mean(x, na.rm = TRUE))
@@ -65,7 +65,7 @@ mean_or_inf <- function(x){
 #' @importFrom stats quantile
 #' @export
 quantile_or_inf <- function(x,q_ratio){
-  if(any(is.infinite(x))){
+  if(any(is.infinite(x))|any(is.nan(x))){
     return(-Inf)
   }else{
     return(stats::quantile(x,q_ratio))

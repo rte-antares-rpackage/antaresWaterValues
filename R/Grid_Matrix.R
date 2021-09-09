@@ -254,56 +254,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
 
-        # if(parallel){
-        #
-        #   mc_col <- temp$years
-        #   next_week <- as.data.table(mc_col)
-        #   next_week <- cbind(next_week,next_week_values)
-        #
-        #   temp[weeks == i,value_node:=Bellman_value(states,statesid,level_high,level_low,
-        #                                   hydroStorage,reward, states_n,
-        #                                   next_week_values_l=next_week[mc_col==years]$next_week_values,
-        #                                   decision_space,E_max,
-        #                                   niveau_max,method, max_mcyear = max_mcyear,
-        #                                   correct_outliers=correct_outliers),
-        #        by = list(years, statesid)]
-        #
-        #
-        #
-        #   if(shiny&n_cycl==1&i==52){
-        #     shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
-        #   }
-        #
-        #
-        #
-        #   #------ mean-grid method---------
-        #
-        #   if (method == "mean-grid") {
-        #     if (correct_outliers) {
-        #       temp[, value_node := correct_outliers(value_node), by = years]
-        #     }
-        #   }
-        #
-        #   #------ grid-mean method---------
-        #
-        #   if(method=="grid-mean"){
-        #     if (correct_outliers) {
-        #       temp[, value_node := correct_outliers(value_node)]
-        #     }
-        #     temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=mean_finite)
-        #   }
-        #
-        #   if (method=="quantile"){
-        #     if (correct_outliers) {
-        #       temp[, value_node := correct_outliers(value_node)]
-        #     }
-        #     temp$value_node <- stats::ave(temp$value_node, temp$statesid, FUN=function(x) stats::quantile(x, q_ratio))
-        #   }
-        #
-
-
-
-
 
 
 

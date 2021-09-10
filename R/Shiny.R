@@ -18,6 +18,7 @@
 #' @importFrom grDevices dev.off png rgb
 #' @importFrom DT dataTableOutput renderDataTable
 #' @importFrom antaresRead setSimulationPath
+#' @importFrom shinyBS bsTooltip
 #' @export
 
 shiny_water_values <- function(simulation_res=NULL,study_path,...)
@@ -52,7 +53,7 @@ ui <- fluidPage(
 
 
   #---- simulation page -----
-    tabPanel("SImulations",
+    tabPanel("Simulations",
 
           sidebarLayout(
 
@@ -63,6 +64,9 @@ ui <- fluidPage(
                          opts$areaList,
                          options = list(
                            `live-search` = TRUE)),
+             shinyBS::bsTooltip("sim_area", " The area concerned by the simulation.",
+                       "right",trigger = "click"),
+
              pickerInput("remove_areas",
                          "choose the areas to eliminate from result calculation",
                          opts$areaList,
@@ -92,6 +96,9 @@ ui <- fluidPage(
 
              textInput("file_name","File name",value="simulation results"),
 
+             shinyBS::bsTooltip("file_name", " The name of the simulation.",
+                                "right"),
+
 
 
              actionButton("simulate","Launch simulations"),
@@ -105,6 +112,9 @@ ui <- fluidPage(
 
           ), #end page
 
+
+
+   navbarMenu("Water values calculation",
 
 
     #-------calculate water values page ------
@@ -416,10 +426,14 @@ ui <- fluidPage(
                )
              ) #sidebarLayout
 
-             ), #end tabpanel "Post Process"
+             ) #end tabpanel "Post Process"
+
+   ), #end navbarMenu
 
   #----------Results UI-------
-   tabPanel("Results",
+  navbarMenu("Results panels",
+
+  tabPanel("Results",
 
 
             sidebarLayout(
@@ -664,9 +678,11 @@ ui <- fluidPage(
   )#end tabpanel Reporing
 
 
+  ) #end navbarMenu
 
 
 ) #navbar
+
 ) #UI
 
 #------Server functions ------

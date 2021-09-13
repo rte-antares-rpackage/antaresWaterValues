@@ -153,7 +153,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
 #'   Default "vu"
 #'
 #' @param states_step_ratio put the ratio to change reservoir discretization in percent
-#' 0.01 to augment by 1%
+#' 0.01 to augment by 1\%
 #' @import data.table
 #' @importFrom  cowplot draw_label ggdraw plot_grid
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
@@ -390,7 +390,7 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
   tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = simulation_name)
 
   #----- Read hydro generation power
-  P <- antaresRead::readAntares(areas = area_nom, timeStep = timestep,
+  P <- antaresRead::readAntares(areas = area, timeStep = timestep,
                                 mcYears = Mcyear, opts=tmp_opt,select = "H. STOR" )
   ncol <- ncol(Pmin)
   if(is.null(Mcyear)){

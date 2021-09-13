@@ -9,7 +9,7 @@ monotonic_VU(results_dt, noise_ratio = 1)
 \arguments{
 \item{results_dt}{Output from \code{watervalues} or \code{Grid_Matrix}}
 
-\item{noise_ratio}{ratio to remove values that overcome the 95% quantile.}
+\item{noise_ratio}{ratio to remove values that overcome the 95\% quantile.}
 }
 \value{
 a \code{data.table}

@@ -97,7 +97,7 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
 #' Force monotonic water values
 #'
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
-#' @param noise_ratio ratio to remove values that overcome the 95% quantile.
+#' @param noise_ratio ratio to remove values that overcome the 95\% quantile.
 #' @import data.table
 #' @importFrom stats quantile
 #' @return a \code{data.table}

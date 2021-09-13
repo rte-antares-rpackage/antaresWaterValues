@@ -24,7 +24,7 @@ Obtained using the function Grid_Matrix()}
 Default "vu"}
 
 \item{states_step_ratio}{put the ratio to change reservoir discretization in percent
-0.01 to augment by 1%}
+0.01 to augment by 1\%}
 
 \item{week_id}{Numeric of length 1. number of the week to plot.}
 }

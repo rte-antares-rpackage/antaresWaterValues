@@ -23,6 +23,7 @@ Imports:
     shinyjs,
     shinythemes,
     shinyWidgets,
+    shinyBS,
     spsComps,
     stringr,
     tibble,
@@ -38,7 +39,9 @@ Imports:
     DT,
     doParallel,
     parallelly,
-    foreach
+    foreach,
+    shinyBS,
+    bsplus
 Suggests: 
     knitr,
     rmarkdown

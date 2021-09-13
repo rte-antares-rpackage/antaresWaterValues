@@ -55,9 +55,11 @@ value in Antares is used if available else a prompt ask the user the value to be
 \item{correct_outliers}{If TRUE, outliers in Bellman values are replaced by spline
 interpolations. Defaults to FALSE.}
 
-\item{method}{Perform mean grid algorithm or grid mean algorithm ?}
+\item{method}{Perform mean of grids algorithm or grid of means algorithm or grid of quantile algorithm.}
 
 \item{only_input}{if TRUE skip bellman values calculation and return the input}
+
+\item{q_ratio}{from 0 to 1. determine the bellman value in each week which give q_ratio of all bellman values are equal or less to it. (quantile(q_ratio))}
 
 \item{parallel}{Boolean. True o use parallel computing.}
 

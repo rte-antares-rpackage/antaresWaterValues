@@ -7,9 +7,10 @@
 #' @param district_name Name of the district used to store output.
 #' @param mcyears MC years to consider, by default all of them.
 #' @param week_53 Water values for week 53, by default 0.
-#' @param method Perform mean grid algorithm or grid mean algorithm ?
+#' @param method Perform mean of grids algorithm or grid of means algorithm or grid of quantile algorithm.
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero . Defaults to 0.05
+#' @param q_ratio from 0 to 1. determine the bellman value in each week which give q_ratio of all bellman values are equal or less to it. (quantile(q_ratio))
 #' @param reservoir_capacity Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
 #'  value in Antares is used if available else a prompt ask the user the value to be used.
 #' @param na_rm Remove NAs

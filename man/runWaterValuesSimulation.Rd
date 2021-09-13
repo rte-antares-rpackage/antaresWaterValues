@@ -16,6 +16,7 @@ runWaterValuesSimulation(
   wait = TRUE,
   show_output_on_console = FALSE,
   overwrite = FALSE,
+  remove_areas = NULL,
   opts = antaresRead::simOptions(),
   shiny = F,
   otp_dest = NULL,
@@ -47,8 +48,14 @@ will be created from 0 to the hydro storage maximum and of length this parameter
 
 \item{overwrite}{If area or cluster already exists, should they be overwritten?}
 
+\item{remove_areas}{Character vector of area(s) to remove from the created district.}
+
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{otp_dest}{the path in which the script save Rdata file.}
+
+\item{file_name}{the Rdata file name.}
 }
 \description{
 Run a simulation for calculating water values for a specific area

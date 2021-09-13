@@ -4,7 +4,7 @@
 #' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.
 #' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint
 #'  will be created from 0 to the hydro storage maximum and of length this parameter.
-#' @param nb_mcyears Number of Monte Carlo years to simulate.
+  #' @param nb_mcyears Number of Monte Carlo years to simulate.
 #' @param binding_constraint Name of the binding constraint.
 # @param constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
@@ -13,6 +13,8 @@
 #' @param wait Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param show_output_on_console Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param overwrite If area or cluster already exists, should they be overwritten?
+#' @param otp_dest the path in which the script save Rdata file.
+#' @param file_name the Rdata file name.
 #' @param remove_areas 	Character vector of area(s) to remove from the created district.
 #' @param opts
 #'   List of simulation parameters returned by the function

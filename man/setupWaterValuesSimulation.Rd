@@ -9,7 +9,9 @@ setupWaterValuesSimulation(
   fictive_area = paste0("watervalue_", area),
   thermal_cluster = "WaterValueCluster",
   overwrite = FALSE,
-  opts = antaresRead::simOptions()
+  remove_areas = NULL,
+  opts = antaresRead::simOptions(),
+  ...
 )
 }
 \arguments{
@@ -20,6 +22,8 @@ setupWaterValuesSimulation(
 \item{thermal_cluster}{Name of the thermal cluster to create.}
 
 \item{overwrite}{If area or cluster already exists, overwrite them ?}
+
+\item{remove_areas}{Character vector of area(s) to remove from the created district.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

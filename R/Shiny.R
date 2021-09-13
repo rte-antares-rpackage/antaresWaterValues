@@ -18,13 +18,14 @@
 #' @importFrom grDevices dev.off png rgb
 #' @importFrom DT dataTableOutput renderDataTable
 #' @importFrom antaresRead setSimulationPath
-#' @importFrom shinyBS bsTooltip
+#' @importFrom shinyBS bsTooltip addPopover
+#' @importFrom bsplus bs_embed_popover shiny_iconlink shinyInput_label_embed `%>%`
 #' @export
 
 shiny_water_values <- function(simulation_res=NULL,study_path,...)
 
 {
-
+`%>%` <- bsplus::`%>%`
 opts <- antaresRead::setSimulationPath(simulation = "input")
 options("antares" = opts)
 
@@ -63,45 +64,69 @@ ui <- fluidPage(
                          "Choose the area",
                          opts$areaList,
                          options = list(
-                           `live-search` = TRUE)),
-             shinyBS::bsTooltip("sim_area", " The area concerned by the simulation.",
-                       "right",trigger = "click"),
+                           `live-search` = TRUE)) %>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(title = "The area concerned by the simulation.")),
 
              pickerInput("remove_areas",
                          "choose the areas to eliminate from result calculation",
                          opts$areaList,
                          options = list(
                            `live-search` = TRUE),
-                         multiple = TRUE),
+                         multiple = TRUE)%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(title = "area(s) to remove from the created district.")),
+
 
              textInput("sim_simulation_name","Simulation name "
                        ,value="weekly_water_amount_%s"),
 
+             shinyBS::bsTooltip("sim_simulation_name", " The name of the simulation, add %s in the end to add constraints values to the names.",
+                                "bottom"),
+
              numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
                           min=1),
+             shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
+                                "bottom"),
+
              sliderInput("sim_mcyears",label="choose the number of MC years to simulate",min=1,
                          max=opts$parameters$general$nbyears,
                          value=opts$parameters$general$nbyears,step=1),
+             shinyBS::bsTooltip("sim_mcyears", " Number of Monte Carlo years to simulate.",
+                                "bottom"),
 
              textInput("sim_binding_constraint","Name of the binding constraint "
                        ,value="WeeklyWaterAmount"),
+             shinyBS::bsTooltip("sim_binding_constraint", " Name of the binding constraint of energy on the link between the area and the fictive area.",
+                                "bottom"),
 
              textInput("sim_fictive_area","Name of the fictive area to create "
                        ,value="fictive_watervalues"),
+             shinyBS::bsTooltip("sim_fictive_area", " Name of the fictive area to create.",
+                                "bottom"),
 
-             textInput("sim_thermal_cluster","Name of the thermal cluster to create"),
+             textInput("sim_thermal_cluster","Name of the thermal cluster to create."),
+
+             shinyBS::bsTooltip("sim_thermal_cluster", " Name of thermal cluster to create which will generate the free power in the fictive area.",
+                                "bottom"),
 
 
              uiOutput("dir"),
+             shinyBS::bsTooltip("dir", " the path where the simulation results Rdata file will be saved. ",
+                                "bottom"),
+
 
              textInput("file_name","File name",value="simulation results"),
 
-             shinyBS::bsTooltip("file_name", " The name of the simulation.",
-                                "right"),
-
+             shinyBS::bsTooltip("file_name", " Name of Rdata file containing simulation results",
+                                "bottom"),
 
 
              actionButton("simulate","Launch simulations"),
+             shinyBS::bsTooltip("simulate", " launch simulations with the selected parameters. You can close the web browser after launching but keep the R server.",
+                                "bottom")
 
 
              ), #end sidebarPanel
@@ -125,20 +150,30 @@ ui <- fluidPage(
 
         sidebarPanel(
           fileInput("ini_file", label = "Rdata file containing the simulations"),
+          shinyBS::bsTooltip("ini_file", " Select the Rdata file that contains the simulation results.",
+                             "bottom"),
 
           #area
           pickerInput("Area",
             "choose the area",
             opts$areaList,
             options = list(
-              `live-search` = TRUE)),
+              `live-search` = TRUE))%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title = "the area which you will calculate the water values in it.")),
+
 
           #District List
           pickerInput("district_name",
                       "choose the District",
                       opts$districtList,
                       options = list(
-                        `live-search` = TRUE)),
+                        `live-search` = TRUE))%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(title = "the district that will be used in calculation of the rewards of transitions.")),
+
 
 
           # Algorithm
@@ -152,56 +187,99 @@ ui <- fluidPage(
               yes = icon("ok",
                          lib = "glyphicon"))
           ),
+          shinyBS::bsTooltip("method", " Select the algorithm to use in calculation for more information check documentation.",
+                             "bottom"),
+
 
           conditionalPanel(
             condition = "input.method=='quantile'",
             sliderInput("q_ratio",label=NULL,min=0,max=1,value=0.5),
           ),
+          shinyBS::bsTooltip("q_ratio", " the bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
+                             "bottom"),
 
 
           #number of cycles
           numericInput("nb_cycle","number of cycle to calculate",value=2,
                        min=1),
+          shinyBS::bsTooltip("nb_cycle", " Number of times to run the algorithm to reduce the initial values effects.",
+                             "bottom"),
 
           #week 53 value
           numericInput("week_53","water value initial condition",value=0),
-
+          shinyBS::bsTooltip("week_53", " Water values for week 53, will be mutiplied by the half capacity of the reservoir to genrate an approximitive bellman values as initial condition",
+                             "bottom"),
 
           #number of states:
           sliderInput("nb_states",label="choose the number of states",min=5,
                       max=100,value=40,step=1),
+          shinyBS::bsTooltip("nb_states", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
+                             "bottom"),
+
 
           #MC years:
           sliderInput("mcyears",label="choose the number of MC years to use",min=1,
                       max=opts$parameters$general$nbyears,
                       value=c(1,opts$parameters$general$nbyears),step=1),
 
+          shinyBS::bsTooltip("mcyears", " Monte-Carlo years to consider in water values calculation.",
+                             "bottom"),
+
+
           materialSwitch("inaccessible_states","Eliminate all inaccessible states",
-                         value=F,status = "success"),
+                         value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title = "Delete each inaccessible states in a scenario in the result for all of the others scenarios.")),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
-                        value=F,status = "success"),
+                        value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Outliers in Bellman values are replaced by spline interpolations.")),
 
           materialSwitch("parallel","Use parallel computing",
-                         value=F,status = "success"),
+                         value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Take advantage of your CPU cores to calculate faster the water values.")),
+
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),
+          shinyBS::bsTooltip("Calculate", "Click to start the calculation of te water values using the selected parameters",
+                             "bottom"),
 
           materialSwitch("show_negative","Show negative Water values",
-                        value=T,status = "danger"),
+                        value=T,status = "danger")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Applicate a filter to remove the negative values in the graph.
+NB: this is only a display filter the values are unchanged.")),
 
 
-          materialSwitch("filter","Filter water values",value=F,status = "success"),
+
+          materialSwitch("filter","Filter water values",value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Applicate a filter to remove the outliers values in the graph.
+NB:  - Negative and positive values are affected by this filter.
+       - This is only a display filter the values are unchanged.
+                                 ")),
+
           conditionalPanel(
             condition = "input.filter",
             sliderInput("filtre_ratio",label="Filter extreme water values ratio",min=0,
                         max=1,value=1),
           ),
+          shinyBS::bsTooltip("filtre_ratio", " Select the filter ratio define the percent to keep from water values eleminating the rest (extreme negatives and positives)",
+                             "bottom"),
 
 
           actionButton("plot","Show"),
+          shinyBS::bsTooltip("plot", " Show the Graph",
+                             "bottom"),
           ),
 
         mainPanel(
@@ -224,6 +302,9 @@ ui <- fluidPage(
            numericInput("week_id","Week to show",value=2,
                         min=1,max = 52),
 
+           shinyBS::bsTooltip("week_id", "The number of the week you want to plot",
+                              "bottom"),
+
            selectInput("param","Variables",c("Water Values"="vu",
                                              "Bellman"="bell",
                                              "water values and Bellman"="both",
@@ -232,7 +313,8 @@ ui <- fluidPage(
                        label="choose the reservoir states ratio",min=5,
                        max=100,value=40,step=1),
 
-
+           shinyBS::bsTooltip("states_step_ratio", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
+                              "bottom"),
 
 
          ), #siderbarpanel
@@ -263,13 +345,20 @@ ui <- fluidPage(
                           opts$districtList,
                           options = list(
                             `live-search` = TRUE)),
+              shinyBS::bsTooltip("district_name_rew", " the district that will be used in calculation of the rewards of transitions.",
+                                 "bottom"),
               actionButton("import_reward","Import reward"),
 
               textInput("simulation_name_pattern","simulation name patern"
                         ,value="weekly_water_amount_"),
+              shinyBS::bsTooltip("simulation_name_pattern", " the simulation name pattern must be adequate with the simulaion names (just remove constraints values from the names).",
+                                 "bottom"),
 
               sliderInput("week_id_rew","Week to show",value=c(2,2),
                            min=1,max = 52),
+
+              shinyBS::bsTooltip("week_id_rew", "The weeks you want to plot",
+                                 "bottom"),
 
               selectInput("param_rew","Type",c("Reward"="r",
                                                 "Reward 1 MC"="r1",
@@ -282,6 +371,10 @@ ui <- fluidPage(
                             max=opts$parameters$general$nbyears,value=c(1,1)
                             ,step = 1)
               ),
+
+
+              shinyBS::bsTooltip("Mc_year", "The scenarios that you want to plot",
+                                 "bottom"),
 
               ),
 
@@ -312,7 +405,15 @@ ui <- fluidPage(
                  h3(strong("Remove outlier water values")),
                  switchInput("Run_remove_out",
                                value=F, offStatus = "danger",
-                             onStatus = "success"),
+                             onStatus = "success")%>%
+                 shinyInput_label_embed(
+                   shiny_iconlink() %>%
+                     bs_embed_popover(title ="Activate filter to remove outlier values.
+      NB: this filter affect yourwater values.")),
+
+
+
+
 
                  conditionalPanel(
 
@@ -332,13 +433,24 @@ ui <- fluidPage(
                                           value = T,
                                           status = "info",
                                           width = '100%'))),
+                 shinyBS::bsTooltip("min_rm", "Delete all water values that are under this value",
+                                    "bottom"),
+                 shinyBS::bsTooltip("max_rm", "Delete all water values that are bigger then this value",
+                                    "bottom"),
+
                  linebreaks(3),
 
                  h3(strong("Fill The rest of water values")),
                  column(12,conditionalPanel(
                    condition = "input.Run_remove_out",
                    materialSwitch("use_filtred",label = "Use Filtred",
-                                  value=F, status="info")),
+                                  value=F, status="info")%>%
+                     shinyInput_label_embed(
+                       shiny_iconlink() %>%
+                         bs_embed_popover(title ="Use the water values after the application of the filter above or use the original one for the next steps."))
+                   ),
+
+
                  radioGroupButtons(
                    inputId = "method_post_process",
                    label = "Select method",
@@ -350,6 +462,9 @@ ui <- fluidPage(
                      yes = icon("ok",
                                 lib = "glyphicon"))  ),
 
+                 shinyBS::bsTooltip("method_post_process", "the method to use to complete the water values of the inaccessible states and the deleted values. ",
+                                    "bottom"),
+
 
                 conditionalPanel(
 
@@ -359,8 +474,12 @@ ui <- fluidPage(
 
                 numericInput("max_cost","Max Water value price",value=3000),
 
+                shinyBS::bsTooltip("max_cost", "the water value that you want to affect when you have an empty reservoir",
+                                   "bottom"),
                 numericInput("min_cost","Min Water value price",value=-150),
 
+                shinyBS::bsTooltip("min_cost", "the water value that you want to affect when you have a full reservoir",
+                                   "bottom"),
                 materialSwitch("full_imputation","Impute NaN values",
                           value=T,status = "success"),
 
@@ -370,7 +489,10 @@ ui <- fluidPage(
                       "2l.norm","2l.lmer","2l.pan","2lonly.mean","2lonly.norm"),
                     selected="norm.predict",
                     options = list(
-                      `live-search` = TRUE))),
+                      `live-search` = TRUE))%>%
+                  shinyInput_label_embed(
+                    shiny_iconlink() %>%
+                      bs_embed_popover(title ="the method used to impute NaN values you can read on each method details using the command help(mice)."))  ),
 
 
                 conditionalPanel(
@@ -378,27 +500,29 @@ ui <- fluidPage(
                   condition="input.method_post_process=='Constant values'",
 
                   numericInput("max_vu","Max Water value price",value=NULL),
-
+                  shinyBS::bsTooltip("max_vu", "the water value that you want to affect when you have an empty reservoir",
+                                     "bottom"),
                   numericInput("min_vu","Min Water value price",value=NULL),
-
+                  shinyBS::bsTooltip("min_vu", "the water value that you want to affect when you have a full reservoir",
+                                     "bottom"),
                   ),
                 ),
 
 
                 numericInput("adjust","Adjust value",value=0),
+                shinyBS::bsTooltip("adjust", "The value will be added to all the water values. for substraction put negative value",
+                                   "bottom"),
 
                 h3(strong("Force Monotonic")),
 
                 switchInput("force_monotonic",
                             value=F, offStatus = "danger",
-                            onStatus = "success"),
+                            onStatus = "success")%>%
+                  shinyInput_label_embed(
+                    shiny_iconlink() %>%
+                      bs_embed_popover(title ="this filter do a permutation of water values to assure that the water values become decreasing with the reservoir level.")),
 
-                actionBttn(
-                  inputId = "reset",
-                  label = "Reset",
-                  style = "pill",
-                  color = "danger"
-                ),
+
 
                 tags$button(
                   id = "to_antares",
@@ -407,7 +531,9 @@ ui <- fluidPage(
                   img(src = "https://antares-simulator.org/static/img/antares-256.png",
                   height = "50px",
                   HTML('<i class="icon-star"></i>To Antares'))
-                )
+                ),
+                shinyBS::bsTooltip("to_antares", "convert the water values to antares format than implemented in the desired area",
+                                   "bottom")
 
                 ),#sidebarPanel
 
@@ -686,7 +812,7 @@ ui <- fluidPage(
 ) #UI
 
 #------Server functions ------
-server <- function(input, output) {
+server <- function(input, output, session) {
 
   global <- reactiveValues(datapath = getwd())
 
@@ -785,6 +911,8 @@ server <- function(input, output) {
                                     show_negative=input$show_negative)})
 
     output$Watervalues <- renderPlot(watervalues())
+
+    shinyBS::addPopover(session,"Watervalues",title = "water values",content = "This graph describe the water values for each week starting from week 1 to week 52 in the X-axis and the level of the reservoir in perecent in the Y-axis. the water values are determined by the colors you can see them in the legend of the graph. The blank zones in the graph mean that those states are inaccessible. ")
 
     output$download_wv_plot <- downloadHandler(
       filename = function() {

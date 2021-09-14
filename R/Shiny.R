@@ -829,7 +829,7 @@ server <- function(input, output, session) {
                      area=input$sim_area,
                      simulation_name = input$sim_simulation_name,
                      nb_disc_stock = input$sim_nb_disc_stock,
-                     nb_mcyears = input$sim_nb_mcyears,
+                     nb_mcyears = input$sim_mcyears,
                      binding_constraint = input$sim_binding_constraint,
                      fictive_area = input$sim_fictive_area,
                      thermal_cluster = input$sim_thermal_cluster,

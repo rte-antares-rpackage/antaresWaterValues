@@ -7,7 +7,8 @@ Maintainer: The package maintainer <safedhia@gmail.com>
 Description: This package aims at generating water values for Antares.
 License: MIT + file LICENSE
 Depends:
-    data.table
+    data.table,
+    shinyBS
 Imports:
     antaresEditObject,
     antaresRead,
@@ -23,7 +24,6 @@ Imports:
     shinyjs,
     shinythemes,
     shinyWidgets,
-    shinyBS,
     bsplus,
     spsComps,
     stringr,

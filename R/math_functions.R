@@ -1,6 +1,6 @@
 #' Calculate water values from Bellman values
 #' @param watervalues an intermediate result in Grid_Matrix contains the bellman values
-#' @param inaccessible_states
+#' @param inaccessible_states Boolean. True to delete unaccessible states of any scenario in the result.
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
 #' @importFrom dplyr left_join
@@ -34,6 +34,7 @@ value_node_gen <- function(watervalues,inaccessible_states=F,statesdt,reservoir)
     value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
     value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
     value_nodes_dt[, vu := (value_node_dif / states_dif )]
+    value_nodes_dt[,vu:=round(vu,2)]
     return(value_nodes_dt)
 }
 

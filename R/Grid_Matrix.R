@@ -221,6 +221,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   niveau_max = niveau_max
   E_max = max_hydro
   max_mcyear <- length(mcyears)
+  counter <- 0
   }
 
   ####
@@ -409,11 +410,35 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
         diff_vect <- last_wv -value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
         convergence_value <- converged(diff_vect,conv=convergence_criteria)
         convergence_percent <- sprintf((convergence_value*100), fmt = '%#.2f')
-        cat(paste0("\033[0;42m", "Cycle number:", n_cycl, ",",convergence_percent,"% Converged", "\033[0m \n"))
-        if(convergence_value>convergence_rate) break
+
+
+        if(convergence_value>convergence_rate){
+            cat(paste0("\033[0;42m", "        Cycle number:", n_cycl, ",    ==>",convergence_percent,"% Converged <==", "\033[0m \n"))
+          break}
+
+        if(n_cycl>2){
+          if (identical(diff_vect,last_diff_vect)){
+          cat(paste0("\033[0;43m", "        Cycle number:", n_cycl, ",    ==>", "Converged with:",convergence_percent,"% <==", "\033[0m \n"))
+          break}
+        }
+
+        if(convergence_value==last_conv){
+          counter <- counter+1
+          if(counter>1){
+            cat(paste0("\033[0;43m", "        Cycle number:", n_cycl, ",    ==>", "Converged with:",convergence_percent,"% <==", "\033[0m \n"))
+            break
+
+          }
+        }
+
+
+
+        cat(paste0("\033[0;41m", "        Cycle number:", n_cycl, ",    ==>",convergence_percent,"% Converged <==", "\033[0m \n"))
+        last_diff_vect <- diff_vect
 
       }
 
+      last_conv <- convergence_value
       last_wv <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
 
       }

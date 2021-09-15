@@ -21,7 +21,7 @@
 #' @param inaccessible_states Boolean. True to delete unaccessible states of any scenario in the result.
 #' provided to calculate. Used mainly to verify for tests. Default FALSE
 #' @param until_convergence Boolean.TRUE to repeat cycle until convergence or attending the limit.
-#' @param convergence_rate from 0 to 1. Define the convergence criteria from cycle to other.
+#' @param convergence_rate from 0 to 1. Define the convergence level from which we suppose that no need to continue another cycle..
 #' @param convergence_criteria the value define convergence. if the difference
 #' between two water values is less then this value those values are converged.
 #' @param cycle_limit Define cycles limit when you are in the until_convergence mod.

@@ -75,7 +75,7 @@ provided to calculate. Used mainly to verify for tests. Default FALSE}
 
 \item{until_convergence}{Boolean.TRUE to repeat cycle until convergence or attending the limit.}
 
-\item{convergence_rate}{from 0 to 1. Define the convergence criteria from cycle to other.}
+\item{convergence_rate}{from 0 to 1. Define the convergence level from which we suppose that no need to continue another cycle..}
 
 \item{convergence_criteria}{the value define convergence. if the difference
 between two water values is less then this value those values are converged.}

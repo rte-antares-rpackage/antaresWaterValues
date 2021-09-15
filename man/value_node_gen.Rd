@@ -9,6 +9,8 @@ value_node_gen(watervalues, inaccessible_states = F, statesdt, reservoir)
 \arguments{
 \item{watervalues}{an intermediate result in Grid_Matrix contains the bellman values}
 
+\item{inaccessible_states}{Boolean. True to delete unaccessible states of any scenario in the result.}
+
 \item{statesdt}{an intermediate result in Grid_Matrix contains the states dicretization}
 
 \item{reservoir}{an intermediate result in Grid_Matrix contains the reservoir levels}

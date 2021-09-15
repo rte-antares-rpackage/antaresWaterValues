@@ -198,11 +198,33 @@ ui <- fluidPage(
           shinyBS::bsTooltip("q_ratio", " the bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
                              "bottom"),
 
+          materialSwitch("until_convergence","Repeat until convergence",
+                         value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Repeat the calculation using in each time the last calculation as initial condition until the convergence.")),
 
           #number of cycles
+          conditionalPanel(
+          condition="!input.until_convergence",
           numericInput("nb_cycle","number of cycle to calculate",value=2,
-                       min=1),
+                       min=1)),
           shinyBS::bsTooltip("nb_cycle", " Number of times to run the algorithm to reduce the initial values effects.",
+                             "bottom"),
+
+
+          conditionalPanel(
+            condition="input.until_convergence",
+            sliderInput("convergence_rate","Convergence goal",max=1,min=0,step=0.01,value=0.9),
+            numericInput("convergence_criteria","convergence landmark",value=1),
+            numericInput("cycle_limit","Number of Cycles limit ",value=10)
+            ),
+
+          shinyBS::bsTooltip("convergence_rate", "The convergence level from which we suppose that no need to continue another cycle.",
+                             "bottom"),
+          shinyBS::bsTooltip("convergence_criteria", "the value define convergence. if the difference between two water values is less then this value those values are converged.",
+                             "bottom"),
+          shinyBS::bsTooltip("cycle_limit", "The maximum number of cycles to calculate before convergence.",
                              "bottom"),
 
           #week 53 value
@@ -883,7 +905,12 @@ server <- function(input, output, session) {
         q_ratio=input$q_ratio,
         parallel = input$parallel,
         shiny=T,
-        inaccessible_states = input$inaccessible_states)
+        inaccessible_states = input$inaccessible_states,
+        until_convergence = input$until_convergence,
+        convergence_rate = input$convergence_rate,
+        convergence_criteria = input$convergence_criteria,
+        cycle_limit = input$cycle_limit
+        )
 
       isolate(rv$results <- results)
       show_alert(

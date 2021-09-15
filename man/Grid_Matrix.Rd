@@ -26,6 +26,10 @@ Grid_Matrix(
   opts = antaresRead::simOptions(),
   shiny = F,
   inaccessible_states = F,
+  until_convergence = F,
+  convergence_rate = 0.9,
+  convergence_criteria = 1,
+  cycle_limit = 10,
   ...
 )
 }
@@ -68,6 +72,15 @@ interpolations. Defaults to FALSE.}
 
 \item{inaccessible_states}{Boolean. True to delete unaccessible states of any scenario in the result.
 provided to calculate. Used mainly to verify for tests. Default FALSE}
+
+\item{until_convergence}{Boolean.TRUE to repeat cycle until convergence or attending the limit.}
+
+\item{convergence_rate}{from 0 to 1. Define the convergence criteria from cycle to other.}
+
+\item{convergence_criteria}{the value define convergence. if the difference
+between two water values is less then this value those values are converged.}
+
+\item{cycle_limit}{Define cycles limit when you are in the until_convergence mod.}
 }
 \value{
 a \code{data.table}

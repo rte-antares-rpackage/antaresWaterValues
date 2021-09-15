@@ -20,6 +20,11 @@
 #' @param parallel Boolean. True o use parallel computing.
 #' @param inaccessible_states Boolean. True to delete unaccessible states of any scenario in the result.
 #' provided to calculate. Used mainly to verify for tests. Default FALSE
+#' @param until_convergence Boolean.TRUE to repeat cycle until convergence or attending the limit.
+#' @param convergence_rate from 0 to 1. Define the convergence criteria from cycle to other.
+#' @param convergence_criteria the value define convergence. if the difference
+#' between two water values is less then this value those values are converged.
+#' @param cycle_limit Define cycles limit when you are in the until_convergence mod.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -55,6 +60,10 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              parallel=FALSE,
                              opts = antaresRead::simOptions(),shiny=F,
                              inaccessible_states=F,
+                             until_convergence=F,
+                             convergence_rate=0.9,
+                             convergence_criteria=1,
+                             cycle_limit=10,
                         ...) {
 
 
@@ -212,13 +221,14 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   niveau_max = niveau_max
   E_max = max_hydro
   max_mcyear <- length(mcyears)
+  counter <- 0
   }
 
   ####
 
   if (only_input) return(watervalues)
-  # here we are supposed to calculate the bellman values using the function Bellman !!!!!!
-  {
+
+  if(!until_convergence){
     next_week_values <- rep_len(next_week_values, nrow(watervalues[weeks==52]))
 
     for (n_cycl in seq_len(nb_cycle)) {
@@ -308,7 +318,111 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
     }
 
-}
+  }else{
+
+    for (n_cycl in seq_len(cycle_limit)) {
+
+      cat("Calculating value nodes, cycle number:", n_cycl, "\n")
+
+      pb <- txtProgressBar(min = 0, max = 51, style = 3)
+
+      for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
+
+
+        temp <- watervalues[weeks==i]
+
+        if(!parallel){
+          temp <- Bellman(temp,next_week_values_l = next_week_values,
+                          decision_space,E_max,niveau_max,
+                          method, max_mcyear = max_mcyear,
+                          q_ratio= q_ratio, correct_outliers = correct_outliers,
+                          test_week = test_week,counter = i,
+                          inaccessible_states=inaccessible_states)}
+
+        if(parallel){
+
+          temp <- Bellman_parallel(temp,next_week_values_l = next_week_values,
+                                   decision_space,E_max,niveau_max,
+                                   method, max_mcyear = max_mcyear,
+                                   q_ratio= q_ratio, correct_outliers = correct_outliers,
+                                   test_week = test_week,counter = i,
+                                   inaccessible_states=inaccessible_states)}
+
+        if(shiny&n_cycl==1&i==52){
+          shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
+        }
+
+
+
+
+
+
+
+        # monotonic Bellman
+        {
+
+          if(monotonic_bellman){
+            for (k in 1:max_mcyear){
+              temp1 <- temp[weeks==i&years==k]
+              m <- 0
+              M <- 0
+
+              for (j in 1:nrow(temp1)){
+
+                if (is.na(temp1$value_node[j])|!is.finite(temp1$value_node[j])) next
+
+                if(m==0)m <- j
+
+                M <- j
+
+              }
+
+
+              temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
+              temp[(weeks==i&years==k),value_node :=temp1$value_node]
+            }}
+
+
+
+        }
+
+
+        watervalues[weeks==i,value_node :=temp$value_node]
+
+        if (correct_outliers) {
+          watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
+          watervalues[weeks==i&value_node<0&is.finite(value_node),value_node:=NaN]
+        }
+
+
+
+        # next_week_values <- correct_outliers(temp$value_node)
+        next_week_values <- temp$value_node
+        setTxtProgressBar(pb = pb, value = 52 - i)
+
+      }
+      close(pb)
+      next_week_values <- temp[weeks==1]$value_node
+      watervalues[!is.finite(value_node),value_node:=NaN]
+
+
+      if(n_cycl>1){
+        diff_vect <- last_wv -value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
+        convergence_value <- converged(diff_vect,conv=convergence_criteria)
+        convergence_percent <- sprintf((convergence_value*100), fmt = '%#.2f')
+        cat(paste0("\033[0;42m", "Cycle number:", n_cycl, ",",convergence_percent,"% Converged", "\033[0m \n"))
+        if(convergence_value>convergence_rate) break
+
+      }
+
+      last_wv <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
+
+      }
+
+
+
+
+  }
 
   #stop parallel cluster
   if(parallel)
@@ -317,33 +431,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   }
 
 
-  # group the years using the mean
-  if(inaccessible_states){
-  value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),
-                                by = list(weeks, statesid)]
-  }else{
-    value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
-                                  by = list(weeks, statesid)]
-  }
-
-  value_nodes_dt[!is.finite(value_node),value_node:=NaN]
-
-  # add states levels
-  value_nodes_dt <- merge(x = value_nodes_dt, y = statesdt, by = c("weeks", "statesid"))
 
 
-  #add reservoir
-  names(reservoir)[1] <- "weeks"
-  value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by="weeks")
+  value_nodes_dt <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)
 
 
-
-  # Calculate Usage values
-  value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]
-  value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
-  value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
-  value_nodes_dt[, vu := (value_node_dif / states_dif )]
-  # value_nodes_dt[value_node_dif<0,vu:=0]
 
   value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
   inacc <- is.finite(value_nodes_dt$value_node)

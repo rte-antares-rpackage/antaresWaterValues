@@ -1,3 +1,63 @@
+#' Calculate water values from Bellman values
+#' @param watervalues an intermediate result in Grid_Matrix contains the bellman values
+#' @param inaccessible_states
+#' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
+#' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
+#' @importFrom dplyr left_join
+#' @export
+value_node_gen <- function(watervalues,inaccessible_states=F,statesdt,reservoir){
+
+    # group the years using the mean
+    if(inaccessible_states){
+      value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),
+                                    by = list(weeks, statesid)]
+    }else{
+      value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
+                                    by = list(weeks, statesid)]
+    }
+
+    value_nodes_dt[!is.finite(value_node),value_node:=NaN]
+
+    # add states levels
+    value_nodes_dt <- merge(x = value_nodes_dt, y = statesdt, by = c("weeks", "statesid"))
+
+
+    #add reservoir
+    names(reservoir)[1] <- "weeks"
+    value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by="weeks")
+
+
+
+
+
+    value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]
+    value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
+    value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
+    value_nodes_dt[, vu := (value_node_dif / states_dif )]
+    return(value_nodes_dt)
+}
+
+
+
+#' test a difference vector convergence
+#' @param diff_vect is a vector of water values differences
+#' @param conv is the value from which the difference become converged
+#' @export
+
+converged <- function(diff_vect,conv=1){
+  t <- abs(diff_vect)
+  t2 <- is.nan(t)
+  nan_values <- length(t2[t2==T])
+  numeric_values <- length(t)-nan_values
+
+  converged_values <- length(t[t<conv]) - nan_values
+  converge_percent <-  converged_values/numeric_values
+  return(converge_percent)
+  }
+
+
+
+
 #' @export
 
 num_equal <- function(x, y, tol = sqrt(.Machine$double.eps)) {

@@ -221,7 +221,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   niveau_max = niveau_max
   E_max = max_hydro
   max_mcyear <- length(mcyears)
-  counter <- 0
   }
 
   ####

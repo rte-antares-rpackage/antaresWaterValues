@@ -75,6 +75,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              convergence_rate=0.9,
                              convergence_criteria=1,
                              cycle_limit=10,
+                             pumping=F,
                         ...) {
 
 
@@ -95,8 +96,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   # max hydro
   max_hydro <- get_max_hydro(area)
 
+
+
+
   if (is.null(simulation_values)) {
-    simulation_values <- seq(from = 0, to = max_hydro, length.out = length(simulation_names))
+    simulation_values <- constraint_generator(area,length(simulation_names),pumping,opts)
     message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))
   }
 
@@ -220,9 +224,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   cl <-parallel::makeCluster(cores[1]-1, type = para_meth)
   doParallel::registerDoParallel(cl)
 
-  # setnames(watervalues,"states_next","states_n")
-  #
-  # setnames(watervalues,"reward_db","reward")
 }
 
   # prepare next function inputs
@@ -230,7 +231,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   if (length(week_53) == 1) week_53 <- rep_len(week_53, length(states))
   next_week_values <- (week_53 * niveau_max)/2   # approximation to get initial bellman values from initial water values
   niveau_max = niveau_max
-  E_max = max_hydro
+  E_max <-max_hydro$turb
+  P_max <- max_hydro$pump
   max_mcyear <- length(mcyears)
   counter <- 0
   }

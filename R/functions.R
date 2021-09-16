@@ -1,3 +1,30 @@
+#' Generate the list of constraint values of the link between the fictive area and the real one
+#' @param area The area concerned by the simulation.
+#' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint.
+#' @param pumping Boolean. True to take into account the pumping.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+constraint_generator <- function(area,nb_disc_stock,pumping=F,opts)
+  {
+  max_hydro <- get_max_hydro(area,opts)
+  res_cap <- get_reservoir_capacity(area,opts)
+  max_app <- max( antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
+  maxi <- min(max_hydro$turb+max_app,res_cap)
+  mini <- -max_hydro$pump
+  if(pumping){
+  constraint_values <- seq(from = mini, to = maxi, length.out = nb_disc_stock)
+  constraint_values <- round(constraint_values, 3)
+  constraint_values[which(abs(constraint_values)==min(abs(constraint_values)))] <- 0
+  }else{
+    constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
+    constraint_values <- round(constraint_values, 3)
+  }
+
+return(constraint_values)
+}
+
 
 #--------- Reporting data---------------
 #' Plot simulation variables comparison and real Ov. cost (for watervalues)
@@ -158,9 +185,15 @@ get_max_hydro <- function(area, opts=antaresRead::simOptions())
 #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
 max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
 if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
-  max_hydro <- max_hydro[, max(hstorPMaxHigh)] * 168
+  max_turb <- max_hydro[, max(hstorPMaxHigh)] * 168
 } else {
-  max_hydro <- max(max_hydro$generatingMaxPower) * 168    }
+  max_turb <- max(max_hydro$generatingMaxPower) * 168
+  max_pump <- max(max_hydro$pumpingMaxPower) * 168
+}
+max_hydro <- list()
+max_hydro$pump <- max_pump
+max_hydro$turb <- max_turb
+class(max_hydro) <- "max turbining and pumping weekly energy"
 return(max_hydro)
 }
 

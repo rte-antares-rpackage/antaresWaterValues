@@ -29,6 +29,7 @@ Grid_Matrix(
   convergence_rate = 0.9,
   convergence_criteria = 1,
   cycle_limit = 10,
+  pumping = F,
   ...
 )
 }

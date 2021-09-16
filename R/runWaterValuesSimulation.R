@@ -3,8 +3,8 @@
 #' @param area The area concerned by the simulation.
 #' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.
 #' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint
-#'  will be created from 0 to the hydro storage maximum and of length this parameter.
-  #' @param nb_mcyears Number of Monte Carlo years to simulate.
+#'  will be created from maximum pumping power to the hydro storage maximum and of length this parameter.
+#' @param nb_mcyears Number of Monte Carlo years to simulate.
 #' @param binding_constraint Name of the binding constraint.
 # @param constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
@@ -17,6 +17,7 @@
 #' @param file_name the Rdata file name.
 #' @param remove_areas 	Character vector of area(s) to remove from the created district.
 #' @param shiny Boolean. True to run the script in shiny mod.
+#' @param pumping Boolean. True to take into account the pumping.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -44,7 +45,8 @@ runWaterValuesSimulation <- function(area,
                                      overwrite = FALSE,
                                      remove_areas=NULL,
                                      opts = antaresRead::simOptions(),
-                                     shiny=F,otp_dest=NULL,file_name=NULL,...) {
+                                     shiny=F,otp_dest=NULL,file_name=NULL,
+                                     pumping=F,...) {
 
 
 
@@ -75,19 +77,9 @@ opts <- setupWaterValuesSimulation(
     opts = opts
   )
 
-
 # Get max hydro power that can be generated in a week
-max_hydro <- get_max_hydro(area,opts)
-res_cap <- get_reservoir_capacity(area,opts)
-max_app <- max(antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
 
-maxi <- min(max_hydro+max_app,res_cap)
-
-# Generate Binding constraints of the flows capacities
-
-constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
-constraint_values <- round(constraint_values, 3)
-
+constraint_values <- constraint_generator(area,nb_disc_stock,pumping,opts)
 
 #generate the flow sens constraints
 
@@ -141,6 +133,7 @@ for (i in constraint_values) {
   message("#  ------------------------------------------------------------------------")
 
   # run the simulation
+  if(1==2){
   antaresEditObject::runSimulation(
     name = sprintf(simulation_name, format(i, decimal.mark = ",")),
     mode = "economy",
@@ -148,7 +141,7 @@ for (i in constraint_values) {
     path_solver = path_solver,
     show_output_on_console = show_output_on_console,
     opts = opts
-  )
+  )}
   simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
   #remove the Binding Constraints
@@ -159,9 +152,12 @@ for (i in constraint_values) {
   sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
   sim_check <- paste0(opts$studyPath,"/output")
   sim_check <- paste(sim_check,sim_name,sep="/")
+  if(1==2){
+
   if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
     stop("Simulation Error. Please check simulation log.")
   }
+    }
 }
 
 # remove the fictive area

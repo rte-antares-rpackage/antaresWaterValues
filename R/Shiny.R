@@ -5,8 +5,7 @@
 #'   \code{watervalues::runWaterValuesSimulation}
 #' @param study_path the path of the Antares study
 #'
-#'
-#' @import  shiny
+#' @rawNamespace import(shiny, except =c(dataTableOutput,renderDataTable))
 #' @import shinyWidgets
 #' @importFrom  shinythemes shinytheme
 #' @importFrom shinycustomloader withLoader

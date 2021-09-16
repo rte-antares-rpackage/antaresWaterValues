@@ -85,6 +85,11 @@ ui <- fluidPage(
              shinyBS::bsTooltip("sim_simulation_name", " The name of the simulation, add %s in the end to add constraints values to the names.",
                                 "bottom"),
 
+             materialSwitch("pumping","Activate Pumping",value=F,status = "success")%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(title ="Take into account the pumping in the area.")),
+
              numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
                           min=1),
              shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
@@ -859,7 +864,8 @@ server <- function(input, output, session) {
                      opts = opts,
                      shiny=T,
                      otp_dest=input$sim_output_dir,
-                     file_name=input$file_name)})})
+                     file_name=input$file_name,
+                     pumping = input$pumping)})})
 
 
 

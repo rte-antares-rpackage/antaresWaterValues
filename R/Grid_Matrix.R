@@ -157,7 +157,9 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   options("antares" = opts)
 
   # Reward
-  {reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name, opts = opts)
+  {
+    ind <- which(simulation_values==0)
+    reward_db <- get_Reward(simulation_names = simulation_names,ind=ind, district_name = district_name, opts = opts)
     reward_db <- reward_db[timeId %in% seq_len(n_week)]}
 
   # Reservoir (calque)

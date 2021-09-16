@@ -3,6 +3,7 @@
 #' @param simulation_names Names of the simulation to obtain the reward.
 #' @param pattern A pattern to identify simulations.
 #' @param district_name Name of the district used to store output.
+#' @param ind index of the column of the 0 binding constraint simulation
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -16,7 +17,7 @@
 
 
 
-get_Reward <- function(simulation_names = NULL, pattern = NULL,
+get_Reward <- function(simulation_names = NULL,ind=1, pattern = NULL,
                        district_name = "water values district",
                        opts = antaresRead::simOptions()) {
 
@@ -61,9 +62,11 @@ get_Reward <- function(simulation_names = NULL, pattern = NULL,
   reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
   vars <- simulation_names # setdiff(names(reward), c("timeId", "mcYear"))
   setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
+
+
   reward <- reward[
     , (vars) := lapply(.SD, FUN = function(x) {
-      get(vars[1]) - x
+      get(vars[ind]) - x
     }),
     .SDcols = vars
   ]

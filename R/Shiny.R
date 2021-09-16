@@ -4,7 +4,7 @@
 #'   List of simulation results returned by the function
 #'   \code{watervalues::runWaterValuesSimulation}
 #' @param study_path the path of the Antares study
-#'
+#' @param ... further arguments passed to or from other methods.
 #' @rawNamespace import(shiny, except =c(dataTableOutput,renderDataTable))
 #' @import shinyWidgets
 #' @importFrom  shinythemes shinytheme
@@ -294,7 +294,7 @@ NB:  - Negative and positive values are affected by this filter.
             sliderInput("filtre_ratio",label="Filter extreme water values ratio",min=0,
                         max=1,value=1),
           ),
-          shinyBS::bsTooltip("filtre_ratio", " Select the filter ratio define the percent to keep from water values eleminating the rest (extreme negatives and positives)",
+          shinyBS::bsTooltip("filtre_ratio", "The filter ratio define the percent to keep from water values eliminating the rest (extreme negatives and positives)",
                              "bottom"),
 
 
@@ -1002,8 +1002,7 @@ server <- function(input, output, session) {
       {plot_reward(rv$reward_dt,week_id_rew,input$simulation_name_pattern)
       }else{
         if(input$param_rew=="rv")
-          {plot_reward_variation(rv$reward_dt,week_id_rew,
-                                   input$simulation_name_pattern)
+          {plot_reward_variation(rv$reward_dt,week_id_rew)
         }else{
 
         if(input$param_rew=="r1")
@@ -1013,7 +1012,7 @@ server <- function(input, output, session) {
 
           if(input$param_rew=="rv1")
           {plot_reward_variation_mc(rv$reward_dt,week_id_rew,
-                              Mc_year,input$simulation_name_pattern)}
+                              Mc_year)}
         }
         }
         }

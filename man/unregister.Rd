@@ -2,10 +2,10 @@
 % Please edit documentation in R/functions.R
 \name{unregister}
 \alias{unregister}
-\title{release parallel parameters}
+\title{Release parallel computing clusters}
 \usage{
 unregister()
 }
 \description{
-release parallel parameters
+Release parallel computing clusters
 }

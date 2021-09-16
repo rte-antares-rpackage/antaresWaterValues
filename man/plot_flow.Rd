@@ -29,6 +29,10 @@ Null plot the synthesis. Default NULL}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{shiny}{Boolean. True to run the script in shiny mod.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 a \code{ggplot} object

@@ -17,7 +17,6 @@
 #' @return a data.table
 #' @export
 #'
-# @examples
 readReservoirLevels <- function(area,
                                 timeStep = "weekly",
                                 byReservoirCapacity = TRUE,
@@ -40,6 +39,24 @@ readReservoirLevels <- function(area,
   }
 }
 
+
+#' Read Reservoir Levels for Antares version 6.
+#'
+#' @param area An 'antares' area.
+#' @param timeStep Resolution of the data to import: weekly (default, a linear interpolation is done on the data), monthly (original data).
+#' @param byReservoirCapacity Multiply the result by the reservoir capacity (if available).
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @import data.table
+#' @importFrom assertthat assert_that
+#' @importFrom antaresRead getAreas
+#' @importFrom antaresEditObject is_antares_v7
+#' @importFrom zoo na.approx
+#' @importFrom utils head
+#'
+#' @return a data.table
 #' @export
 
 readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
@@ -82,6 +99,23 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
   reservoir[]
 }
 
+#' Read Reservoir Levels for antares version 7.
+#'
+#' @param area An 'antares' area.
+#' @param timeStep Resolution of the data to import: weekly (default, a linear interpolation is done on the data), monthly (original data).
+#' @param byReservoirCapacity Multiply the result by the reservoir capacity (if available).
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @import data.table
+#' @importFrom assertthat assert_that
+#' @importFrom antaresRead getAreas
+#' @importFrom antaresEditObject is_antares_v7
+#' @importFrom zoo na.approx
+#' @importFrom utils head
+#'
+#' @return a data.table
 #' @export
 readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly", "daily"))

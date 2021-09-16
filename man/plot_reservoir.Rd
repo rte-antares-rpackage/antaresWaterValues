@@ -10,8 +10,7 @@ plot_reservoir(
   mcyear = NULL,
   simulation_name = NULL,
   opts = antaresRead::simOptions(),
-  shiny = F,
-  ...
+  shiny = F
 )
 }
 \arguments{
@@ -29,6 +28,8 @@ Null plot the synthesis. Default NULL}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{shiny}{Boolean. True to run the script in shiny mod.}
 }
 \value{
 a \code{ggplot} object

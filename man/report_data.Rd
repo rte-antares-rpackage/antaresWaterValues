@@ -39,7 +39,7 @@ that contains the all domain to study.}
 
 \item{watervalues_areas}{list of areas name that used water values.}
 
-\item{return_table}{boolean. return table or plot.}
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 a \code{ggplot} or \code{data.table} object

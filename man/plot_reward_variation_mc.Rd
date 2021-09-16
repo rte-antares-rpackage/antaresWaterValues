@@ -4,12 +4,7 @@
 \alias{plot_reward_variation_mc}
 \title{Plot the reward and return the results in table}
 \usage{
-plot_reward_variation_mc(
-  reward_base,
-  week_id,
-  Mc_year,
-  sim_name_pattern = "weekly_water_amount_"
-)
+plot_reward_variation_mc(reward_base, week_id, Mc_year)
 }
 \arguments{
 \item{reward_base}{A data.table contains the rewards.

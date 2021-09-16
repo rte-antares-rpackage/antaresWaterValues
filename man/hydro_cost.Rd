@@ -9,6 +9,8 @@ hydro_cost(area, mcyears, simulation_name, opts)
 \arguments{
 \item{area}{A valid Antares area.}
 
+\item{mcyears}{list of scenarios to use.}
+
 \item{simulation_name}{simulation name in output folder.}
 
 \item{opts}{List of simulation parameters returned by the function

@@ -53,9 +53,13 @@ will be created from 0 to the hydro storage maximum and of length this parameter
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
+\item{shiny}{Boolean. True to run the script in shiny mod.}
+
 \item{otp_dest}{the path in which the script save Rdata file.}
 
 \item{file_name}{the Rdata file name.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \description{
 Run a simulation for calculating water values for a specific area

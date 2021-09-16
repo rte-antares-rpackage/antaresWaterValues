@@ -16,9 +16,11 @@
 #' @param otp_dest the path in which the script save Rdata file.
 #' @param file_name the Rdata file name.
 #' @param remove_areas 	Character vector of area(s) to remove from the created district.
+#' @param shiny Boolean. True to run the script in shiny mod.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param ... further arguments passed to or from other methods.
 #'
 #' @note This function have side effects on the Antares study used, a fictive area is created and a new district as well.
 #'

@@ -7,28 +7,39 @@
 #' @param district_name Name of the district used to store output.
 #' @param mcyears MC years to consider, by default all of them.
 #' @param week_53 Water values for week 53, by default 0.
-#' @param method Perform mean of grids algorithm or grid of means algorithm or grid of quantile algorithm.
+#' @param method Perform mean of grids algorithm or grid of means algorithm or
+#'  grid of quantile algorithm.
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero . Defaults to 0.05
-#' @param q_ratio from 0 to 1. determine the bellman value in each week which give q_ratio of all bellman values are equal or less to it. (quantile(q_ratio))
-#' @param reservoir_capacity Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
-#'  value in Antares is used if available else a prompt ask the user the value to be used.
+#' @param q_ratio from 0 to 1. the probability used in quantile method
+#' to determine a bellman value which q_ratio all bellman values are equal or
+#' less to it. (quantile(q_ratio))
+#' @param monotonic_bellman force increasing bellman values with the stock
+#' level in the calculation.
+#' @param test_week the week number u want to see it's calculation information
+#' in the console
+#' @param reservoir_capacity Reservoir capacity for the given area in MWh,
+#'  if \code{NULL} (the default), value in Antares is used if available else
+#'  a prompt ask the user the value to be used.
 #' @param na_rm Remove NAs
-#' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
-#'   interpolations. Defaults to FALSE.
+#' @param correct_outliers If TRUE, outliers in Bellman values are replaced
+#' by spline interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
-#' @param parallel Boolean. True o use parallel computing.
-#' @param inaccessible_states Boolean. True to delete unaccessible states of any scenario in the result.
-#' provided to calculate. Used mainly to verify for tests. Default FALSE
-#' @param until_convergence Boolean.TRUE to repeat cycle until convergence or attending the limit.
-#' @param convergence_rate from 0 to 1. Define the convergence level from which we suppose that no need to continue another cycle..
+#' @param parallel Boolean. True to use parallel computing.
+#' @param inaccessible_states Boolean. True to delete inaccessible states of
+#'  any scenario in the result.
+#' @param until_convergence Boolean.TRUE to repeat cycle until convergence or
+#'  attending the limit.
+#' @param convergence_rate from 0 to 1. Define the convergence level from which
+#'  we suppose that no need to continue another cycle..
 #' @param convergence_criteria the value define convergence. if the difference
 #' between two water values is less then this value those values are converged.
 #' @param cycle_limit Define cycles limit when you are in the until_convergence mod.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#'
+#' @param shiny Boolean. True to run the script in shiny mod.
+#' @param ... further arguments passed to or from other methods.
 #' @return a \code{data.table}
 #' @export
 #'
@@ -50,7 +61,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              states_step_ratio = 0.01,
                              reservoir_capacity = NULL,
                              na_rm = FALSE,
-                             overwrite=TRUE,
                              correct_outliers = FALSE,
                              method ,
                              only_input=FALSE,
@@ -58,7 +68,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              monotonic_bellman=FALSE,
                              test_week=NULL,
                              parallel=FALSE,
-                             opts = antaresRead::simOptions(),shiny=F,
+                             opts = antaresRead::simOptions(),
+                             shiny=F,
                              inaccessible_states=F,
                              until_convergence=F,
                              convergence_rate=0.9,

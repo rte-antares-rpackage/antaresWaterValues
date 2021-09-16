@@ -59,34 +59,24 @@ converged <- function(diff_vect,conv=1){
 
 
 
+#' Check if two numbers are equal.
+#' @param x first number to compare.
+#' @param y second number to compare.
+#' @param tol the minimum difference from which two numbers are equal.
 #' @export
-
 num_equal <- function(x, y, tol = sqrt(.Machine$double.eps)) {
   abs(x - y) < tol
 }
 
-# expand a vector of 52 weekly water values to a vector of 365 (= 7*52+1) daily
-#   values, taking NA's, NaN's and +-Inf's into account
-#' @export
 
-expand_to_days <- function(v) {
-  v[!is.finite(v)] <- NaN
-  v <- sapply(v, function(x) c(rep(if (is.finite(x)) NA else NaN, 6), x))
-  v <- c(v, if (is.finite(v[length(v)])) NA else NaN) # 365th day of the year
-  u <- v[!is.nan(v)]
-  if (length(u) > 0) {
-    v[!is.nan(v)] <- na.spline(u)
-  }
-  v[is.nan(v)] <- 0
-  v
-}
-
+#' Replace outliers values by spline
+#' @param vector numeric vector to remove outliers values from it.
 #' @importFrom grDevices boxplot.stats
 #' @export
 
-correct_outliers <- function(u) {
-  ind_v <- which(is.finite(u)) # NaN and Inf values shall not be corrected
-  v <- u[ind_v]
+correct_outliers <- function(vector) {
+  ind_v <- which(is.finite(vector)) # NaN and Inf values shall not be corrected
+  v <- vector[ind_v]
   w <- v
   v[v %in% boxplot.stats(v)$out] <- NA
   v <- zoo::na.spline(v, na.rm = FALSE)
@@ -95,11 +85,14 @@ correct_outliers <- function(u) {
   ind_na <- which(is.na(v))
   v[ind_na] <- w[ind_na]
 
-  u[ind_v] <- v
-  return(u)
+  vector[ind_v] <- v
+  return(vector)
 }
 
 #----- Mean of finite values
+#' Calculate the mean of finite values.
+#' Return \code{-Inf} if all \code{-Inf}.
+#' @param x numeric vector whose mean is wanted.
 #' @export
 
 mean_finite <- function(x) {
@@ -111,6 +104,9 @@ mean_finite <- function(x) {
 }
 
 #-----Mean or inf
+#' Calculate the mean if there is no infinite or missing value.
+#' Return \code{-Inf} in the other case.
+#' @param x numeric vector whose mean is wanted.
 #' @export
 mean_or_inf <- function(x){
   if(any(is.infinite(x)|any(is.nan(x)))){
@@ -123,6 +119,10 @@ mean_or_inf <- function(x){
 
 
 #-----quantile or inf
+#' Calculate the quantile if there is no infinite or missing value.
+#' Return \code{-Inf} in the other case.
+#' @param x numeric vector whose quantile is wanted.
+#' @param q_ratio Numeric in [0,1]. Probability of the quantile.
 #' @importFrom stats quantile
 #' @export
 quantile_or_inf <- function(x,q_ratio){
@@ -135,31 +135,31 @@ quantile_or_inf <- function(x,q_ratio){
 }
 
 
-#------ simple interpolation -----
-#' @export
-
-interp <- function(x,x1,y1,x2,y2){
-
-  t <- y2-y1
-  tt <- x2-x1
-  return(y1+(x-x1)*(t/tt))
-}
 
 #---- monotonicity check functions-----
+#' Check if the vector has increasing values
+#' @param vector numeric vector whose increasing check is wanted.
 #' @export
 
-incr <- function(vector1){
-  all(diff(vector1) >= 0)}
+incr <- function(vector){
+  all(diff(vector) >= 0)}
 
+
+
+#' Check if the vector has decreasing values
+#' @param vector numeric vector whose decreasing check is wanted.
 #' @export
 
-decr <- function(vector1){
-  all(diff(vector1) <= 0)}
+decr <- function(vector){
+  all(diff(vector) <= 0)}
 
 
 
 
 #----------- Bellman monotonicity---------
+#' Check the monotonicity of the calculated Bellman values and return a success rate.
+#' @param results A data.table contains the Bellman values
+#' Obtained using the function \code{Grid_Matrix()}
 #' @export
 
 check_Bellman_inc <- function(results){
@@ -178,6 +178,9 @@ check_Bellman_inc <- function(results){
 
   }
 
+#' Check the monotonicity of the calculated  water values and return a success rate.
+#' @param results A data.table contains the water values
+#' Obtained using the function \code{Grid_Matrix()}
 #' @export
 
 check_vu_dec <- function(results){
@@ -198,6 +201,9 @@ check_vu_dec <- function(results){
 
 
 #------- states to percent -----
+#' Convert Reservoir levels from MWh to percent of reservoir.
+#' @param data  A data.table contains the statesid and states columns
+#' @param states_step_ratio percent step between two successive levels.
 #' @export
 
 states_to_percent <- function(data,states_step_ratio=0.01){
@@ -227,6 +233,10 @@ states_to_percent <- function(data,states_step_ratio=0.01){
 
 #----- check VU decrease in reshaped values ------
 
+#' Check the monotonicity of the calculated the water values after putting them
+#' in Antares Format and return a success rate.
+#' @param reshaped_results A matrix contains the water values
+#' Obtained using the function \code{to_Antares_Format()}
 #' @export
 
 check_resh_vu_dec <- function(reshaped_results){

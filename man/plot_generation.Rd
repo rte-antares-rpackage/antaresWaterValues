@@ -17,19 +17,21 @@ plot_generation(
 \arguments{
 \item{area}{An 'antares' area.}
 
-\item{min_path}{pathe of Pmin file "/user/Pmin **.txt"}
+\item{timestep}{Resolution of the data to import:
+weekly (default, a linear interpolation is done on the data),
+monthly (original data).}
+
+\item{Mcyear}{precise the MC year to plot.
+Null plot the synthesis. Default NULL}
+
+\item{min_path}{path of Pmin file "/user/Pmin **.txt"}
+
+\item{max_path}{path of Pmax file "/user/Pmax **.txt"}
 
 \item{simulation_name}{simulation name to plot.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
-
-\item{timeStep}{Resolution of the data to import:
-weekly (default, a linear interpolation is done on the data),
-monthly (original data).}
-
-\item{mcyear}{precise the MC year to plot.
-Null plot the synthesis. Default NULL}
 }
 \value{
 a \code{ggplot} object

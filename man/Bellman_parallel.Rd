@@ -42,7 +42,8 @@ hydro storage over one step of time.}
 
 \item{niveau_max}{Numeric of length 1. Reservoir capacity.}
 
-\item{method}{Character. Perform mean grid algorithm or grid mean algorithm?}
+\item{method}{Character. Perform mean of grids algorithm or grid of means algorithm or
+grid of quantile algorithm.}
 
 \item{na_rm}{Boolean. Remove NAs}
 
@@ -54,9 +55,15 @@ used in simulations}
 \item{correct_outliers}{If TRUE, outliers in Bellman values are replaced by spline
 interpolations. Defaults to FALSE.}
 
+\item{q_ratio}{numeric in [0,1]. the probability used in quantile algorithm.}
+
 \item{test_week}{Numeric of length 1. number of the week to print in test.}
 
+\item{counter}{Numeric of length 1. number of the week in calculation.}
+
 \item{inaccessible_states}{Boolean. True to delete unaccessible states of any scenario in the result.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 a \code{data.table} like Data_week with the Bellman values

@@ -18,6 +18,8 @@ Obtained using the function get_Reward()}
 \item{week_id}{Numeric of length 1. number of the week to plot.}
 
 \item{Mc_year}{Numeric of length 1. number of thr MC year to plot}
+
+\item{sim_name_pattern}{the name of simulations used in \code{runWaterValuesSimulation()}}
 }
 \value{
 a \code{ggplot} object

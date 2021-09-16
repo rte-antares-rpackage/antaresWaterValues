@@ -27,6 +27,8 @@ setupWaterValuesSimulation(
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 The result of antaresRead::simOptions

@@ -17,6 +17,8 @@ plot_Bellman(
 \item{value_nodes_dt}{A data.table contains the Bellman and water values .
 Obtained using the function Grid_Matrix()}
 
+\item{week_number}{Numeric of length 1. number of the week to plot.}
+
 \item{param}{string contains the element to plot
 * "vu" to plot only water values
 * "b" to plot only bellman values
@@ -26,7 +28,10 @@ Default "vu"}
 \item{states_step_ratio}{put the ratio to change reservoir discretization in percent
 0.01 to augment by 1\%}
 
-\item{week_id}{Numeric of length 1. number of the week to plot.}
+\item{bellman_week}{Numeric of length 1. number of the week to plot
+the correspondent Bellman values.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 a \code{ggplot} object

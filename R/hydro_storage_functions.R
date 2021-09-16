@@ -192,6 +192,7 @@ getReservoirCapacity <- function(area, force = FALSE, opts = antaresRead::simOpt
 #' Calculate  the hydro cost
 #'
 #' @param area A valid Antares area.
+#' @param mcyears list of scenarios to use.
 #' @param simulation_name simulation name in output folder.
 #' @param opts
 #'   List of simulation parameters returned by the function

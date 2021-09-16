@@ -15,7 +15,6 @@ Grid_Matrix(
   states_step_ratio = 0.01,
   reservoir_capacity = NULL,
   na_rm = FALSE,
-  overwrite = TRUE,
   correct_outliers = FALSE,
   method,
   only_input = FALSE,
@@ -51,36 +50,52 @@ Grid_Matrix(
 \item{states_step_ratio}{Discretization ratio to generate steps levels
 between the reservoir capacity and zero . Defaults to 0.05}
 
-\item{reservoir_capacity}{Reservoir capacity for the given area in GWh, if \code{NULL} (the default),
-value in Antares is used if available else a prompt ask the user the value to be used.}
+\item{reservoir_capacity}{Reservoir capacity for the given area in MWh,
+if \code{NULL} (the default), value in Antares is used if available else
+a prompt ask the user the value to be used.}
 
 \item{na_rm}{Remove NAs}
 
-\item{correct_outliers}{If TRUE, outliers in Bellman values are replaced by spline
-interpolations. Defaults to FALSE.}
+\item{correct_outliers}{If TRUE, outliers in Bellman values are replaced
+by spline interpolations. Defaults to FALSE.}
 
-\item{method}{Perform mean of grids algorithm or grid of means algorithm or grid of quantile algorithm.}
+\item{method}{Perform mean of grids algorithm or grid of means algorithm or
+grid of quantile algorithm.}
 
 \item{only_input}{if TRUE skip bellman values calculation and return the input}
 
-\item{q_ratio}{from 0 to 1. determine the bellman value in each week which give q_ratio of all bellman values are equal or less to it. (quantile(q_ratio))}
+\item{q_ratio}{from 0 to 1. the probability used in quantile method
+to determine a bellman value which q_ratio all bellman values are equal or
+less to it. (quantile(q_ratio))}
 
-\item{parallel}{Boolean. True o use parallel computing.}
+\item{monotonic_bellman}{force increasing bellman values with the stock
+level in the calculation.}
+
+\item{test_week}{the week number u want to see it's calculation information
+in the console}
+
+\item{parallel}{Boolean. True to use parallel computing.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
-\item{inaccessible_states}{Boolean. True to delete unaccessible states of any scenario in the result.
-provided to calculate. Used mainly to verify for tests. Default FALSE}
+\item{shiny}{Boolean. True to run the script in shiny mod.}
 
-\item{until_convergence}{Boolean.TRUE to repeat cycle until convergence or attending the limit.}
+\item{inaccessible_states}{Boolean. True to delete inaccessible states of
+any scenario in the result.}
 
-\item{convergence_rate}{from 0 to 1. Define the convergence level from which we suppose that no need to continue another cycle..}
+\item{until_convergence}{Boolean.TRUE to repeat cycle until convergence or
+attending the limit.}
+
+\item{convergence_rate}{from 0 to 1. Define the convergence level from which
+we suppose that no need to continue another cycle..}
 
 \item{convergence_criteria}{the value define convergence. if the difference
 between two water values is less then this value those values are converged.}
 
 \item{cycle_limit}{Define cycles limit when you are in the until_convergence mod.}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 a \code{data.table}

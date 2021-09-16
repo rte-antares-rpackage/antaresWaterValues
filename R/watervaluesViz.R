@@ -1,11 +1,10 @@
 #' Visualize mean grid layer
 #'
-#' @param value_nodes Output from \code{watervalues} or \code{Grid_Matrix}.
-#' @param add_band Add band around water values, \code{TRUE} or \code{FALSE}.
-#' @param type Perform a linear or a spline interpolation.
-#' @param bandwidth Ith of the band to add.
-#' @param failure_cost Cost of failure.
-#'
+#' @param Data Output from \code{Grid_Matrix}.
+#' @param filtre_ratio in [1,0]. Define the percent to keep from water values
+#' eliminating the rest (extreme negatives and positives).
+#' @param show_negative Boolean. true to show negative water values and
+#' False to delete them from the graph.
 #' @return a \code{ggplot} object
 #' @export
 #'
@@ -13,21 +12,12 @@
 #' @importFrom viridis scale_fill_viridis
 #'
 # @examples
-waterValuesViz <- function(Data, filtre_ratio=1,show_negative=TRUE, add_band = FALSE,
-                           type = c("linear", "spline"),
-                           bandwidth = 100, failure_cost = 3000) {
+waterValuesViz <- function(Data, filtre_ratio=1,show_negative=TRUE) {
 
 
   value_nodes <- copy(Data)
 
-  if (add_band) {
-    value_nodes <- copy(value_nodes)
-    value_nodes <- value_nodes[, vu_band := addBand(
-      vu = vu, states = states,
-      failure_cost = failure_cost, type = type,
-      bandwidth = bandwidth
-    ), by = weeks]
-  }
+
   q <- quantile(value_nodes$vu,filtre_ratio,na.rm = TRUE)
   value_nodes[vu>q,vu:=q]
   q_down <- quantile(value_nodes$vu,1-filtre_ratio,na.rm = TRUE)

@@ -12,7 +12,7 @@
 #' @export
 
 
-plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_")
+plot_reward_variation <- function(reward_base,week_id)
 {
   reward <- stats::aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
@@ -41,7 +41,7 @@ plot_reward_variation <- function(reward_base,week_id,sim_name_pattern="weekly_w
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
-#'
+#' @param sim_name_pattern the name of simulations used in \code{runWaterValuesSimulation()}
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @importFrom grDevices rgb
@@ -71,6 +71,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
+#' @param sim_name_pattern the name of simulations used in \code{runWaterValuesSimulation()}
 #' @importFrom grDevices rgb
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
@@ -111,7 +112,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 #' @return a \code{ggplot} object
 #' @export
 
-plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_")
+plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 {
   reward <- reward_base[timeId %in% week_id&mcYear%in%Mc_year]
   names <- unlist(reward[,legend:=paste(sprintf("week %d",timeId),sprintf("MC year %d",mcYear))]$legend)
@@ -145,15 +146,17 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,sim_name_patter
 #'
 #' @param value_nodes_dt A data.table contains the Bellman and water values .
 #' Obtained using the function Grid_Matrix()
-#' @param week_id Numeric of length 1. number of the week to plot.
+#' @param week_number Numeric of length 1. number of the week to plot.
 #' @param param string contains the element to plot
 #'   * "vu" to plot only water values
 #'   * "b" to plot only bellman values
 #'   * "both" to plot both water and bellman values
 #'   Default "vu"
-#'
+#' @param bellman_week Numeric of length 1. number of the week to plot
+#' the correspondent Bellman values.
 #' @param states_step_ratio put the ratio to change reservoir discretization in percent
 #' 0.01 to augment by 1\%
+#' @param ... further arguments passed to or from other methods.
 #' @import data.table
 #' @importFrom  cowplot draw_label ggdraw plot_grid
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
@@ -230,6 +233,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param shiny Boolean. True to run the script in shiny mod.
 #' @import data.table
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
 #' @importFrom dplyr left_join
@@ -240,7 +244,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' @export
 
 
-plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions(),shiny=F,...){
+plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions(),shiny=F){
 
   reservoir <- readReservoirLevels(area, timeStep = timeStep, byReservoirCapacity = FALSE, opts = opts)
   reservoir$level_avg <- NULL
@@ -327,12 +331,13 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
 #' Plot Turbining power  Graph and return result table
 #'
 #' @param area An 'antares' area.
-#' @param timeStep Resolution of the data to import:
+#' @param timestep Resolution of the data to import:
 #' weekly (default, a linear interpolation is done on the data),
 #' monthly (original data).
-#' @param mcyear precise the MC year to plot.
+#' @param Mcyear precise the MC year to plot.
 #' Null plot the synthesis. Default NULL
-#' @param min_path pathe of Pmin file "/user/Pmin **.txt"
+#' @param min_path path of Pmin file "/user/Pmin **.txt"
+#' @param max_path path of Pmax file "/user/Pmax **.txt"
 #' @param simulation_name simulation name to plot.
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -525,6 +530,8 @@ just_plot_report <- function(data,plot_var,plot_type=T){
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param shiny Boolean. True to run the script in shiny mod.
+#' @param ... further arguments passed to or from other methods.
 #' @import data.table
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
 #' @importFrom dplyr left_join

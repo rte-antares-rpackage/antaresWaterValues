@@ -204,15 +204,10 @@ adjust_wv <- function(results_dt,value=0){
 
 
 
-
-#' @export
-
-interp_up <- function(mini,statesid){
-
-  mini*(1+(exp(-statesid)))*-1
-
-}
-
+#' function used to replace the values under the level_low of reservoir
+#' @param maxi the maximuum of water values
+#' @param statesid the state Id of the the to replace
+#' @param q3 a quantile used in interpolation
 #' @export
 interp_down <- function(maxi,statesid,q3){
 

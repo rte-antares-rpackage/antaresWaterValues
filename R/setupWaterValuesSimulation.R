@@ -8,7 +8,7 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#'
+#' @param ... further arguments passed to or from other methods.
 #' @return The result of antaresRead::simOptions
 #' @export
 #'

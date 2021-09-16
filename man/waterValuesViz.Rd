@@ -4,26 +4,16 @@
 \alias{waterValuesViz}
 \title{Visualize mean grid layer}
 \usage{
-waterValuesViz(
-  Data,
-  filtre_ratio = 1,
-  show_negative = TRUE,
-  add_band = FALSE,
-  type = c("linear", "spline"),
-  bandwidth = 100,
-  failure_cost = 3000
-)
+waterValuesViz(Data, filtre_ratio = 1, show_negative = TRUE)
 }
 \arguments{
-\item{add_band}{Add band around water values, \code{TRUE} or \code{FALSE}.}
+\item{Data}{Output from \code{Grid_Matrix}.}
 
-\item{type}{Perform a linear or a spline interpolation.}
+\item{filtre_ratio}{in [1,0]. Define the percent to keep from water values
+eliminating the rest (extreme negatives and positives).}
 
-\item{bandwidth}{Ith of the band to add.}
-
-\item{failure_cost}{Cost of failure.}
-
-\item{value_nodes}{Output from \code{watervalues} or \code{Grid_Matrix}.}
+\item{show_negative}{Boolean. true to show negative water values and
+False to delete them from the graph.}
 }
 \value{
 a \code{ggplot} object

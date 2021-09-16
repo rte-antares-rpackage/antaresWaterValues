@@ -11,6 +11,8 @@ shiny_water_values(simulation_res = NULL, study_path, ...)
 \code{watervalues::runWaterValuesSimulation}}
 
 \item{study_path}{the path of the Antares study}
+
+\item{...}{further arguments passed to or from other methods.}
 }
 \description{
 Open watervalues Calculator in APP Web

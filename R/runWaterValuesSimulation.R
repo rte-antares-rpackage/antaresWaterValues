@@ -133,7 +133,7 @@ for (i in constraint_values) {
   message("#  ------------------------------------------------------------------------")
 
   # run the simulation
-  if(1==2){
+
   antaresEditObject::runSimulation(
     name = sprintf(simulation_name, format(i, decimal.mark = ",")),
     mode = "economy",
@@ -141,7 +141,7 @@ for (i in constraint_values) {
     path_solver = path_solver,
     show_output_on_console = show_output_on_console,
     opts = opts
-  )}
+  )
   simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
   #remove the Binding Constraints
@@ -152,12 +152,11 @@ for (i in constraint_values) {
   sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
   sim_check <- paste0(opts$studyPath,"/output")
   sim_check <- paste(sim_check,sim_name,sep="/")
-  if(1==2){
 
   if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
     stop("Simulation Error. Please check simulation log.")
   }
-    }
+
 }
 
 # remove the fictive area

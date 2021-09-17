@@ -422,12 +422,12 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
         convergence_value <- converged(diff_vect,conv=convergence_criteria)
         convergence_percent <- sprintf((convergence_value*100), fmt = '%#.2f')
 
-
+        if(n_cycl>2){
         if(convergence_value>convergence_rate){
             cat(paste0("\033[0;42m", "        Cycle number:", n_cycl, ",    ==>",convergence_percent,"% Converged <==", "\033[0m \n"))
           break}
 
-        if(n_cycl>2){
+
           if (identical(diff_vect,last_diff_vect)){
           cat(paste0("\033[0;43m", "        Cycle number:", n_cycl, ",    ==>", "Converged with:",convergence_percent,"% <==", "\033[0m \n"))
           break}

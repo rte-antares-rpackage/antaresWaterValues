@@ -86,9 +86,9 @@ constraint_values <- constraint_generator(area,nb_disc_stock,pumping,opts)
 #generate the flow sens constraints
 
 if (match(area, sort(c(area, fictive_area))) == 1) {
-  coeff_nn <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+  coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
 } else {
-  coeff_nn <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
+  coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
 }
 
 
@@ -98,53 +98,17 @@ if (match(area, sort(c(area, fictive_area))) == 1) {
 simulation_names <- vector(mode = "character", length = length(constraint_values))
 for (i in constraint_values) {
 
-  # Implement the flow sens in the study
-  if(i<0){
-  name_hc <- paste0("negative", format(i, decimal.mark = ","))
-
-  antaresEditObject::createBindingConstraint(
-    name = name_hc,
-    enabled = TRUE,
-    operator = "greater",
-    coefficients = -coeff_nn,
-    opts = opts,
-    overwrite = TRUE,
-    timeStep = "hourly"
-  )
-  }else{
-    name_hc <- paste0("nonnegative", format(i, decimal.mark = ","))
-
-    antaresEditObject::createBindingConstraint(
-      name = name_hc,
-      enabled = TRUE,
-      operator = "greater",
-      coefficients = coeff_nn,
-      opts = opts,
-      overwrite = TRUE,
-      timeStep = "hourly"
-    )
-  }
-
   # Prepare simulation parameters
   name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
   constraint_value <- round(i  / 7)
-    # Coefficient
-  if (match(area, sort(c(area, fictive_area))) == 1) {
-    coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
-  } else {
-    coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
-  }
-    # Implement binding constraint
-  opts <- antaresEditObject::createBindingConstraint(
-    name = name_bc,
-    values = data.frame(less = rep(constraint_value, times = 366)),
-    enabled = TRUE,
-    timeStep = "weekly",
-    operator = "less",
-    overwrite = overwrite,
-    coefficients = coeff,
-    opts = opts
-  )
+
+
+  # Implement binding constraint
+
+  generate_constraints(constraint_value,coeff,opts)
+
+
+
 
   iii <- which(num_equal(i, constraint_values))
   message("#  ------------------------------------------------------------------------")
@@ -204,5 +168,69 @@ simulation_res <- list(
   setwd(main_path)}
 
   return(simulation_res)
+
+}
+
+
+
+#' This function generate binding constraints for \code{runWaterValuesSimulation}
+#' @param constrain_value the value of the constraint
+#' @param coeff thesens of the constraint notation in Antares.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+
+
+generate_constraints <- function(constraint_value,coeff,opts){
+
+  if(constraint_value<0){
+    # Implement the flow sens in the study
+
+    opts <- antaresEditObject::createBindingConstraint(
+      name = "Pump",
+      enabled = TRUE,
+      operator = "greater",
+      coefficients = -coeff,
+      opts = opts,
+      overwrite = TRUE,
+      timeStep = "hourly"
+    )
+
+    # Implement binding constraint
+
+    opts <- antaresEditObject::createBindingConstraint(
+      name = name_bc,
+      values = data.frame(less = rep(constraint_value, times = 366)),
+      enabled = TRUE,
+      timeStep = "weekly",
+      operator = "equal",
+      overwrite = overwrite,
+      coefficients = -coeff,
+      opts = opts
+    )
+
+  }else{
+
+   opts <-  antaresEditObject::createBindingConstraint(
+      name = "Turb",
+      enabled = TRUE,
+      operator = "greater",
+      coefficients = coeff,
+      opts = opts,
+      overwrite = TRUE,
+      timeStep = "hourly"
+    )
+
+    opts <- antaresEditObject::createBindingConstraint(
+      name = name_bc,
+      values = data.frame(less = rep(constraint_value, times = 366)),
+      enabled = TRUE,
+      timeStep = "weekly",
+      operator = "less",
+      overwrite = overwrite,
+      coefficients = coeff,
+      opts = opts)
+  }
+
 
 }

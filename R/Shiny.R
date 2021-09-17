@@ -111,7 +111,7 @@ ui <- fluidPage(
              shinyBS::bsTooltip("sim_fictive_area", " Name of the fictive area to create.",
                                 "bottom"),
 
-             textInput("sim_thermal_cluster","Name of the thermal cluster to create."),
+             textInput("sim_thermal_cluster","Name of the thermal cluster to create.",value = "WaterValueCluster"),
 
              shinyBS::bsTooltip("sim_thermal_cluster", " Name of thermal cluster to create which will generate the free power in the fictive area.",
                                 "bottom"),

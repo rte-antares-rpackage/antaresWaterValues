@@ -18,6 +18,7 @@
 #' @param remove_areas 	Character vector of area(s) to remove from the created district.
 #' @param shiny Boolean. True to run the script in shiny mod.
 #' @param pumping Boolean. True to take into account the pumping.
+#' @param launch_simulations Boolean. True to to run the simulations.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -46,7 +47,8 @@ runWaterValuesSimulation <- function(area,
                                      remove_areas=NULL,
                                      opts = antaresRead::simOptions(),
                                      shiny=F,otp_dest=NULL,file_name=NULL,
-                                     pumping=F,...) {
+                                     pumping=F,
+                                     launch_simulations=T,...) {
 
 
 
@@ -98,9 +100,10 @@ for (i in constraint_values) {
 
   # Implement the flow sens in the study
   if(i<0){
+  name_hc <- paste0("negative", format(i, decimal.mark = ","))
 
   antaresEditObject::createBindingConstraint(
-    name = "nonnegative",
+    name = name_hc,
     enabled = TRUE,
     operator = "greater",
     coefficients = -coeff_nn,
@@ -109,8 +112,10 @@ for (i in constraint_values) {
     timeStep = "hourly"
   )
   }else{
+    name_hc <- paste0("nonnegative", format(i, decimal.mark = ","))
+
     antaresEditObject::createBindingConstraint(
-      name = "nonnegative",
+      name = name_hc,
       enabled = TRUE,
       operator = "greater",
       coefficients = coeff_nn,
@@ -147,7 +152,7 @@ for (i in constraint_values) {
   message("#  ------------------------------------------------------------------------")
 
   # run the simulation
-
+  if(launch_simulations){
   antaresEditObject::runSimulation(
     name = sprintf(simulation_name, format(i, decimal.mark = ",")),
     mode = "economy",
@@ -155,12 +160,12 @@ for (i in constraint_values) {
     path_solver = path_solver,
     show_output_on_console = show_output_on_console,
     opts = opts
-  )
+  )}
   simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
   #remove the Binding Constraints
   opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
-  opts <- antaresEditObject::editBindingConstraint(name = "nonnegative", opts = opts,enabled = FALSE)
+  opts <- antaresEditObject::editBindingConstraint(name = name_hc, opts = opts,enabled = FALSE)
 
   #Simulation Control
   sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
@@ -168,16 +173,17 @@ for (i in constraint_values) {
   sim_check <- paste0(opts$studyPath,"/output")
   sim_check <- paste(sim_check,sim_name,sep="/")
 
-  if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
-    stop("Simulation Error. Please check simulation log.")
+  if(launch_simulations){
+    if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
+      stop("Simulation Error. Please check simulation log.")
+    }
   }
-
 }
 
 # remove the fictive area
-
-antaresEditObject::removeArea(fictive_area,opts = opts)
-
+  if(launch_simulations){
+  antaresEditObject::removeArea(fictive_area,opts = opts)
+  }
 # restore hydrostorage
 
 restoreHydroStorage(area = area, opts = opts)

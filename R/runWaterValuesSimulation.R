@@ -90,22 +90,36 @@ if (match(area, sort(c(area, fictive_area))) == 1) {
 }
 
 
-# Implement the flow sens in the study
-
-antaresEditObject::createBindingConstraint(
-  name = "nonnegative",
-  enabled = TRUE,
-  operator = "greater",
-  coefficients = coeff_nn,
-  opts = opts,
-  overwrite = TRUE,
-  timeStep = "hourly"
-)
 
 # Start the simulations
 
 simulation_names <- vector(mode = "character", length = length(constraint_values))
 for (i in constraint_values) {
+
+  # Implement the flow sens in the study
+  if(i<0){
+
+  antaresEditObject::createBindingConstraint(
+    name = "nonnegative",
+    enabled = TRUE,
+    operator = "greater",
+    coefficients = -coeff_nn,
+    opts = opts,
+    overwrite = TRUE,
+    timeStep = "hourly"
+  )
+  }else{
+    antaresEditObject::createBindingConstraint(
+      name = "nonnegative",
+      enabled = TRUE,
+      operator = "greater",
+      coefficients = coeff_nn,
+      opts = opts,
+      overwrite = TRUE,
+      timeStep = "hourly"
+    )
+  }
+
   # Prepare simulation parameters
   name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
   constraint_value <- round(i  / 7)
@@ -146,6 +160,7 @@ for (i in constraint_values) {
 
   #remove the Binding Constraints
   opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
+  opts <- antaresEditObject::editBindingConstraint(name = "nonnegative", opts = opts,enabled = FALSE)
 
   #Simulation Control
   sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))

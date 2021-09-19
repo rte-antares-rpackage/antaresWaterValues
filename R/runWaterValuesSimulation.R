@@ -19,6 +19,7 @@
 #' @param shiny Boolean. True to run the script in shiny mod.
 #' @param pumping Boolean. True to take into account the pumping.
 #' @param launch_simulations Boolean. True to to run the simulations.
+#' @param reset_hydro Boolean. True to reset hydro inflow to 0 before the simulation.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -48,7 +49,8 @@ runWaterValuesSimulation <- function(area,
                                      opts = antaresRead::simOptions(),
                                      shiny=F,otp_dest=NULL,file_name=NULL,
                                      pumping=F,
-                                     launch_simulations=T,...) {
+                                     launch_simulations=T,
+                                     reset_hydro=T,...){
 
 
 
@@ -60,7 +62,7 @@ runWaterValuesSimulation <- function(area,
   assertthat::assert_that(class(opts) == "simOptions")
 
   # restore hydro inflow if there is a previous interepted simulation.
-  restoreHydroStorage(area = area, opts = opts)
+  restoreHydroStorage(area = area, opts = opts,silent = T)
 
 
 
@@ -81,6 +83,7 @@ runWaterValuesSimulation <- function(area,
       thermal_cluster = thermal_cluster,
       overwrite = overwrite,
       remove_areas=remove_areas,
+      reset_hydro=reset_hydro,
       opts = opts
     )
 

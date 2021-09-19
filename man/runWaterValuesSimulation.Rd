@@ -23,6 +23,7 @@ runWaterValuesSimulation(
   file_name = NULL,
   pumping = F,
   launch_simulations = T,
+  reset_hydro = T,
   ...
 )
 }
@@ -64,6 +65,8 @@ will be created from maximum pumping power to the hydro storage maximum and of l
 \item{pumping}{Boolean. True to take into account the pumping.}
 
 \item{launch_simulations}{Boolean. True to to run the simulations.}
+
+\item{reset_hydro}{Boolean. True to reset hydro inflow to 0 before the simulation.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

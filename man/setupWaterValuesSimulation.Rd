@@ -11,6 +11,7 @@ setupWaterValuesSimulation(
   overwrite = FALSE,
   remove_areas = NULL,
   opts = antaresRead::simOptions(),
+  reset_hydro = T,
   ...
 )
 }
@@ -27,6 +28,8 @@ setupWaterValuesSimulation(
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{reset_hydro}{Boolean. True to reset hydro inflow to 0 before the simulation.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

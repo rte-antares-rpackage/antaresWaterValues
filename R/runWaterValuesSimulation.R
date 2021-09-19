@@ -128,7 +128,8 @@ for (i in constraint_values) {
   simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
   #remove the Binding Constraints
-  opts <- disable_constraint(constraint_value,name_bc,opts)
+
+  disable_constraint(constraint_value,name_bc,opts)
 
   #Simulation Control
   sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))

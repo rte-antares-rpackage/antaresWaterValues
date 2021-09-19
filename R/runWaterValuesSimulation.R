@@ -128,8 +128,7 @@ for (i in constraint_values) {
   simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
   #remove the Binding Constraints
-  opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
-  # opts <- antaresEditObject::editBindingConstraint(name = name_hc, opts = opts,enabled = FALSE)
+  disable_constraint(constraint_value,coeff,name_bc,opts)
 
   #Simulation Control
   sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))

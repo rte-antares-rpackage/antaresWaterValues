@@ -1,3 +1,69 @@
+#' This function generate binding constraints for \code{runWaterValuesSimulation}
+#' @param constrain_value the value of the constraint
+#' @param coeff the sens of the constraint notation in Antares.
+#' @param name_bc the name of the constraint.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+
+
+generate_constraints <- function(constraint_value,coeff,name_bc,opts){
+
+  if(constraint_value<0){
+    # Implement the flow sens in the study
+
+    opts <- antaresEditObject::createBindingConstraint(
+      name = "Pump",
+      enabled = TRUE,
+      operator = "greater",
+      coefficients = -coeff,
+      opts = opts,
+      overwrite = TRUE,
+      timeStep = "hourly"
+    )
+
+    # Implement binding constraint
+
+    opts <- antaresEditObject::createBindingConstraint(
+      name = name_bc,
+      values = data.frame(less = rep(constraint_value, times = 366)),
+      enabled = TRUE,
+      timeStep = "weekly",
+      operator = "equal",
+      overwrite = TRUE,
+      coefficients = -coeff,
+      opts = opts
+    )
+
+  }else{
+
+    opts <-  antaresEditObject::createBindingConstraint(
+      name = "Turb",
+      enabled = TRUE,
+      operator = "greater",
+      coefficients = coeff,
+      opts = opts,
+      overwrite = TRUE,
+      timeStep = "hourly"
+    )
+
+    opts <- antaresEditObject::createBindingConstraint(
+      name = name_bc,
+      values = data.frame(less = rep(constraint_value, times = 366)),
+      enabled = TRUE,
+      timeStep = "weekly",
+      operator = "less",
+      overwrite = TRUE,
+      coefficients = coeff,
+      opts = opts)
+  }
+
+
+}
+
+
+
+
 #' Generate the list of constraint values of the link between the fictive area and the real one
 #' @param area The area concerned by the simulation.
 #' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint.

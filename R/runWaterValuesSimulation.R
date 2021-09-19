@@ -105,7 +105,7 @@ for (i in constraint_values) {
 
   # Implement binding constraint
 
-  generate_constraints(constraint_value,coeff,opts)
+  generate_constraints(constraint_value,coeff,name_bc,opts)
 
 
 
@@ -129,7 +129,7 @@ for (i in constraint_values) {
 
   #remove the Binding Constraints
   opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
-  opts <- antaresEditObject::editBindingConstraint(name = name_hc, opts = opts,enabled = FALSE)
+  # opts <- antaresEditObject::editBindingConstraint(name = name_hc, opts = opts,enabled = FALSE)
 
   #Simulation Control
   sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
@@ -171,66 +171,3 @@ simulation_res <- list(
 
 }
 
-
-
-#' This function generate binding constraints for \code{runWaterValuesSimulation}
-#' @param constrain_value the value of the constraint
-#' @param coeff thesens of the constraint notation in Antares.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-
-
-generate_constraints <- function(constraint_value,coeff,opts){
-
-  if(constraint_value<0){
-    # Implement the flow sens in the study
-
-    opts <- antaresEditObject::createBindingConstraint(
-      name = "Pump",
-      enabled = TRUE,
-      operator = "greater",
-      coefficients = -coeff,
-      opts = opts,
-      overwrite = TRUE,
-      timeStep = "hourly"
-    )
-
-    # Implement binding constraint
-
-    opts <- antaresEditObject::createBindingConstraint(
-      name = name_bc,
-      values = data.frame(less = rep(constraint_value, times = 366)),
-      enabled = TRUE,
-      timeStep = "weekly",
-      operator = "equal",
-      overwrite = overwrite,
-      coefficients = -coeff,
-      opts = opts
-    )
-
-  }else{
-
-   opts <-  antaresEditObject::createBindingConstraint(
-      name = "Turb",
-      enabled = TRUE,
-      operator = "greater",
-      coefficients = coeff,
-      opts = opts,
-      overwrite = TRUE,
-      timeStep = "hourly"
-    )
-
-    opts <- antaresEditObject::createBindingConstraint(
-      name = name_bc,
-      values = data.frame(less = rep(constraint_value, times = 366)),
-      enabled = TRUE,
-      timeStep = "weekly",
-      operator = "less",
-      overwrite = overwrite,
-      coefficients = coeff,
-      opts = opts)
-  }
-
-
-}

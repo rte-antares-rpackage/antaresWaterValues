@@ -7,18 +7,19 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @importFrom antaresEditObject editBindingConstraint
+#' @export
 
 disable_constraint <- function(constraint_value,name_bc,opts){
 
-  opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
+  opts_i <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
 
   if(constraint_value<0){
     mod <- "Pump"
   }else{ mod <- "Turb"}
 
-  opts <- antaresEditObject::editBindingConstraint(name = mod, opts = opts,enabled = FALSE)
+  opts_i <- antaresEditObject::editBindingConstraint(name = mod, opts = opts,enabled = FALSE)
 
- return(opts)
+ return(opts_i)
 }
 
 
@@ -35,6 +36,7 @@ disable_constraint <- function(constraint_value,name_bc,opts){
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @export
 
 
 generate_constraints <- function(constraint_value,coeff,name_bc,opts){
@@ -56,7 +58,7 @@ generate_constraints <- function(constraint_value,coeff,name_bc,opts){
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_bc,
-      values = data.frame(less = rep(constraint_value, times = 366)),
+      values = data.frame(equal = rep(constraint_value, times = 366)),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
@@ -101,7 +103,7 @@ generate_constraints <- function(constraint_value,coeff,name_bc,opts){
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#'
+#' @export
 constraint_generator <- function(area,nb_disc_stock,pumping=F,opts)
 {
   max_hydro <- get_max_hydro(area,opts)

@@ -5,15 +5,14 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#'
+#' @param silent Boolean. True to run without messages.
 #' @return An updated list containing various information about the simulation.
 #' @export
 #'
 #' @importFrom assertthat assert_that
 #' @importFrom antaresRead setSimulationPath
 #'
-# @examples
-restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions()) {
+restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
     stop(paste(area, "is not a valid area"))
@@ -33,7 +32,7 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
       )
       unlink(x = path_hydro_storage_backup)
     } else {
-      message("No backup found")
+      if(!silent) message("No backup found")
     }
   } else {
     file.copy(

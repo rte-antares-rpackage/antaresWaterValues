@@ -55,117 +55,122 @@ runWaterValuesSimulation <- function(area,
 
 
 
-#generating the fictive area parameters
+  #generating the fictive area parameters
 
-assertthat::assert_that(class(opts) == "simOptions")
+  assertthat::assert_that(class(opts) == "simOptions")
+
+  # restore hydro inflow if there is a previous interepted simulation.
+  restoreHydroStorage(area = area, opts = opts)
 
 
-fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
-thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
 
-if (!is.null(nb_mcyears)) {
-  antaresEditObject::updateGeneralSettings(nbyears = nb_mcyears, opts = opts)
+
+  fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
+  thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
+
+  if (!is.null(nb_mcyears)) {
+    antaresEditObject::updateGeneralSettings(nbyears = nb_mcyears, opts = opts)
+    }
+
+
+  #create the fictive area
+
+  opts <- setupWaterValuesSimulation(
+      area = area,
+      fictive_area = fictive_area,
+      thermal_cluster = thermal_cluster,
+      overwrite = overwrite,
+      remove_areas=remove_areas,
+      opts = opts
+    )
+
+  # Get max hydro power that can be generated in a week
+
+  constraint_values <- constraint_generator(area,nb_disc_stock,pumping,opts)
+
+  #generate the flow sens constraints
+
+  if (match(area, sort(c(area, fictive_area))) == 1) {
+    coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+  } else {
+    coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
   }
 
 
-#create the fictive area
 
-opts <- setupWaterValuesSimulation(
-    area = area,
-    fictive_area = fictive_area,
-    thermal_cluster = thermal_cluster,
-    overwrite = overwrite,
-    remove_areas=remove_areas,
-    opts = opts
-  )
+  # Start the simulations
 
-# Get max hydro power that can be generated in a week
+  simulation_names <- vector(mode = "character", length = length(constraint_values))
+  for (i in constraint_values) {
 
-constraint_values <- constraint_generator(area,nb_disc_stock,pumping,opts)
-
-#generate the flow sens constraints
-
-if (match(area, sort(c(area, fictive_area))) == 1) {
-  coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
-} else {
-  coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
-}
+    # Prepare simulation parameters
+    name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
+    constraint_value <- round(i  / 7)
 
 
+    # Implement binding constraint
 
-# Start the simulations
-
-simulation_names <- vector(mode = "character", length = length(constraint_values))
-for (i in constraint_values) {
-
-  # Prepare simulation parameters
-  name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
-  constraint_value <- round(i  / 7)
-
-
-  # Implement binding constraint
-
-  generate_constraints(constraint_value,coeff,name_bc,opts)
+    generate_constraints(constraint_value,coeff,name_bc,opts)
 
 
 
 
-  iii <- which(num_equal(i, constraint_values))
-  message("#  ------------------------------------------------------------------------")
-  message(paste0("Running simulation: ", iii, " - ", sprintf(simulation_name, format(i, decimal.mark = ","))))
-  message("#  ------------------------------------------------------------------------")
+    iii <- which(num_equal(i, constraint_values))
+    message("#  ------------------------------------------------------------------------")
+    message(paste0("Running simulation: ", iii, " - ", sprintf(simulation_name, format(i, decimal.mark = ","))))
+    message("#  ------------------------------------------------------------------------")
 
-  # run the simulation
-  if(launch_simulations){
-  antaresEditObject::runSimulation(
-    name = sprintf(simulation_name, format(i, decimal.mark = ",")),
-    mode = "economy",
-    wait = wait,
-    path_solver = path_solver,
-    show_output_on_console = show_output_on_console,
-    opts = opts
-  )}
-  simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
+    # run the simulation
+    if(launch_simulations){
+    antaresEditObject::runSimulation(
+      name = sprintf(simulation_name, format(i, decimal.mark = ",")),
+      mode = "economy",
+      wait = wait,
+      path_solver = path_solver,
+      show_output_on_console = show_output_on_console,
+      opts = opts
+    )}
+    simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
-  #remove the Binding Constraints
+    #remove the Binding Constraints
 
-  disable_constraint(constraint_value,name_bc,opts)
+    disable_constraint(constraint_value,name_bc,opts)
 
-  #Simulation Control
-  sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
-  sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
-  sim_check <- paste0(opts$studyPath,"/output")
-  sim_check <- paste(sim_check,sim_name,sep="/")
+    #Simulation Control
+    sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
+    sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
+    sim_check <- paste0(opts$studyPath,"/output")
+    sim_check <- paste(sim_check,sim_name,sep="/")
 
-  if(launch_simulations){
-    if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
-      stop("Simulation Error. Please check simulation log.")
+    if(launch_simulations){
+      if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
+        stop("Simulation Error. Please check simulation log.")
+      }
     }
   }
-}
 
-# remove the fictive area
+  # remove the fictive area
   if(launch_simulations){
-  antaresEditObject::removeArea(fictive_area,opts = opts)
+    antaresEditObject::removeArea(fictive_area,opts = opts)
   }
-# restore hydrostorage
 
-restoreHydroStorage(area = area, opts = opts)
+   # restore hydrostorage
+   restoreHydroStorage(area = area, opts = opts)
 
-simulation_res <- list(
-  simulation_names = simulation_names,
-  simulation_values = constraint_values
-)
+  simulation_res <- list(
+    simulation_names = simulation_names,
+    simulation_values = constraint_values
+  )
 
- if(!is.null(otp_dest))
-{ main_path <- getwd()
+   if(!is.null(otp_dest))
+  { main_path <- getwd()
 
-  setwd(otp_dest)
+    setwd(otp_dest)
 
-  save(simulation_res,file=paste0(file_name,".RData"))
+    save(simulation_res,file=paste0(file_name,".RData"))
 
 
-  setwd(main_path)}
+    setwd(main_path)}
 
   return(simulation_res)
 

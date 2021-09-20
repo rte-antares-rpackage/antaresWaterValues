@@ -291,6 +291,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                                    counter = i,
                                    inaccessible_states=inaccessible_states)}
 
+
         if(shiny&n_cycl==1&i==52){
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }

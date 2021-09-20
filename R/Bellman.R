@@ -88,7 +88,7 @@
     largest_turb <- round(largest_turb, decimals) ###
 
     largest_pump <- -min(c(niveau_max-(states + value_inflow), P_max), na.rm = TRUE)
-    largest_pump <- round(largest_turb, decimals) ###
+    largest_pump <- round(largest_pump, decimals) ###
 
 
     # the decisions that respect the max possible decision used in simulation constraints
@@ -497,7 +497,7 @@
 
 
   largest_pump <- -min(c(niveau_max-(states + value_inflow), P_max), na.rm = TRUE)
-  largest_pump <- round(largest_turb, decimals) ###
+  largest_pump <- round(largest_pump, decimals) ###
 
 
 

@@ -35,6 +35,7 @@
 #' @param convergence_criteria the value define convergence. if the difference
 #' between two water values is less then this value those values are converged.
 #' @param cycle_limit Define cycles limit when you are in the until_convergence mod.
+#' @param pumping Boolean. True to take into account the pumping.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -237,6 +238,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   P_max <- max_hydro$pump
   max_mcyear <- length(mcyears)
   counter <- 0
+  if(!pumping)P_max <- 0
+
   }
 
   ####
@@ -259,7 +262,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         if(!parallel){
         temp <- Bellman(temp,next_week_values_l = next_week_values,
-                        decision_space,E_max,niveau_max,
+                        decision_space,E_max,P_max,niveau_max,
                         method, max_mcyear = max_mcyear,
                         q_ratio= q_ratio, correct_outliers = correct_outliers,
                         test_week = test_week,counter = i,
@@ -268,7 +271,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
         if(parallel){
 
           temp <- Bellman_parallel(temp,next_week_values_l = next_week_values,
-                          decision_space,E_max,niveau_max,
+                          decision_space,E_max,P_max,niveau_max,
                           method, max_mcyear = max_mcyear,
                           q_ratio= q_ratio, correct_outliers = correct_outliers,
                           test_week = test_week,counter = i,

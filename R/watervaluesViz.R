@@ -27,11 +27,7 @@ waterValuesViz <- function(Data, filtre_ratio=1,show_negative=TRUE) {
   value_nodes <- states_to_percent(value_nodes,states_step_ratio=0.025)
   setnames(value_nodes,"states_round_percent","states")
   p <- ggplot2::ggplot(data = value_nodes)
-  if (add_band) {
-    p <- p + ggplot2::aes(x = weeks, y = states, fill = vu_band)
-  } else {
-    p <- p + ggplot2::aes(x = weeks, y = states, fill = vu)
-  }
+  p <- p + ggplot2::aes(x = weeks, y = states, fill = vu)
   p <- p + ggplot2::geom_tile()
   p <- p + viridis::scale_fill_viridis(na.value = "transparent")
   p <- p + ggplot2::theme_minimal()

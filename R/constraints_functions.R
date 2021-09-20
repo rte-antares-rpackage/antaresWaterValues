@@ -105,8 +105,12 @@ generate_constraints <- function(constraint_value,coeff,name_bc,opts){
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @export
-constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=0.75,opts)
+constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts)
 {
+  if(is.null(pumping_efficiency))
+  { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
+
+
   max_hydro <- get_max_hydro(area,opts)
   res_cap <- get_reservoir_capacity(area,opts)
   max_app <- max( antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)

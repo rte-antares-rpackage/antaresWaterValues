@@ -8,7 +8,7 @@ constraint_generator(
   area,
   nb_disc_stock,
   pumping = F,
-  pumping_efficiency = 0.75,
+  pumping_efficiency = NULL,
   opts
 )
 }

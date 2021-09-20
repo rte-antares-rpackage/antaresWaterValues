@@ -4,7 +4,13 @@
 \alias{constraint_generator}
 \title{Generate the list of constraint values of the link between the fictive area and the real one}
 \usage{
-constraint_generator(area, nb_disc_stock, pumping = F, opts)
+constraint_generator(
+  area,
+  nb_disc_stock,
+  pumping = F,
+  pumping_efficiency = 0.75,
+  opts
+)
 }
 \arguments{
 \item{area}{The area concerned by the simulation.}
@@ -12,6 +18,8 @@ constraint_generator(area, nb_disc_stock, pumping = F, opts)
 \item{nb_disc_stock}{Number of simulation to launch, a vector of energy constraint.}
 
 \item{pumping}{Boolean. True to take into account the pumping.}
+
+\item{pumping_efficiency}{between 0 and 1. the pumping efficiency ratio.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

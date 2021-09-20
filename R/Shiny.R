@@ -90,6 +90,15 @@ ui <- fluidPage(
                  shiny_iconlink() %>%
                    bs_embed_popover(title ="Take into account the pumping in the area.")),
 
+             conditionalPanel(
+               condition="input.pumping",
+               uiOutput("eff")
+             ),
+
+
+             shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
+                                "bottom"),
+
              numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
                           min=1),
              shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
@@ -846,6 +855,11 @@ server <- function(input, output, session) {
     textInput("sim_output_dir","Saving directory",value=global$datapath)
 
   })
+
+  output$eff <- renderUI({ numericInput("efficiency","Efficiency pumping ratio",min=0,max=1,
+                             value=getPumpEfficiency(area=input$sim_area,opts = opts))
+  })
+
   observeEvent(input$simulate,
 
                 {

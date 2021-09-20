@@ -20,6 +20,7 @@
 #' @param pumping Boolean. True to take into account the pumping.
 #' @param launch_simulations Boolean. True to to run the simulations.
 #' @param reset_hydro Boolean. True to reset hydro inflow to 0 before the simulation.
+#' @param pumping_efficiency between 0 and 1. the pumping efficiency ratio.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -50,7 +51,8 @@ runWaterValuesSimulation <- function(area,
                                      shiny=F,otp_dest=NULL,file_name=NULL,
                                      pumping=F,
                                      launch_simulations=T,
-                                     reset_hydro=T,...){
+                                     reset_hydro=T,
+                                     pumping_efficiency=NULL,...){
 
 
 
@@ -64,6 +66,8 @@ runWaterValuesSimulation <- function(area,
   # restore hydro inflow if there is a previous interepted simulation.
   restoreHydroStorage(area = area, opts = opts,silent = T)
 
+  if(is.null(pumping_efficiency))
+   { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
 
 
 
@@ -89,7 +93,7 @@ runWaterValuesSimulation <- function(area,
 
   # Get max hydro power that can be generated in a week
 
-  constraint_values <- constraint_generator(area,nb_disc_stock,pumping,opts)
+  constraint_values <- constraint_generator(area,nb_disc_stock,pumping,pumping_efficiency,opts)
 
   #generate the flow sens constraints
 

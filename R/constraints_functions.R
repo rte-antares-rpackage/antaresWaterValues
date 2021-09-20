@@ -100,17 +100,18 @@ generate_constraints <- function(constraint_value,coeff,name_bc,opts){
 #' @param area The area concerned by the simulation.
 #' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint.
 #' @param pumping Boolean. True to take into account the pumping.
+#' @param pumping_efficiency between 0 and 1. the pumping efficiency ratio.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @export
-constraint_generator <- function(area,nb_disc_stock,pumping=F,opts)
+constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=0.75,opts)
 {
   max_hydro <- get_max_hydro(area,opts)
   res_cap <- get_reservoir_capacity(area,opts)
   max_app <- max( antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
   maxi <- min(max_hydro$turb+max_app,res_cap)
-  mini <- -max_hydro$pump
+  mini <- -max_hydro$pump*pumping_efficiency
   if(pumping){
     constraint_values <- seq(from = mini, to = maxi, length.out = nb_disc_stock)
     constraint_values <- round(constraint_values, 3)

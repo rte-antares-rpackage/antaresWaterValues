@@ -96,6 +96,8 @@ between two water values is less then this value those values are converged.}
 
 \item{cycle_limit}{Define cycles limit when you are in the until_convergence mod.}
 
+\item{pumping}{Boolean. True to take into account the pumping.}
+
 \item{...}{further arguments passed to or from other methods.}
 }
 \value{

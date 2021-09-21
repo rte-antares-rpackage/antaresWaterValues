@@ -325,7 +325,7 @@
       close(pb)
       next_week_values <- temp[weeks==1]$value_node
       watervalues[!is.finite(value_node),value_node:=NaN]
-      build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
+      value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
 
     }
 
@@ -416,7 +416,7 @@
       close(pb)
       next_week_values <- temp[weeks==1]$value_node
       watervalues[!is.finite(value_node),value_node:=NaN]
-      build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
+      value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
 
 
       if(n_cycl>1){
@@ -464,7 +464,6 @@
 
 
 
-   value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
 
   if(shiny){
 

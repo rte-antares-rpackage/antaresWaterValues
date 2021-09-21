@@ -20,7 +20,6 @@
 #' @param pumping Boolean. True to take into account the pumping.
 #' @param launch_simulations Boolean. True to to run the simulations.
 #' @param reset_hydro Boolean. True to reset hydro inflow to 0 before the simulation.
-#' @param pumping_efficiency between 0 and 1. the pumping efficiency ratio.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -30,7 +29,7 @@
 #'
 #' @export
 #' @importFrom assertthat assert_that
-#' @importFrom antaresEditObject createBindingConstraint updateGeneralSettings removeBindingConstraint readIniFile writeIni runSimulation removeArea
+#' @importFrom antaresEditObject createBindingConstraint updateGeneralSettings removeBindingConstraint writeInputTS readIniFile writeIni runSimulation removeArea
 #' @importFrom antaresRead readClusterDesc readInputTS
 #' @importFrom stats setNames
 #'
@@ -51,8 +50,7 @@ runWaterValuesSimulation <- function(area,
                                      shiny=F,otp_dest=NULL,file_name=NULL,
                                      pumping=F,
                                      launch_simulations=T,
-                                     reset_hydro=T,
-                                     pumping_efficiency=NULL,...){
+                                     reset_hydro=T,...){
 
 
 
@@ -66,8 +64,7 @@ runWaterValuesSimulation <- function(area,
   # restore hydro inflow if there is a previous interepted simulation.
   restoreHydroStorage(area = area, opts = opts,silent = T)
 
-  if(is.null(pumping_efficiency))
-   { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
+
 
 
 
@@ -91,9 +88,16 @@ runWaterValuesSimulation <- function(area,
       opts = opts
     )
 
+
   # Get max hydro power that can be generated in a week
 
-  constraint_values <- constraint_generator(area,nb_disc_stock,pumping,pumping_efficiency,opts)
+  constraint_values <- constraint_generator(area,nb_disc_stock,pumping,
+                                            pumping_efficiency=1,opts)
+
+  #add load
+  max_load <- max(abs(constraint_values))*10
+  antaresEditObject::writeInputTS(fictive_area, type = "load", data = matrix(rep(max_load, 8760*nb_mcyears), nrow = 8760))
+
 
   #generate the flow sens constraints
 

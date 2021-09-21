@@ -138,9 +138,13 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   states <- matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1)
 
 
-
-
+  if(is.null(efficiency))
+  {
+    efficiency <- getPumpEfficiency(area = area,opts = opts)
+  }
   decision_space <- simulation_values
+  decision_space <- unlist(lapply(decision_space,FUN = function(x) efficiency_effect(x,efficiency)))
+  decision_space <- round(decision_space)
 
   decimals <- 6
   {
@@ -213,6 +217,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
   # add empty columns ---------------------
   watervalues$value_node <- NA_real_
+  watervalues$transition <- NA_real_
 
 
 
@@ -332,6 +337,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
         watervalues[weeks==i,value_node :=temp$value_node]
+        watervalues[weeks==i,transition :=temp$transition]
+
 
         if (correct_outliers) {
           watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
@@ -348,6 +355,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
       close(pb)
       next_week_values <- temp[weeks==1]$value_node
       watervalues[!is.finite(value_node),value_node:=NaN]
+      build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
 
     }
 
@@ -435,6 +443,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
         watervalues[weeks==i,value_node :=temp$value_node]
+        watervalues[weeks==i,transition :=temp$transition]
+
 
         if (correct_outliers) {
           watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
@@ -451,6 +461,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
       close(pb)
       next_week_values <- temp[weeks==1]$value_node
       watervalues[!is.finite(value_node),value_node:=NaN]
+      build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
 
 
       if(n_cycl>1){
@@ -504,20 +515,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
 
-  value_nodes_dt <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)
-
-
-
-  value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
-  inacc <- is.finite(value_nodes_dt$value_node)
-  temp1 <- value_nodes_dt[weeks==1]$vu
-  temp2 <- value_nodes_dt[weeks>1&weeks<53]$vu
-  value_nodes_dt[weeks==52]$vu <- temp1
-  value_nodes_dt[weeks<52]$vu <- temp2
-
-  value_nodes_dt$inacc <- inacc
-  value_nodes_dt[,vu:=vu*inacc]
-
+   value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
 
   if(shiny){
 
@@ -526,7 +524,12 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
   }
 
 
-
-  print(waterValuesViz(value_nodes_dt))
-  return(value_nodes_dt)
+  result <- list()
+  result$watervalues <- watervalues
+  result$aggregated_results <- value_nodes_dt
+  class(result) <- "detailled and aggregated results of watervalues calculation"
+  return(result)
 }
+
+
+

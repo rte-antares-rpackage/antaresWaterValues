@@ -58,7 +58,7 @@ generate_constraints <- function(constraint_value,coeff,name_bc,opts){
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_bc,
-      values = data.frame(equal = rep(constraint_value, times = 366)),
+      values = data.frame(equal = rep(-constraint_value, times = 366)),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",

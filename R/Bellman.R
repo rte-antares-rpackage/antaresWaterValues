@@ -41,6 +41,7 @@
 
 
     decision_space <- unlist(decision_space, use.names = FALSE)
+    decision_space <- round(decision_space)
     alpha <- getOption(x = "watervalues.alpha", default = 0.0001)
     decimals <- getOption(x = "watervalues.decimals", default = 3)
 
@@ -84,17 +85,18 @@
 
 
     # max possible decision --------
-    largest_turb <- min(c(states + value_inflow, E_max,niveau_max), na.rm = TRUE)
-    largest_turb <- round(largest_turb, decimals) ###
 
-    largest_pump <- -min(c(niveau_max-(states + value_inflow), P_max), na.rm = TRUE)
-    largest_pump <- round(largest_pump, decimals) ###
+    largest_decisions <- largest_decisions(states,value_inflow,niveau_max,E_max,P_max)
+
+    largest_turb <-largest_decisions$largest_turb
+
+    largest_pump <- largest_decisions$largest_pump
+
 
 
     # the decisions that respect the max possible decision used in simulation constraints
-    decisions_current_benef <- decision_space[decision_space <= largest_turb + alpha]
-    decisions_current_benef <- decision_space[decision_space >= largest_pump + alpha]
-    decisions_current_benef <- round(decisions_current_benef, decimals) ###
+
+    decisions_current <- check_largest_decisions(decision_space,largest_decisions,alpha)
 
 
     # Possible next states
@@ -103,148 +105,47 @@
 
 
     # Turbaned energy per transition
-    decisions_benef_to_go <- states - next_states + value_inflow
-    decisions_benef_to_go <- round(decisions_benef_to_go, decimals) ###
 
-    decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go<=largest_turb]
-    decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go<=max(decisions_current_benef)]
+    turbined_energy <- turbined_energy(states,next_states,value_inflow,decisions_current,largest_decisions)
 
-    decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go>=largest_pump]
-    decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go>=min(decisions_current_benef)]
-
-
-    if((largest_turb)>max(decisions_benef_to_go))
-    {
-    turbs <- decisions_current_benef[decisions_current_benef>0]
-    turbs_dec <- decision_space[decision_space>0]
-    decisions_current_benef <- append(decisions_current_benef,
-          turbs_dec[(length(turbs)+1)],after = length(decisions_current_benef))
-    }
-
-    if((largest_pump)<min(decisions_benef_to_go)){
-      #add element to decisions_current_benef
-      pumps <- decisions_current_benef[decisions_current_benef<=0]
-      pumps_dec <- decision_space[decision_space<=0]
-      decisions_current_benef <- append(decisions_current_benef,
-          pumps_dec[(length(pumps_dec)-length(pumps))],after =0)
-    }
-
+    #add element to decisions_current to cover all needed information in the future
+    decisions_cover <-decisions_cover(turbined_energy,decisions_current)
 
     # List of accessible Rewards
-    if(largest_turb>E_max){ provisional_steps <- unique(c(decisions_current_benef, E_max) )
-    }else {provisional_steps <- unique(decisions_current_benef)}
 
-    if(abs(largest_pump)>P_max){ provisional_steps <- unique(c(decisions_current_benef, P_max) )
-    }else {provisional_steps <- unique(decisions_current_benef)}
+    step_reward <- accessible_rewards(decisions_cover,decision_space,value_reward)
 
-    provisional_reward_line <- unique(c(value_reward[seq_along(decisions_current_benef)]))
-
-    decisions <- unique(sort(c(decisions_benef_to_go, decisions_current_benef), decreasing = FALSE))
+    provisional_steps <- step_reward$steps
+    provisional_reward_line <- step_reward$rewards
 
 
-
-    #testing rmv NA
-    provisional_steps <- provisional_steps[!is.na(provisional_steps)]
-
-    if (length(setdiff(decisions_benef_to_go, decisions_current_benef)) > 0) {
-
-      # boucle sur les quantité de turbinaga possible
-      for (index in setdiff(decisions_benef_to_go, decisions_current_benef)) { # index <- 70000 MWh
-
-        # Closest inf simulation constraint
-        before <- provisional_steps[index >= provisional_steps - alpha]
-        before <- before[length(before)]
-
-        # Closest sup simulation constraint
-        after <- provisional_steps[index <= provisional_steps + alpha]
-        after <- after[1]
-
-        # For interpolation
-        remainder <- (index -  before ) / (after - before)
-        # remainder <- round(remainder, decimals) ###
-        # remainder <- abs(remainder - trunc(remainder))
-
-        # index_before <- match(before, provisional_steps)
-        index_before <- which(num_equal(before, provisional_steps))
-        index_before <- round(index_before)
-        # index_after <- match(after, provisional_steps)
-        index_after <- which(num_equal(after, provisional_steps))
-        index_after <- round(index_after)
-
-        # calculate interpolated reward
-        interpolation_current_benef <- provisional_reward_line[index_before]*(1-remainder) + provisional_reward_line[index_after]*remainder
+    decisions <- generate_decisions(turbined_energy,decisions_cover,E_max,P_max)
 
 
-        provisional_steps <- unique(sort(c(index, provisional_steps), decreasing = FALSE))
 
-        new_reward_element <- interpolation_current_benef
-
-
-        # add the reward to the list keeping the increasing order of turbaned energy
-        provisional_reward_line <- c(provisional_reward_line[seq_len(index_before)],
-                                     new_reward_element, provisional_reward_line[index_after:length(provisional_reward_line)])
-
-      } # fin boucle sur  sur les quantité de turbinaga possible
-
-    } # fin if
+    decision_rewards <- generate_decisions_rewards(decisions,step_reward,alpha)
 
 
     # respect the guide graph constraints
-    decisions <- decisions[decisions - alpha <= states + value_inflow - level_low]
 
-    decisions <- decisions[decisions + alpha >= states + value_inflow - level_high]
-
-    decisions <- round(decisions, decimals) ###
+    decisions <-  guide_cs_check(decisions,states,value_inflow,level_high,level_low,alpha)
 
 
-    # initialize
-    tempo <- vector(mode = "numeric", length = length(decisions))
-    count_x <- 0
+    # Bellman calculator
+    Bellman_values <- bellman_calculator(decisions,next_week_values,decision_rewards,states,value_inflow,niveau_max,states_next,alpha,na_rm)
 
 
 
-    for (l in decisions) { # l <- 0
-
-      count_x <- count_x + 1
 
 
-      # Respect Reservoir Capacity
-      if ((states - l + value_inflow) >= niveau_max + alpha) {
-        next
-      }
 
 
-      states_above <- states_next[states_next > (states - l + value_inflow) - alpha]
-      states_below <- states_next[states_next <= (states - l + value_inflow) + alpha]
 
-      next_node_up <- which(num_equal(states_above[length(states_above)], states_next))
-      next_node_down <- which(num_equal(states_below[1], states_next))
-
-      remainder <- 0
-
-      if (!num_equal(next_node_up, next_node_down)) {
-        remainder <- ((states - l + value_inflow) -states_below[1]) / (states_above[length(states_above)] - states_below[1])
-      } else {
-        remainder <- 0
-      }
-
-      # Bellman value of the next week
-      vunw <- next_week_values[next_node_up]
-      # if (!is.finite(vunw))
-      #    vunw <- 0
-      vdnw <- next_week_values[next_node_down]
-       # if (!is.finite(vdnw))
-       #   vdnw <- 0
-      interpolation <- remainder * vunw + (1 - remainder) * vdnw
-
-
-      tempo[count_x] <- sum(c(provisional_reward_line[num_equal(l, provisional_steps)], interpolation), na.rm = na_rm)
+    max_Bell <- max(Bellman_values, na.rm = TRUE)
+    Data_week$value_node[i] <- max_Bell
+    if(length(decisions)>0){
+      Data_week$transition[i] <- decisions[which(Bellman_values==max_Bell)]
     }
-
-
-    Data_week$value_node[i] <- (max(tempo, na.rm = TRUE))
-
-
 
   #----- little test -----
 
@@ -256,7 +157,7 @@
      print(sprintf("Decisions :  "))
      print(decisions)
      print(sprintf("Rewards : "))
-     print(tempo)
+     print(Bellman_values)
      print(sprintf("BELLMAN >>>>> %f",Data_week$value_node[i]))
      writeLines("#######--------------------###########\n")
    }}
@@ -502,9 +403,9 @@
 
 
   # the decisions that respect the max possible decision used in simulation constraints
-  decisions_current_benef <- decision_space[decision_space <= largest_turb + alpha]
-  decisions_current_benef <- decision_space[decision_space >= largest_pump + alpha]
-  decisions_current_benef <- round(decisions_current_benef, decimals) ###
+  decisions_current <- decision_space[decision_space <= largest_turb + alpha]
+  decisions_current <- decision_space[decision_space >= largest_pump + alpha]
+  decisions_current <- round(decisions_current, decimals) ###
 
 
   # Possible next states
@@ -513,53 +414,53 @@
 
 
   # Turbaned energy per transition
-  decisions_benef_to_go <- states - next_states + value_inflow
-  decisions_benef_to_go <- round(decisions_benef_to_go, decimals) ###
+  turbined_energy <- states - next_states + value_inflow
+  turbined_energy <- round(turbined_energy, decimals) ###
 
-  decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go<=largest_turb]
-  decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go<=max(decisions_current_benef)]
+  turbined_energy <- turbined_energy[turbined_energy<=largest_turb]
+  turbined_energy <- turbined_energy[turbined_energy<=max(decisions_current)]
 
-  decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go>=largest_pump]
-  decisions_benef_to_go <- decisions_benef_to_go[decisions_benef_to_go>=min(decisions_current_benef)]
+  turbined_energy <- turbined_energy[turbined_energy>=largest_pump]
+  turbined_energy <- turbined_energy[turbined_energy>=min(decisions_current)]
 
 
-  if((largest_turb)>max(decisions_benef_to_go))
+  if((largest_turb)>max(turbined_energy))
   {
-    turbs <- decisions_current_benef[decisions_current_benef>0]
+    turbs <- decisions_current[decisions_current>0]
     turbs_dec <- decision_space[decision_space>0]
-    decisions_current_benef <- append(decisions_current_benef,
-                                      turbs_dec[(length(turbs)+1)],after = length(decisions_current_benef))
+    decisions_current <- append(decisions_current,
+                                      turbs_dec[(length(turbs)+1)],after = length(decisions_current))
   }
 
-  if((largest_pump)<min(decisions_benef_to_go)){
-    #add element to decisions_current_benef
-    pumps <- decisions_current_benef[decisions_current_benef<=0]
+  if((largest_pump)<min(turbined_energy)){
+    #add element to decisions_current
+    pumps <- decisions_current[decisions_current<=0]
     pumps_dec <- decision_space[decision_space<=0]
-    decisions_current_benef <- append(decisions_current_benef,
+    decisions_current <- append(decisions_current,
                                       pumps_dec[(length(pumps_dec)-length(pumps))],after =0)
   }
 
 
   # List of accessible Rewards
-  if(largest_turb>E_max){ provisional_steps <- unique(c(decisions_current_benef, E_max) )
-  }else {provisional_steps <- unique(decisions_current_benef)}
+  if(largest_turb>E_max){ provisional_steps <- unique(c(decisions_current, E_max) )
+  }else {provisional_steps <- unique(decisions_current)}
 
-  if(abs(largest_pump)>P_max){ provisional_steps <- unique(c(decisions_current_benef, P_max) )
-  }else {provisional_steps <- unique(decisions_current_benef)}
+  if(abs(largest_pump)>P_max){ provisional_steps <- unique(c(decisions_current, P_max) )
+  }else {provisional_steps <- unique(decisions_current)}
 
-  provisional_reward_line <- unique(c(value_reward[seq_along(decisions_current_benef)]))
+  provisional_reward_line <- unique(c(value_reward[seq_along(decisions_current)]))
 
-  decisions <- unique(sort(c(decisions_benef_to_go, decisions_current_benef), decreasing = FALSE))
+  decisions <- unique(sort(c(turbined_energy, decisions_current), decreasing = FALSE))
 
 
 
   #testing rmv NA
   provisional_steps <- provisional_steps[!is.na(provisional_steps)]
 
-  if (length(setdiff(decisions_benef_to_go, decisions_current_benef)) > 0) {
+  if (length(setdiff(turbined_energy, decisions_current)) > 0) {
 
     # boucle sur les quantité de turbinaga possible
-    for (index in setdiff(decisions_benef_to_go, decisions_current_benef)) { # index <- 70000 MWh
+    for (index in setdiff(turbined_energy, decisions_current)) { # index <- 70000 MWh
 
       # Closest inf simulation constraint
       before <- provisional_steps[index >= provisional_steps - alpha]

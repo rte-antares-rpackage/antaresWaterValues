@@ -271,12 +271,12 @@ ui <- fluidPage(
               shiny_iconlink() %>%
                 bs_embed_popover(title ="Outliers in Bellman values are replaced by spline interpolations.")),
 
-          materialSwitch("parallel","Use parallel computing",
-                         value=F,status = "success")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title ="Take advantage of your CPU cores to calculate faster the water values.")),
-
+          # materialSwitch("parallel","Use parallel computing",
+          #                value=F,status = "success")%>%
+          #   shinyInput_label_embed(
+          #     shiny_iconlink() %>%
+          #       bs_embed_popover(title ="Take advantage of your CPU cores to calculate faster the water values.")),
+          #
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),
@@ -854,7 +854,7 @@ server <- function(input, output, session) {
   })
 
   output$eff <- renderUI({ numericInput("efficiency","Efficiency pumping ratio",min=0,max=1,
-                             value=getPumpEfficiency(area=input$sim_area,opts = opts))
+                             value=getPumpEfficiency(area=input$Area,opts = opts))
   })
 
   observeEvent(input$simulate,
@@ -925,8 +925,8 @@ server <- function(input, output, session) {
         convergence_rate = input$convergence_rate,
         convergence_criteria = input$convergence_criteria,
         cycle_limit = input$cycle_limit,
-        efficiency = input$eff
-        )
+        efficiency = input$efficiency
+        )$aggregated_results
 
       isolate(rv$results <- results)
       show_alert(

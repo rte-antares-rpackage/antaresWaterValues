@@ -1,7 +1,7 @@
 Type: Package
 Package: watervalues
 Title: Generating water values for Antares
-Version: 0.1.0
+Version: 0.2.0
 Author: Dhia Gharsallaoui
 Maintainer: The package maintainer <safedhia@gmail.com>
 Description: This package aims at generating water values for Antares.
@@ -38,10 +38,7 @@ Imports:
     grDevices (>= 4.1.0),
     methods (>= 4.1.0),
     stats (>= 4.1.0),
-    DT (>= 0.18),
-    doParallel (>= 1.0.16),
-    parallelly (>= 1.27.0),
-    foreach (>= 1.5.1)
+    DT (>= 0.18)
 Suggests: 
     testthat (>= 3.0.0),
     knitr,

@@ -50,13 +50,10 @@
 #' @importFrom dplyr left_join
 #' @import data.table
 #' @importFrom shinybusy show_modal_spinner remove_modal_spinner
-#' @importFrom parallelly supportsMulticore
-#' @importFrom parallel detectCores makeCluster  stopCluster
-#' @import doParallel
 #'
 
 
-Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cycle = 1L,
+  Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,
                              week_53 = 0,
                              states_step_ratio = 0.01,
@@ -68,7 +65,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              q_ratio=0.5,
                              monotonic_bellman=FALSE,
                              test_week=NULL,
-                             parallel=FALSE,
                              opts = antaresRead::simOptions(),
                              shiny=F,
                              inaccessible_states=F,
@@ -76,7 +72,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                              convergence_rate=0.9,
                              convergence_criteria=1,
                              cycle_limit=10,
-                             pumping=F,
+                             pumping=F,efficiency=1,
                         ...) {
 
 
@@ -222,17 +218,7 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
 
 
-  if(parallel){
-  # prepare paralell cluster
-  para_meth <- "PSOCK"  # if windows
-  if( parallelly::supportsMulticore()){
-    para_meth <- "FORK" # if Unix
-  }
-  cores=parallel::detectCores()
-  cl <-parallel::makeCluster(cores[1]-1, type = para_meth)
-  doParallel::registerDoParallel(cl)
 
-}
 
   # prepare next function inputs
   {
@@ -265,7 +251,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         temp <- watervalues[weeks==i]
 
-        if(!parallel){
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
                         decision_space=decision_space,
@@ -278,23 +263,8 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                         correct_outliers = correct_outliers,
                         test_week = test_week,
                         counter = i,
-                        inaccessible_states=inaccessible_states)}
+                        inaccessible_states=inaccessible_states)
 
-        if(parallel){
-
-          temp <- Bellman_parallel(Data_week=temp,
-                                   next_week_values_l = next_week_values,
-                                   decision_space=decision_space,
-                                   E_max=E_max,
-                                   P_max=P_max,
-                                   niveau_max=niveau_max,
-                                   method=method,
-                                   max_mcyear = max_mcyear,
-                                   q_ratio= q_ratio,
-                                   correct_outliers = correct_outliers,
-                                   test_week = test_week,
-                                   counter = i,
-                                   inaccessible_states=inaccessible_states)}
 
 
         if(shiny&n_cycl==1&i==52){
@@ -372,7 +342,6 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
 
         temp <- watervalues[weeks==i]
 
-        if(!parallel){
           temp <- Bellman(Data_week=temp,
                           next_week_values_l = next_week_values,
                           decision_space=decision_space,
@@ -385,23 +354,9 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
                           correct_outliers = correct_outliers,
                           test_week = test_week,
                           counter = i,
-                          inaccessible_states=inaccessible_states)}
+                          inaccessible_states=inaccessible_states)
 
-        if(parallel){
 
-          temp <- Bellman_parallel(Data_week=temp,
-                                   next_week_values_l = next_week_values,
-                                   decision_space=decision_space,
-                                   E_max=E_max,
-                                   P_max=P_max,
-                                   niveau_max=niveau_max,
-                                   method=method,
-                                   max_mcyear = max_mcyear,
-                                   q_ratio= q_ratio,
-                                   correct_outliers = correct_outliers,
-                                   test_week = test_week,
-                                   counter = i,
-                                   inaccessible_states=inaccessible_states)}
 
         if(shiny&n_cycl==1&i==52){
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
@@ -500,17 +455,11 @@ Grid_Matrix <- function(area, simulation_names, simulation_values = NULL, nb_cyc
       last_wv <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
 
       }
+    }# end else
 
 
 
 
-  }
-
-  #stop parallel cluster
-  if(parallel)
-     { parallel::stopCluster(cl)
-      unregister()
-  }
 
 
 

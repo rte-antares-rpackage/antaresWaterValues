@@ -21,7 +21,6 @@ Grid_Matrix(
   q_ratio = 0.5,
   monotonic_bellman = FALSE,
   test_week = NULL,
-  parallel = FALSE,
   opts = antaresRead::simOptions(),
   shiny = F,
   inaccessible_states = F,
@@ -30,6 +29,7 @@ Grid_Matrix(
   convergence_criteria = 1,
   cycle_limit = 10,
   pumping = F,
+  efficiency = 1,
   ...
 )
 }
@@ -75,8 +75,6 @@ level in the calculation.}
 \item{test_week}{the week number u want to see it's calculation information
 in the console}
 
-\item{parallel}{Boolean. True to use parallel computing.}
-
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
@@ -99,6 +97,8 @@ between two water values is less then this value those values are converged.}
 \item{pumping}{Boolean. True to take into account the pumping.}
 
 \item{...}{further arguments passed to or from other methods.}
+
+\item{parallel}{Boolean. True to use parallel computing.}
 }
 \value{
 a \code{data.table}

@@ -90,14 +90,6 @@ ui <- fluidPage(
                  shiny_iconlink() %>%
                    bs_embed_popover(title ="Take into account the pumping in the area.")),
 
-             conditionalPanel(
-               condition="input.pumping",
-               uiOutput("eff")
-             ),
-
-
-             shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
-                                "bottom"),
 
              numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
                           min=1),
@@ -260,6 +252,11 @@ ui <- fluidPage(
           shinyBS::bsTooltip("mcyears", " Monte-Carlo years to consider in water values calculation.",
                              "bottom"),
 
+          uiOutput("eff"),
+
+
+          shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
+                             "bottom"),
 
           materialSwitch("inaccessible_states","Eliminate all inaccessible states",
                          value=F,status = "success")%>%
@@ -922,13 +919,13 @@ server <- function(input, output, session) {
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio,
-        parallel = input$parallel,
         shiny=T,
         inaccessible_states = input$inaccessible_states,
         until_convergence = input$until_convergence,
         convergence_rate = input$convergence_rate,
         convergence_criteria = input$convergence_criteria,
-        cycle_limit = input$cycle_limit
+        cycle_limit = input$cycle_limit,
+        efficiency = input$eff
         )
 
       isolate(rv$results <- results)

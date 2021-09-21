@@ -1,4 +1,25 @@
 
+#' An intermediate function in bellman values calculation.
+#' Select the next week bellman values of a position from all bellman values.
+#' @param  next_week_values_l list of all bellman values of the next week.
+#' @param max_mcyear the maximum number of scenarios.
+#' @param i the number of row in the table of calculation.
+#' @export
+
+next_week_value <- function(next_week_values_l,max_mcyear,i){
+
+  year_rows <- length(next_week_values_l)/max_mcyear
+
+  r <- (i)%/%year_rows
+  if(i%%year_rows==0) r <- r-1
+  next_week_values <- next_week_values_l[((r*year_rows)+1):(((r+1)*year_rows))]
+
+  return(next_week_values)
+
+
+}
+
+
 # max possible decision --------
 
 

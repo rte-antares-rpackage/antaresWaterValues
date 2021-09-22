@@ -78,6 +78,12 @@ ui <- fluidPage(
                  shiny_iconlink() %>%
                    bs_embed_popover(title = "area(s) to remove from the created district.")),
 
+             textInput("solver_path","Solver path "
+                       ,value="xxxxxxx/bin/antares-8.0-solver.exe"),
+
+             shinyBS::bsTooltip("solver_path", "The path of the Antares solver you found in your Antares installation directory.",
+                                "bottom"),
+
 
              textInput("sim_simulation_name","Simulation name "
                        ,value="weekly_water_amount_%s"),
@@ -851,6 +857,7 @@ server <- function(input, output, session) {
                      simulation_name = input$sim_simulation_name,
                      nb_disc_stock = input$sim_nb_disc_stock,
                      nb_mcyears = input$sim_mcyears,
+                     path_solver =input$solver_path,
                      binding_constraint = input$sim_binding_constraint,
                      fictive_area = input$sim_fictive_area,
                      thermal_cluster = input$sim_thermal_cluster,

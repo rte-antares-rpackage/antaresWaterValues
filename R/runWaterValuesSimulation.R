@@ -57,15 +57,22 @@ runWaterValuesSimulation <- function(area,
 
 
 
-  #generating the fictive area parameters
-
+  #check the study is well selected
   assertthat::assert_that(class(opts) == "simOptions")
+
+  # check the name format
+
+  if(!endsWith(simulation_name,"%s")){
+    simulation_name <- paste0(simulation_name,"%s")
+  }
+
 
   # restore hydro inflow if there is a previous interepted simulation.
   restoreHydroStorage(area = area, opts = opts,silent = T)
 
 
 
+  #generating the fictive area parameters
 
 
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)

@@ -157,7 +157,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   max_hydro <- get_max_hydro(area,opts)
   res_cap <- get_reservoir_capacity(area,opts)
   max_app <- max( antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
-  maxi <- min(max_hydro$turb+max_app,res_cap)
+  maxi <- min(max_hydro$turb,res_cap+max_app)
   mini <- -max_hydro$pump*pumping_efficiency
   if(pumping){
     constraint_values <- seq(from = mini, to = maxi, length.out = nb_disc_stock)

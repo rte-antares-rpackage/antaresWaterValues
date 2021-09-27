@@ -155,6 +155,13 @@ runWaterValuesSimulation <- function(area,
 
     if(launch_simulations){
       if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
+        # remove the fictive area
+        if(launch_simulations){
+          antaresEditObject::removeArea(fictive_area,opts = opts)
+        }
+
+        # restore hydrostorage
+        restoreHydroStorage(area = area, opts = opts)
         stop("Simulation Error. Please check simulation log.")
       }
     }

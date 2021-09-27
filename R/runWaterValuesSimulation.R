@@ -4,9 +4,9 @@
 #' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.
 #' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint
 #'  will be created from 0 to the hydro storage maximum and of length this parameter.
-  #' @param nb_mcyears Number of Monte Carlo years to simulate.
+#' @param nb_mcyears Number of Monte Carlo years to simulate.
 #' @param binding_constraint Name of the binding constraint.
-# @param constraint_values Vector of energy constraints on the link between the area and the fictive area.
+#  constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
 #' @param thermal_cluster Name of the thermal cluster to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
 #' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.

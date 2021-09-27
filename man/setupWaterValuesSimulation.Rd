@@ -12,6 +12,7 @@ setupWaterValuesSimulation(
   remove_areas = NULL,
   opts = antaresRead::simOptions(),
   reset_hydro = T,
+  link_from = NULL,
   ...
 )
 }
@@ -30,6 +31,9 @@ setupWaterValuesSimulation(
 \code{antaresRead::setSimulationPath}}
 
 \item{reset_hydro}{Boolean. True to reset hydro inflow to 0 before the simulation.}
+
+\item{link_from}{area that will be linked to the created fictive area. If it's
+\code{NULL} it will takes the area concerned by the simulation.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

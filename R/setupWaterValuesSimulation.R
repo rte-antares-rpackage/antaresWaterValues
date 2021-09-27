@@ -6,6 +6,8 @@
 #' @param overwrite If area or cluster already exists, overwrite them ?
 #' @param remove_areas 	Character vector of area(s) to remove from the created district.
 #' @param reset_hydro Boolean. True to reset hydro inflow to 0 before the simulation.
+#' @param link_from area that will be linked to the created fictive area. If it's
+#' \code{NULL} it will takes the area concerned by the simulation.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -27,7 +29,8 @@ setupWaterValuesSimulation <- function(area,
                                        overwrite = FALSE,
                                        remove_areas = NULL,
                                        opts = antaresRead::simOptions(),
-                                       reset_hydro=T,...) {
+                                       reset_hydro=T,
+                                       link_from=NULL,...) {
   assertthat::assert_that(class(opts) == "simOptions")
 
   # Create fictive area
@@ -83,9 +86,14 @@ setupWaterValuesSimulation <- function(area,
   })
 
   # Create link
+  from_area <- link_from
+  if(is.null(link_from)){
+    from_area <- area
+  }
+
   suppressWarnings({
     opts <- antaresEditObject::createLink(
-      from = area,
+      from = from_area,
       to = fictive_area,
       propertiesLink = antaresEditObject::propertiesLinkOptions(transmission_capacities = "infinite"), #
       dataLink = NULL,

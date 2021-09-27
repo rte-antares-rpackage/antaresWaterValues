@@ -16,6 +16,7 @@ runWaterValuesSimulation(
   wait = TRUE,
   show_output_on_console = FALSE,
   overwrite = FALSE,
+  link_from = NULL,
   remove_areas = NULL,
   opts = antaresRead::simOptions(),
   shiny = F,
@@ -47,6 +48,9 @@ will be created from 0 to the hydro storage maximum and of length this parameter
 \item{show_output_on_console}{Argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
 \item{overwrite}{If area or cluster already exists, should they be overwritten?}
+
+\item{link_from}{area that will be linked to the created fictive area. If it's
+\code{NULL} it will takes the area concerned by the simulation.}
 
 \item{remove_areas}{Character vector of area(s) to remove from the created district.}
 

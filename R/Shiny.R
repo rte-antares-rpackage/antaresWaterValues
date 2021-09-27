@@ -102,6 +102,16 @@ ui <- fluidPage(
              shinyBS::bsTooltip("sim_mcyears", " Number of Monte Carlo years to simulate.",
                                 "bottom"),
 
+             pickerInput("link_from",
+                         "Choose the area to link with the fictive area",
+                         opts$areaList,
+                         options = list(
+                           `live-search` = TRUE)) %>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(title = "The area that will be linked with the created fictive area.")),
+
+
              textInput("sim_binding_constraint","Name of the binding constraint "
                        ,value="WeeklyWaterAmount"),
              shinyBS::bsTooltip("sim_binding_constraint", " Name of the binding constraint of energy on the link between the area and the fictive area.",
@@ -863,6 +873,7 @@ server <- function(input, output, session) {
                      thermal_cluster = input$sim_thermal_cluster,
                      remove_areas=input$remove_areas,
                      overwrite = T,
+                     link_from=input$link_from,
                      opts = opts,
                      shiny=T,
                      otp_dest=input$sim_output_dir,

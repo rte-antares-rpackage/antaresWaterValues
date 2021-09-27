@@ -1,3 +1,46 @@
+#' simulations names and values generator
+#' @param area The area concerned by the simulation.
+#' @param simulation_name The used name of the simulation.
+#' @param nb_disc_stock Number of simulation launched.
+#' @param pumping Boolean. True to take into account the pumping.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @note This function have no side effects on the Antares study used.
+#' It's used in case you forget to save the output of script \code{runWaterValuesSimulation} to generate the output.
+#' The results are meaningless unless you already launched the \code{runWaterValuesSimulation} with the same parameters.
+#' @export
+simulation_names_values <- function(area,simulation_name,nb_disc_stock,
+                                    pumping=F,opts = antaresRead::simOptions()){
+
+
+  if(!endsWith(simulation_name,"%s")){
+    simulation_name <- paste0(simulation_name,"%s")
+  }
+
+  constraint_values <- constraint_generator(area,nb_disc_stock,pumping,
+                                            pumping_efficiency=1,opts)
+
+  simulation_names <- vector(mode = "character", length = length(constraint_values))
+
+  simulation_names <- lapply(constraint_values,FUN = naming <- function(x) {
+    sprintf(simulation_name, format(x, decimal.mark = ","))
+  })
+
+  simulation_names <- unlist(simulation_names)
+
+  simulation_res <- list(
+    simulation_names = simulation_names,
+    simulation_values = constraint_values
+  )
+
+  return(simulation_res)
+}
+
+
+
+
 
 
 #' This function disable binding constraints for \code{runWaterValuesSimulation}

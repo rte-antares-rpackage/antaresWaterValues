@@ -62,8 +62,8 @@ runWaterValuesSimulation <- function(area,
 
   # check the name format
 
-  if(!endsWith(simulation_name,"%s")){
-    simulation_name <- paste0(simulation_name,"%s")
+  if(!endsWith(simulation_name,"_%s")){
+    simulation_name <- paste0(simulation_name,"_%s")
   }
 
 

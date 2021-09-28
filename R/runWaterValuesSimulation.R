@@ -29,7 +29,9 @@
 #'
 #' @export
 #' @importFrom assertthat assert_that
-#' @importFrom antaresEditObject createBindingConstraint updateGeneralSettings removeBindingConstraint writeInputTS readIniFile writeIni runSimulation removeArea
+#' @importFrom antaresEditObject createBindingConstraint updateGeneralSettings
+#' removeBindingConstraint writeInputTS readIniFile
+#' writeIni runSimulation removeArea editArea
 #' @importFrom antaresRead readClusterDesc readInputTS
 #' @importFrom stats setNames
 #'
@@ -81,7 +83,13 @@ runWaterValuesSimulation <- function(area,
 
   antaresEditObject::setPlaylist(playlist = play_years,opts = opts)
 
+  #assert the weekly output of the area:
 
+  antaresEditObject::editArea(name = area,
+                              filtering =
+                                filteringOptions(filter_synthesis = c("hourly" , "weekly", "annual"),
+                                                 filter_year_by_year = c("hourly", "weekly", "annual"))
+                              ,opts = opts)
 
   #generating the fictive area parameters
 

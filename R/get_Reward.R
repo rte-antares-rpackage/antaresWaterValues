@@ -22,7 +22,7 @@ get_Reward <- function(simulation_names = NULL,ind=1, pattern = NULL,
                        opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
-  assertthat::assert_that(district_name %in% antaresRead::getDistricts())
+  assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
   studyPath <- opts$studyPath
 
   # just a test if there is a simulation done or not

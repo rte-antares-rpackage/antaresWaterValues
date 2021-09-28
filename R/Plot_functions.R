@@ -63,10 +63,20 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
   reward$Group.1 <- NULL
   temp <- reward[week_id,]
   temp <- as.data.table(t(temp))
-  temp$"Turbining capacity" <- t
-  temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
-  setnames(temp,"value","Reward")
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+
+
+
+  if(max(t)>100000){
+    temp$"Turbining capacity GWh" <- t/1000
+    temp <- melt(temp,id.vars="Turbining capacity GWh",variable.name="week")
+    setnames(temp,"value","Reward")
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity GWh`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+  }else{
+    temp$"Turbining capacity" <- t
+    temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
+    setnames(temp,"value","Reward")
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+  }
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward week"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
   if(length(unique(temp$week))>10){
@@ -109,9 +119,16 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
   # temp$"Legend" <- reward$legend
   temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
   setnames(temp,"value","Reward")
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+  if(max(t)>100000){
+    temp$"Turbining capacity GWh" <- t/1000
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity GWh`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+  }else{
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+  }
+
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward week  MC Year %s",paste(as.character(week_id),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
-  if(length(unique(temp$week))>10){
+
+ if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2:: theme(legend.position="none")
   }
   print(p1)

@@ -8,7 +8,8 @@ plot_reward_mc(
   reward_base,
   week_id,
   Mc_year,
-  sim_name_pattern = "weekly_water_amount_"
+  sim_name_pattern = "weekly_water_amount_",
+  constraints_values = NULL
 )
 }
 \arguments{

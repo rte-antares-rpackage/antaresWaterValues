@@ -30,16 +30,17 @@ build_data_watervalues <- function(watervalues,inaccessible_states,statesdt,rese
 
 #' Calculate water values from Bellman values
 #' @param watervalues an intermediate result in Grid_Matrix contains the bellman values
-#' @param inaccessible_states Boolean. True to delete unaccessible states of any scenario in the result.
+#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
 #' @importFrom dplyr left_join
 #' @export
-value_node_gen <- function(watervalues,inaccessible_states=F,statesdt,reservoir){
+value_node_gen <- function(watervalues,inaccessible_states=1,statesdt,reservoir){
 
     # group the years using the mean
-    if(inaccessible_states){
-      value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node)),
+    if(inaccessible_states<1){
+      value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node,inaccessible_states)),
                                     by = list(weeks, statesid)]
     }else{
       value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
@@ -137,12 +138,23 @@ mean_finite <- function(x) {
 #' Calculate the mean if there is no infinite or missing value.
 #' Return \code{-Inf} in the other case.
 #' @param x numeric vector whose mean is wanted.
+#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
 #' @export
-mean_or_inf <- function(x){
+mean_or_inf <- function(x,inaccessible_states){
+  if(inaccessible_states==0){
   if(any(is.infinite(x)|any(is.nan(x)))){
     return(-Inf)
   }else{
     return(mean(x, na.rm = TRUE))
+  }}
+
+  nb_inaccessible_states <- sum((is.infinite(x))|(is.nan(x)))
+
+  if((nb_inaccessible_states/length(x))>=inaccessible_states){
+    return(-Inf)
+  }else{
+    return(mean_finite(x))
   }
 
 }
@@ -153,10 +165,26 @@ mean_or_inf <- function(x){
 #' Return \code{-Inf} in the other case.
 #' @param x numeric vector whose quantile is wanted.
 #' @param q_ratio Numeric in [0,1]. Probability of the quantile.
+#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
 #' @importFrom stats quantile
 #' @export
-quantile_or_inf <- function(x,q_ratio){
-  if(any(is.infinite(x))|any(is.nan(x))){
+quantile_or_inf <- function(x,q_ratio,inaccessible_states=0){
+
+
+  if(inaccessible_states==0){
+
+    if(any(is.infinite(x))|any(is.nan(x))){
+
+      return(-Inf)
+
+    }else{
+
+      return(stats::quantile(x,q_ratio))
+    }}
+
+  nb_inaccessible_states <- sum((is.infinite(x))|(is.nan(x)))
+  if((nb_inaccessible_states/length(x))>=inaccessible_states){
     return(-Inf)
   }else{
     return(stats::quantile(x,q_ratio))

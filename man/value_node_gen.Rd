@@ -4,12 +4,13 @@
 \alias{value_node_gen}
 \title{Calculate water values from Bellman values}
 \usage{
-value_node_gen(watervalues, inaccessible_states = F, statesdt, reservoir)
+value_node_gen(watervalues, inaccessible_states = 1, statesdt, reservoir)
 }
 \arguments{
 \item{watervalues}{an intermediate result in Grid_Matrix contains the bellman values}
 
-\item{inaccessible_states}{Boolean. True to delete unaccessible states of any scenario in the result.}
+\item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
+For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.}
 
 \item{statesdt}{an intermediate result in Grid_Matrix contains the states dicretization}
 

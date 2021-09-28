@@ -4,7 +4,12 @@
 \alias{plot_reward}
 \title{Plot the reward and return the results in table}
 \usage{
-plot_reward(reward_base, week_id, sim_name_pattern = "weekly_water_amount_")
+plot_reward(
+  reward_base,
+  week_id,
+  sim_name_pattern = "weekly_water_amount_",
+  constraints_values = NULL
+)
 }
 \arguments{
 \item{reward_base}{A data.table contains the rewards.

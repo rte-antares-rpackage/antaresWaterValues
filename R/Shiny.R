@@ -263,11 +263,10 @@ ui <- fluidPage(
           shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
                              "bottom"),
 
-          materialSwitch("inaccessible_states","Eliminate all inaccessible states",
-                         value=F,status = "success")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title = "Delete each inaccessible states in a scenario in the result for all of the others scenarios.")),
+          sliderInput("inaccessible_states","Eliminate all inaccessible states",
+                         value=1,min = 0,max = 1),
+
+          shinyBS::bsTooltip("inaccessible_states","Delete each inaccessible states in a scenario in the result for all of the others scenarios.","bottom"),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",

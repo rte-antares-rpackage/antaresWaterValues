@@ -26,8 +26,8 @@
 #' by spline interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
 #' @param parallel Boolean. True to use parallel computing.
-#' @param inaccessible_states Boolean. True to delete inaccessible states of
-#'  any scenario in the result.
+#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
 #' @param until_convergence Boolean.TRUE to repeat cycle until convergence or
 #'  attending the limit.
 #' @param convergence_rate from 0 to 1. Define the convergence level from which
@@ -67,7 +67,7 @@
                              test_week=NULL,
                              opts = antaresRead::simOptions(),
                              shiny=F,
-                             inaccessible_states=F,
+                             inaccessible_states=1,
                              until_convergence=F,
                              convergence_rate=0.9,
                              convergence_criteria=1,

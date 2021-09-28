@@ -27,7 +27,8 @@
   #' @param counter Numeric of length 1. number of the week in calculation.
   #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
   #'   interpolations. Defaults to FALSE.
-  #' @param inaccessible_states Boolean. True to delete inaccessible states of any scenario in the result.
+  #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
+  #' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
   #' @param ... further arguments passed to or from other methods.
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @importFrom stats ave quantile
@@ -36,7 +37,7 @@
 
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,
-                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=F,...){
+                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=1,...){
 
 
 
@@ -182,8 +183,8 @@
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
-    if(inaccessible_states){
-      Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean_or_inf)
+    if(inaccessible_states<1){
+      Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) mean_or_inf(x,inaccessible_states))
     }else{
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean_finite)
     }
@@ -194,8 +195,8 @@
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
-    if(inaccessible_states){
-    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) quantile_or_inf(x,q_ratio))
+    if(inaccessible_states<1){
+    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) quantile_or_inf(x,q_ratio,inaccessible_states))
     }else{
     Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio))
 

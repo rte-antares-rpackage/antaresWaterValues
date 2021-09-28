@@ -1004,7 +1004,7 @@ server <- function(input, output, session) {
                     spsComps::shinyCatch({
                     reward_dt <- get_Reward(simulation_res()$simulation_names,
                                             district_name =input$district_name_rew,
-                                            opts)
+                                            opts=opts)
                     rv$reward_dt <- reward_dt
                     shinybusy::remove_modal_spinner()
                     show_alert(
@@ -1022,7 +1022,7 @@ server <- function(input, output, session) {
       {week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
        Mc_year <- input$Mc_year[1]:input$Mc_year[2]
       if(input$param_rew=="r")
-      {plot_reward(rv$reward_dt,week_id_rew,input$simulation_name_pattern)
+      {plot_reward(rv$reward_dt,week_id_rew,input$simulation_name_pattern,constraints_values=simulation_res()$simulation_values)
       }else{
         if(input$param_rew=="rv")
           {plot_reward_variation(rv$reward_dt,week_id_rew)

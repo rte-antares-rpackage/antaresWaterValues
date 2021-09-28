@@ -64,6 +64,8 @@ get_Reward <- function(simulation_names = NULL,ind=1, pattern = NULL,
   setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
 
 
+  ind <- which(endsWith(vars,"_0"))
+
   reward <- reward[
     , (vars) := lapply(.SD, FUN = function(x) {
       get(vars[ind]) - x

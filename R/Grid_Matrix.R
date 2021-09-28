@@ -460,9 +460,12 @@
 
 
 
-
-
-
+  if(any(value_nodes_dt$vu<0.5&!is.nan(value_nodes_dt$vu)))
+  {
+    value_nodes_dt[is.finite(vu)&vu<0.5,vu:=0.5]
+    message("Minimal water value is 0.5 lesser valuers are changed automatically to 0.5.
+            This change is done to assure the well functionning with Antares hydro model")
+  }
 
 
   if(shiny){

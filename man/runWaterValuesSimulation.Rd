@@ -35,7 +35,7 @@ runWaterValuesSimulation(
 \item{nb_disc_stock}{Number of simulation to launch, a vector of energy constraint
 will be created from maximum pumping power to the hydro storage maximum and of length this parameter.}
 
-\item{nb_mcyears}{Number of Monte Carlo years to simulate.}
+\item{nb_mcyears}{Number of Monte Carlo years to simulate or a vector of years indexes to launch.}
 
 \item{binding_constraint}{Name of the binding constraint.}
 

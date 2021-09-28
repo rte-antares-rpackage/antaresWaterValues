@@ -4,7 +4,7 @@
 #' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.
 #' @param nb_disc_stock Number of simulation to launch, a vector of energy constraint
 #'  will be created from maximum pumping power to the hydro storage maximum and of length this parameter.
-#' @param nb_mcyears Number of Monte Carlo years to simulate.
+#' @param nb_mcyears Number of Monte Carlo years to simulate or a vector of years indexes to launch.
 #' @param binding_constraint Name of the binding constraint.
 # @param constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
@@ -67,8 +67,19 @@ runWaterValuesSimulation <- function(area,
   }
 
 
-  # restore hydro inflow if there is a previous interepted simulation.
+  # restore hydro inflow if there is a previous intercepted simulation.
   restoreHydroStorage(area = area, opts = opts,silent = T)
+
+  # MC years
+  assertthat::assert_that(is.numeric(nb_mcyears)==TRUE)
+
+  if(length(nb_mcyears)==1){
+      play_years <- seq(1,nb_mcyears)
+  }else{
+      play_years <- nb_mcyears
+    }
+
+  antaresEditObject::setPlaylist(playlist = play_years,opts = opts)
 
 
 
@@ -78,9 +89,6 @@ runWaterValuesSimulation <- function(area,
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
   thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
 
-  if (!is.null(nb_mcyears)) {
-    antaresEditObject::updateGeneralSettings(nbyears = nb_mcyears, opts = opts)
-    }
 
 
   #create the fictive area
@@ -103,7 +111,7 @@ runWaterValuesSimulation <- function(area,
 
   #add load
   max_load <- max(abs(constraint_values))*10
-  antaresEditObject::writeInputTS(fictive_area, type = "load", data = matrix(rep(max_load, 8760*nb_mcyears), nrow = 8760))
+  antaresEditObject::writeInputTS(fictive_area, type = "load", data = matrix(rep(max_load, 8760*max(nb_mcyears)), nrow = 8760))
 
 
   #generate the flow sens constraints

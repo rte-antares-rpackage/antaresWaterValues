@@ -146,6 +146,58 @@ monotonic_VU <- function(results_dt,noise_ratio=1)
   }
 
 
+
+
+
+#' Force monotonic water values
+#'
+#' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
+#' @import data.table
+#' @importFrom stats quantile
+#' @return a \code{data.table}
+#' @export
+
+monotonic_JM <- function(results_dt)
+
+{
+  results <- copy(results_dt)
+  results[vu==Inf|is.na(vu),vu:=NaN]
+
+
+  for (i in 1:52){
+
+    temp <- results[weeks==i]
+    maxi <- max(temp$vu,na.rm = TRUE)
+    meanw <- mean(temp$vu,na.rm = TRUE)
+    q9 <- stats::quantile(temp$vu,0.95,na.rm = TRUE)
+    counter <- 0
+
+    m <- 0
+    M <- 0
+
+    for (j in 1:nrow(temp)){
+
+      if (is.na(temp$vu[j])) next
+
+      if(m==0)m <- j
+
+      M <- j
+
+    }
+
+
+    for (t in m:(M-1)){
+      if(temp$vu[t+1]>temp$vu[t])temp$vu[t+1] <-temp$vu[t]
+    }
+    results[weeks==i,vu :=temp$vu]
+  }
+
+  return(results)
+}
+
+
+
+
 #' Remove outliers water Values
 #'
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}

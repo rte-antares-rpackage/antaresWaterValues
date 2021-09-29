@@ -12,21 +12,33 @@
 #' @export
 
 
-plot_reward_variation <- function(reward_base,week_id)
+plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,output=FALSE)
 {
+
+
   reward <- stats::aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
   # temp <- diff(unlist(reward[week_id,]))
   temp <- reward[week_id,]
   temp <- as.data.table(t(temp))
+
+  # t <- names_reward(reward_base,sim_name_pattern)
+
+
   t <- seq(from=1,to=(nrow(temp)-1))
   temp <- sapply(temp, diff)
-
   temp <- data.table(t,temp)
   # setnames(temp,"temp","Reward Transition")
   setnames(temp,"t","Turbining transistion")
+
   temp <- melt(temp,id.vars="Turbining transistion",variable.name="week")
   setnames(temp,"value","Reward transition")
+  if(!is.null(constraints_values)){
+    energy_quantity <- diff(constraints_values)
+    temp$`Reward transition` <-  temp$`Reward transition`/energy_quantity}
+
+
+
 
   p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
@@ -34,6 +46,7 @@ plot_reward_variation <- function(reward_base,week_id)
     p1 <- p1+ggplot2:: theme(legend.position="none")
   }
   print(p1)
+  if(output) return(temp)
   return(p1)
 }
 
@@ -50,7 +63,7 @@ plot_reward_variation <- function(reward_base,week_id)
 #' @return a \code{ggplot} object
 #' @export
 
-plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_",constraints_values=NULL)
+plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_",constraints_values=NULL,output=FALSE)
 {
   # t <- names_reward(reward_base,sim_name_pattern)
   if(is.null(constraints_values)){
@@ -83,6 +96,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
      p1 <- p1+ggplot2:: theme(legend.position="none")
     }
   print(p1)
+  if(output)return(temp)
   return(p1)
 }
 

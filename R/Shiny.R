@@ -266,7 +266,7 @@ ui <- fluidPage(
           sliderInput("inaccessible_states","Eliminate all inaccessible states",
                          value=1,min = 0,max = 1),
 
-          shinyBS::bsTooltip("inaccessible_states","Delete each inaccessible states in a scenario in the result for all of the others scenarios.","bottom"),
+          shinyBS::bsTooltip("inaccessible_states","Tolerance of inaccessible states. For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.","bottom"),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
@@ -422,6 +422,8 @@ NB:  - Negative and positive values are affected by this filter.
                   color = "primary",
                   block = T
                 ),
+                plotOutput("reward_second_plot")
+
 
               )
 
@@ -551,12 +553,20 @@ NB:  - Negative and positive values are affected by this filter.
 
                 h3(strong("Force Monotonic")),
 
+                h4("Using permutation"),
                 switchInput("force_monotonic",
                             value=F, offStatus = "danger",
                             onStatus = "success")%>%
                   shinyInput_label_embed(
                     shiny_iconlink() %>%
                       bs_embed_popover(title ="this filter do a permutation of water values to assure that the water values become decreasing with the reservoir level.")),
+                h4("Using replacement"),
+                switchInput("force_monotonic_JM",
+                            value=F, offStatus = "danger",
+                            onStatus = "success")%>%
+                  shinyInput_label_embed(
+                    shiny_iconlink() %>%
+                      bs_embed_popover(title ="this filter replace a water value by the previous state value if he is bigger water values to assure that the water values become decreasing with the reservoir level.")),
 
 
 
@@ -1024,7 +1034,7 @@ server <- function(input, output, session) {
       {plot_reward(rv$reward_dt,week_id_rew,input$simulation_name_pattern,constraints_values=simulation_res()$simulation_values)
       }else{
         if(input$param_rew=="rv")
-          {plot_reward_variation(rv$reward_dt,week_id_rew)
+          {plot_reward_variation(rv$reward_dt,week_id_rew,constraints_values=simulation_res()$simulation_values)
         }else{
 
         if(input$param_rew=="r1")
@@ -1041,8 +1051,27 @@ server <- function(input, output, session) {
 }
        )
 
-    output$rewardplot <- renderPlot(rewardplot())
+    reward_var_plot <- reactive({
 
+      week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
+      Mc_year <- input$Mc_year[1]:input$Mc_year[2]
+
+      if(input$param_rew=="r1")
+      {plot_reward_variation_mc(rv$reward_dt,week_id_rew,
+                                Mc_year)
+      }else{
+
+        plot_reward_variation(rv$reward_dt,week_id_rew,constraints_values=simulation_res()$simulation_values)
+      }
+
+
+    })
+
+
+
+
+    output$rewardplot <- renderPlot(rewardplot())
+    output$reward_second_plot <- renderPlot(reward_var_plot())
     output$download_reward_plot <- downloadHandler(
       filename = function() {
         paste('Reward-', Sys.Date(), '.png', sep='')
@@ -1101,13 +1130,19 @@ server <- function(input, output, session) {
         if(input$force_monotonic){
           monotonic_VU(results_temp())
         }else{
-          results_temp()
+          if(input$force_monotonic_JM){
+            monotonic_JM(results_temp())
+          }else{
+          results_temp()}
         }
       }else{
         if(input$force_monotonic){
           monotonic_VU(post_result())
         }else{
-          post_result()
+          if(input$force_monotonic_JM){
+            monotonic_JM(post_result())
+          }else{
+          post_result()}
         }
      }
 

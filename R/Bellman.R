@@ -28,7 +28,7 @@
   #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
   #'   interpolations. Defaults to FALSE.
   #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-  #' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
+  #' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
   #' @param ... further arguments passed to or from other methods.
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @importFrom stats ave quantile

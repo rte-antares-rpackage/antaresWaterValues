@@ -89,9 +89,9 @@ in the console}
 \item{shiny}{Boolean. True to run the script in shiny mod.}
 
 \item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
-For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.}
+For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
 
-\item{until_convergence}{Boolean.TRUE to repeat cycle until convergence or
+\item{until_convergence}{Boolean. TRUE to repeat cycle until convergence or
 attending the limit.}
 
 \item{convergence_rate}{from 0 to 1. Define the convergence level from which
@@ -104,9 +104,9 @@ between two water values is less then this value those values are converged.}
 
 \item{pumping}{Boolean. True to take into account the pumping.}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{efficiency}{in [0,1]. efficient ratio of pumping.}
 
-\item{parallel}{Boolean. True to use parallel computing.}
+\item{...}{further arguments passed to or from other methods.}
 }
 \value{
 a \code{data.table}

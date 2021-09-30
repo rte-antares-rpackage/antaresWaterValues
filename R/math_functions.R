@@ -31,7 +31,7 @@ build_data_watervalues <- function(watervalues,inaccessible_states,statesdt,rese
 #' Calculate water values from Bellman values
 #' @param watervalues an intermediate result in Grid_Matrix contains the bellman values
 #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
 #' @importFrom dplyr left_join

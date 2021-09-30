@@ -29,10 +29,9 @@
 #' @param correct_outliers If TRUE, outliers in Bellman values are replaced
 #' by spline interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
-#' @param parallel Boolean. True to use parallel computing.
 #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
-#' @param until_convergence Boolean.TRUE to repeat cycle until convergence or
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
+#' @param until_convergence Boolean. TRUE to repeat cycle until convergence or
 #'  attending the limit.
 #' @param convergence_rate from 0 to 1. Define the convergence level from which
 #'  we suppose that no need to continue another cycle..
@@ -40,6 +39,7 @@
 #' between two water values is less then this value those values are converged.
 #' @param cycle_limit Define cycles limit when you are in the until_convergence mod.
 #' @param pumping Boolean. True to take into account the pumping.
+#' @param efficiency in [0,1]. efficient ratio of pumping.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}

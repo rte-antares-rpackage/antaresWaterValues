@@ -44,7 +44,7 @@ simulation_names_values <- function(area,simulation_name,nb_disc_stock,
 
 
 #' This function disable binding constraints for \code{runWaterValuesSimulation}
-#' @param constrain_value the value of the constraint
+#' @param constraint_value the value of the constraint
 #' @param name_bc the name of the constraint.
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -73,7 +73,7 @@ disable_constraint <- function(constraint_value,name_bc,opts){
 
 
 #' This function generate binding constraints for \code{runWaterValuesSimulation}
-#' @param constrain_value the value of the constraint
+#' @param constraint_value the value of the constraint
 #' @param coeff the sens of the constraint notation in Antares.
 #' @param name_bc the name of the constraint.
 #' @param opts

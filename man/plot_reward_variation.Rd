@@ -16,6 +16,10 @@ plot_reward_variation(
 Obtained using the function get_Reward()}
 
 \item{week_id}{Numeric of length 1. number of the week to plot.}
+
+\item{constraints_values}{the value of the constraint}
+
+\item{output}{Boolean. TRUE to return the table of values with the plot.}
 }
 \value{
 a \code{ggplot} object

@@ -205,7 +205,7 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
     provisional_steps <- decision_rewards$steps
     provisional_reward_line <- decision_rewards$rewards
 
-    for (l in decisions) { # l <- 0
+    for (l in decisions) {
 
       count_x <- count_x + 1
 
@@ -233,11 +233,9 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
 
       # Bellman value of the next week
       vunw <- next_week_values[next_node_up]
-      # if (!is.finite(vunw))
-      #    vunw <- 0
+
       vdnw <- next_week_values[next_node_down]
-      # if (!is.finite(vdnw))
-      #   vdnw <- 0
+
       interpolation <- remainder * vunw + (1 - remainder) * vdnw
 
 

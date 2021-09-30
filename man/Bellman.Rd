@@ -66,7 +66,7 @@ interpolations. Defaults to FALSE.}
 \item{counter}{Numeric of length 1. number of the week in calculation.}
 
 \item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
-For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.}
+For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

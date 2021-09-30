@@ -5,6 +5,8 @@
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
+#' @param constraints_values the value of the constraint
+#' @param output Boolean. TRUE to return the table of values with the plot.
 #' @importFrom grDevices rgb
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
@@ -53,6 +55,8 @@ plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,ou
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
+#' @param constraints_values the value of the constraint
+#' @param output Boolean. TRUE to return the table of values with the plot.
 #' @param sim_name_pattern the name of simulations used in \code{runWaterValuesSimulation()}
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
@@ -105,6 +109,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #' @param sim_name_pattern the name of simulations used in \code{runWaterValuesSimulation()}
+#' @param constraints_values the value of the constraint
 #' @importFrom grDevices rgb
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object

@@ -7,14 +7,14 @@
 generate_constraints(constraint_value, coeff, name_bc, opts)
 }
 \arguments{
+\item{constraint_value}{the value of the constraint}
+
 \item{coeff}{the sens of the constraint notation in Antares.}
 
 \item{name_bc}{the name of the constraint.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
-
-\item{constrain_value}{the value of the constraint}
 }
 \description{
 This function generate binding constraints for \code{runWaterValuesSimulation}

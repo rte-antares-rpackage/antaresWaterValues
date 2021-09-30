@@ -86,7 +86,8 @@ decisions_cover <- function(turbined_energy,decisions_current){
                               pumps_dec[(length(pumps_dec))],after =0)
   }
 
-  return(decisions_cover)
+  return(decisions_current)
+  # return(decisions_cover)
 }
 
 
@@ -127,9 +128,12 @@ generate_decisions_rewards <- function(decisions,step_reward,alpha)
 
   provisional_steps <- step_reward$steps
   provisional_reward_line <- step_reward$rewards
-
-
-  if (length(setdiff(decisions, provisional_steps)) > 0) {
+  if(length(provisional_reward_line)<2)browser()
+  if(length(provisional_steps)<2)browser()
+  if(is.null(provisional_reward_line))browser()
+  if(length(provisional_reward_line)<5)browser()
+  # print(decisions)
+    if (length(setdiff(decisions, provisional_steps)) > 0) {
 
     # boucle sur les quantité de turbinaga possible
     for (index in setdiff(decisions, provisional_steps)) { # index <- 70000 MWh
@@ -142,6 +146,14 @@ generate_decisions_rewards <- function(decisions,step_reward,alpha)
       # Closest sup simulation constraint
       after <- provisional_steps[index <= provisional_steps + alpha]
       after <- after[1]
+      # print(sprintf("after : %s",after))
+      # print(sprintf("before : %s",before))
+      #
+      # print(sprintf("index : %s",index))
+      #
+      # print(sprintf("provisional_steps : %s",provisional_steps))
+      # print(sprintf("decisions : %s",decisions))
+      # print(sprintf("provisional_reward_line : %s",provisional_reward_line))
 
       # For interpolation
       remainder <- (index -  before ) / (after - before)

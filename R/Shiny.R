@@ -214,7 +214,7 @@ ui <- fluidPage(
 
           conditionalPanel(
             condition = "input.method=='quantile'",
-            sliderInput("q_ratio",label=NULL,min=0,max=1,value=0.5),
+            sliderInput("q_ratio",label=NULL,min=0,max=100,value=50,post  = " %"),
           ),
           shinyBS::bsTooltip("q_ratio", " the bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
                              "bottom"),
@@ -236,7 +236,7 @@ ui <- fluidPage(
 
           conditionalPanel(
             condition="input.until_convergence",
-            sliderInput("convergence_rate","Convergence goal",max=1,min=0,step=0.01,value=0.9),
+            sliderInput("convergence_rate","Convergence goal",max=100,min=0,value=90,post  = " %"),
             numericInput("convergence_criteria","convergence landmark",value=1),
             numericInput("cycle_limit","Number of Cycles limit ",value=10)
             ),
@@ -274,10 +274,10 @@ ui <- fluidPage(
           shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
                              "bottom"),
 
-          sliderInput("inaccessible_states","Eliminate all inaccessible states",
-                         value=1,min = 0,max = 1),
+          sliderInput("inaccessible_states","Eliminate inaccessible states",
+                         value=100,min = 0,max = 100,post  = " %",),
 
-          shinyBS::bsTooltip("inaccessible_states","Tolerance of inaccessible states. For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.","bottom"),
+          shinyBS::bsTooltip("inaccessible_states","Tolerance of inaccessible states. For example if equal to 90% we delete the state if this states is inaccessible by 90% of the scenarios.","bottom"),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
@@ -312,7 +312,7 @@ NB:  - Negative and positive values are affected by this filter.
           conditionalPanel(
             condition = "input.filter",
             sliderInput("filtre_ratio",label="Filter extreme water values ratio",min=0,
-                        max=1,value=1),
+                        max=100,value=100,post  = " %"),
           ),
           shinyBS::bsTooltip("filtre_ratio", "The filter ratio define the percent to keep from water values eliminating the rest (extreme negatives and positives)",
                              "bottom"),
@@ -939,11 +939,11 @@ server <- function(input, output, session) {
         mcyears=input$mcyears[1]:input$mcyears[2],
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
-        q_ratio=input$q_ratio,
+        q_ratio=input$q_ratio/100,
         shiny=T,
-        inaccessible_states = input$inaccessible_states,
+        inaccessible_states = input$inaccessible_states/100,
         until_convergence = input$until_convergence,
-        convergence_rate = input$convergence_rate,
+        convergence_rate = input$convergence_rate/100,
         convergence_criteria = input$convergence_criteria,
         cycle_limit = input$cycle_limit,
         efficiency = input$efficiency
@@ -971,7 +971,7 @@ server <- function(input, output, session) {
 
     watervalues <- eventReactive(input$plot,
                                  {waterValuesViz(rv$results,
-                                    filtre_ratio =input$filtre_ratio,
+                                    filtre_ratio =input$filtre_ratio/100,
                                     show_negative=input$show_negative)})
 
     output$Watervalues <- renderPlot(watervalues())

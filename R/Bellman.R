@@ -142,7 +142,7 @@
 
 
 
-    max_Bell <- max(Bellman_values, na.rm = TRUE)
+    max_Bell <- suppressWarnings(max(Bellman_values, na.rm = TRUE))
     Data_week$value_node[i] <- max_Bell
     if(length(decisions)>0){
       Data_week$transition[i] <- decisions[which(Bellman_values==max_Bell)]

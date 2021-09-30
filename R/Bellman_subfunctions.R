@@ -241,6 +241,7 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
 
       Bellman_values[count_x] <- sum(c(provisional_reward_line[num_equal(l, provisional_steps)], interpolation), na.rm = na_rm)
     }
+    if(length(Bellman_values)<1)warning("Oups! I fell into an inaccessible state, But it's OK :)")
 
     return(Bellman_values)
 

@@ -5,9 +5,10 @@
 #' @param full_imputation boolean. use 'max_cost' and 'min_cost' to impute the
 #' missing values
 #' @param impute_method impute method. check methods in \code{help(mice)}
-#' @param fix boolean. Fill missing values with constant values
+#' @param fix Boolean. Fill missing values with constant values
 #' @param min_vu minimal water value to use in fix strategy
 #' @param max_vu maximal water value to use in fix strategy
+#' @param blocker Boolean False to launch two times the post_process function recursively.
 #' @import data.table
 #' @importFrom mice mice complete
 #' @importFrom dplyr select
@@ -16,20 +17,21 @@
 #' @export
 
 post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FALSE,
-                         impute_method='pmm',fix=F,min_vu=0,max_vu=1000){
+                         impute_method='pmm',fix=F,min_vu=0,max_vu=1000,blocker=F){
 
   results <- copy(results_dt)
   results[vu==Inf|is.na(vu),vu:=NA]
   maxid <- max(results$statesid)
   q3 <- stats::quantile(results$statesid,0.75)
-
+  if(!fix){
   results[vu>max_cost,vu:=NA]
-  results[vu<min_cost,vu:=NA]
+  results[vu<min_cost,vu:=NA]}
 
   # results[vu<-down_cost,vu:=NA]
 
   if(fix){
-
+    if(!is.numeric(min_vu))min_vu <- min(results$vu,na.rm = T)
+    if(!is.numeric(max_vu))max_vu <- min(results$vu,na.rm = T)
     results[states>level_high,vu:=min_vu]
     results[states<level_low,vu:=max_vu]
     results$nvu <- NA_real_
@@ -42,6 +44,10 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
     }
     results[is.na(vu),vu:=nvu]
     results$nvu <- NULL
+    results[vu<0.5,vu:=0.5]
+    if(!blocker){
+    results <- post_process(results,max_cost,min_cost,full_imputation,
+                             impute_method,fix,min_vu,max_vu,blocker=T)}
     return(results)
 
   }
@@ -90,6 +96,11 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
     setTxtProgressBar(pb = pb, value = i)
   }
   close(pb)
+  results[vu<0.5,vu:=0.5]
+  if(!blocker){
+  results <- post_process(results,max_cost=,min_cost,full_imputation,
+                          impute_method,fix,min_vu,max_vu,blocker=T)
+  }
   return(results)
 
 }

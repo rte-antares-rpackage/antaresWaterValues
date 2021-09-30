@@ -21,7 +21,7 @@ get_Reward <- function(simulation_names = NULL, pattern = NULL,
                        opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
-  assertthat::assert_that(district_name %in% antaresRead::getDistricts())
+  assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
   studyPath <- opts$studyPath
 
   # just a test if there is a simulation done or not
@@ -61,9 +61,13 @@ get_Reward <- function(simulation_names = NULL, pattern = NULL,
   reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
   vars <- simulation_names # setdiff(names(reward), c("timeId", "mcYear"))
   setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
+
+
+  ind <- which(endsWith(vars,"_0"))
+
   reward <- reward[
     , (vars) := lapply(.SD, FUN = function(x) {
-      get(vars[1]) - x
+      get(vars[ind]) - x
     }),
     .SDcols = vars
   ]

@@ -8,7 +8,8 @@ plot_reward_mc(
   reward_base,
   week_id,
   Mc_year,
-  sim_name_pattern = "weekly_water_amount_"
+  sim_name_pattern = "weekly_water_amount_",
+  constraints_values = NULL
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ Obtained using the function get_Reward()}
 \item{Mc_year}{Numeric of length 1. number of thr MC year to plot}
 
 \item{sim_name_pattern}{the name of simulations used in \code{runWaterValuesSimulation()}}
+
+\item{constraints_values}{the value of the constraint}
 }
 \value{
 a \code{ggplot} object

@@ -28,7 +28,8 @@ waterValuesViz <- function(Data, filtre_ratio=1,show_negative=TRUE) {
   setnames(value_nodes,"states_round_percent","states")
   p <- ggplot2::ggplot(data = value_nodes)
   p <- p + ggplot2::aes(x = weeks, y = states, fill = vu)
-    p <- p + ggplot2::geom_tile()
+  p <- p + ggplot2::geom_tile()
+
   p <- p + viridis::scale_fill_viridis(na.value = "transparent")
   p <- p + ggplot2::theme_minimal()
   p <- p + ggplot2::labs(x = "Weeks", y = "States")

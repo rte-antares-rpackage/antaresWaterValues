@@ -12,7 +12,8 @@ post_process(
   impute_method = "pmm",
   fix = F,
   min_vu = 0,
-  max_vu = 1000
+  max_vu = 1000,
+  blocker = F
 )
 }
 \arguments{
@@ -27,11 +28,13 @@ missing values}
 
 \item{impute_method}{impute method. check methods in \code{help(mice)}}
 
-\item{fix}{boolean. Fill missing values with constant values}
+\item{fix}{Boolean. Fill missing values with constant values}
 
 \item{min_vu}{minimal water value to use in fix strategy}
 
 \item{max_vu}{maximal water value to use in fix strategy}
+
+\item{blocker}{Boolean False to launch two times the post_process function recursively.}
 }
 \value{
 a \code{data.table}

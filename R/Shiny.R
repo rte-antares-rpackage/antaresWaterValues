@@ -91,6 +91,12 @@ ui <- fluidPage(
              shinyBS::bsTooltip("sim_simulation_name", " The name of the simulation, add %s in the end to add constraints values to the names.",
                                 "bottom"),
 
+             materialSwitch("pumping","Activate Pumping",value=F,status = "success")%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(title ="Take into account the pumping in the area.")),
+
+
              numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
                           min=1),
              shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
@@ -122,7 +128,7 @@ ui <- fluidPage(
              shinyBS::bsTooltip("sim_fictive_area", " Name of the fictive area to create.",
                                 "bottom"),
 
-             textInput("sim_thermal_cluster","Name of the thermal cluster to create."),
+             textInput("sim_thermal_cluster","Name of the thermal cluster to create.",value = "WaterValueCluster"),
 
              shinyBS::bsTooltip("sim_thermal_cluster", " Name of thermal cluster to create which will generate the free power in the fictive area.",
                                 "bottom"),
@@ -262,12 +268,16 @@ ui <- fluidPage(
           shinyBS::bsTooltip("mcyears", " Monte-Carlo years to consider in water values calculation.",
                              "bottom"),
 
+          uiOutput("eff"),
 
-          materialSwitch("inaccessible_states","Eliminate all inaccessible states",
-                         value=F,status = "success")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title = "Delete each inaccessible states in a scenario in the result for all of the others scenarios.")),
+
+          shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
+                             "bottom"),
+
+          sliderInput("inaccessible_states","Eliminate all inaccessible states",
+                         value=1,min = 0,max = 1),
+
+          shinyBS::bsTooltip("inaccessible_states","Tolerance of inaccessible states. For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.","bottom"),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
@@ -275,12 +285,6 @@ ui <- fluidPage(
             shinyInput_label_embed(
               shiny_iconlink() %>%
                 bs_embed_popover(title ="Outliers in Bellman values are replaced by spline interpolations.")),
-
-          materialSwitch("parallel","Use parallel computing",
-                         value=F,status = "success")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title ="Take advantage of your CPU cores to calculate faster the water values.")),
 
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
@@ -423,6 +427,8 @@ NB:  - Negative and positive values are affected by this filter.
                   color = "primary",
                   block = T
                 ),
+                plotOutput("reward_second_plot")
+
 
               )
 
@@ -552,12 +558,20 @@ NB:  - Negative and positive values are affected by this filter.
 
                 h3(strong("Force Monotonic")),
 
+                h4("Using permutation"),
                 switchInput("force_monotonic",
                             value=F, offStatus = "danger",
                             onStatus = "success")%>%
                   shinyInput_label_embed(
                     shiny_iconlink() %>%
                       bs_embed_popover(title ="this filter do a permutation of water values to assure that the water values become decreasing with the reservoir level.")),
+                h4("Using replacement"),
+                switchInput("force_monotonic_JM",
+                            value=F, offStatus = "danger",
+                            onStatus = "success")%>%
+                  shinyInput_label_embed(
+                    shiny_iconlink() %>%
+                      bs_embed_popover(title ="this filter replace a water value by the previous state value if he is bigger water values to assure that the water values become decreasing with the reservoir level.")),
 
 
 
@@ -857,6 +871,11 @@ server <- function(input, output, session) {
     textInput("sim_output_dir","Saving directory",value=global$datapath)
 
   })
+
+  output$eff <- renderUI({ numericInput("efficiency","Efficiency pumping ratio",min=0,max=1,
+                             value=getPumpEfficiency(area=input$Area,opts = opts))
+  })
+
   observeEvent(input$simulate,
 
                 {
@@ -877,7 +896,8 @@ server <- function(input, output, session) {
                      opts = opts,
                      shiny=T,
                      otp_dest=input$sim_output_dir,
-                     file_name=input$file_name)})})
+                     file_name=input$file_name,
+                     pumping = input$pumping)})})
 
 
 
@@ -920,14 +940,14 @@ server <- function(input, output, session) {
         reservoir_capacity=NULL,
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio,
-        parallel = input$parallel,
         shiny=T,
         inaccessible_states = input$inaccessible_states,
         until_convergence = input$until_convergence,
         convergence_rate = input$convergence_rate,
         convergence_criteria = input$convergence_criteria,
-        cycle_limit = input$cycle_limit
-        )
+        cycle_limit = input$cycle_limit,
+        efficiency = input$efficiency
+        )$aggregated_results
 
       isolate(rv$results <- results)
       show_alert(
@@ -999,7 +1019,7 @@ server <- function(input, output, session) {
                     spsComps::shinyCatch({
                     reward_dt <- get_Reward(simulation_res()$simulation_names,
                                             district_name =input$district_name_rew,
-                                            opts)
+                                            opts=opts)
                     rv$reward_dt <- reward_dt
                     shinybusy::remove_modal_spinner()
                     show_alert(
@@ -1017,10 +1037,10 @@ server <- function(input, output, session) {
       {week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
        Mc_year <- input$Mc_year[1]:input$Mc_year[2]
       if(input$param_rew=="r")
-      {plot_reward(rv$reward_dt,week_id_rew,input$simulation_name_pattern)
+      {plot_reward(rv$reward_dt,week_id_rew,input$simulation_name_pattern,constraints_values=simulation_res()$simulation_values)
       }else{
         if(input$param_rew=="rv")
-          {plot_reward_variation(rv$reward_dt,week_id_rew)
+          {plot_reward_variation(rv$reward_dt,week_id_rew,constraints_values=simulation_res()$simulation_values)
         }else{
 
         if(input$param_rew=="r1")
@@ -1037,8 +1057,27 @@ server <- function(input, output, session) {
 }
        )
 
-    output$rewardplot <- renderPlot(rewardplot())
+    reward_var_plot <- reactive({
 
+      week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
+      Mc_year <- input$Mc_year[1]:input$Mc_year[2]
+
+      if(input$param_rew=="r1")
+      {plot_reward_variation_mc(rv$reward_dt,week_id_rew,
+                                Mc_year)
+      }else{
+
+        plot_reward_variation(rv$reward_dt,week_id_rew,constraints_values=simulation_res()$simulation_values)
+      }
+
+
+    })
+
+
+
+
+    output$rewardplot <- renderPlot(rewardplot())
+    output$reward_second_plot <- renderPlot(reward_var_plot())
     output$download_reward_plot <- downloadHandler(
       filename = function() {
         paste('Reward-', Sys.Date(), '.png', sep='')
@@ -1097,13 +1136,19 @@ server <- function(input, output, session) {
         if(input$force_monotonic){
           monotonic_VU(results_temp())
         }else{
-          results_temp()
+          if(input$force_monotonic_JM){
+            monotonic_JM(results_temp())
+          }else{
+          results_temp()}
         }
       }else{
         if(input$force_monotonic){
           monotonic_VU(post_result())
         }else{
-          post_result()
+          if(input$force_monotonic_JM){
+            monotonic_JM(post_result())
+          }else{
+          post_result()}
         }
      }
 

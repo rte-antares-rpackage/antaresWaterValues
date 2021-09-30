@@ -22,6 +22,9 @@ runWaterValuesSimulation(
   shiny = F,
   otp_dest = NULL,
   file_name = NULL,
+  pumping = F,
+  launch_simulations = T,
+  reset_hydro = T,
   ...
 )
 }
@@ -31,9 +34,9 @@ runWaterValuesSimulation(
 \item{simulation_name}{The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.}
 
 \item{nb_disc_stock}{Number of simulation to launch, a vector of energy constraint
-will be created from 0 to the hydro storage maximum and of length this parameter.}
+will be created from maximum pumping power to the hydro storage maximum and of length this parameter.}
 
-\item{nb_mcyears}{Number of Monte Carlo years to simulate.}
+\item{nb_mcyears}{Number of Monte Carlo years to simulate or a vector of years indexes to launch.}
 
 \item{binding_constraint}{Name of the binding constraint.}
 
@@ -62,6 +65,12 @@ will be created from 0 to the hydro storage maximum and of length this parameter
 \item{otp_dest}{the path in which the script save Rdata file.}
 
 \item{file_name}{the Rdata file name.}
+
+\item{pumping}{Boolean. True to take into account the pumping.}
+
+\item{launch_simulations}{Boolean. True to to run the simulations.}
+
+\item{reset_hydro}{Boolean. True to reset hydro inflow to 0 before the simulation.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

@@ -11,5 +11,6 @@ utils::globalVariables(
     "day","H. LEV","Turbining capacity","Reward","Turbining transistion",
     "Reward transition","states","hstorPMaxHigh","generatingMaxPower",
     "states_percent","i.statesid","i.value_node","i.value_node_dif","i.vu",
-    "states_percent","vu_band","addBand","MC_year","nvu")
+    "states_percent","vu_band","addBand","MC_year","nvu","transition",
+    "Turbining capacity GWh","filteringOptions")
 )

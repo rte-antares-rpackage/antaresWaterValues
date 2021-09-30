@@ -5,6 +5,7 @@
 #' @param thermal_cluster Name of the thermal cluster to create.
 #' @param overwrite If area or cluster already exists, overwrite them ?
 #' @param remove_areas 	Character vector of area(s) to remove from the created district.
+#' @param reset_hydro Boolean. True to reset hydro inflow to 0 before the simulation.
 #' @param link_from area that will be linked to the created fictive area. If it's
 #' \code{NULL} it will takes the area concerned by the simulation.
 #' @param opts
@@ -27,8 +28,10 @@ setupWaterValuesSimulation <- function(area,
                                        thermal_cluster = "WaterValueCluster",
                                        overwrite = FALSE,
                                        remove_areas = NULL,
-                                       link_from=NULL,
-                                       opts = antaresRead::simOptions(),...) {
+                                       opts = antaresRead::simOptions(),
+                                       reset_hydro=T,
+                                       link_from=NULL,...) {
+
   assertthat::assert_that(class(opts) == "simOptions")
 
   # Create fictive area
@@ -37,8 +40,9 @@ setupWaterValuesSimulation <- function(area,
   })
 
   # Reset hydro storage
-  suppressWarnings(resetHydroStorage(area = area, opts = opts))
-
+  if(reset_hydro){
+    suppressWarnings(resetHydroStorage(area = area, opts = opts))
+  }
   # Get hydro max power
   hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   hydro_storage_max <- rbind(
@@ -113,7 +117,7 @@ setupWaterValuesSimulation <- function(area,
       caption = "water values district",
       comments = "Used for calculate water values",
       apply_filter = "add-all",
-      remove_area = remove_areas,
+      remove_area = append(remove_areas,fictive_area),
       output = TRUE,
       overwrite = TRUE,
       opts = opts

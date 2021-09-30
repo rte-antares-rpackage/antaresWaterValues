@@ -3,7 +3,6 @@
 #' @param simulation_names Names of the simulation to obtain the reward.
 #' @param pattern A pattern to identify simulations.
 #' @param district_name Name of the district used to store output.
-#' @param ind index of the column of the 0 binding constraint simulation
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -17,7 +16,7 @@
 
 
 
-get_Reward <- function(simulation_names = NULL,ind=1, pattern = NULL,
+get_Reward <- function(simulation_names = NULL, pattern = NULL,
                        district_name = "water values district",
                        opts = antaresRead::simOptions()) {
 

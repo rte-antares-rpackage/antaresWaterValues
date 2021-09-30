@@ -200,11 +200,9 @@
 
       # Bellman value of the next week
       vunw <- next_week_values[next_node_up]
-      # if (!is.finite(vunw))
-      #    vunw <- 0
+
       vdnw <- next_week_values[next_node_down]
-       # if (!is.finite(vdnw))
-       #   vdnw <- 0
+
       interpolation <- remainder * vunw + (1 - remainder) * vdnw
 
 

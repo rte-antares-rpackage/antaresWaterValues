@@ -275,12 +275,6 @@ ui <- fluidPage(
               shiny_iconlink() %>%
                 bs_embed_popover(title ="Outliers in Bellman values are replaced by spline interpolations.")),
 
-          # materialSwitch("parallel","Use parallel computing",
-          #                value=F,status = "success")%>%
-          #   shinyInput_label_embed(
-          #     shiny_iconlink() %>%
-          #       bs_embed_popover(title ="Take advantage of your CPU cores to calculate faster the water values.")),
-          #
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),

@@ -235,7 +235,8 @@ names_reward <-function(reward_dt,sim_name_pattern="weekly_water_amount_"){
 #' @importFrom zoo na.spline
 #' @export
 
-to_Antares_Format <- function(data){
+to_Antares_Format <- function(data,constant=T){
+
 
   # rescale levels to round percentages ranging from 0 to 100
   states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
@@ -263,17 +264,22 @@ to_Antares_Format <- function(data){
 
   value_nodes_matrix$weeks <- NULL
 
-  reshaped_matrix <- double(length = 0)
-  last <- value_nodes_matrix[52,]
-  for(i in 1:52){
-  v <- unlist(value_nodes_matrix[i,])
-  v[!is.finite(v)] <- NaN
-  v <- sapply(v, function(x) c(rep(if (is.finite(x)) NA else NaN, 7), x))
-  v[1,] <- unlist(last)
-  tab <- apply(v,2,zoo::na.spline)
-  tab <- tab[2:8,]
-  reshaped_matrix <-rbind(reshaped_matrix,tab)
-  last <-unlist(value_nodes_matrix[i,])
+  if(!constant){
+    reshaped_matrix <- double(length = 0)
+    last <- value_nodes_matrix[52,]
+    for(i in 1:52){
+      v <- unlist(value_nodes_matrix[i,])
+      v[!is.finite(v)] <- NaN
+      v <- sapply(v, function(x) c(rep(if (is.finite(x)) NA else NaN, 7), x))
+      v[1,] <- unlist(last)
+      tab <- apply(v,2,zoo::na.spline)
+      tab <- tab[2:8,]
+      reshaped_matrix <-rbind(reshaped_matrix,tab)
+      last <-unlist(value_nodes_matrix[i,])
+    }
+
+  }else{
+    reshaped_matrix <- value_nodes_matrix[rep(seq_len(nrow(value_nodes_matrix)), each = 7), ]
   }
   reshaped_matrix <- rbind(reshaped_matrix,value_nodes_matrix[1,])
 

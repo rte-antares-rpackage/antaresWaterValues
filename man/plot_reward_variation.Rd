@@ -4,7 +4,12 @@
 \alias{plot_reward_variation}
 \title{Plot the reward variation and return the results in table}
 \usage{
-plot_reward_variation(reward_base, week_id)
+plot_reward_variation(
+  reward_base,
+  week_id,
+  constraints_values = NULL,
+  output = FALSE
+)
 }
 \arguments{
 \item{reward_base}{A data.table contains the rewards.

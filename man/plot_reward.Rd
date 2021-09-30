@@ -8,7 +8,8 @@ plot_reward(
   reward_base,
   week_id,
   sim_name_pattern = "weekly_water_amount_",
-  constraints_values = NULL
+  constraints_values = NULL,
+  output = FALSE
 )
 }
 \arguments{

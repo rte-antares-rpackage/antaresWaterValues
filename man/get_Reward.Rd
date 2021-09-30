@@ -6,7 +6,6 @@
 \usage{
 get_Reward(
   simulation_names = NULL,
-  ind = 1,
   pattern = NULL,
   district_name = "water values district",
   opts = antaresRead::simOptions()
@@ -14,8 +13,6 @@ get_Reward(
 }
 \arguments{
 \item{simulation_names}{Names of the simulation to obtain the reward.}
-
-\item{ind}{index of the column of the 0 binding constraint simulation}
 
 \item{pattern}{A pattern to identify simulations.}
 

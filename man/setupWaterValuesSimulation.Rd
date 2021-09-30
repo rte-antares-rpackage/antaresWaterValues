@@ -10,6 +10,7 @@ setupWaterValuesSimulation(
   thermal_cluster = "WaterValueCluster",
   overwrite = FALSE,
   remove_areas = NULL,
+  link_from = NULL,
   opts = antaresRead::simOptions(),
   reset_hydro = T,
   link_from = NULL,
@@ -26,6 +27,9 @@ setupWaterValuesSimulation(
 \item{overwrite}{If area or cluster already exists, overwrite them ?}
 
 \item{remove_areas}{Character vector of area(s) to remove from the created district.}
+
+\item{link_from}{area that will be linked to the created fictive area. If it's
+\code{NULL} it will takes the area concerned by the simulation.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

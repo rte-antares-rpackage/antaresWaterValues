@@ -6,13 +6,15 @@
 #'  will be created from maximum pumping power to the hydro storage maximum and of length this parameter.
 #' @param nb_mcyears Number of Monte Carlo years to simulate or a vector of years indexes to launch.
 #' @param binding_constraint Name of the binding constraint.
-# @param constraint_values Vector of energy constraints on the link between the area and the fictive area.
+#  constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
 #' @param thermal_cluster Name of the thermal cluster to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
 #' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param wait Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param show_output_on_console Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param overwrite If area or cluster already exists, should they be overwritten?
+#' @param link_from area that will be linked to the created fictive area. If it's
+#' \code{NULL} it will takes the area concerned by the simulation.
 #' @param otp_dest the path in which the script save Rdata file.
 #' @param file_name the Rdata file name.
 #' @param remove_areas 	Character vector of area(s) to remove from the created district.
@@ -47,6 +49,7 @@ runWaterValuesSimulation <- function(area,
                                      wait = TRUE,
                                      show_output_on_console = FALSE,
                                      overwrite = FALSE,
+                                     link_from=NULL,
                                      remove_areas=NULL,
                                      opts = antaresRead::simOptions(),
                                      shiny=F,otp_dest=NULL,file_name=NULL,
@@ -82,6 +85,7 @@ runWaterValuesSimulation <- function(area,
     }
 
   antaresEditObject::setPlaylist(playlist = play_years,opts = opts)
+
 
   #assert the weekly output of the area:
 

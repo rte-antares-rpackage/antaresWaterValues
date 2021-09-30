@@ -31,6 +31,7 @@ setupWaterValuesSimulation <- function(area,
                                        opts = antaresRead::simOptions(),
                                        reset_hydro=T,
                                        link_from=NULL,...) {
+
   assertthat::assert_that(class(opts) == "simOptions")
 
   # Create fictive area

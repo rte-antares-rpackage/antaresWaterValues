@@ -423,6 +423,12 @@ NB:  - Negative and positive values are affected by this filter.
               shinyBS::bsTooltip("Mc_year", "The scenarios that you want to plot",
                                  "bottom"),
 
+              downloadBttn(
+                outputId = "download_reward_base",
+                style = "unite",
+                color = "primary",
+                block = T
+              )
               ),
 
               mainPanel(
@@ -1091,13 +1097,28 @@ server <- function(input, output, session) {
         paste('Reward-', Sys.Date(), '.png', sep='')
       },
       content = function(con) {
-       grDevices::png(con ,width = 1200,
-            height = 766)
+       grDevices::png(con ,width = 1200,height = 766)
         print(rewardplot()$graph)
         grDevices::dev.off()
       }
     )
 
+
+    observe({
+      if(!is.null(rv$reward_dt))
+        isolate(
+          reward_base <<- rv$reward_dt
+        )
+    })
+
+    output$download_reward_base <- downloadHandler(
+      filename <- function(){
+        paste('Reward-Base-', Sys.Date(), '.Rdata', sep='') },
+
+      content = function(file) {
+        save(reward_base, file = file)
+      }
+    )
     # end reward Plot
 
 
@@ -1347,7 +1368,7 @@ server <- function(input, output, session) {
     output$report <- renderPlot(just_plot_report(report(),input$report_vars,
                                     plot_type=(input$report_type=="district")))
 
-    output$download_reward_plot <- downloadHandler(
+    output$download_report_plot <- downloadHandler(
       filename = function() {
         paste('report-', Sys.Date(), '.png', sep='')
       },

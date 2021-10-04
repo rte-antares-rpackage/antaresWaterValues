@@ -173,7 +173,8 @@
   {
     if(is.null(reward_db))
     {
-    reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name, opts = opts)
+
+    reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name, opts = opts)$reward
     }
 
     reward_db <- reward_db[timeId %in% seq_len(n_week)]}

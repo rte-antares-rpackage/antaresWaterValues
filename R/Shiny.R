@@ -433,9 +433,9 @@ NB:  - Negative and positive values are affected by this filter.
                   color = "primary",
                   block = T
                 ),
-                plotOutput("reward_second_plot")
+                # plotOutput("reward_second_plot"),
 
-
+                DT::dataTableOutput("reward_table")
               )
 
 
@@ -1052,12 +1052,12 @@ server <- function(input, output, session) {
 
         if(input$param_rew=="r1")
           {plot_reward_mc(rv$reward_dt,week_id_rew,
-                          Mc_year,input$simulation_name_pattern)
+                          Mc_year,input$simulation_name_pattern,constraints_values=simulation_res()$simulation_values)
         }else{
 
           if(input$param_rew=="rv1")
           {plot_reward_variation_mc(rv$reward_dt,week_id_rew,
-                              Mc_year)}
+                              Mc_year,constraints_values=simulation_res()$simulation_values)}
         }
         }
         }
@@ -1083,8 +1083,9 @@ server <- function(input, output, session) {
 
 
 
-    output$rewardplot <- renderPlot(rewardplot())
-    output$reward_second_plot <- renderPlot(reward_var_plot())
+    output$rewardplot <- renderPlot(rewardplot()$graph)
+    # output$reward_second_plot <- renderPlot(reward_var_plot()$graph)
+    output$reward_table <- DT::renderDataTable(rewardplot()$table)
     output$download_reward_plot <- downloadHandler(
       filename = function() {
         paste('Reward-', Sys.Date(), '.png', sep='')
@@ -1092,7 +1093,7 @@ server <- function(input, output, session) {
       content = function(con) {
        grDevices::png(con ,width = 1200,
             height = 766)
-        print(rewardplot())
+        print(rewardplot()$graph)
         grDevices::dev.off()
       }
     )

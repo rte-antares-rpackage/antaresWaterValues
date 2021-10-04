@@ -36,7 +36,7 @@ plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,ou
     energy_quantity <- diff(constraints_values)
     temp$`Reward transition` <-  temp$`Reward transition`/energy_quantity}
 
-
+  temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
 
 
   p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
@@ -45,8 +45,12 @@ plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,ou
     p1 <- p1+ggplot2:: theme(legend.position="none")
   }
   print(p1)
-  if(output) return(temp)
-  return(p1)
+
+  temp <-  dplyr::relocate(temp,week, .before = 1)
+  output <- list()
+  output$graph <- p1
+  output$table <- temp
+  return(output)
 }
 
 #--------- Plot reward -----------
@@ -81,7 +85,7 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 
 
   if(max(t)>100000){
-    temp$"Turbining capacity GWh" <- t/1000
+    temp$"Turbining capacity GWh" <- round(t/1000)
     temp <- melt(temp,id.vars="Turbining capacity GWh",variable.name="week")
     setnames(temp,"value","Reward")
     p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity GWh`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
@@ -97,9 +101,14 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
      p1 <- p1+ggplot2:: theme(legend.position="none")
     }
   print(p1)
-  if(output)return(temp)
-  return(p1)
+  temp <-  dplyr::relocate(temp,week, .before = 1)
+  temp$Reward <- round(temp$Reward)
+  output <- list()
+  output$graph <- p1
+  output$table <- temp
+  return(output)
 }
+
 
 #--------- Plot reward by MC year -----------
 #' Plot the reward and return the results in table
@@ -121,7 +130,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
   if(is.null(constraints_values)){
     t <- seq(1,(length(colnames(reward_base))-2))
   }else{
-    t <- constraints_values$simulation_values
+    t <- constraints_values
 
   }
   reward <- reward_base[timeId %in% week_id&mcYear%in%Mc_year]
@@ -134,11 +143,16 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
   temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
   setnames(temp,"value","Reward")
   if(max(t)>100000){
-    temp$"Turbining capacity GWh" <- t/1000
+    temp$"Turbining capacity GWh" <- round( temp$`Turbining capacity`/1000)
+    temp$`Turbining capacity` <- NULL
+    temp <-  dplyr::relocate(temp,`Turbining capacity GWh`, .before = 2)
+
     p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity GWh`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
   }else{
     p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
-  }
+    temp <-  dplyr::relocate(temp,`Turbining capacity`, .before = 2)
+
+    }
 
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward week  MC Year %s",paste(as.character(week_id),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
@@ -146,8 +160,14 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
     p1 <- p1+ggplot2:: theme(legend.position="none")
   }
   print(p1)
-  return(p1)
+  temp <-  dplyr::relocate(temp,week, .before = 1)
+  temp$Reward <- round(temp$Reward)
+  output <- list()
+  output$graph <- p1
+  output$table <- temp
+  return(output)
 }
+
 
 
 
@@ -159,12 +179,13 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
+#' @param constraints_values the value of the constraint
 #' @importFrom grDevices rgb
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
 
-plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
+plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,constraints_values=NULL)
 {
   reward <- reward_base[timeId %in% week_id&mcYear%in%Mc_year]
   names <- unlist(reward[,legend:=paste(sprintf("week %d",timeId),sprintf("MC year %d",mcYear))]$legend)
@@ -178,16 +199,24 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
   temp <- data.table(t,temp)
   setnames(temp,colnames(temp)[-1],names)
   setnames(temp,"t","Turbining transistion")
-
   temp <- melt(temp,id.vars="Turbining transistion",variable.name="week")
+  setnames(temp,"value","Reward transition")
+  if(!is.null(constraints_values)){
+    energy_quantity <- diff(constraints_values)
+    temp$`Reward transition` <-  temp$`Reward transition`/energy_quantity}
 
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,value, col=week)) +ggplot2::geom_line(size=0.5)
+  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(week_id),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2:: theme(legend.position="none")
   }
   print(p1)
-  return(p1)
+  temp <-  dplyr::relocate(temp,week, .before = 1)
+  temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
+  output <- list()
+  output$graph <- p1
+  output$table <- temp
+  return(output)
 }
 
 

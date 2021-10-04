@@ -21,7 +21,7 @@ build_data_watervalues <- function(watervalues,inaccessible_states,statesdt,rese
   value_nodes_dt[weeks<52]$vu <- temp2
 
   value_nodes_dt$inacc <- inacc
-  value_nodes_dt[,vu:=vu*inacc]
+  value_nodes_dt[inacc==F,vu:=NaN]
   print(waterValuesViz(value_nodes_dt,0.99))
   return(value_nodes_dt)
 

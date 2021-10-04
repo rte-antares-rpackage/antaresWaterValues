@@ -267,8 +267,14 @@ ui <- fluidPage(
 
           shinyBS::bsTooltip("mcyears", " Monte-Carlo years to consider in water values calculation.",
                              "bottom"),
+          materialSwitch("pumping_cal","Pumping",
+                         value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Take pumping into account. Use it when your simulations have aggregated pumping.")),
 
-          uiOutput("eff"),
+          conditionalPanel(condition = "input.pumping_cal",
+                           uiOutput("eff") ),
 
 
           shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
@@ -946,6 +952,7 @@ server <- function(input, output, session) {
         convergence_rate = input$convergence_rate/100,
         convergence_criteria = input$convergence_criteria,
         cycle_limit = input$cycle_limit,
+        pumping = input$pumping_cal,
         efficiency = input$efficiency
         )$aggregated_results
 

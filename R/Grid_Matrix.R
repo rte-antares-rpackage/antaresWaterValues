@@ -99,12 +99,17 @@
   max_hydro <- get_max_hydro(area)
 
 
-
-
-  if (is.null(simulation_values)) {
-    simulation_values <- constraint_generator(area,length(simulation_names),pumping,opts)
-    message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))
-  }
+  if(is.null(reward_db)){
+    if(!is.null(simulation_names)){
+      if (is.null(simulation_values)) {
+        simulation_values <- constraint_generator(area,length(simulation_names),pumping,opts)
+        message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))
+      }}
+    }else
+      {simulation_names <- reward_db$simulation_names
+      simulation_values <- reward_db$simulation_values
+      reward_db <- reward_db$reward
+      }
 
   if (is.null(mcyears)) {
     mcyears <- opts$parameters$general$nbyears

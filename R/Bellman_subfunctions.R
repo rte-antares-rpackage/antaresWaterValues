@@ -86,8 +86,8 @@ decisions_cover <- function(turbined_energy,decisions_current){
                               pumps_dec[(length(pumps_dec))],after =0)
   }
 
-  return(decisions_current)
-  # return(decisions_cover)
+  # return(decisions_current)
+  return(decisions_cover)
 }
 
 
@@ -115,8 +115,8 @@ accessible_rewards <- function(decision_cover,decision_space,value_reward){
 generate_decisions <- function(turbined_energy,decisions_cover,E_max,P_max){
 
   decisions <- c(turbined_energy, decisions_cover)
-  if(min(decisions)<P_max) decisions <- append(decisions,P_max)
-  if(max(decisions)>E_max) decisions <- append(decisions,E_max)
+  # if(min(decisions)<P_max) decisions <- append(decisions,P_max)
+  # if(max(decisions)>E_max) decisions <- append(decisions,E_max)
   decisions <- unique(sort(decisions, decreasing = FALSE))
   return(decisions)
 }
@@ -132,7 +132,8 @@ generate_decisions_rewards <- function(decisions,step_reward,alpha)
   if (length(setdiff(decisions, provisional_steps)) > 0) {
 
     # boucle sur les quantité de turbinaga possible
-    for (index in setdiff(decisions, provisional_steps)) { # index <- 70000 MWh
+    for (index in setdiff(decisions,provisional_steps)) { # index <- 70000 MWh
+      if(index %in% provisional_steps) next
 
       # Closest inf simulation constraint
       before <- provisional_steps[index >= provisional_steps - alpha]

@@ -41,6 +41,7 @@
 
 
 
+
     decision_space <- unlist(decision_space, use.names = FALSE)
     decision_space <- round(decision_space)
     alpha <- getOption(x = "watervalues.alpha", default = 0.0001)
@@ -61,7 +62,6 @@
 
         value_reward <- unlist(reward, use.names = FALSE)
         states_next <- unlist(states_next, use.names = FALSE)
-
 
 
         if (i%% (nrow(Data_week)/max_mcyear) ==1){
@@ -145,7 +145,7 @@
     max_Bell <- suppressWarnings(max(Bellman_values, na.rm = TRUE))
     Data_week$value_node[i] <- max_Bell
     if(length(decisions)>0){
-      Data_week$transition[i] <- decisions[which(Bellman_values==max_Bell)]
+      Data_week$transition[i] <- min(decisions[which(Bellman_values==max_Bell)])
     }
 
   #----- little test -----

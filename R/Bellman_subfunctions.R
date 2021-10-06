@@ -44,7 +44,7 @@ check_largest_decisions <- function(decision_space,largest_decisions,alpha){
 
 
   decisions_current_benef <- decision_space[decision_space <= largest_decisions$largest_turb + alpha]
-  decisions_current_benef <- decision_space[decision_space >= largest_decisions$largest_pump - alpha]
+  decisions_current_benef <- decisions_current_benef[decisions_current_benef >= largest_decisions$largest_pump - alpha]
   decisions_current_benef <- round(decisions_current_benef) ###
 
   return(decisions_current_benef)
@@ -86,7 +86,6 @@ decisions_cover <- function(turbined_energy,decisions_current){
                               pumps_dec[(length(pumps_dec))],after =0)
   }
 
-  # return(decisions_current)
   return(decisions_cover)
 }
 
@@ -99,7 +98,7 @@ accessible_rewards <- function(decision_cover,decision_space,value_reward){
   j <- which(decision_space==max(provisional_steps))
 
 
-  provisional_reward_line <- unique(value_reward[i:j])
+  provisional_reward_line <- value_reward[i:j]
 
 
   provisional <- list()

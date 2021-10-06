@@ -184,9 +184,9 @@
     reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
     reservoir[,
-              (vars) := lapply(.SD, function(x) {round(x * max(states), decimals)}),
+              (vars) := lapply(.SD, function(x) {round(x * max(states))}),
               .SDcols = vars
-    ]   #nothing changed here !
+    ]
   }
 
   # preparation DATA (generate a table of weeks and years)
@@ -198,7 +198,7 @@
     statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
     statesdt[, weeks := as.numeric(gsub("V", "", weeks))] #turn weeks to numbers V1==> 1
     statesdt[, statesid := seq_along(states), by = weeks] # add id to refer to the state
-    statesdt[, states := round(states, decimals)]
+    statesdt[, states := round(states)]
   }
 
   # add states plus 1

@@ -449,7 +449,7 @@
           if (identical(diff_vect,last_diff_vect)){
           cat(paste0("\033[0;43m", "        Cycle number:", n_cycl, ",    ==>", "Converged with:",convergence_percent,"% <==", "\033[0m \n"))
           break}
-        }
+
 
         if(convergence_value==last_conv){
           counter <- counter+1
@@ -459,15 +459,15 @@
 
           }
         }
-
+        }
 
 
         cat(paste0("\033[0;41m", "        Cycle number:", n_cycl, ",    ==>",convergence_percent,"% Converged <==", "\033[0m \n"))
         last_diff_vect <- diff_vect
+        last_conv <- convergence_value
 
       }
 
-      last_conv <- convergence_value
       last_wv <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
 
       }

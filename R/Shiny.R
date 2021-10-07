@@ -891,6 +891,7 @@ NB:  - Negative and positive values are affected by this filter.
 server <- function(input, output, session) {
 
   global <- reactiveValues(datapath = getwd())
+  rv <- reactiveValues()
 
   output$dir <- renderUI({
     textInput("sim_output_dir","Saving directory",value=global$datapath)
@@ -950,6 +951,7 @@ server <- function(input, output, session) {
 
       if ( is.null(input$reward_file)) {
         reward_db <- NULL
+        print("Failed to import Reward")
         reward_db
       }else{
         inFile <- input$reward_file
@@ -958,6 +960,8 @@ server <- function(input, output, session) {
         e = new.env()
         name <- load(file, envir = e)
         reward_db <- e[[name]]
+        print("Reward Imported")
+        rv$reward_dt <- reward_db
         reward_db
       }
     })
@@ -979,7 +983,6 @@ server <- function(input, output, session) {
       }
     })
 
-    rv <- reactiveValues()
     observeEvent( input$Calculate,
 
     {
@@ -1077,7 +1080,6 @@ server <- function(input, output, session) {
 
     observeEvent( input$import_reward,
                   {
-
                     spsComps::shinyCatch({
                     reward_dt <- get_Reward(simulation_res(),
                                             district_name =input$district_name_rew,
@@ -1096,8 +1098,12 @@ server <- function(input, output, session) {
 
     rewardplot <- reactive(
 
-      {week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
-       Mc_year <- input$Mc_year[1]:input$Mc_year[2]
+      {
+
+      if(is.null(rv$reward))rv$reward <- reward_db()
+
+      week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
+      Mc_year <- input$Mc_year[1]:input$Mc_year[2]
       if(input$param_rew=="r")
       {plot_reward(rv$reward_dt$reward,week_id_rew,input$simulation_name_pattern,constraints_values=simulation_res()$simulation_values)
       }else{

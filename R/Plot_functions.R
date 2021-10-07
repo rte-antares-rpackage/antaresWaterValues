@@ -70,13 +70,12 @@ plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,ou
 
 plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amount_",constraints_values=NULL,output=FALSE)
 {
-  # t <- names_reward(reward_base,sim_name_pattern)
-  if(is.null(constraints_values)){
-    t <- seq(1,(length(colnames(reward_base))-2))
-  }else{
-    t <- constraints_values
+  t <- seq(1,(length(colnames(reward_base))-2))
 
-  }
+  tryCatch({if(!is.null(constraints_values)){
+    t <- constraints_values
+  }}, error=function(e){message("invalid constraints_values")})
+
   reward <- stats::aggregate(reward_base[,3:ncol(reward_base)],list(reward_base$timeId),mean)
   reward$Group.1 <- NULL
   temp <- reward[week_id,]
@@ -127,12 +126,13 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_water_amount_",constraints_values=NULL)
 {
 
-  if(is.null(constraints_values)){
-    t <- seq(1,(length(colnames(reward_base))-2))
-  }else{
-    t <- constraints_values
+  t <- seq(1,(length(colnames(reward_base))-2))
 
-  }
+  tryCatch({if(!is.null(constraints_values)){
+    t <- constraints_values
+  }}, error=function(e){message("invalid constraints_values")})
+
+
   reward <- reward_base[timeId %in% week_id&mcYear%in%Mc_year]
   names <- unlist(reward[,legend:=paste(sprintf("week %d",timeId),sprintf("MC year %d",mcYear))]$legend)
   temp <- reward[,3:ncol(reward_base)]
@@ -201,9 +201,14 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,constraints_val
   setnames(temp,"t","Turbining transistion")
   temp <- melt(temp,id.vars="Turbining transistion",variable.name="week")
   setnames(temp,"value","Reward transition")
-  if(!is.null(constraints_values)){
+
+
+  tryCatch({if(!is.null(constraints_values)){
     energy_quantity <- diff(constraints_values)
-    temp$`Reward transition` <-  temp$`Reward transition`/energy_quantity}
+    temp$`Reward transition` <-  temp$`Reward transition`/energy_quantity}},
+    error=function(e){message("invalid constraints_values")})
+
+
 
   p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(week_id),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))

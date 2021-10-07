@@ -108,7 +108,7 @@
     }else
       {simulation_names <- reward_db$simulation_names
       simulation_values <- reward_db$simulation_values
-      reward_db <- reward_db$reward
+      reward_db <- as.data.table(reward_db$reward)
       }
 
   if (is.null(mcyears)) {

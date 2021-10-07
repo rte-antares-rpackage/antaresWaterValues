@@ -32,7 +32,7 @@
 #' @export
 #' @importFrom assertthat assert_that
 #' @importFrom antaresEditObject createBindingConstraint updateGeneralSettings
-#' removeBindingConstraint writeInputTS readIniFile
+#' removeBindingConstraint writeInputTS readIniFile filteringOptions
 #' writeIni runSimulation removeArea editArea
 #' @importFrom antaresRead readClusterDesc readInputTS
 #' @importFrom stats setNames

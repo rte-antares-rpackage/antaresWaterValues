@@ -112,7 +112,8 @@ runWaterValuesSimulation <- function(area,
       overwrite = overwrite,
       remove_areas=remove_areas,
       reset_hydro=reset_hydro,
-      opts = opts
+      opts = opts,
+      link_from = link_from
     )
 
 

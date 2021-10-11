@@ -15,13 +15,13 @@ build_data_watervalues <- function(watervalues,inaccessible_states,statesdt,rese
   value_nodes_dt <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)
   value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
   inacc <- is.finite(value_nodes_dt$value_node)
-  temp1 <- value_nodes_dt[weeks==1]$vu
-  temp2 <- value_nodes_dt[weeks>1&weeks<53]$vu
-  value_nodes_dt[weeks==52]$vu <- temp1
-  value_nodes_dt[weeks<52]$vu <- temp2
+  # temp1 <- value_nodes_dt[weeks==1]$vu
+  # temp2 <- value_nodes_dt[weeks>1&weeks<53]$vu
+  # value_nodes_dt[weeks==52]$vu <- temp1
+  # value_nodes_dt[weeks<52]$vu <- temp2
 
   value_nodes_dt$inacc <- inacc
-  value_nodes_dt[inacc==F,vu:=NaN]
+  value_nodes_dt[,vu_corr:=inacc*vu]
   print(waterValuesViz(value_nodes_dt,0.99))
   return(value_nodes_dt)
 

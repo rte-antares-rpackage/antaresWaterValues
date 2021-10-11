@@ -324,6 +324,7 @@
 
         watervalues[weeks==i,value_node :=temp$value_node]
         watervalues[weeks==i,transition :=temp$transition]
+        watervalues[weeks==i,max_acc :=temp$max_acc]
 
 
         if (correct_outliers) {
@@ -415,6 +416,8 @@
 
         watervalues[weeks==i,value_node :=temp$value_node]
         watervalues[weeks==i,transition :=temp$transition]
+        watervalues[weeks==i,max_acc :=temp$max_acc]
+
 
 
         if (correct_outliers) {
@@ -473,7 +476,12 @@
       }
     }# end else
 
-
+  #scenario elimination criteria Info
+  elim_ratio <- 1-(min(watervalues$max_acc,na.rm = T)/max_mcyear)
+  if(elim_ratio>0){
+    message <- sprintf("Please select an elimnation criterea greater then %0.f%% to avoid infesable week.",elim_ratio*100)
+    message(message)
+  }
 
 
   if(min(value_nodes_dt,na.rm = T)<0.5)

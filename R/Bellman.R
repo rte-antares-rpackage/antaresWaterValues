@@ -170,6 +170,9 @@
 
   # test feasible week
     feasible_test_week(Data_week$value_node,counter)
+
+  # test scenarios
+    Data_week <- scanarios_check(Data_week,counter)
   #------ mean-grid method---------
 
   if (method == "mean-grid") {

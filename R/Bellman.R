@@ -168,6 +168,8 @@
     }
 
 
+  # test feasible week
+    feasible_test_week(Data_week$value_node,counter)
   #------ mean-grid method---------
 
   if (method == "mean-grid") {

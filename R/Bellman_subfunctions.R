@@ -245,4 +245,33 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
 
     return(Bellman_values)
 
+}
+
+
+
+feasible_test_week <- function(value_node,counter){
+
+
+  ratio <- round((sum(is.finite(value_node))/length(value_node))*100)
+
+  if(ratio==0){
+    message <- sprintf(" No accessible state in week %d can't go further.
+                        To reduce the problem:
+                        - Relax the reservoir level max and min constraints.
+                        - Increase the number of states by increasing the states_step_ratio parameter.",counter )
+
+    stop(message)
   }
+
+  if(ratio<=10){
+    message <- sprintf("Only %0.f%% states are accessible in week %d which is insufficient to calculate the next week.
+                       To reduce the problem:
+                        - Relax the reservoir level max and min constraints.
+                        - Increase the number of states by increasing the states_step_ratio parameter.",ratio,counter)
+    stop(message)
+  }
+
+  if(ratio<=25) {
+    message <- sprintf("Only %0.f%% states are accessible in week %d",ratio,counter)
+    warning(message)}
+}

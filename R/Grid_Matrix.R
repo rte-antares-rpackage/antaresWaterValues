@@ -476,7 +476,7 @@
 
 
 
-  if(any(value_nodes_dt$vu<0.5&!is.nan(value_nodes_dt$vu)))
+  if(min(value_nodes_dt,na.rm = T)<0.5)
   {
     value_nodes_dt[is.finite(vu)&vu<0.5,vu:=0.5]
     message("Minimal water value is 0.5 lesser valuers are changed automatically to 0.5.

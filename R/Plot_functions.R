@@ -251,11 +251,12 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,constraints_val
 
 plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio=0.01,bellman_week=NULL,...){
 
-  if(week_number<52){
-    next_week_number <- week_number+1
-  }else{
-    next_week_number ==1
-  }
+  # if(week_number<52){
+  #   next_week_number <- week_number+1
+  # }else{
+  #   next_week_number ==1
+  # }
+  next_week_number <- week_number
 
   if(param=="bell"){next_week_number <- week_number}
   if(is.numeric(bellman_week)){next_week_number <- bellman_week}

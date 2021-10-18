@@ -91,7 +91,12 @@
 
     largest_pump <- largest_decisions$largest_pump
 
-
+    if (largest_turb < largest_pump) {
+      Data_week$value_node[i] <- -Inf
+      message <- sprintf("Week %d in states %d even using the max power of turbining we can't avoid to cross the reservoir capacity",counter,statesID)
+      message(message)
+      next
+    }
 
     # the decisions that respect the max possible decision used in simulation constraints
 

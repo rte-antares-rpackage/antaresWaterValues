@@ -32,6 +32,7 @@ Grid_Matrix(
   cycle_limit = 10,
   pumping = F,
   efficiency = 1,
+  stop_rate = 5,
   ...
 )
 }

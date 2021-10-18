@@ -201,6 +201,8 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
 
     # initialize
     Bellman_values <- vector(mode = "numeric", length = length(decisions))
+    transition_reward <- vector(mode = "numeric", length = length(decisions))
+    next_bellman_value <- vector(mode = "numeric", length = length(decisions))
     count_x <- 0
     provisional_steps <- decision_rewards$steps
     provisional_reward_line <- decision_rewards$rewards
@@ -229,6 +231,11 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
         remainder <- ((states - l + value_inflow) -states_below[1]) / (states_above[length(states_above)] - states_below[1])
       } else {
         remainder <- 0
+        interpolation <- next_week_values[next_node_up]
+        Bellman_values[count_x] <- sum(c(provisional_reward_line[num_equal(l, provisional_steps)], interpolation), na.rm = na_rm)
+        transition_reward[count_x] <- provisional_reward_line[num_equal(l, provisional_steps)]
+        next_bellman_value[count_x] <- interpolation
+        next
       }
 
       # Bellman value of the next week
@@ -238,18 +245,25 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
 
       interpolation <- remainder * vunw + (1 - remainder) * vdnw
 
-
       Bellman_values[count_x] <- sum(c(provisional_reward_line[num_equal(l, provisional_steps)], interpolation), na.rm = na_rm)
-    }
+      transition_reward[count_x] <- provisional_reward_line[num_equal(l, provisional_steps)]
+      next_bellman_value[count_x] <- interpolation
+      }
     if(length(Bellman_values)<1)warning("Oups! I fell into an inaccessible state, But it's OK :)")
 
-    return(Bellman_values)
+    Bellman <- list()
+    Bellman$Bellman_values <- Bellman_values
+    Bellman$transition_reward <- transition_reward
+    Bellman$next_bellman_value <- next_bellman_value
+    class(Bellman) <- "Bellman values with best transitions and rewards"
+
+    return(Bellman)
 
 }
 
 
 
-feasible_test_week <- function(value_node,counter){
+feasible_test_week <- function(value_node,counter,stop_rate){
 
 
   ratio <- round((sum(is.finite(value_node))/length(value_node))*100)
@@ -263,7 +277,7 @@ feasible_test_week <- function(value_node,counter){
     stop(message)
   }
 
-  if(ratio<=10){
+  if(ratio<=stop_rate){
     message <- sprintf("Only %0.f%% states are accessible in week %d which is insufficient to calculate the next week.
                        To reduce the problem:
                         - Relax the reservoir level max and min constraints.

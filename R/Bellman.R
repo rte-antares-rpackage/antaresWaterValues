@@ -37,7 +37,7 @@
 
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,
-                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=1,...){
+                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=1,next_level_high,next_level_low,stop_rate=5,...){
 
 
 
@@ -58,8 +58,6 @@
         value_inflow <- Data_week$hydroStorage[i]
         reward <- Data_week$reward[[i]]
         states_next <- Data_week$states_next[[i]]
-
-
         value_reward <- unlist(reward, use.names = FALSE)
         states_next <- unlist(states_next, use.names = FALSE)
 
@@ -101,8 +99,7 @@
 
 
     # Possible next states
-    next_states <- states_next[states_next >= (states - E_max + value_inflow) & states_next <= (states + P_max + value_inflow + alpha) ]
-
+    next_states <- states_next[states_next >= (states - E_max + value_inflow-alpha) & states_next <= (states + P_max + value_inflow + alpha) ]
 
 
     # Turbaned energy per transition
@@ -129,13 +126,14 @@
 
     # respect the guide graph constraints
 
+    # decisions <-  guide_cs_check(decisions,states,value_inflow,next_level_high,next_level_low,alpha)
     decisions <-  guide_cs_check(decisions,states,value_inflow,level_high,level_low,alpha)
 
 
     # Bellman calculator
-    Bellman_values <- bellman_calculator(decisions,next_week_values,decision_rewards,states,value_inflow,niveau_max,states_next,alpha,na_rm)
+    Bellman <- bellman_calculator(decisions,next_week_values,decision_rewards,states,value_inflow,niveau_max,states_next,alpha,na_rm)
 
-
+    Bellman_values <- Bellman$Bellman_values
 
 
 
@@ -146,6 +144,9 @@
     Data_week$value_node[i] <- max_Bell
     if(length(decisions)>0){
       Data_week$transition[i] <- min(decisions[which(Bellman_values==max_Bell)])
+      Data_week$transition_reward[i] <- min(Bellman$transition_reward[which(Bellman_values==max_Bell)])
+      Data_week$next_bellman_value[i] <- min(Bellman$next_bellman_value[which(Bellman_values==max_Bell)])
+      if(is.na(min(Bellman$next_bellman_value[which(Bellman_values==max_Bell)])))browser()
     }
 
   #----- little test -----
@@ -169,7 +170,7 @@
 
 
   # test feasible week
-    feasible_test_week(Data_week$value_node,counter)
+    feasible_test_week(Data_week$value_node,counter,stop_rate)
 
   # test scenarios
     Data_week <- scanarios_check(Data_week,counter)

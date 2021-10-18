@@ -20,6 +20,9 @@ Bellman(
   test_week,
   counter,
   inaccessible_states = 1,
+  next_level_high,
+  next_level_low,
+  stop_rate = 5,
   ...
 )
 }

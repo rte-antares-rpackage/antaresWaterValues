@@ -77,7 +77,7 @@
                              convergence_rate=0.9,
                              convergence_criteria=1,
                              cycle_limit=10,
-                             pumping=F,efficiency=1,
+                             pumping=F,efficiency=1,stop_rate=5,
                         ...) {
 
 
@@ -230,7 +230,8 @@
   # add empty columns ---------------------
   watervalues$value_node <- NA_real_
   watervalues$transition <- NA_real_
-
+  watervalues$transition_reward <- NA_real_
+  watervalues$next_bellman_value <- NA_real_
 
 
 
@@ -266,6 +267,14 @@
 
 
         temp <- watervalues[weeks==i]
+        if(i==52){
+        next_level_high <- watervalues$level_high[1]
+        next_level_low <- watervalues$level_low[1]
+        }else{
+          next_level_high <- watervalues$level_high[i+1]
+          next_level_low <- watervalues$level_low[i+1]
+        }
+
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
@@ -279,7 +288,10 @@
                         correct_outliers = correct_outliers,
                         test_week = test_week,
                         counter = i,
-                        inaccessible_states=inaccessible_states)
+                        inaccessible_states=inaccessible_states,
+                        next_level_high=next_level_high,
+                        next_level_low=next_level_low,
+                        stop_rate=stop_rate)
 
 
 
@@ -324,6 +336,9 @@
 
         watervalues[weeks==i,value_node :=temp$value_node]
         watervalues[weeks==i,transition :=temp$transition]
+        watervalues[weeks==i,transition_reward :=temp$transition_reward]
+        watervalues[weeks==i,next_bellman_value :=temp$next_bellman_value]
+
         watervalues[weeks==i,max_acc :=temp$max_acc]
 
 

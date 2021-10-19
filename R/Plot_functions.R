@@ -32,9 +32,10 @@ plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,ou
 
   temp <- melt(temp,id.vars="Turbining transistion",variable.name="week")
   setnames(temp,"value","Reward transition")
-  if(!is.null(constraints_values)){
+  tryCatch({if(!is.null(constraints_values)){
     energy_quantity <- diff(constraints_values)
-    temp$`Reward transition` <-  temp$`Reward transition`/energy_quantity}
+    temp$`Reward transition` <-  temp$`Reward transition`/energy_quantity}},
+    error=function(e){message("invalid constraints_values")})
 
   temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
 

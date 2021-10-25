@@ -215,7 +215,9 @@
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
 
   #add reward
-  reward_l <- reward_db[, list(reward_db = list(unlist(.SD))), .SDcols = simulation_names, by = list(weeks = timeId, years = mcYear)]
+  col_names <- make.names(colnames(reward_db))
+  setnames(reward_db,col_names)
+  reward_l <- reward_db[, list(reward_db = list(unlist(.SD))), .SDcols =col_names[c(-1,-2)], by = list(weeks = timeId, years = mcYear)]
 
 
   watervalues <- dplyr::left_join(x = watervalues, y = reward_l, by = c("weeks","years"))

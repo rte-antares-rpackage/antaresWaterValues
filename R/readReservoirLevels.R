@@ -113,7 +113,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
 #' @importFrom antaresRead getAreas
 #' @importFrom antaresEditObject is_antares_v7
 #' @importFrom zoo na.approx
-#' @importFrom utils head
+#' @importFrom utils head tail
 #'
 #' @return a data.table
 #' @export
@@ -139,11 +139,11 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
     data.table::setcolorder(x = reservoir, neworder = c("date", vars))
     reservoir <- reservoir[order(date)]
     reservoir[, timeId := format(date, format = "%Y-%m-01")]
-    reservoir <- reservoir[, lapply(.SD, mean), by = timeId, .SDcols = vars]
+    reservoir <- reservoir[, lapply(.SD,tail,n=1), by = timeId, .SDcols = vars]
   }
   if (timeStep == "weekly") {
     reservoir[, timeId := c(rep(seq_len(52), each = 7), 52)]
-    reservoir <- reservoir[, lapply(.SD, mean), by = timeId, .SDcols = vars]
+    reservoir <- reservoir[, lapply(.SD,tail,n=1), by = timeId, .SDcols = vars]
   }
   if (byReservoirCapacity) {
     reservoirCapacity <- getReservoirCapacity(area = area, opts = opts)

@@ -1,7 +1,9 @@
 [![R](https://github.com/dhia-gharsallaoui/watervalues/actions/workflows/r.yaml/badge.svg)](https://github.com/dhia-gharsallaoui/watervalues/actions/workflows/r.yaml)
+[![Codecov test coverage](https://codecov.io/gh/dhia-gharsallaoui/watervalues/branch/main/graph/badge.svg)](https://codecov.io/gh/dhia-gharsallaoui/watervalues?branch=main)
 [![R Package Validation report](https://github.com/dhia-gharsallaoui/watervalues/actions/workflows/Validation_report.yml/badge.svg?branch=main)](https://github.com/dhia-gharsallaoui/watervalues/actions/workflows/Validation_report.yml)
 <img src="vignettes/images/antares_simulator.png" align="right" width=250 />
 <br/>
+
 
 # Watervalues
 

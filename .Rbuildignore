@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^devstuff_history\.R$
+^codecov\.yml$

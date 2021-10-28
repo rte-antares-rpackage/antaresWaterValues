@@ -4,6 +4,7 @@
 #'   List of simulation results returned by the function
 #'   \code{watervalues::runWaterValuesSimulation}
 #' @param study_path the path of the Antares study
+#' @param silent Boolean. TRUE to suppress warnings.
 #' @param ... further arguments passed to or from other methods.
 #' @rawNamespace import(shiny, except =c(dataTableOutput,renderDataTable))
 #' @import shinyWidgets
@@ -19,11 +20,14 @@
 #' @importFrom antaresRead setSimulationPath
 #' @importFrom shinyBS bsTooltip addPopover
 #' @importFrom bsplus bs_embed_popover shiny_iconlink shinyInput_label_embed `%>%`
+#' @importFrom spsUtil quiet
 #' @export
 
-shiny_water_values <- function(simulation_res=NULL,study_path,...)
+shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
 
 {
+
+
 `%>%` <- bsplus::`%>%`
 opts <- antaresRead::setSimulationPath(simulation = "input")
 options("antares" = opts)
@@ -904,7 +908,7 @@ server <- function(input, output, session) {
 
   observeEvent(input$simulate,
 
-                {
+               spsUtil::quiet({
 
                   spsComps::shinyCatch({
                      simulation_res <-    runWaterValuesSimulation(
@@ -923,7 +927,8 @@ server <- function(input, output, session) {
                      shiny=T,
                      otp_dest=input$sim_output_dir,
                      file_name=input$file_name,
-                     pumping = input$pumping)})})
+                     pumping = input$pumping)},prefix = "")},print_cat = F,
+                  message = F, warning = silent))
 
 
 
@@ -985,7 +990,7 @@ server <- function(input, output, session) {
 
     observeEvent( input$Calculate,
 
-    {
+   spsUtil::quiet({
 
     spsComps::shinyCatch({
       results <-     Grid_Matrix(
@@ -1023,9 +1028,9 @@ server <- function(input, output, session) {
 
       pp_results <- data.table::copy(results)
       rv$pp_results <- pp_results
-      },blocking_level="error",position = "top-center", shiny = TRUE )
+      },blocking_level="error",position = "top-center", shiny = TRUE,prefix = "" )
 
-        }
+        },print_cat = F, message = F, warning = silent)
 
 
       )

@@ -20,8 +20,6 @@ Bellman(
   test_week,
   counter,
   inaccessible_states = 1,
-  next_level_high,
-  next_level_low,
   stop_rate = 5,
   ...
 )
@@ -70,6 +68,10 @@ interpolations. Defaults to FALSE.}
 
 \item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
 For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
+
+\item{stop_rate}{the percent from which the calculation stop. for example
+\code{stop_rate=5} means the calculation stop if there is a week with less then
+5\% accessibles states.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

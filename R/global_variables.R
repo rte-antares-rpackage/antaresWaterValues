@@ -12,5 +12,7 @@ utils::globalVariables(
     "Reward transition","states","hstorPMaxHigh","generatingMaxPower",
     "states_percent","i.statesid","i.value_node","i.value_node_dif","i.vu",
     "states_percent","vu_band","addBand","MC_year","nvu","transition",
-    "Turbining capacity GWh","filteringOptions")
+    "Turbining capacity GWh","filteringOptions","transition_reward",
+    "next_bellman_value","max_acc","vu_corr","acc_states","max_acc",
+    "reward_base")
 )

@@ -29,6 +29,9 @@
   #'   interpolations. Defaults to FALSE.
   #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
   #' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
+  #' @param stop_rate the percent from which the calculation stop. for example
+  #' \code{stop_rate=5} means the calculation stop if there is a week with less then
+  #' 5\% accessibles states.
   #' @param ... further arguments passed to or from other methods.
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @importFrom stats ave quantile
@@ -37,7 +40,8 @@
 
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,
-                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=1,next_level_high,next_level_low,stop_rate=5,...){
+                      correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=1,
+                      stop_rate=5,...){
 
 
 
@@ -131,7 +135,6 @@
 
     # respect the guide graph constraints
 
-    # decisions <-  guide_cs_check(decisions,states,value_inflow,next_level_high,next_level_low,alpha)
     decisions <-  guide_cs_check(decisions,states,value_inflow,level_high,level_low,alpha)
 
 

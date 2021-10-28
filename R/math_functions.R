@@ -139,8 +139,9 @@ mean_finite <- function(x) {
 #' Return \code{-Inf} in the other case.
 #' @param x numeric vector whose mean is wanted.
 #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
 #' @export
+
 mean_or_inf <- function(x,inaccessible_states){
   if(inaccessible_states==0){
   if(any(is.infinite(x)|any(is.nan(x)))){
@@ -166,9 +167,10 @@ mean_or_inf <- function(x,inaccessible_states){
 #' @param x numeric vector whose quantile is wanted.
 #' @param q_ratio Numeric in [0,1]. Probability of the quantile.
 #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.
+#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
 #' @importFrom stats quantile
 #' @export
+
 quantile_or_inf <- function(x,q_ratio,inaccessible_states=0){
 
 

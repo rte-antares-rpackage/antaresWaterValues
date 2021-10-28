@@ -13,7 +13,7 @@ quantile_or_inf(x, q_ratio, inaccessible_states = 0)
 \item{q_ratio}{Numeric in [0,1]. Probability of the quantile.}
 
 \item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
-For example if equal to 0.9 we delete the state if this states is inaccessible by 90% of scenarios.}
+For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
 }
 \description{
 Calculate the quantile if there is no infinite or missing value.

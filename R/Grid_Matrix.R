@@ -43,7 +43,10 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @param shiny Boolean. True to run the script in shiny mod.
+#' @param shiny Boolean. True to run the script in shiny mode.
+#' @param stop_rate the percent from which the calculation stop. for example
+#' \code{stop_rate=5} means the calculation stop if there is a week with less then
+#' 5\% accessibles states.
 #' @param ... further arguments passed to or from other methods.
 #' @return a \code{data.table}
 #' @export

@@ -87,7 +87,7 @@ in the console}
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
-\item{shiny}{Boolean. True to run the script in shiny mod.}
+\item{shiny}{Boolean. True to run the script in shiny mode.}
 
 \item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
 For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
@@ -106,6 +106,10 @@ between two water values is less then this value those values are converged.}
 \item{pumping}{Boolean. True to take into account the pumping.}
 
 \item{efficiency}{in [0,1]. efficient ratio of pumping.}
+
+\item{stop_rate}{the percent from which the calculation stop. for example
+\code{stop_rate=5} means the calculation stop if there is a week with less then
+5\% accessibles states.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

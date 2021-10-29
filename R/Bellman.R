@@ -145,8 +145,21 @@
 
 
 
+    max_Bell <- -Inf
+    ld <-length(decisions)
+    sorted_Bellman <- sort(Bellman_values)
+    lb <- length(sorted_Bellman)
+    t <- 1
+    while (t<ld){
+      max_bell <- sorted_Bellman[lb-t]
+      if(is.finite(suppressWarnings(min(Bellman$next_bellman_value[which(Bellman_values==max_bell)])))){
+        max_Bell <- max_bell
+        break
+      }
 
-    max_Bell <- suppressWarnings(max(Bellman_values, na.rm = TRUE))
+      t <- t+1
+    }
+
     Data_week$value_node[i] <- max_Bell
     if(length(decisions)>0){
       Data_week$transition[i] <- min(decisions[which(Bellman_values==max_Bell)])

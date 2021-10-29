@@ -296,7 +296,7 @@ feasible_test_week <- function(value_node,counter,stop_rate){
 scanarios_check <- function(Data_week,counter){
 
   Data_week[,acc_states:=is.finite(value_node)]
-  Data_week[, `:=` (accessibility = sum(acc_states)), by = statesid ]
+  Data_week[, `:=` (accessibility = sum(acc_states)), by = c("statesid","weeks") ]
   maxi <- max(Data_week$accessibility,na.rm = T)
   Data_week[, max_acc:=maxi]
   if(maxi==0) {

@@ -343,7 +343,7 @@
         watervalues[weeks==i,transition :=temp$transition]
         watervalues[weeks==i,transition_reward :=temp$transition_reward]
         watervalues[weeks==i,next_bellman_value :=temp$next_bellman_value]
-
+        watervalues[weeks==i,accessibility :=temp$accessibility]
         watervalues[weeks==i,max_acc :=temp$max_acc]
 
 
@@ -436,6 +436,7 @@
 
         watervalues[weeks==i,value_node :=temp$value_node]
         watervalues[weeks==i,transition :=temp$transition]
+        watervalues[weeks==i,accessibility :=temp$accessibility]
         watervalues[weeks==i,max_acc :=temp$max_acc]
 
 

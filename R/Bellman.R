@@ -146,8 +146,6 @@
 
 
 
-
-
     max_Bell <- suppressWarnings(max(Bellman_values, na.rm = TRUE))
     Data_week$value_node[i] <- max_Bell
     if(length(decisions)>0){
@@ -182,6 +180,11 @@
 
   # test scenarios
     Data_week <- scanarios_check(Data_week,counter)
+
+  # inaccessible criteria
+    mcyears <- length(unique(Data_week$years))
+    Data_week[,accessibility_percent:=accessibility/mcyears]
+    Data_week[accessibility_percent<=inaccessible_states,value_node:=NaN]
   #------ mean-grid method---------
 
   if (method == "mean-grid") {

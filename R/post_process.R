@@ -178,10 +178,7 @@ monotonic_JM <- function(results_dt)
   for (i in 1:52){
 
     temp <- results[weeks==i]
-    maxi <- max(temp$vu,na.rm = TRUE)
-    meanw <- mean(temp$vu,na.rm = TRUE)
-    q9 <- stats::quantile(temp$vu,0.95,na.rm = TRUE)
-    counter <- 0
+
 
     m <- 0
     M <- 0
@@ -204,6 +201,157 @@ monotonic_JM <- function(results_dt)
   }
 
   return(results)
+}
+
+
+#' Force monotonic water values Algorithm 2
+#'
+#' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
+#' @import data.table
+#' @importFrom stats quantile
+#' @return a \code{data.table}
+#' @export
+
+monotonic_JM2 <- function(results_dt)
+
+{
+  results <- copy(results_dt)
+  results[vu==Inf|is.na(vu),vu:=NaN]
+
+
+  for (i in 1:52){
+    temp <- results[weeks==i]
+    m <- 0
+    M <- 0
+
+    for (j in 1:nrow(temp)){
+
+      if (is.na(temp$vu[j])) next
+
+      if(m==0)m <- j
+
+      M <- j
+
+    }
+    vector <- temp$vu[m:M]
+
+    vector <- tryCatch(monotonic_JM2_fun(vector),error = function(e) e)
+    temp$vu[m:M] <- vector
+  #inversed
+   # tryCatch({ for (t in (M):m+1){
+   #    low <- 0
+   #    high <- 0
+   #    done <- F
+   #
+   #
+   #    if(temp$vu[t-1]<temp$vu[t]){
+   #      max_exp <- min(M-t,t-m)
+   #      if(max_exp!=0){
+   #        for(k in 1:max_exp){
+   #          if(temp$vu[t+k]<=temp$vu[t]) low <- 1
+   #          if(temp$vu[t-k]>=temp$vu[t]) high <- 1
+   #          if(high+low>0){
+   #            temp$vu[t-1] <- (low *temp$vu[t+1+k] +high*temp$vu[t-k])/(low+high)
+   #            done <- T
+   #            break
+   #          }
+   #        }
+   #        if(done==T) next
+   #        if(M-t+1>t-m){
+   #          for (p in max_exp:M-t+1){
+   #            if(temp$vu[t+p]<=temp$vu[t]){
+   #              temp$vu[t-1] <-temp$vu[t+1+p]
+   #              done <- T
+   #              break
+   #            }
+   #          }
+   #        }
+   #        if(done==T) next
+   #        if(M-t+1<t-m){
+   #          for (p in max_exp:t-m){
+   #            if(temp$vu[t-p]>=temp$vu[t]){
+   #              temp$vu[t-1] <-temp$vu[t-p]
+   #              done <- T
+   #              break
+   #            }
+   #          }
+   #        }
+   #
+   #
+   #
+   #      }
+   #    }
+   #
+   #
+   #  }},error = function(e) e)
+
+    results[weeks==i,vu :=temp$vu]
+  }
+
+  return(results)
+}
+
+
+
+monotonic_JM2_fun <- function(vector){
+
+  m <- 1
+  M <- length(vector)
+  if(vector[1]<vector[2]) vector[1] <- max(vector,na.rm = T)
+  for (t in m:(M-1)){
+    low <- 0
+    high <- 0
+    done <- F
+    if(vector[t+1]>vector[t]){
+      max_exp <- min(M-t-1,t-m+1)
+      if(((M-t+1)!=0)|((t-m)!=0)){
+        if(max_exp!=0){
+        for(k in 1:max_exp){
+          if(vector[t+1+k]<=vector[t]) low <- 1
+          if(vector[t-k]>=vector[t]) high <- 1
+          if(high+low>0){
+            if(t>1){
+            vector[t+1] <- (low *vector[t+1+k] +high*vector[t-k])/(low+high)
+            done <- T
+            break
+            }          }
+        }}
+        if(done==T) next
+        if(M-t-1>t-m+1){
+          for (p in max_exp:M-t-1){
+            if(vector[t+1+p]<=vector[t]){
+              vector[t+1] <-vector[t+1+p]
+              done <- T
+              break
+            }
+          }
+        }
+        if(done==T) next
+        if(M-t-1<t-m+1){
+          for (p in max_exp:t-m+1){
+            if(vector[t-p]>=vector[t]){
+              vector[t+1] <-vector[t-p]
+              done <- T
+              break
+            }
+          }
+        }
+
+
+
+      }
+    }
+    }
+
+    for (t in m:(M-2)){
+      if(vector[t+1]>vector[t]|vector[t+1]<vector[t+2]){
+        if(vector[t+2]<=vector[t])
+          vector[t+1] <-(vector[t]+vector[t+2])/2
+    }
+      }
+
+  return(vector)
+
 }
 
 

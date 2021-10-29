@@ -601,6 +601,13 @@ NB:  - Negative and positive values are affected by this filter.
                   shinyInput_label_embed(
                     shiny_iconlink() %>%
                       bs_embed_popover(title ="this filter replace a water value by the previous state value if he is bigger water values to assure that the water values become decreasing with the reservoir level.")),
+                h4("Using 2 direction algorithm"),
+                switchInput("force_monotonic_JM2",
+                            value=F, offStatus = "danger",
+                            onStatus = "success")%>%
+                  shinyInput_label_embed(
+                    shiny_iconlink() %>%
+                      bs_embed_popover(title ="this filter replace a water value by the exploring the other levels in two direction simultaneously in the case he find a solution in each way he do the mean.")),
 
 
 
@@ -1228,8 +1235,11 @@ server <- function(input, output, session) {
           if(input$force_monotonic_JM){
             monotonic_JM(results_temp())
           }else{
+            if(input$force_monotonic_JM2){
+              monotonic_JM2(results_temp())
+            }else{
           results_temp()}
-        }
+        }}
       }else{
         if(input$force_monotonic){
           monotonic_VU(post_result())
@@ -1237,7 +1247,13 @@ server <- function(input, output, session) {
           if(input$force_monotonic_JM){
             monotonic_JM(post_result())
           }else{
-          post_result()}
+            if(input$force_monotonic_JM2){
+              monotonic_JM2(results_temp())
+              }else{
+          post_result()
+            }
+
+            }
         }
      }
 

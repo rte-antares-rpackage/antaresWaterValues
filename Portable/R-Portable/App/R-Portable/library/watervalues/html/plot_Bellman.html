@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Plot Bellman and Water values</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for plot_Bellman {watervalues}"><tr><td>plot_Bellman {watervalues}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Plot Bellman and Water values</h2>
+
+<h3>Description</h3>
+
+<p>Plot Bellman and Water values
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+plot_Bellman(
+  value_nodes_dt,
+  week_number,
+  param = "vu",
+  states_step_ratio = 0.01,
+  bellman_week = NULL,
+  ...
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>value_nodes_dt</code></td>
+<td>
+<p>A data.table contains the Bellman and water values .
+Obtained using the function Grid_Matrix()</p>
+</td></tr>
+<tr valign="top"><td><code>week_number</code></td>
+<td>
+<p>Numeric of length 1. number of the week to plot.</p>
+</td></tr>
+<tr valign="top"><td><code>param</code></td>
+<td>
+<p>string contains the element to plot
+* &quot;vu&quot; to plot only water values
+* &quot;b&quot; to plot only bellman values
+* &quot;both&quot; to plot both water and bellman values
+Default &quot;vu&quot;</p>
+</td></tr>
+<tr valign="top"><td><code>states_step_ratio</code></td>
+<td>
+<p>put the ratio to change reservoir discretization in percent
+0.01 to augment by 1%</p>
+</td></tr>
+<tr valign="top"><td><code>bellman_week</code></td>
+<td>
+<p>Numeric of length 1. number of the week to plot
+the correspondent Bellman values.</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>further arguments passed to or from other methods.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>a <code>ggplot</code> object
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>watervalues</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

@@ -1,0 +1,41 @@
+Package: bsplus
+Type: Package
+Title: Adds Functionality to the R Markdown + Shiny Bootstrap Framework
+Version: 0.1.3
+Authors@R: c(
+    person(
+      given = "Ian",
+      family = "Lyttle",
+      email = "ian.lyttle@se.com",
+      role = c("aut", "cre", "cph"),
+      comment = c(ORCID = "0000-0001-9962-4849"),
+    ),
+    person(family = "Schneider Electric", role = c("cph")),
+    person(given = "Alex", family = "Shum", email = "alex@ALShum.com", role = c("ctb")),
+    person(given = "Emily", family = "Bosak", email = "berrye123@gmail.com", role = c("ctb"))
+  )
+Description: The Bootstrap framework lets you add some JavaScript functionality to your web site by
+  adding attributes to your HTML tags - Bootstrap takes care of the JavaScript
+  <https://getbootstrap.com/docs/3.3/javascript/>. If you are using R Markdown or Shiny, you can
+  use these functions to create collapsible sections, accordion panels, modals, tooltips,
+  popovers, and an accordion sidebar framework (not described at Bootstrap site).
+  Please note this package was designed for Bootstrap 3.3.
+License: MIT + file LICENSE
+Depends: R (>= 3.3.0)
+Imports: htmltools, magrittr, purrr, lubridate, stringr, rmarkdown,
+        glue, jsonlite, methods
+URL: https://github.com/ijlyttle/bsplus
+BugReports: https://github.com/ijlyttle/bsplus/issues
+RoxygenNote: 7.1.1
+Encoding: UTF-8
+Suggests: testthat, shiny, covr, knitr, markdown
+NeedsCompilation: no
+Packaged: 2021-10-04 15:33:42 UTC; ijlyttle
+Author: Ian Lyttle [aut, cre, cph] (<https://orcid.org/0000-0001-9962-4849>),
+  Schneider Electric [cph],
+  Alex Shum [ctb],
+  Emily Bosak [ctb]
+Maintainer: Ian Lyttle <ian.lyttle@se.com>
+Repository: CRAN
+Date/Publication: 2021-10-05 07:20:14 UTC
+Built: R 4.1.1; ; 2021-10-27 19:54:11 UTC; windows

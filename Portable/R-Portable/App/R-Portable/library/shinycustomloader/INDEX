@@ -1,0 +1,6 @@
+marquee                 Create a marquee list.
+renderCSS               Render a permanent loading screen.
+shinyExample            Example Shiny App
+shinycustomloader       shinycustomloader
+withLoader              Add a loader that shows when an output is
+                        recalculating

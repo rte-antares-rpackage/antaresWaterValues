@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Run a simulation for calculating water values for a specific...</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for runWaterValuesSimulation {watervalues}"><tr><td>runWaterValuesSimulation {watervalues}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Run a simulation for calculating water values for a specific area</h2>
+
+<h3>Description</h3>
+
+<p>Run a simulation for calculating water values for a specific area
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+runWaterValuesSimulation(
+  area,
+  simulation_name = "weekly_water_amount_%s",
+  nb_disc_stock = 10,
+  nb_mcyears = NULL,
+  binding_constraint = "WeeklyWaterAmount",
+  fictive_area = NULL,
+  thermal_cluster = NULL,
+  path_solver = NULL,
+  wait = TRUE,
+  show_output_on_console = FALSE,
+  overwrite = FALSE,
+  link_from = NULL,
+  remove_areas = NULL,
+  opts = antaresRead::simOptions(),
+  shiny = F,
+  otp_dest = NULL,
+  file_name = NULL,
+  pumping = F,
+  launch_simulations = T,
+  reset_hydro = T,
+  ...
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>The area concerned by the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>simulation_name</code></td>
+<td>
+<p>The name of the simulation, <code>s</code> is a placeholder for the constraint value defined by <code>nb_disc_stock</code>.</p>
+</td></tr>
+<tr valign="top"><td><code>nb_disc_stock</code></td>
+<td>
+<p>Number of simulation to launch, a vector of energy constraint
+will be created from maximum pumping power to the hydro storage maximum and of length this parameter.</p>
+</td></tr>
+<tr valign="top"><td><code>nb_mcyears</code></td>
+<td>
+<p>Number of Monte Carlo years to simulate or a vector of years indexes to launch.</p>
+</td></tr>
+<tr valign="top"><td><code>binding_constraint</code></td>
+<td>
+<p>Name of the binding constraint.</p>
+</td></tr>
+<tr valign="top"><td><code>fictive_area</code></td>
+<td>
+<p>Name of the fictive area to create, argument passed to <code><a href="../../watervalues/help/setupWaterValuesSimulation.html">setupWaterValuesSimulation</a></code>.</p>
+</td></tr>
+<tr valign="top"><td><code>thermal_cluster</code></td>
+<td>
+<p>Name of the thermal cluster to create, argument passed to <code><a href="../../watervalues/help/setupWaterValuesSimulation.html">setupWaterValuesSimulation</a></code>.</p>
+</td></tr>
+<tr valign="top"><td><code>path_solver</code></td>
+<td>
+<p>Character containing the Antares Solver path, argument passed to <code><a href="../../antaresEditObject/help/runSimulation.html">runSimulation</a></code>.</p>
+</td></tr>
+<tr valign="top"><td><code>wait</code></td>
+<td>
+<p>Argument passed to <code><a href="../../antaresEditObject/help/runSimulation.html">runSimulation</a></code>.</p>
+</td></tr>
+<tr valign="top"><td><code>show_output_on_console</code></td>
+<td>
+<p>Argument passed to <code><a href="../../antaresEditObject/help/runSimulation.html">runSimulation</a></code>.</p>
+</td></tr>
+<tr valign="top"><td><code>overwrite</code></td>
+<td>
+<p>If area or cluster already exists, should they be overwritten?</p>
+</td></tr>
+<tr valign="top"><td><code>link_from</code></td>
+<td>
+<p>area that will be linked to the created fictive area. If it's
+<code>NULL</code> it will takes the area concerned by the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>remove_areas</code></td>
+<td>
+<p>Character vector of area(s) to remove from the created district.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+<tr valign="top"><td><code>shiny</code></td>
+<td>
+<p>Boolean. True to run the script in shiny mod.</p>
+</td></tr>
+<tr valign="top"><td><code>otp_dest</code></td>
+<td>
+<p>the path in which the script save Rdata file.</p>
+</td></tr>
+<tr valign="top"><td><code>file_name</code></td>
+<td>
+<p>the Rdata file name.</p>
+</td></tr>
+<tr valign="top"><td><code>pumping</code></td>
+<td>
+<p>Boolean. True to take into account the pumping.</p>
+</td></tr>
+<tr valign="top"><td><code>launch_simulations</code></td>
+<td>
+<p>Boolean. True to to run the simulations.</p>
+</td></tr>
+<tr valign="top"><td><code>reset_hydro</code></td>
+<td>
+<p>Boolean. True to reset hydro inflow to 0 before the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>further arguments passed to or from other methods.</p>
+</td></tr>
+</table>
+
+
+<h3>Note</h3>
+
+<p>This function have side effects on the Antares study used, a fictive area is created and a new district as well.
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>watervalues</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

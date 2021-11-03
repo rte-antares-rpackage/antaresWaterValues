@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Plot the reward and return the results in table</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for plot_reward {watervalues}"><tr><td>plot_reward {watervalues}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Plot the reward and return the results in table</h2>
+
+<h3>Description</h3>
+
+<p>Plot the reward and return the results in table
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+plot_reward(
+  reward_base,
+  week_id,
+  sim_name_pattern = "weekly_water_amount_",
+  constraints_values = NULL,
+  output = FALSE
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>reward_base</code></td>
+<td>
+<p>A data.table contains the rewards.
+Obtained using the function get_Reward()</p>
+</td></tr>
+<tr valign="top"><td><code>week_id</code></td>
+<td>
+<p>Numeric of length 1. number of the week to plot.</p>
+</td></tr>
+<tr valign="top"><td><code>sim_name_pattern</code></td>
+<td>
+<p>the name of simulations used in <code>runWaterValuesSimulation()</code></p>
+</td></tr>
+<tr valign="top"><td><code>constraints_values</code></td>
+<td>
+<p>the value of the constraint</p>
+</td></tr>
+<tr valign="top"><td><code>output</code></td>
+<td>
+<p>Boolean. TRUE to return the table of values with the plot.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>a <code>ggplot</code> object
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>watervalues</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

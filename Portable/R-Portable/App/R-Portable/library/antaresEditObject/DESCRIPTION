@@ -1,0 +1,42 @@
+Package: antaresEditObject
+Type: Package
+Title: Edit an 'Antares' Simulation
+Version: 0.2.2
+Authors@R: c(
+    person("Veronique", "Bachelier", email = "veronique.bachelier@rte-france.com", role = c("aut", "cre")),
+    person("Frederic", "Breant", role = "aut"),
+    person("Victor", "Perrier", role = c("aut")),
+    person("Baptiste", "Seguinot", role = "ctb"),
+    person("Benoit", "Thieurmel", role = "ctb"),
+    person("Titouan", "Robert", role = "ctb"),
+    person("Jalal-Edine", "Zawam", role = "ctb"),
+    person("Etienne", "Sanchez", role = "ctb"),
+    person("Janus", "De Bondt", role = "ctb"),
+    person("RTE", role = "cph"))
+Description: Edit an 'Antares' simulation before running it : create new areas, links, thermal
+    clusters or binding constraints or edit existing ones. Update 'Antares' general & optimization settings.
+    'Antares' is an open source power system generator, more information available here : <https://antares-simulator.org/>.
+License: GPL (>= 2) | file LICENSE
+Encoding: UTF-8
+RoxygenNote: 7.1.1
+Depends: antaresRead (>= 2.2.7)
+Imports: assertthat, grDevices, data.table, whisker, fs, doParallel,
+        pbapply, parallel
+Suggests: testthat, covr, knitr, rmarkdown
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2021-06-21 15:07:36 UTC; bthie
+Author: Veronique Bachelier [aut, cre],
+  Frederic Breant [aut],
+  Victor Perrier [aut],
+  Baptiste Seguinot [ctb],
+  Benoit Thieurmel [ctb],
+  Titouan Robert [ctb],
+  Jalal-Edine Zawam [ctb],
+  Etienne Sanchez [ctb],
+  Janus De Bondt [ctb],
+  RTE [cph]
+Maintainer: Veronique Bachelier <veronique.bachelier@rte-france.com>
+Repository: CRAN
+Date/Publication: 2021-06-21 16:00:07 UTC
+Built: R 4.1.1; ; 2021-10-28 01:47:52 UTC; windows

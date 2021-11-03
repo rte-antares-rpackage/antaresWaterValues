@@ -1,0 +1,12 @@
+checkNameSpace          check namespace
+checkUrl                check if an URL can be reached
+historyStack            history stack structure and methods
+inc                     In-place operations
+msg                     pretty logging message
+notFalsy                Judgement of falsy value
+quiet                   Suppress cat, print, message and warning
+remove_ANSI             Remove ANSI color code
+simepleStack            A simple stack structure and methods
+spsOption               Get or set SPS options
+strUniquefy             Uniquefy a character vector
+timeout                 Run expressions with a timeout limit

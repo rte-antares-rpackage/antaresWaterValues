@@ -1,0 +1,23 @@
+Package: spsUtil
+Title: 'systemPipeShiny' Utility Functions
+Version: 0.2.2
+Date: 2021-10-29
+Authors@R: c(person(given = "Le", family = "Zhang", role = c("aut", "cre"), email = "lezhang100@gmail.com"))
+Description: The systemPipeShiny (SPS) framework comes with many useful utility functions. However, installing the whole framework is heavy and takes some time. If you like only a few useful utility functions from SPS, install this package is enough.
+Depends: R (>= 4.0.0)
+Imports: httr, assertthat, stringr, glue, magrittr, crayon, utils, R6,
+        stats
+Suggests: testthat
+License: GPL (>= 3)
+Encoding: UTF-8
+BugReports: https://github.com/lz100/spsUtil/issues
+URL: https://github.com/lz100/spsUtil
+RoxygenNote: 7.1.2
+Config/testthat/edition: 3
+NeedsCompilation: no
+Packaged: 2021-10-29 22:20:33 UTC; lab
+Author: Le Zhang [aut, cre]
+Maintainer: Le Zhang <lezhang100@gmail.com>
+Repository: CRAN
+Date/Publication: 2021-10-30 22:30:02 UTC
+Built: R 4.1.1; ; 2021-11-01 15:07:52 UTC; windows

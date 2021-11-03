@@ -197,7 +197,7 @@
   # inaccessible criteria
     mcyears <- length(unique(Data_week$years))
     Data_week[,accessibility_percent:=accessibility/mcyears]
-    Data_week[accessibility_percent<=inaccessible_states,value_node:=NaN]
+    Data_week[accessibility_percent<inaccessible_states,value_node:=NaN]
   #------ mean-grid method---------
 
   if (method == "mean-grid") {
@@ -213,24 +213,17 @@
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
-    if(inaccessible_states<1){
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) mean_or_inf(x,inaccessible_states))
-    }else{
-      Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean_finite)
-    }
-      return(Data_week)
+
+    return(Data_week)
   }
 
   if (method=="quantile"){
     if (correct_outliers) {
       Data_week[, value_node := correct_outliers(value_node)]
     }
-    if(inaccessible_states<1){
-    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) quantile_or_inf(x,q_ratio,inaccessible_states))
-    }else{
-    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio))
 
-    }
+    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio))
 
 
     return(Data_week)

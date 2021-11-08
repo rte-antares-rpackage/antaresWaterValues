@@ -11,7 +11,7 @@ post_process(
   full_imputation = FALSE,
   impute_method = "pmm",
   fix = F,
-  min_vu = 0,
+  min_vu = 0.5,
   max_vu = 1000,
   blocker = F
 )

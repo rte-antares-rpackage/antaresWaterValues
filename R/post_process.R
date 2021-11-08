@@ -1,3 +1,58 @@
+#' Fill constant water values
+#'
+#' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
+#' @param min_wv minimal water value to use
+#' @param max_wv maximal water value to use
+#' @import data.table
+#' @return a \code{data.table}
+#' @export
+
+constant_fill <- function(results_dt,max_wv,min_wv)
+
+{
+  results <- copy(results_dt)
+
+
+  for (i in 1:52){
+
+    temp <- results[weeks==i]
+
+
+    m <- 0
+    M <- 0
+
+    for (j in 1:nrow(temp)){
+
+      if (!is.finite(temp$vu[j])) next
+
+      if(m==0)m <- temp[j,]$statesid
+
+      M <- j
+
+    }
+    M <- temp[M,]$statesid
+
+    temp[statesid>m,vu:=max_wv]
+    temp[statesid<M,vu:=min_wv]
+    for (j in 2:nrow(temp)){
+      if(is.na(temp$vu[j])) temp$vu[j] <-  temp$vu[j-1]
+    }
+    results[weeks==i,vu :=temp$vu]
+  }
+
+  return(results)
+}
+
+
+
+
+
+
+
+
+
+
+
 #' Fill the rest of reservoir states water values
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}.
 #' @param max_cost maximal accepted water value (Replace by 'NA' crossed values)
@@ -17,7 +72,7 @@
 #' @export
 
 post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FALSE,
-                         impute_method='pmm',fix=F,min_vu=0,max_vu=1000,blocker=F){
+                         impute_method='pmm',fix=F,min_vu=0.5,max_vu=1000,blocker=F){
 
   results <- copy(results_dt)
   results[vu==Inf|is.na(vu),vu:=NA]
@@ -30,6 +85,11 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
   # results[vu<-down_cost,vu:=NA]
 
   if(fix){
+    if(T){
+      results <- constant_fill(results,max_vu,min_vu)
+      return(results)
+    }
+
     if(!is.numeric(min_vu))min_vu <- min(results$vu,na.rm = T)
     if(!is.numeric(max_vu))max_vu <- min(results$vu,na.rm = T)
     results[states>level_high,vu:=min_vu]

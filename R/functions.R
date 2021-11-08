@@ -1,3 +1,160 @@
+#' Restore the Pumping power series
+#'
+#' @param area A valid Antares area.
+#' @param path Path to a manual backup.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param silent Boolean. True to run without messages.
+#' @return An updated list containing various information about the simulation.
+#' @export
+#'
+#' @importFrom assertthat assert_that
+#' @importFrom antaresRead setSimulationPath
+#'
+restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
+  assertthat::assert_that(class(opts) == "simOptions")
+  if (!area %in% opts$areaList)
+    stop(paste(area, "is not a valid area"))
+
+  # Input path
+  inputPath <- opts$inputPath
+
+  if (is.null(path)) {
+    # Pump power ----
+    path_pump_power_backup <- file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt"))
+
+    if (file.exists(path_pump_power_backup)) {
+      file.copy(
+        from = path_pump_power_backup,
+        to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
+        overwrite = TRUE
+      )
+      unlink(x = path_pump_power_backup)
+    } else {
+      if(!silent) message("No backup found")
+    }
+  } else {
+    file.copy(
+      from = path,
+      to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
+      overwrite = TRUE
+    )
+  }
+
+  # Maj simulation
+  res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+
+  invisible(res)
+}
+
+
+#' Reset to 0 the pumping power
+#'
+#'
+#' @param area A valid Antares area.
+#' @param path Optional, a path where to save the hydro storage file.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @note The function makes a copy of the original hydro storage time series,
+#'  you can restore these with \code{restoreHydroStorage}.
+#'
+#' @seealso \link{restoreHydroStorage}
+#'
+#' @importFrom utils read.table write.table
+#' @importFrom assertthat assert_that
+#' @importFrom antaresRead setSimulationPath
+#'
+#' @return An updated list containing various information about the simulation.
+#' @export
+#'
+# @examples
+resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) {
+
+  assertthat::assert_that(class(opts) == "simOptions")
+  if (!area %in% opts$areaList)
+    stop(paste(area, "is not a valid area"))
+
+  # Input path
+  inputPath <- opts$inputPath
+
+
+
+
+
+
+  # Pump power ----
+  if (is.null(path)) {
+    path_test <-  file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt"))
+
+    #In case there is mod_backup from an interrupted simulation
+    if (file.exists(path_test)) {
+      file.copy(
+        from = path_test,
+        to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
+        overwrite = TRUE
+      )
+      unlink(x=path_test)
+    }
+
+
+    path_pump_power <- file.path(inputPath, "hydro", "common","capacity",  paste0("maxpower_",area,".txt"))
+  } else {
+    path_pump_power <- path
+  }
+
+  if (file.exists(path_pump_power)) {
+
+    # file's copy
+    res_copy <- file.copy(
+      from = path_pump_power,
+      to = file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt")),
+      overwrite = FALSE
+    )
+    if (!res_copy)
+      stop("Impossible to backup pumping power file")
+
+    # read pump power and initialize at 0
+    pump_power <- utils::read.table(file = path_pump_power)
+    pump_power[,3] <- 0
+    utils::write.table(
+      x = pump_power[, , drop = FALSE],
+      file = path_pump_power,
+      row.names = FALSE,
+      col.names = FALSE,
+      sep = "\t"
+    )
+
+  } else {
+
+    message("No pumping power for this area, creating one")
+    v <- rep(0, 365)
+    h <- rep(24,365)
+    utils::write.table(
+      x = data.frame(v,h,v,h),
+      file = path_pump_power,
+      row.names = FALSE,
+      col.names = FALSE,
+      sep = "\t"
+    )
+
+  }
+
+  # Maj simulation
+  suppressWarnings({
+    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+  })
+
+  invisible(res)
+}
+
+
+
+
+
+
 #--------- Reporting data---------------
 #' Plot simulation variables comparison and real Ov. cost (for watervalues)
 #'

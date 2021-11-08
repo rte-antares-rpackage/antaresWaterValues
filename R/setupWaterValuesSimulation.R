@@ -43,6 +43,7 @@ setupWaterValuesSimulation <- function(area,
   if(reset_hydro){
     suppressWarnings(resetHydroStorage(area = area, opts = opts))
   }
+  suppressWarnings(resetPumpPower(area = area, opts = opts))
   # Get hydro max power
   hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   hydro_storage_max <- rbind(

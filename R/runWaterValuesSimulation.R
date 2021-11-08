@@ -74,6 +74,8 @@ runWaterValuesSimulation <- function(area,
 
   # restore hydro inflow if there is a previous intercepted simulation.
   restoreHydroStorage(area = area, opts = opts,silent = T)
+  # restore Pump power if there is a previous intercepted simulation.
+  restorePumpPower(area = area, opts = opts,silent = T)
 
   # MC years
   assertthat::assert_that(is.numeric(nb_mcyears)==TRUE)
@@ -190,6 +192,7 @@ runWaterValuesSimulation <- function(area,
 
         # restore hydrostorage
         restoreHydroStorage(area = area, opts = opts)
+        restorePumpPower(area = area, opts = opts)
         stop("Simulation Error. Please check simulation log.")
       }
     }
@@ -202,6 +205,7 @@ runWaterValuesSimulation <- function(area,
 
    # restore hydrostorage
    restoreHydroStorage(area = area, opts = opts)
+   restorePumpPower(area = area, opts = opts)
 
   simulation_res <- list(
     simulation_names = simulation_names,

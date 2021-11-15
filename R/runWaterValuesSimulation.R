@@ -126,7 +126,7 @@ runWaterValuesSimulation <- function(area,
 
   #add load
   max_load <- max(abs(constraint_values))*10
-  antaresEditObject::writeInputTS(fictive_area, type = "load", data = matrix(rep(max_load, 8760*max(nb_mcyears)), nrow = 8760))
+  antaresEditObject::writeInputTS(fictive_area, type = "load", data = matrix(rep(max_load, 8760* opts$parameters$general$nbyears), nrow = 8760))
 
 
   #generate the flow sens constraints

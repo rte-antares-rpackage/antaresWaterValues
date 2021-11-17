@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: simulations names and values generator</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for simulation_names_values {watervalues}"><tr><td>simulation_names_values {watervalues}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>simulations names and values generator</h2>
+
+<h3>Description</h3>
+
+<p>simulations names and values generator
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+simulation_names_values(
+  area,
+  simulation_name,
+  nb_disc_stock,
+  pumping = F,
+  opts = antaresRead::simOptions()
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>The area concerned by the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>simulation_name</code></td>
+<td>
+<p>The used name of the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>nb_disc_stock</code></td>
+<td>
+<p>Number of simulation launched.</p>
+</td></tr>
+<tr valign="top"><td><code>pumping</code></td>
+<td>
+<p>Boolean. True to take into account the pumping.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+</table>
+
+
+<h3>Note</h3>
+
+<p>This function have no side effects on the Antares study used.
+It's used in case you forget to save the output of script <code>runWaterValuesSimulation</code> to generate the output.
+The results are meaningless unless you already launched the <code>runWaterValuesSimulation</code> with the same parameters.
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>watervalues</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

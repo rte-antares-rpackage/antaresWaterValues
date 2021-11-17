@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Fill the rest of reservoir states water values</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for post_process {watervalues}"><tr><td>post_process {watervalues}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Fill the rest of reservoir states water values</h2>
+
+<h3>Description</h3>
+
+<p>Fill the rest of reservoir states water values
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+post_process(
+  results_dt,
+  max_cost = 3000,
+  min_cost = 0,
+  full_imputation = FALSE,
+  impute_method = "pmm",
+  fix = F,
+  min_vu = 0.5,
+  max_vu = 1000,
+  blocker = F
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>results_dt</code></td>
+<td>
+<p>Output from <code>watervalues</code> or <code>Grid_Matrix</code>.</p>
+</td></tr>
+<tr valign="top"><td><code>max_cost</code></td>
+<td>
+<p>maximal accepted water value (Replace by 'NA' crossed values)</p>
+</td></tr>
+<tr valign="top"><td><code>min_cost</code></td>
+<td>
+<p>minimal accepted water value (Replace by 'NA' crossed values)</p>
+</td></tr>
+<tr valign="top"><td><code>full_imputation</code></td>
+<td>
+<p>boolean. use 'max_cost' and 'min_cost' to impute the
+missing values</p>
+</td></tr>
+<tr valign="top"><td><code>impute_method</code></td>
+<td>
+<p>impute method. check methods in <code>help(mice)</code></p>
+</td></tr>
+<tr valign="top"><td><code>fix</code></td>
+<td>
+<p>Boolean. Fill missing values with constant values</p>
+</td></tr>
+<tr valign="top"><td><code>min_vu</code></td>
+<td>
+<p>minimal water value to use in fix strategy</p>
+</td></tr>
+<tr valign="top"><td><code>max_vu</code></td>
+<td>
+<p>maximal water value to use in fix strategy</p>
+</td></tr>
+<tr valign="top"><td><code>blocker</code></td>
+<td>
+<p>Boolean False to launch two times the post_process function recursively.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>a <code>data.table</code>
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>watervalues</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

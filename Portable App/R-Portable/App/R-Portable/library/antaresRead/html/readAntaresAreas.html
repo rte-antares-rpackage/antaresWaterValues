@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Read output for a list of areas</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for readAntaresAreas {antaresRead}"><tr><td>readAntaresAreas {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Read output for a list of areas</h2>
+
+<h3>Description</h3>
+
+<p>This a function is a wrapper for &quot;antaresData&quot; that reads all data for a
+list of areas.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+readAntaresAreas(
+  areas,
+  links = TRUE,
+  clusters = TRUE,
+  clustersRes = TRUE,
+  internalOnly = FALSE,
+  opts = simOptions(),
+  ...
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>areas</code></td>
+<td>
+<p>Vector containing area names. It represents the set of areas we are interested
+in. If <code>NULL</code>, all areas of the study are used.</p>
+</td></tr>
+<tr valign="top"><td><code>links</code></td>
+<td>
+<p>should links connected to the areas be imported ?</p>
+</td></tr>
+<tr valign="top"><td><code>clusters</code></td>
+<td>
+<p>should the thermal clusters of the areas be imported ?</p>
+</td></tr>
+<tr valign="top"><td><code>clustersRes</code></td>
+<td>
+<p>should the renewable clusters of the areas be imported ?</p>
+</td></tr>
+<tr valign="top"><td><code>internalOnly</code></td>
+<td>
+<p>If <code>TRUE</code>, only links that connect two areas from parameter <code>areas</code> are returned. 
+If not, the function also returns all the links that connect an area from the list with 
+an area outside the list.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>Other arguments passed to the function <code><a href="../../antaresRead/help/readAntares.html">readAntares</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>If <code>simplify = TRUE</code> and only one type of output is imported
+then the result is a data.table.
+</p>
+<p>Else an object of class &quot;antaresData&quot; is returned. It is a list of
+data.tables, each element representing one type of element (areas, links,
+clusters)
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+myarea &lt;- simOptions()$areaList[1]
+data &lt;- readAntaresAreas(myarea)
+
+# Equivalent but more concise than:
+data2 &lt;- readAntares(myarea, links = getLinks(myarea), clusters = myarea)
+
+all.equal(data, data2)
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

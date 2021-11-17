@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Convert objects to antaresDataTable</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for as.antaresDataList {antaresRead}"><tr><td>as.antaresDataList {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Convert objects to antaresDataTable</h2>
+
+<h3>Description</h3>
+
+<p>This function converts a list of tables or table into an
+<code>antaresDataList</code> object.
+</p>
+<p>An <code>antaresDataList</code> is a list of tables of class<code>antaresDataTable</code>.
+It also has attributes that store the time step, the type of data and the 
+simulation options.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+as.antaresDataList(x, ...)
+
+## S3 method for class 'antaresDataTable'
+as.antaresDataList(x, name = NULL, ...)
+
+## S3 method for class 'data.frame'
+as.antaresDataList(
+  x,
+  synthesis,
+  timeStep,
+  type,
+  opts = simOptions(),
+  name = type,
+  ...
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>x</code></td>
+<td>
+<p>Data.frame or data.table to convert to a an antaresDataTable.</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>Arguments to be passed to methods.</p>
+</td></tr>
+<tr valign="top"><td><code>name</code></td>
+<td>
+<p>name of the table in the final object. If <code>NULL</code>, the type of the data
+is used.</p>
+</td></tr>
+<tr valign="top"><td><code>synthesis</code></td>
+<td>
+<p>Does the table contain synthetic results ?</p>
+</td></tr>
+<tr valign="top"><td><code>timeStep</code></td>
+<td>
+<p>Time step of the data. One of &quot;hourly&quot;, &quot;daily&quot;, &quot;weekly&quot;, &quot;monthly&quot; or &quot;annual&quot;.</p>
+</td></tr>
+<tr valign="top"><td><code>type</code></td>
+<td>
+<p>type of data: for instance &quot;areas&quot;, &quot;links&quot;, &quot;clusters&quot;, etc.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>Simulation options.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p><code>antaresDataList</code> object.
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

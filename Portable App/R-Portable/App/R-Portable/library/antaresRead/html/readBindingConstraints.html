@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Read binding constraints</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for readBindingConstraints {antaresRead}"><tr><td>readBindingConstraints {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Read binding constraints</h2>
+
+<h3>Description</h3>
+
+<p>This function reads the binding constraints of an Antares project. 
+</p>
+<p>Be aware that binding constraints are read in the input files of a study. So
+they may have changed since a simulation has been run.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+readBindingConstraints(opts = simOptions())
+
+## S3 method for class 'bindingConstraints'
+summary(object, ...)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+<tr valign="top"><td><code>object</code></td>
+<td>
+<p>Object returned by readBindingConstraints</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>Unused</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p><code>readBindingConstraints</code> returns an object of class <code>bindingConstraints</code>.
+It is a named list with one element per read constraint. Each element is itself
+a list with the following elements: 
+</p>
+<table summary="R valueblock">
+<tr valign="top"><td><code>enabled</code></td>
+<td>
+<p>is the constraint enabled ?</p>
+</td></tr>
+<tr valign="top"><td><code>timeStep</code></td>
+<td>
+<p>time step the constraint applies to</p>
+</td></tr>
+<tr valign="top"><td><code>operator</code></td>
+<td>
+<p>type of constraint: equality, inequality on one side or both sides</p>
+</td></tr>
+<tr valign="top"><td><code>coefficients</code></td>
+<td>
+<p>elements containing the coefficients used by the constraint</p>
+</td></tr>
+<tr valign="top"><td><code>values</code></td>
+<td>
+<p>values used by the constraint. It contains one line per time step
+and three columns &quot;less&quot;, &quot;greater&quot; and &quot;equal&quot;</p>
+</td></tr>
+</table>
+<p>The <code>summary</code> method returns a data.frame with one line per constraint.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+setSimulationPath()
+
+constraints &lt;- readBindingConstraints()
+summary(constraints)
+
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

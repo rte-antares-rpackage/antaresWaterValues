@@ -1,0 +1,30 @@
+Package: writexl
+Type: Package
+Title: Export Data Frames to Excel 'xlsx' Format
+Version: 1.4.0
+Authors@R: c(
+    person("Jeroen", "Ooms", ,"jeroen@berkeley.edu", role = c("aut", "cre"),
+      comment = c(ORCID = "0000-0002-4035-0289")),
+    person("John McNamara", role = "cph",
+      comment = "Author of libxlsxwriter (see AUTHORS and COPYRIGHT files for details)"))
+Description: Zero-dependency data frame to xlsx exporter based on 'libxlsxwriter'. 
+    Fast and no Java or Excel required.
+License: BSD_2_clause + file LICENSE
+Encoding: UTF-8
+URL: https://docs.ropensci.org/writexl/ (website)
+        https://github.com/ropensci/writexl (devel)
+        https://libxlsxwriter.github.io (upstream)
+BugReports: https://github.com/ropensci/writexl/issues
+RoxygenNote: 7.0.2
+Suggests: spelling, readxl, nycflights13, testthat, bit64
+Language: en-US
+NeedsCompilation: yes
+Packaged: 2021-04-20 21:33:57 UTC; jeroen
+Author: Jeroen Ooms [aut, cre] (<https://orcid.org/0000-0002-4035-0289>),
+  John McNamara [cph] (Author of libxlsxwriter (see AUTHORS and COPYRIGHT
+    files for details))
+Maintainer: Jeroen Ooms <jeroen@berkeley.edu>
+Repository: CRAN
+Date/Publication: 2021-04-20 22:00:02 UTC
+Built: R 4.1.1; x86_64-w64-mingw32; 2021-10-27 18:03:52 UTC; windows
+Archs: i386, x64

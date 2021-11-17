@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Select and exclude areas</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for getAreas {antaresRead}"><tr><td>getAreas {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Select and exclude areas</h2>
+
+<h3>Description</h3>
+
+<p><code>getAreas</code> and <code>getDistricts</code> are utility functions that builds 
+list of areas or districts by using regular expressions to select and/or 
+exclude areas/districts
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+getAreas(
+  select = NULL,
+  exclude = NULL,
+  withClustersOnly = FALSE,
+  regexpSelect = TRUE,
+  regexpExclude = TRUE,
+  opts = simOptions(),
+  ignore.case = TRUE,
+  districts = NULL
+)
+
+getDistricts(
+  select = NULL,
+  exclude = NULL,
+  regexpSelect = TRUE,
+  regexpExclude = TRUE,
+  opts = simOptions(),
+  ignore.case = TRUE
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>select</code></td>
+<td>
+<p>Character vector. If <code>regexpSelect</code> is TRUE, this vector is
+interpreted as a list of regular expressions. Else it is interpreted as a
+list of area names. If <code>NULL</code>, all areas are selected</p>
+</td></tr>
+<tr valign="top"><td><code>exclude</code></td>
+<td>
+<p>Character vector. If <code>regexpExclude</code> is TRUE, this vector is
+interpreted as a list of regular expressions and each area validating one
+of them is excluded. Else it is interpreted as list of area names to 
+exclude. If <code>NULL</code>, not any area is excluded.</p>
+</td></tr>
+<tr valign="top"><td><code>withClustersOnly</code></td>
+<td>
+<p>Should the function return only nodes containing clusters ?</p>
+</td></tr>
+<tr valign="top"><td><code>regexpSelect</code></td>
+<td>
+<p>Is <code>select</code> a list of regular expressions ?</p>
+</td></tr>
+<tr valign="top"><td><code>regexpExclude</code></td>
+<td>
+<p>Is <code>exclude</code> a list of regular expressions ?</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+<tr valign="top"><td><code>ignore.case</code></td>
+<td>
+<p>Should the case be ignored when evaluating the regular
+expressions ?</p>
+</td></tr>
+<tr valign="top"><td><code>districts</code></td>
+<td>
+<p>Names of districts. If this argument is not null, only areas belonging
+to the specified districts are returned.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A character vector containing the name of the areas/districts satisfying the 
+rules defined by the parameters.
+</p>
+
+
+<h3>See Also</h3>
+
+<p><code><a href="../../antaresRead/help/getLinks.html">getLinks</a></code>
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

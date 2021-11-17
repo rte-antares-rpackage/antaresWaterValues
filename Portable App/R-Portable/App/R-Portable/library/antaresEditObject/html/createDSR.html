@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Create a Demand Side Response (DSR)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for createDSR {antaresEditObject}"><tr><td>createDSR {antaresEditObject}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Create a Demand Side Response (DSR)</h2>
+
+<h3>Description</h3>
+
+<p>Create a Demand Side Response (DSR)
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+createDSR(
+  areasAndDSRParam = NULL,
+  spinning = 2,
+  overwrite = FALSE,
+  opts = antaresRead::simOptions()
+)
+
+getCapacityDSR(area = NULL, opts = antaresRead::simOptions())
+
+editDSR(
+  area = NULL,
+  unit = NULL,
+  nominalCapacity = NULL,
+  marginalCost = NULL,
+  spinning = NULL,
+  opts = antaresRead::simOptions()
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>areasAndDSRParam</code></td>
+<td>
+<p>A data.frame with 4 columns <code>area</code>, <code>unit</code>,
+<code>nominalCapacity</code>, <code>marginalCost</code> and <code>hour</code>.
+Hour represent the number of activation hours for the DSR per day.</p>
+</td></tr>
+<tr valign="top"><td><code>spinning</code></td>
+<td>
+<p>DSR spinning</p>
+</td></tr>
+<tr valign="top"><td><code>overwrite</code></td>
+<td>
+<p>Overwrite the DSR plant if already exist.
+This will overwrite the previous area and links.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>an area where to edit the DSR</p>
+</td></tr>
+<tr valign="top"><td><code>unit</code></td>
+<td>
+<p>DSR unit number</p>
+</td></tr>
+<tr valign="top"><td><code>nominalCapacity</code></td>
+<td>
+<p>DSR nominalCapacity</p>
+</td></tr>
+<tr valign="top"><td><code>marginalCost</code></td>
+<td>
+<p>DSR marginalCost</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p><code>createDSR()</code> and <code>editDSR()</code>  returns an updated list containing various information about the simulation.
+</p>
+<p><code>getCapacityDSR()</code> returns DSR capacity (unit * nominalCapacity of virtual cluster) of the area
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+
+library(antaresEditObject)
+path&lt;-pathToYourStudy
+opts&lt;-setSimulationPath(path, simulation = "input")
+area, unit, nominalCapacity and marginalCost
+dsrData&lt;-data.frame(area = c("a", "b"), unit = c(10,20), 
+                    nominalCapacity = c(100, 120), marginalCost = c(52, 65), hour = c(3, 7))
+
+createDSR(dsrData)
+
+createDSR(dsrData, spinning = 3, overwrite = TRUE)
+getAreas()
+
+
+## End(Not run)
+## Not run: 
+
+getCapacityDSR("a")
+editDSR("a", unit = 50, nominalCapacity = 8000)
+getCapacityDSR("a")
+
+
+## End(Not run)
+## Not run: 
+
+getCapacityDSR("a")
+editDSR("a", unit = 50, nominalCapacity = 8000, marginalCost = 45, hour = 9)
+getCapacityDSR("a")
+
+
+## End(Not run)
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresEditObject</em> version 0.3.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

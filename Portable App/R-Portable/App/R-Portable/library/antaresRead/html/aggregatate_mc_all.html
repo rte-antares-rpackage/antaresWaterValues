@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Creation of Mc_all (only antares &gt; V6)</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for parAggregateMCall {antaresRead}"><tr><td>parAggregateMCall {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Creation of Mc_all (only antares &gt; V6)</h2>
+
+<h3>Description</h3>
+
+<p>Creation of Mc_all (only antares &gt; V6)
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+parAggregateMCall(
+  opts,
+  nbcl = 8,
+  verbose = 1,
+  timestep = c("annual", "daily", "hourly", "monthly", "weekly"),
+  writeOutput = TRUE,
+  mcWeights = NULL,
+  mcYears = NULL
+)
+
+aggregateResult(
+  opts,
+  verbose = 1,
+  filtering = FALSE,
+  selected = NULL,
+  timestep = c("annual", "daily", "hourly", "monthly", "weekly"),
+  writeOutput = FALSE,
+  mcWeights = NULL,
+  mcYears = NULL
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p><code>list</code> of simulation parameters returned by the function <a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></p>
+</td></tr>
+<tr valign="top"><td><code>nbcl</code></td>
+<td>
+<p><code>numeric</code> Number of parralel process</p>
+</td></tr>
+<tr valign="top"><td><code>verbose</code></td>
+<td>
+<p><code>numeric</code> show log in console. Defaut to 1
+</p>
+
+<ul>
+<li><p>0 : No log
+</p>
+</li>
+<li><p>1 : Short log
+</p>
+</li>
+<li><p>2 : Long log
+</p>
+</li></ul>
+</td></tr>
+<tr valign="top"><td><code>timestep</code></td>
+<td>
+<p><code>character</code> antares timestep</p>
+</td></tr>
+<tr valign="top"><td><code>writeOutput</code></td>
+<td>
+<p><code>boolean</code> write result or not.</p>
+</td></tr>
+<tr valign="top"><td><code>mcWeights</code></td>
+<td>
+<p><code>numeric</code> vector of weigth for mcYears.</p>
+</td></tr>
+<tr valign="top"><td><code>mcYears</code></td>
+<td>
+<p><code>numeric</code> mcYears to load.</p>
+</td></tr>
+<tr valign="top"><td><code>filtering</code></td>
+<td>
+<p><code>boolean</code> filtering control</p>
+</td></tr>
+<tr valign="top"><td><code>selected</code></td>
+<td>
+<p><code>list</code> named list (pass to antaresRead) : list(areas = 'a', links = 'a - e')</p>
+</td></tr>
+</table>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+   aggregateResult(opts)
+
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

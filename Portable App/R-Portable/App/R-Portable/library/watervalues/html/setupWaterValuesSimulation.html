@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Setup a simulation before running it for calculating Water...</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for setupWaterValuesSimulation {watervalues}"><tr><td>setupWaterValuesSimulation {watervalues}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Setup a simulation before running it for calculating Water Values</h2>
+
+<h3>Description</h3>
+
+<p>Setup a simulation before running it for calculating Water Values
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+setupWaterValuesSimulation(
+  area,
+  fictive_area = paste0("watervalue_", area),
+  thermal_cluster = "WaterValueCluster",
+  overwrite = FALSE,
+  remove_areas = NULL,
+  opts = antaresRead::simOptions(),
+  reset_hydro = T,
+  link_from = NULL,
+  ...
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>The area concerned by the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>fictive_area</code></td>
+<td>
+<p>Name of the fictive area to create.</p>
+</td></tr>
+<tr valign="top"><td><code>thermal_cluster</code></td>
+<td>
+<p>Name of the thermal cluster to create.</p>
+</td></tr>
+<tr valign="top"><td><code>overwrite</code></td>
+<td>
+<p>If area or cluster already exists, overwrite them ?</p>
+</td></tr>
+<tr valign="top"><td><code>remove_areas</code></td>
+<td>
+<p>Character vector of area(s) to remove from the created district.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+<tr valign="top"><td><code>reset_hydro</code></td>
+<td>
+<p>Boolean. True to reset hydro inflow to 0 before the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>link_from</code></td>
+<td>
+<p>area that will be linked to the created fictive area. If it's
+<code>NULL</code> it will takes the area concerned by the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>further arguments passed to or from other methods.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The result of antaresRead::simOptions
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>watervalues</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

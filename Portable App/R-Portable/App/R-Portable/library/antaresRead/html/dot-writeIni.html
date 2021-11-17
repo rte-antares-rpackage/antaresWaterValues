@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Write ini file from list obtain by antaresRead:::readIniFile...</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for .writeIni {antaresRead}"><tr><td>.writeIni {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Write ini file from list obtain by antaresRead:::readIniFile and modify by user</h2>
+
+<h3>Description</h3>
+
+<p>Write ini file from list obtain by antaresRead:::readIniFile and modify by user
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+.writeIni(listData, pathIni, overwrite = FALSE)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>listData</code></td>
+<td>
+<p><code>list</code>, modified list obtained by antaresRead:::readIniFile.</p>
+</td></tr>
+<tr valign="top"><td><code>pathIni</code></td>
+<td>
+<p><code>Character</code>, Path to ini file.</p>
+</td></tr>
+<tr valign="top"><td><code>overwrite</code></td>
+<td>
+<p>logical, should file be overwritten if already exist?</p>
+</td></tr>
+</table>
+
+
+<h3>Examples</h3>
+
+<pre>
+
+## Not run: 
+pathIni &lt;- "D:/exemple_test/settings/generaldata.ini"
+generalSetting &lt;- antaresRead:::readIniFile(pathIni)
+generalSetting$output$synthesis &lt;- FALSE
+writeIni(generalSetting, pathIni)
+
+## End(Not run)
+
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Change the timestep of an output</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for changeTimeStep {antaresRead}"><tr><td>changeTimeStep {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Change the timestep of an output</h2>
+
+<h3>Description</h3>
+
+<p>This function changes the timestep of a table or an <code>antaresData</code> object
+and performs the required aggregation or desaggregation. We can specify
+(des)aggregate functions by columns, see the param 'fun'.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+changeTimeStep(x, newTimeStep, oldTimeStep, fun = "sum", opts = simOptions())
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>x</code></td>
+<td>
+<p>data.table with a column &quot;timeId&quot; or an object of class &quot;antaresDataList&quot;</p>
+</td></tr>
+<tr valign="top"><td><code>newTimeStep</code></td>
+<td>
+<p>Desired time step.The possible values are hourly, daily, weekly, 
+monthly and annual.</p>
+</td></tr>
+<tr valign="top"><td><code>oldTimeStep</code></td>
+<td>
+<p>Current time step of the data. This argument is optional for an object of
+class <code>antaresData</code> because the time step of the data is stored inside
+the object</p>
+</td></tr>
+<tr valign="top"><td><code>fun</code></td>
+<td>
+<p>Character vector with one element per column to (des)aggregate indicating 
+the function to use (&quot;sum&quot;, &quot;mean&quot;, &quot;min&quot; or &quot;max&quot;) for this column. It can
+be a single element, in that case the same function is applied to every 
+columns.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Either a data.table or an object of class &quot;antaresDataList&quot; depending on the 
+class of <code>x</code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+setSimulationPath()
+
+areasH &lt;- readAntares(select = "LOAD", synthesis = FALSE, mcYears = 1)
+areasD &lt;- readAntares(select = "LOAD", synthesis = FALSE, mcYears = 1, timeStep ="daily")
+
+areasDAgg &lt;- changeTimeStep(areasH, "daily", "hourly")
+
+all.equal(areasDAgg$LOAD, areasD$LOAD)
+
+# Use different aggregation functions
+mydata &lt;- readAntares(select = c("LOAD", "MRG. PRICE"), timeStep = "monthly")
+changeTimeStep(mydata, "annual", fun = c("sum", "mean"))
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

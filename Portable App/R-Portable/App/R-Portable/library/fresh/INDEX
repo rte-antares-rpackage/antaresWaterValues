@@ -1,0 +1,44 @@
+adminlte_color          AdminLTE CSS colors variables
+adminlte_global         AdminLTE CSS global variables
+adminlte_sidebar        AdminLTE CSS sidebar variables
+adminlte_vars           AdminLTE 2 custom variables
+bs4Dash-sidebar         bs4Dash sidebar skins light/dark
+bs4dash_button          bs4dash buttons variables
+bs4dash_color           bs4Dash main colors
+bs4dash_font            bs4Dash fonts parameters
+bs4dash_layout          bs4Dash layout options
+bs4dash_status          bs4Dash status colors
+bs4dash_vars            bs4dash custom variables
+bs4dash_yiq             bs4Dash color contrast
+bs_vars                 Bootstrap custom variables
+bs_vars_alert           Bootstrap alert variables
+bs_vars_badge           Bootstrap badge variables
+bs_vars_button          Bootstrap button variables
+bs_vars_color           Bootstrap colors variables
+bs_vars_component       Bootstrap components variables
+bs_vars_dropdown        Bootstrap dropdown variables
+bs_vars_file            Bootstrap variables from a file
+bs_vars_font            Bootstrap font variables
+bs_vars_global          Bootstrap global variables
+bs_vars_input           Bootstrap input variables
+bs_vars_modal           Bootstrap modal variables
+bs_vars_nav             Bootstrap nav variables
+bs_vars_navbar          Bootstrap navbar variables
+bs_vars_panel           Bootstrap panel variables
+bs_vars_pills           Bootstrap pills variables
+bs_vars_progress        Bootstrap progress variables
+bs_vars_state           Bootstrap states variables
+bs_vars_table           Bootstrap table variables
+bs_vars_tabs            Bootstrap tabs variables
+bs_vars_wells           Bootstrap wells variables
+create_pretty           Create a custom CSS file for pretty-checkbox
+create_theme            Create a custom Bootstrap theme
+fresh                   Fresh 'Shiny' Themes
+search_vars             Search variables in a .scss file
+search_vars_adminlte2   Search AdminLTE 2 (shinydashboard) variables
+search_vars_bs          Search Bootstrap variables
+search_vars_bs4dash     Search bs4Dash variables
+use_googlefont          Use online Google font in Shiny application
+use_pretty              Use pretty-checkbox CSS in Shiny
+use_theme               Use a CSS theme in Shiny application
+use_vars_template       Use a template to define SCSS variables

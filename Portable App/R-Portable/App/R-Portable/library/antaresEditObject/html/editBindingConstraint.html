@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Update An Existing Binding Constraint</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for editBindingConstraint {antaresEditObject}"><tr><td>editBindingConstraint {antaresEditObject}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Update An Existing Binding Constraint</h2>
+
+<h3>Description</h3>
+
+<p>Update An Existing Binding Constraint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+editBindingConstraint(
+  name,
+  id = tolower(name),
+  values = NULL,
+  enabled = NULL,
+  timeStep = NULL,
+  operator = NULL,
+  coefficients = NULL,
+  opts = antaresRead::simOptions()
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>name</code></td>
+<td>
+<p>The name for the binding constraint</p>
+</td></tr>
+<tr valign="top"><td><code>id</code></td>
+<td>
+<p>An id</p>
+</td></tr>
+<tr valign="top"><td><code>values</code></td>
+<td>
+<p>Values used by the constraint.
+It contains one line per time step and three columns &quot;less&quot;, &quot;greater&quot; and &quot;equal&quot;.</p>
+</td></tr>
+<tr valign="top"><td><code>enabled</code></td>
+<td>
+<p>Logical, is the constraint enabled ?</p>
+</td></tr>
+<tr valign="top"><td><code>timeStep</code></td>
+<td>
+<p>Time step the constraint applies to : <code>hourly</code>, <code>daily</code> or <code>weekly</code></p>
+</td></tr>
+<tr valign="top"><td><code>operator</code></td>
+<td>
+<p>Type of constraint: equality, inequality on one side or both sides.</p>
+</td></tr>
+<tr valign="top"><td><code>coefficients</code></td>
+<td>
+<p>A named vector containing the coefficients used by the constraint.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An updated list containing various information about the simulation.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+editBindingConstraint(
+  name = "toto", 
+  values = matrix(data = rep(0, 8760 * 3), ncol = 3), 
+  enabled = FALSE, 
+  timeStep = "hourly",
+  operator = "both",
+  coefficients = c("fr%de" = 1)
+)
+
+## End(Not run)
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresEditObject</em> version 0.3.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

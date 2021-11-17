@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Subset an antaresDataList</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for subset.antaresDataList {antaresRead}"><tr><td>subset.antaresDataList {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Subset an antaresDataList</h2>
+
+<h3>Description</h3>
+
+<p>Subset method for <code>antaresDataList</code>.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+## S3 method for class 'antaresDataList'
+subset(x, y = NULL, areas = NULL, timeIds = NULL, mcYears = NULL, ...)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>x</code></td>
+<td>
+<p>Object of class <code>antaresDataList</code> created with 
+<code><a href="../../antaresRead/help/readAntares.html">readAntares</a></code>.</p>
+</td></tr>
+<tr valign="top"><td><code>y</code></td>
+<td>
+<p>A table containing at least one of the columns &quot;area&quot;, &quot;timeId&quot; or 
+&quot;mcYear&quot;. If it is not <code>NULL</code>, then only tuples <code>(area, timeId,
+mcYear)</code> present in this table are kept.</p>
+</td></tr>
+<tr valign="top"><td><code>areas</code></td>
+<td>
+<p>Vector of area names to keep in the result. If <code>NULL</code>, all 
+areas are kept.</p>
+</td></tr>
+<tr valign="top"><td><code>timeIds</code></td>
+<td>
+<p>Vector of time ids to keep. If <code>NULL</code>, all time ids are 
+kept.</p>
+</td></tr>
+<tr valign="top"><td><code>mcYears</code></td>
+<td>
+<p>Vector of monte-carlo years to keep. If <code>NULL</code>, all time 
+ids are kept.</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>Currently unused.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A filtered <code>antaresDataList</code>.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+#keep only the first year
+mydata &lt;- readAntares(areas = "all", links = "all", mcYears = "all")
+mySubset&lt;-subset(mydata, mcYears = 1)
+  
+#keep only the first year for areas a and b 
+mydata &lt;- readAntares(areas = "all", links = "all", mcYears = "all")
+mySubset&lt;-subset(mydata, mcYears = 1, areas=c("a", "b")) 
+
+#' #keep only the first year for areas a and b and timeIds include in 5:16 
+mydata &lt;- readAntares(areas = "all", links = "all", mcYears = "all")
+mySubset&lt;-subset(mydata, mcYears = 1, areas=c("a", "b"), timeIds=5:16) 
+  
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

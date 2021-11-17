@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Import clusters description</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for readClusterDesc {antaresRead}"><tr><td>readClusterDesc {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Import clusters description</h2>
+
+<h3>Description</h3>
+
+<p>This function reads in the input files of an antares study the
+characteristics of each cluster. 
+</p>
+<p>Be aware that clusters descriptions are read
+in the input files so they may have changed since a simulation has been run.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+readClusterDesc(opts = simOptions())
+
+readClusterResDesc(opts = simOptions())
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A data.table with one line per cluster. The columns of the data.table may
+change between different projects, but there will always be the following 
+columns:
+</p>
+<table summary="R valueblock">
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>Name of the area containing the cluster</p>
+</td></tr>
+<tr valign="top"><td><code>cluster</code></td>
+<td>
+<p>Name of the cluster</p>
+</td></tr>
+<tr valign="top"><td><code>group</code></td>
+<td>
+<p>Type of cluster (gaz, nuclear, etc.)</p>
+</td></tr>
+<tr valign="top"><td><code>unitcount</code></td>
+<td>
+<p>number of production units</p>
+</td></tr>
+<tr valign="top"><td><code>nominalcapacity</code></td>
+<td>
+<p>production capacity of each unit</p>
+</td></tr>
+</table>
+<p>The other present columns depends on the version of antares and the options
+that have been set: if an option is unset for all clusters, it will not 
+appear in the table.
+</p>
+<p>By default, the function reads the cluster description of the default antares
+study. You can use the argument <code>opts</code> to specify another study.
+</p>
+<p><code>readClusterDesc</code> : read thermal clusters
+</p>
+<p><code>readClusterResDesc</code> : read renewable clusters (Antares &gt;= V8.1)
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+
+## Not run: 
+
+# thermal
+readClusterDesc()
+
+# renewable
+readClusterResDesc()
+
+# By default, the function reads cluster descriptions for the default study,
+# but it is possible to specify another study with parameter "opts"
+sim1 &lt;- setSimulationPath()
+
+#[... code that modifies the default antares study]
+
+readClusterDesc(sim1)
+
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Plot Reservoir Guide Graph and return result table</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for plot_reservoir {watervalues}"><tr><td>plot_reservoir {watervalues}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Plot Reservoir Guide Graph and return result table</h2>
+
+<h3>Description</h3>
+
+<p>Plot Reservoir Guide Graph and return result table
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+plot_reservoir(
+  area,
+  timeStep = "weekly",
+  mcyear = NULL,
+  simulation_name = NULL,
+  opts = antaresRead::simOptions(),
+  shiny = F,
+  only_g = F
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>An 'antares' area.</p>
+</td></tr>
+<tr valign="top"><td><code>timeStep</code></td>
+<td>
+<p>Resolution of the data to import:
+weekly (default, a linear interpolation is done on the data),
+monthly (original data).</p>
+</td></tr>
+<tr valign="top"><td><code>mcyear</code></td>
+<td>
+<p>precise the MC year to plot.
+all to plot all years.
+Null plot the synthesis. Default NULL</p>
+</td></tr>
+<tr valign="top"><td><code>simulation_name</code></td>
+<td>
+<p>simulation name to plot.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+<tr valign="top"><td><code>shiny</code></td>
+<td>
+<p>Boolean. True to run the script in shiny mod.</p>
+</td></tr>
+<tr valign="top"><td><code>only_g</code></td>
+<td>
+<p>Boolean. True plot only constraints graph.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>a <code>ggplot</code> object
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>watervalues</em> version 0.2.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

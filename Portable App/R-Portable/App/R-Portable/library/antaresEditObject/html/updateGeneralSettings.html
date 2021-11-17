@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Update general parameters of an Antares study</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for updateGeneralSettings {antaresEditObject}"><tr><td>updateGeneralSettings {antaresEditObject}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Update general parameters of an Antares study</h2>
+
+<h3>Description</h3>
+
+<p>Update general parameters of an Antares study
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+updateGeneralSettings(
+  mode = NULL,
+  horizon = NULL,
+  nbyears = NULL,
+  simulation.start = NULL,
+  simulation.end = NULL,
+  january.1st = NULL,
+  first.month.in.year = NULL,
+  first.weekday = NULL,
+  leapyear = NULL,
+  year.by.year = NULL,
+  derated = NULL,
+  custom.ts.numbers = NULL,
+  user.playlist = NULL,
+  filtering = NULL,
+  active.rules.scenario = NULL,
+  generate = NULL,
+  nbtimeseriesload = NULL,
+  nbtimeserieshydro = NULL,
+  nbtimeserieswind = NULL,
+  nbtimeseriesthermal = NULL,
+  nbtimeseriessolar = NULL,
+  refreshtimeseries = NULL,
+  intra.modal = NULL,
+  inter.modal = NULL,
+  refreshintervalload = NULL,
+  refreshintervalhydro = NULL,
+  refreshintervalwind = NULL,
+  refreshintervalthermal = NULL,
+  refreshintervalsolar = NULL,
+  readonly = NULL,
+  opts = antaresRead::simOptions()
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>mode</code></td>
+<td>
+<p>Economy, Adequacy, Draft.</p>
+</td></tr>
+<tr valign="top"><td><code>horizon</code></td>
+<td>
+<p>Reference year (static tag, not used in the calculations)</p>
+</td></tr>
+<tr valign="top"><td><code>nbyears</code></td>
+<td>
+<p>Number of Monte-Carlo years that should be prepared for the simulation (not always the same as the Number of MC years actually simulated, see 'selection mode' below).</p>
+</td></tr>
+<tr valign="top"><td><code>simulation.start</code></td>
+<td>
+<p>First day of the simulation (e.g. 8 for a simulation beginning on the second week of the first month of the year)</p>
+</td></tr>
+<tr valign="top"><td><code>simulation.end</code></td>
+<td>
+<p>Last day of the simulation (e.g. 28 for a simulation ending on the fourth week of the first month of the year)</p>
+</td></tr>
+<tr valign="top"><td><code>january.1st</code></td>
+<td>
+<p>First day of the year (Mon, Tue, etc.).</p>
+</td></tr>
+<tr valign="top"><td><code>first.month.in.year</code></td>
+<td>
+<p>Actual month by which the Time-series begin (Jan to Dec, Oct to Sep, etc.)</p>
+</td></tr>
+<tr valign="top"><td><code>first.weekday</code></td>
+<td>
+<p>In economy or adequacy simulations, indicates the frame (Mon- Sun, Sat-Fri, etc.) to use for the edition of weekly results.</p>
+</td></tr>
+<tr valign="top"><td><code>leapyear</code></td>
+<td>
+<p>(TRUE/FALSE) indicates whether February has 28 or 29 days.</p>
+</td></tr>
+<tr valign="top"><td><code>year.by.year</code></td>
+<td>
+<p>(False) No individual results will be printed out,
+(True) For each simulated year, detailed results will be
+printed out in an individual directory7 :
+Study_name/OUTPUT/simu_tag/Economy /mc-i-number</p>
+</td></tr>
+<tr valign="top"><td><code>derated</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>custom.ts.numbers</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>user.playlist</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>filtering</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>active.rules.scenario</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>generate</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>nbtimeseriesload</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>nbtimeserieshydro</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>nbtimeserieswind</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>nbtimeseriesthermal</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>nbtimeseriessolar</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>refreshtimeseries</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>intra.modal</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>inter.modal</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>refreshintervalload</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>refreshintervalhydro</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>refreshintervalwind</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>refreshintervalthermal</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>refreshintervalsolar</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>readonly</code></td>
+<td>
+<p>See Antares General Reference Guide.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">antaresRead::setSimulationPath()</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An updated list containing various information about the simulation.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+
+# Update number of Monte-Carlo years
+updateGeneralSettings(nbyears = 42)
+
+# Use a vector to update a parameter that
+# can take multiple values
+updateGeneralSettings(generate = c("thermal", "hydro"))
+
+
+## End(Not run)
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresEditObject</em> version 0.3.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

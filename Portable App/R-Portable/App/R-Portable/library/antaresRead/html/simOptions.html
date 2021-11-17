@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Extract simulation options</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for simOptions {antaresRead}"><tr><td>simOptions {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Extract simulation options</h2>
+
+<h3>Description</h3>
+
+<p>The function <code><a href="../../antaresRead/help/readAntares.html">readAntares</a></code> stores in its output the options used
+to read some data (path of the study, area list, link list, start date,
+etc.).
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+simOptions(x = NULL)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>x</code></td>
+<td>
+<p>object of class <code>antaresTable</code> or <code>antaresData</code></p>
+</td></tr>
+</table>
+
+
+<h3>Details</h3>
+
+<p><code>simOptions</code> extracts these options from an object of class 
+<code>antaresTable</code> or <code>antaresOutput</code>. It can be useful when working on
+multiple simulations, either to check how some object has been created or to
+use it in some functions like <code><a href="../../antaresRead/help/getAreas.html">getAreas</a></code> or
+<code><a href="../../antaresRead/help/getLinks.html">getLinks</a></code>
+</p>
+<p>If the parameter of the function is <code>NULL</code>, it returns the default
+simulation options, that is the options set by <code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code>
+the last time it was run.
+</p>
+
+
+<h3>Value</h3>
+
+<p>list of options used to read the data contained in an object or the last
+simulation options read by <code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code> if <code>x</code> is
+<code>NULL</code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+  setSimulationPath(study1)
+  
+  simOptions() # returns the options for study 1
+  
+  data &lt;- readAntares()
+  
+  # Choose a different study
+  setSimulationPath(study2)
+  
+  simOptions() # returns the options for study 2
+  
+  getAreas() # returns the areas of the secund study
+  getAreas(opts = simOptions(data)) # returns the areas of the first study
+  
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

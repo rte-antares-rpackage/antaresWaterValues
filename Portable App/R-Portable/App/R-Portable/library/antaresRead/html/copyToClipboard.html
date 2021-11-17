@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Copy data to the clipboard</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for copyToClipboard {antaresRead}"><tr><td>copyToClipboard {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Copy data to the clipboard</h2>
+
+<h3>Description</h3>
+
+<p><code>copyToClipboard</code> is a utility function that copies data to the
+clipboard. The data can then be copied in another program like excel.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+copyToClipboard(x, ...)
+
+## S3 method for class 'antaresDataList'
+copyToClipboard(x, what, ...)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>x</code></td>
+<td>
+<p>an object used to select a method.</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>arguments passed to <code><a href="../../utils/html/write.table.html">write.table</a></code></p>
+</td></tr>
+<tr valign="top"><td><code>what</code></td>
+<td>
+<p>character or numeric indicating which element to copy to clipboard (areas,
+links, clusters or districts)</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The function does not return anything. It is only used to interact with the
+clipboard
+</p>
+
+
+<h3>Note</h3>
+
+<p>The function is useful only for small data objects: for a table,
+only the 50000 rows are copied to clipboard. If the table to copy
+is longer, either use filters to reduce the number of rows or write the
+table in text file with <code><a href="../../utils/html/write.table.html">write.table</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+ # This only works on Windows systems
+## Not run: 
+x &lt;- data.frame(a = sample(10), b = sample(10))
+
+copyToClipboard(x)
+
+# Try to open excel and use CTRL + V to copy the data in a spreadsheet.
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

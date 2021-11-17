@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: show aliases for variables</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for showAliases {antaresRead}"><tr><td>showAliases {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>show aliases for variables</h2>
+
+<h3>Description</h3>
+
+<p>Aliases are short names that can be used in the <code>select</code> parameter in 
+function <code><a href="../../antaresRead/help/readAntares.html">readAntares</a></code> to tell the function which columns and/or
+type of data to import. 
+</p>
+<p><code>setAlias</code> can be used to create a new alias. It can be especially
+useful for package developers to help their users select the data required
+by their packages.
+</p>
+<p><code>getAlias</code> return character vector containing columns and/or types of data
+</p>
+<p><code>showAliases</code> lists available aliases
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+showAliases(names = NULL)
+
+setAlias(name, desc, select)
+
+getAlias(name)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>names</code></td>
+<td>
+<p>optional vector of alias names. If provided, the full list of 
+columns selected by these aliases is displayed. Else only the name and a 
+short description of all aliases is displayed.</p>
+</td></tr>
+<tr valign="top"><td><code>name</code></td>
+<td>
+<p>Alias name</p>
+</td></tr>
+<tr valign="top"><td><code>desc</code></td>
+<td>
+<p>Short description indicating why the new alias is interesting</p>
+</td></tr>
+<tr valign="top"><td><code>select</code></td>
+<td>
+<p>character vector containing columns and/or types of data to 
+import.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p><code>setAlias</code> is only used for its side effects. A data.frame with columns 
+'name', 'desc' and 'select'. <code>showAliases</code> invisibly returns a 
+data.frame with columns &quot;name&quot;, &quot;desc&quot; and &quot;select&quot;.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+
+# Display the short description of an alias
+showAliases()
+
+# Display the full description of an alias
+showAliases("renewable")
+
+getAlias("renewable")
+
+## Not run: 
+# Create a new alias that imports flows
+setAlias("test", "short description", c("links", "FLOW LIN.")) 
+showAliases()
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

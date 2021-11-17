@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Set the playlist of an Antares Study</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for setPlaylist {antaresEditObject}"><tr><td>setPlaylist {antaresEditObject}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Set the playlist of an Antares Study</h2>
+
+<h3>Description</h3>
+
+<p><code>set_playlist</code> is a function which modifies the input file of an ANTARES
+study and set the playlist in order to simulate only the MC years given in input
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+setPlaylist(playlist, weights = NULL, opts = antaresRead::simOptions())
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>playlist</code></td>
+<td>
+<p>vector of MC years identifier to be simulated can be a list (V8 compatibility) but not recommended</p>
+</td></tr>
+<tr valign="top"><td><code>weights</code></td>
+<td>
+<p>data.table, 2 columns : mcYears and weights. Only with after antares V8</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The function does not return anything. It is  used to modify the input of an
+Antares study
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>antaresEditObject</em> version 0.3.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

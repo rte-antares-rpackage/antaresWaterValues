@@ -1,0 +1,93 @@
+Bellman                 Compute Bellman values at step i from step i+1
+Grid_Matrix             Calculate grid layer matrix of Bellman values
+                        and water values
+adjust_wv               Adjust water Values
+bellman_parallel_value
+                        Compute Bellman values at step i from step i+1
+                        (version used in parallel computing)
+check_Bellman_inc       Check the monotonicity of the calculated
+                        Bellman values and return a success rate.
+check_resh_vu_dec       Check the monotonicity of the calculated the
+                        water values after putting them in Antares
+                        Format and return a success rate.
+check_vu_dec            Check the monotonicity of the calculated water
+                        values and return a success rate.
+constant_fill           Fill constant water values
+constraint_generator    Generate the list of constraint values of the
+                        link between the fictive area and the real one
+converged               test a difference vector convergence
+correct_outliers        Replace outliers values by spline
+decr                    Check if the vector has decreasing values
+disable_constraint      This function disable binding constraints for
+                        'runWaterValuesSimulation'
+generate_constraints    This function generate binding constraints for
+                        'runWaterValuesSimulation'
+getPumpEfficiency       Get the Pumping efficiency ratio for an area
+                        reservoir
+getReservoirCapacity    Get the reservoir capacity for an area
+getSimulationNames      Utility function to get simulation's name
+get_Reward              Get the reward matrix from simulations
+get_max_hydro           Get max hydro power that can be generated in a
+                        week
+get_reservoir_capacity
+                        Get reservoir capacity for concerned area
+hydro_cost              Calculate the hydro cost
+incr                    Check if the vector has increasing values
+interp_down             function used to replace the values under the
+                        level_low of reservoir
+just_plot_report        Plot simulation variables comparison and real
+                        Ov. cost (for watervalues)
+mean_finite             Calculate the mean of finite values. Return
+                        '-Inf' if all '-Inf'.
+mean_or_inf             Calculate the mean if there is no infinite or
+                        missing value. Return '-Inf' in the other case.
+monotonic_JM            Force monotonic water values
+monotonic_JM2           Force monotonic water values Algorithm 2
+monotonic_VU            Force monotonic water values
+names_reward            Extract values of turbined energy from
+                        simulation names.
+next_week_value         An intermediate function in bellman values
+                        calculation. Select the next week bellman
+                        values of a position from all bellman values.
+num_equal               Check if two numbers are equal.
+plot_Bellman            Plot Bellman and Water values
+plot_flow               Plot water flow Graph
+plot_generation         Plot Turbining power Graph and return result
+                        table
+plot_reservoir          Plot Reservoir Guide Graph and return result
+                        table
+plot_reward             Plot the reward and return the results in table
+plot_reward_mc          Plot the reward and return the results in table
+plot_reward_variation   Plot the reward variation and return the
+                        results in table
+plot_reward_variation_mc
+                        Plot the reward and return the results in table
+post_process            Fill the rest of reservoir states water values
+quantile_or_inf         Calculate the quantile if there is no infinite
+                        or missing value. Return '-Inf' in the other
+                        case.
+readReservoirLevels     Read Reservoir Levels
+readReservoirLevelsV6   Read Reservoir Levels for Antares version 6.
+readReservoirLevelsV7   Read Reservoir Levels for antares version 7.
+remove_out              Remove outliers water Values
+report_data             Plot simulation variables comparison and real
+                        Ov. cost (for watervalues)
+resetHydroStorage       Reset to 0 the hydro storage time series
+resetPumpPower          Reset to 0 the pumping power
+restoreHydroStorage     Restore the hydro storage time series
+restorePumpPower        Restore the Pumping power series
+runWaterValuesSimulation
+                        Run a simulation for calculating water values
+                        for a specific area
+setupWaterValuesSimulation
+                        Setup a simulation before running it for
+                        calculating Water Values
+shiny_water_values      Open watervalues Calculator in APP Web
+simulation_names_values
+                        simulations names and values generator
+states_to_percent       Convert Reservoir levels from MWh to percent of
+                        reservoir.
+to_Antares_Format       Convert water values to Antares format
+unregister              Release parallel computing clusters
+value_node_gen          Calculate water values from Bellman values
+waterValuesViz          Visualize mean grid layer

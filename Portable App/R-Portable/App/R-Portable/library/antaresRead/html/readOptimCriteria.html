@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Read Optimization Criteria</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for readOptimCriteria {antaresRead}"><tr><td>readOptimCriteria {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Read Optimization Criteria</h2>
+
+<h3>Description</h3>
+
+<p>This function can be used to read the value of the criteria optimized by ANTARES.
+Notice that these values are only available in &quot;Xpansion&quot; mode or when option
+&quot;Export mps&quot; is turned on.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+readOptimCriteria(opts = simOptions())
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A table of class <code>antaresDataTable</code>. It contains the usual columns
+<code>timeID</code>, <code>mcYear</code>, <code>time</code> and two columns &quot;criterion1&quot; and
+&quot;criterion2&quot; containing the values of the criteria. Time step can be daily 
+or weekly depending on the optimization options.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+setSimulationPath()
+
+optimCriteria &lt;- readOptimCriteria()
+
+## End(Not run) 
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

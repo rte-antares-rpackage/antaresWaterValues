@@ -1,0 +1,58 @@
+activateRES             Activate RES in an Antares study
+backupStudy             Create a backup with an Antares Study
+checkRemovedArea        Seek for a removed area
+computeTimeStampFromHourly
+                        Compute daily, weekly, monthly and annual
+                        mc-ind from hourly data.
+copyOutput              Copy of the output files of an Antares study
+create-cluster          Create a cluster
+createArea              Create An Area In An Antares Study
+createBindingConstraint
+                        Create a Binding Constraint
+createDSR               Create a Demand Side Response (DSR)
+createDistrict          Create a district
+createLink              Create a link between two areas
+createPSP               Create a Pumped Storage Power plant (PSP)
+createStudy             Create an empty Antares study
+dicoGeneralSettings     Correspondence between arguments of
+                        'updateGeneralSettings' and actual Antares
+                        parameters.
+dicoOptimizationSettings
+                        Correspondence between arguments of
+                        'updateOptimizationSettings' and actual Antares
+                        parameters.
+edit-cluster            Edit an existing cluster
+editArea                Edit An Existing Area In An Antares Study
+editBindingConstraint   Update An Existing Binding Constraint
+editLink                Edit a link between two areas
+filteringOptions        Output profile options for creating an area
+getPlaylist             Get the playlist of an Antares study
+is_antares_v7           Is study an Antares v7 study ?
+nodalOptimizationOptions
+                        Nodal optimization parameters for creating an
+                        area
+propertiesLinkOptions   Properties for creating a link
+readIniFile             Read a INI file
+remove-cluster          Remove a cluster
+removeArea              Remove An Area From inputs
+removeBindingConstraint
+                        Remove a Binding Constraint
+removeLink              Remove a link between two areas
+runSimulation           Run an Antares Simulation
+runTsGenerator          Run Time-Series Generator
+scenario-builder        Read, create & update scenario builder
+setPlaylist             Set the playlist of an Antares Study
+setSolverPath           Set path to Antares Solver
+updateGeneralSettings   Update general parameters of an Antares study
+updateInputSettings     Update input parameters of an Antares study
+updateOptimizationSettings
+                        Update optimization parameters of an Antares
+                        study
+updateOutputSettings    Update output parameters of an Antares study
+writeEconomicOptions    Write Economic Options
+writeIni                Write ini file from list obtain by
+                        antaresRead:::readIniFile and modify by user
+writeInputTS            Write input time series
+writeOutputValues       Write output value for Antares
+writeSeriesPrepro       Write prepro data
+writeWaterValues        Write water values

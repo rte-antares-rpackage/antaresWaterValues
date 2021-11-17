@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Edit an existing cluster</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for edit-cluster {antaresEditObject}"><tr><td>edit-cluster {antaresEditObject}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Edit an existing cluster</h2>
+
+<h3>Description</h3>
+
+<p>Edit parameters of an existing cluster, thermal or RES (renewable energy source).
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+editCluster(
+  area,
+  cluster_name,
+  ...,
+  time_series = NULL,
+  prepro_data = NULL,
+  prepro_modulation = NULL,
+  add_prefix = TRUE,
+  opts = antaresRead::simOptions()
+)
+
+editClusterRES(
+  area,
+  cluster_name,
+  ...,
+  time_series = NULL,
+  add_prefix = TRUE,
+  opts = antaresRead::simOptions()
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>The area where the cluster is.</p>
+</td></tr>
+<tr valign="top"><td><code>cluster_name</code></td>
+<td>
+<p>cluster name.</p>
+</td></tr>
+<tr valign="top"><td><code>...</code></td>
+<td>
+<p>Parameters to write in the Ini file.</p>
+</td></tr>
+<tr valign="top"><td><code>time_series</code></td>
+<td>
+<p>the &quot;ready-made&quot; 8760-hour time-series available for simulation purposes.</p>
+</td></tr>
+<tr valign="top"><td><code>prepro_data</code></td>
+<td>
+<p>Pre-process data, a <code>data.frame</code> or <code>matrix</code>,
+default is a matrix with 365 rows and 6 columns.</p>
+</td></tr>
+<tr valign="top"><td><code>prepro_modulation</code></td>
+<td>
+<p>Pre-process modulation, a <code>data.frame</code> or <code>matrix</code>,
+if specified, must have 8760 rows and 1 or 4 columns.</p>
+</td></tr>
+<tr valign="top"><td><code>add_prefix</code></td>
+<td>
+<p>If <code>TRUE</code>, cluster_name will be prefixed by area name.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">antaresRead::setSimulationPath()</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An updated list containing various information about the simulation.
+</p>
+
+
+<h3>See Also</h3>
+
+<p><code><a href="../../antaresEditObject/help/createCluster.html">createCluster()</a></code> or <code><a href="../../antaresEditObject/help/createClusterRES.html">createClusterRES()</a></code> to create new clusters, <code><a href="../../antaresEditObject/help/removeCluster.html">removeCluster()</a></code> or <code><a href="../../antaresEditObject/help/removeClusterRES.html">removeClusterRES()</a></code> to remove clusters.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+
+# Update only nominalCapacity for an existing cluster
+editCluster(
+  area = "myarea", 
+  cluster_name = "mycluster", 
+  nominalcapacity = 10600.000
+)
+
+
+## End(Not run)
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresEditObject</em> version 0.3.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

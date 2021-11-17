@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>R: Generating water values for Antares</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+<h1> Generating water values for Antares
+<img class="toplogo" src="../../../doc/html/Rlogo.svg" alt="[R logo]" />
+</h1>
+<hr/>
+<div style="text-align: center;">
+<a href="../../../doc/html/packages.html"><img class="arrow" src="../../../doc/html/left.jpg" alt="[Up]" /></a>
+<a href="../../../doc/html/index.html"><img class="arrow" src="../../../doc/html/up.jpg" alt="[Top]" /></a>
+</div><h2>Documentation for package &lsquo;watervalues&rsquo; version 0.2.0</h2>
+
+<ul><li><a href="../DESCRIPTION">DESCRIPTION file</a>.</li>
+</ul>
+
+<h2>Help Pages</h2>
+
+
+<table width="100%">
+<tr><td style="width: 25%;"><a href="adjust_wv.html">adjust_wv</a></td>
+<td>Adjust water Values</td></tr>
+<tr><td style="width: 25%;"><a href="Bellman.html">Bellman</a></td>
+<td>Compute Bellman values at step i from step i+1</td></tr>
+<tr><td style="width: 25%;"><a href="bellman_parallel_value.html">bellman_parallel_value</a></td>
+<td>Compute Bellman values at step i from step i+1 (version used in parallel computing)</td></tr>
+<tr><td style="width: 25%;"><a href="check_Bellman_inc.html">check_Bellman_inc</a></td>
+<td>Check the monotonicity of the calculated Bellman values and return a success rate.</td></tr>
+<tr><td style="width: 25%;"><a href="check_resh_vu_dec.html">check_resh_vu_dec</a></td>
+<td>Check the monotonicity of the calculated the water values after putting them in Antares Format and return a success rate.</td></tr>
+<tr><td style="width: 25%;"><a href="check_vu_dec.html">check_vu_dec</a></td>
+<td>Check the monotonicity of the calculated water values and return a success rate.</td></tr>
+<tr><td style="width: 25%;"><a href="constant_fill.html">constant_fill</a></td>
+<td>Fill constant water values</td></tr>
+<tr><td style="width: 25%;"><a href="constraint_generator.html">constraint_generator</a></td>
+<td>Generate the list of constraint values of the link between the fictive area and the real one</td></tr>
+<tr><td style="width: 25%;"><a href="converged.html">converged</a></td>
+<td>test a difference vector convergence</td></tr>
+<tr><td style="width: 25%;"><a href="correct_outliers.html">correct_outliers</a></td>
+<td>Replace outliers values by spline</td></tr>
+<tr><td style="width: 25%;"><a href="decr.html">decr</a></td>
+<td>Check if the vector has decreasing values</td></tr>
+<tr><td style="width: 25%;"><a href="disable_constraint.html">disable_constraint</a></td>
+<td>This function disable binding constraints for 'runWaterValuesSimulation'</td></tr>
+<tr><td style="width: 25%;"><a href="generate_constraints.html">generate_constraints</a></td>
+<td>This function generate binding constraints for 'runWaterValuesSimulation'</td></tr>
+<tr><td style="width: 25%;"><a href="getPumpEfficiency.html">getPumpEfficiency</a></td>
+<td>Get the Pumping efficiency ratio for an area reservoir</td></tr>
+<tr><td style="width: 25%;"><a href="getReservoirCapacity.html">getReservoirCapacity</a></td>
+<td>Get the reservoir capacity for an area</td></tr>
+<tr><td style="width: 25%;"><a href="getSimulationNames.html">getSimulationNames</a></td>
+<td>Utility function to get simulation's name</td></tr>
+<tr><td style="width: 25%;"><a href="get_max_hydro.html">get_max_hydro</a></td>
+<td>Get max hydro power that can be generated in a week</td></tr>
+<tr><td style="width: 25%;"><a href="get_reservoir_capacity.html">get_reservoir_capacity</a></td>
+<td>Get reservoir capacity for concerned area</td></tr>
+<tr><td style="width: 25%;"><a href="get_Reward.html">get_Reward</a></td>
+<td>Get the reward matrix from simulations</td></tr>
+<tr><td style="width: 25%;"><a href="Grid_Matrix.html">Grid_Matrix</a></td>
+<td>Calculate grid layer matrix of Bellman values and water values</td></tr>
+<tr><td style="width: 25%;"><a href="hydro_cost.html">hydro_cost</a></td>
+<td>Calculate the hydro cost</td></tr>
+<tr><td style="width: 25%;"><a href="incr.html">incr</a></td>
+<td>Check if the vector has increasing values</td></tr>
+<tr><td style="width: 25%;"><a href="interp_down.html">interp_down</a></td>
+<td>function used to replace the values under the level_low of reservoir</td></tr>
+<tr><td style="width: 25%;"><a href="just_plot_report.html">just_plot_report</a></td>
+<td>Plot simulation variables comparison and real Ov. cost (for watervalues)</td></tr>
+<tr><td style="width: 25%;"><a href="mean_finite.html">mean_finite</a></td>
+<td>Calculate the mean of finite values. Return '-Inf' if all '-Inf'.</td></tr>
+<tr><td style="width: 25%;"><a href="mean_or_inf.html">mean_or_inf</a></td>
+<td>Calculate the mean if there is no infinite or missing value. Return '-Inf' in the other case.</td></tr>
+<tr><td style="width: 25%;"><a href="monotonic_JM.html">monotonic_JM</a></td>
+<td>Force monotonic water values</td></tr>
+<tr><td style="width: 25%;"><a href="monotonic_JM2.html">monotonic_JM2</a></td>
+<td>Force monotonic water values Algorithm 2</td></tr>
+<tr><td style="width: 25%;"><a href="monotonic_VU.html">monotonic_VU</a></td>
+<td>Force monotonic water values</td></tr>
+<tr><td style="width: 25%;"><a href="names_reward.html">names_reward</a></td>
+<td>Extract values of turbined energy from simulation names.</td></tr>
+<tr><td style="width: 25%;"><a href="next_week_value.html">next_week_value</a></td>
+<td>An intermediate function in bellman values calculation. Select the next week bellman values of a position from all bellman values.</td></tr>
+<tr><td style="width: 25%;"><a href="num_equal.html">num_equal</a></td>
+<td>Check if two numbers are equal.</td></tr>
+<tr><td style="width: 25%;"><a href="plot_Bellman.html">plot_Bellman</a></td>
+<td>Plot Bellman and Water values</td></tr>
+<tr><td style="width: 25%;"><a href="plot_flow.html">plot_flow</a></td>
+<td>Plot water flow Graph</td></tr>
+<tr><td style="width: 25%;"><a href="plot_generation.html">plot_generation</a></td>
+<td>Plot Turbining power Graph and return result table</td></tr>
+<tr><td style="width: 25%;"><a href="plot_reservoir.html">plot_reservoir</a></td>
+<td>Plot Reservoir Guide Graph and return result table</td></tr>
+<tr><td style="width: 25%;"><a href="plot_reward.html">plot_reward</a></td>
+<td>Plot the reward and return the results in table</td></tr>
+<tr><td style="width: 25%;"><a href="plot_reward_mc.html">plot_reward_mc</a></td>
+<td>Plot the reward and return the results in table</td></tr>
+<tr><td style="width: 25%;"><a href="plot_reward_variation.html">plot_reward_variation</a></td>
+<td>Plot the reward variation and return the results in table</td></tr>
+<tr><td style="width: 25%;"><a href="plot_reward_variation_mc.html">plot_reward_variation_mc</a></td>
+<td>Plot the reward and return the results in table</td></tr>
+<tr><td style="width: 25%;"><a href="post_process.html">post_process</a></td>
+<td>Fill the rest of reservoir states water values</td></tr>
+<tr><td style="width: 25%;"><a href="quantile_or_inf.html">quantile_or_inf</a></td>
+<td>Calculate the quantile if there is no infinite or missing value. Return '-Inf' in the other case.</td></tr>
+<tr><td style="width: 25%;"><a href="readReservoirLevels.html">readReservoirLevels</a></td>
+<td>Read Reservoir Levels</td></tr>
+<tr><td style="width: 25%;"><a href="readReservoirLevelsV6.html">readReservoirLevelsV6</a></td>
+<td>Read Reservoir Levels for Antares version 6.</td></tr>
+<tr><td style="width: 25%;"><a href="readReservoirLevelsV7.html">readReservoirLevelsV7</a></td>
+<td>Read Reservoir Levels for antares version 7.</td></tr>
+<tr><td style="width: 25%;"><a href="remove_out.html">remove_out</a></td>
+<td>Remove outliers water Values</td></tr>
+<tr><td style="width: 25%;"><a href="report_data.html">report_data</a></td>
+<td>Plot simulation variables comparison and real Ov. cost (for watervalues)</td></tr>
+<tr><td style="width: 25%;"><a href="resetHydroStorage.html">resetHydroStorage</a></td>
+<td>Reset to 0 the hydro storage time series</td></tr>
+<tr><td style="width: 25%;"><a href="resetPumpPower.html">resetPumpPower</a></td>
+<td>Reset to 0 the pumping power</td></tr>
+<tr><td style="width: 25%;"><a href="restoreHydroStorage.html">restoreHydroStorage</a></td>
+<td>Restore the hydro storage time series</td></tr>
+<tr><td style="width: 25%;"><a href="restorePumpPower.html">restorePumpPower</a></td>
+<td>Restore the Pumping power series</td></tr>
+<tr><td style="width: 25%;"><a href="runWaterValuesSimulation.html">runWaterValuesSimulation</a></td>
+<td>Run a simulation for calculating water values for a specific area</td></tr>
+<tr><td style="width: 25%;"><a href="setupWaterValuesSimulation.html">setupWaterValuesSimulation</a></td>
+<td>Setup a simulation before running it for calculating Water Values</td></tr>
+<tr><td style="width: 25%;"><a href="shiny_water_values.html">shiny_water_values</a></td>
+<td>Open watervalues Calculator in APP Web</td></tr>
+<tr><td style="width: 25%;"><a href="simulation_names_values.html">simulation_names_values</a></td>
+<td>simulations names and values generator</td></tr>
+<tr><td style="width: 25%;"><a href="states_to_percent.html">states_to_percent</a></td>
+<td>Convert Reservoir levels from MWh to percent of reservoir.</td></tr>
+<tr><td style="width: 25%;"><a href="to_Antares_Format.html">to_Antares_Format</a></td>
+<td>Convert water values to Antares format</td></tr>
+<tr><td style="width: 25%;"><a href="unregister.html">unregister</a></td>
+<td>Release parallel computing clusters</td></tr>
+<tr><td style="width: 25%;"><a href="value_node_gen.html">value_node_gen</a></td>
+<td>Calculate water values from Bellman values</td></tr>
+<tr><td style="width: 25%;"><a href="waterValuesViz.html">waterValuesViz</a></td>
+<td>Visualize mean grid layer</td></tr>
+</table>
+</div></body></html>

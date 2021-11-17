@@ -1,0 +1,276 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Set Path to an Antares simulation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for setSimulationPath {antaresRead}"><tr><td>setSimulationPath {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Set Path to an Antares simulation</h2>
+
+<h3>Description</h3>
+
+<p>This function has to be used before the <code>read</code> functions. It sets the path to
+the Antares simulation to work on and other useful options (list of areas,
+links, areas with clusters, variables, etc.). On local disk with <code>setSimulationPath</code> or
+on an AntaREST API with <code>setSimulationPathAPI</code>
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+setSimulationPath(path, simulation = NULL)
+
+setSimulationPathAPI(host, study_id, token, simulation = NULL, timeout = 60)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>path</code></td>
+<td>
+<p>(optional) 
+Path to the simulation. It can either be the path to a directory containing
+an antares project or directly to the directory containing the output of a
+simulation.  If missing, a window opens and lets the user choose the
+directory of the simulation interactively. Can also choose .h5 file, if <code>rhdf5</code> is installed.</p>
+</td></tr>
+<tr valign="top"><td><code>simulation</code></td>
+<td>
+<p>(optional) Only used if &quot;path&quot; represents the path of a study and not of the
+output of a simulation. It can be either the name of the simulation or a
+number indicating which simulation to use. It is possible to use negative 
+values to select a simulation from the last one: for instance -1 will
+select the most recent simulation, -2 will the penultimate one, etc. There 
+are two special values 0 and &quot;input&quot; that tells the function that the user
+is not interested by the results of any simulation, but only by the inputs.
+In such a case, the function <code><a href="../../antaresRead/help/readAntares.html">readAntares</a></code> is unavailable.</p>
+</td></tr>
+<tr valign="top"><td><code>host</code></td>
+<td>
+<p><code>character</code> host of AntaREST server API</p>
+</td></tr>
+<tr valign="top"><td><code>study_id</code></td>
+<td>
+<p><code>character</code> id of the target study on the API</p>
+</td></tr>
+<tr valign="top"><td><code>token</code></td>
+<td>
+<p><code>character</code> API personnal access token</p>
+</td></tr>
+<tr valign="top"><td><code>timeout</code></td>
+<td>
+<p><code>numeric</code> API timeout (seconds). Default to 60. See also <code><a href="../../antaresRead/help/setTimeoutAPI.html">setTimeoutAPI</a></code></p>
+</td></tr>
+</table>
+
+
+<h3>Details</h3>
+
+<p>The simulation chosen with <code>setSimulationPath</code> or <code>setSimulationPathAPI</code> becomes the default
+simulation for all functions of the package. This behavior is fine when
+working on only one simulation, but it may become problematic when working
+on multiple simulations at same time.
+</p>
+<p>In such case, you can store the object returned by the function in a variable
+and pass this variable to the functions of the package (see examples).
+</p>
+
+
+<h3>Value</h3>
+
+<p>A list containing various information about the simulation, in particular:
+</p>
+<table summary="R valueblock">
+<tr valign="top"><td><code>studyPath</code></td>
+<td>
+<p>path of the Antares study</p>
+</td></tr>
+<tr valign="top"><td><code>simPath</code></td>
+<td>
+<p>path of the simulation</p>
+</td></tr>
+<tr valign="top"><td><code>inputPath</code></td>
+<td>
+<p>path of the input folder of the study</p>
+</td></tr>
+<tr valign="top"><td><code>studyName</code></td>
+<td>
+<p>Name of the study</p>
+</td></tr>
+<tr valign="top"><td><code>simDataPath</code></td>
+<td>
+<p>path of the folder containing the data of the simulation</p>
+</td></tr>
+<tr valign="top"><td><code>name</code></td>
+<td>
+<p>name of the simulation</p>
+</td></tr>
+<tr valign="top"><td><code>mode</code></td>
+<td>
+<p>type of simulation: economy, adequacy, draft or input</p>
+</td></tr>
+<tr valign="top"><td><code>synthesis</code></td>
+<td>
+<p>Are synthetic results available ?</p>
+</td></tr>
+<tr valign="top"><td><code>yearByYear</code></td>
+<td>
+<p>Are the results for each Monte Carlo simulation available ?</p>
+</td></tr>
+<tr valign="top"><td><code>scenarios</code></td>
+<td>
+<p>Are the Monte-Carlo scenarii stored in output ? This is 
+important to reconstruct some input time series that have been used in 
+each Monte-Carlo simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>mcYears</code></td>
+<td>
+<p>Vector containing the number of the exported Monte-Carlo scenarios</p>
+</td></tr>
+<tr valign="top"><td><code>antaresVersion</code></td>
+<td>
+<p>Version of Antares used to run the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>areaList</code></td>
+<td>
+<p>Vector of the available areas.</p>
+</td></tr>
+<tr valign="top"><td><code>districtList</code></td>
+<td>
+<p>Vector of the available districts.</p>
+</td></tr>
+<tr valign="top"><td><code>linkList</code></td>
+<td>
+<p>Vector of the available links.</p>
+</td></tr>
+<tr valign="top"><td><code>areasWithClusters</code></td>
+<td>
+<p>Vector of areas containing clusters.</p>
+</td></tr>
+<tr valign="top"><td><code>variables</code></td>
+<td>
+<p>Available variables for areas, districts and links.</p>
+</td></tr>
+<tr valign="top"><td><code>parameters</code></td>
+<td>
+<p>Other parameters of the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>timeIdMin</code></td>
+<td>
+
+<p>Minimum time id of the simulation. It is generally equal to one but can
+be higher if working on a subperiod.
+</p>
+</td></tr>
+<tr valign="top"><td><code>timeIdMax</code></td>
+<td>
+<p>maximum time id of the simulation.</p>
+</td></tr>
+<tr valign="top"><td><code>start</code></td>
+<td>
+
+<p>Date of the first day of the year in the simulation. This date corresponds
+to timeId = 1.
+</p>
+</td></tr>
+<tr valign="top"><td><code>firstWeekday</code></td>
+<td>
+<p>First day of the week.</p>
+</td></tr>
+<tr valign="top"><td><code>districtsDef</code></td>
+<td>
+<p>data.table containing the specification of the districts.</p>
+</td></tr>
+<tr valign="top"><td><code>energyCosts</code></td>
+<td>
+<p>list containing the cost of spilled and unsupplied energy.</p>
+</td></tr>
+</table>
+
+
+<h3>See Also</h3>
+
+<p><code><a href="../../antaresRead/help/simOptions.html">simOptions</a></code>, <code><a href="../../antaresRead/help/readAntares.html">readAntares</a></code>, <code><a href="../../antaresRead/help/readLayout.html">readLayout</a></code>, 
+<code><a href="../../antaresRead/help/readClusterDesc.html">readClusterDesc</a></code>, <code><a href="../../antaresRead/help/readBindingConstraints.html">readBindingConstraints</a></code>
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+
+## Not run: 
+# Select interactively a study. It only works on windows.
+
+setSimulationPath()
+
+# Specify path of the study. Note: if there are more than one simulation
+# output in the study, the function will asks the user to interactively choose
+# one simulation.
+
+setSimulationPath("path_of_the_folder_of_the_study")
+
+# Select the first simulation of a study
+
+setSimulationPath("path_of_the_folder_of_the_study", 1)
+
+# Select the last simulation of a study
+
+setSimulationPath("path_of_the_folder_of_the_study", -1)
+
+# Select a simulation by name
+
+setSimulationPath("path_of_the_folder_of_the_study", "name of the simulation")
+
+# Just need to read input data
+
+setSimulationPath("path_of_the_folder_of_the_study", "input")
+# or
+setSimulationPath("path_of_the_folder_of_the_study", 0)
+
+# on API
+setSimulationPath(
+    host = "http://antares_api_adress", 
+    study_id = "study_id_on_api", 
+    token = "token"
+)
+
+# WORKING WITH MULTIPLE SIMULATIONS
+#----------------------------------
+# Let us assume ten simulations have been run and we want to collect the
+# variable "LOAD" for each area. We can create a list containing options
+# for each simulation and iterate through this list.
+
+opts &lt;- lapply(1:10, function(i) {
+   setSimulationPath("path_of_the_folder_of_the_study", i)
+})
+
+output &lt;- lapply(opts, function(o) {
+  res &lt;- readAntares(areas = "all", select = "LOAD", timeStep = "monthly", opts = o)
+  # Add a column "simulation" containing the name of the simulation
+  res$simulation &lt;- o$name
+  res
+})
+
+# Concatenate all the tables in one super table
+output &lt;- rbindlist(output)
+
+# Reshape output for easier comparisons: one line per timeId and one column
+# per simulation
+output &lt;- dcast(output, timeId + areaId ~ simulation, value.var = "LOAD")
+
+output
+
+# Quick visualization
+matplot(output[area == area[1], !c("area", "timeId"), with = FALSE], 
+        type = "l")
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

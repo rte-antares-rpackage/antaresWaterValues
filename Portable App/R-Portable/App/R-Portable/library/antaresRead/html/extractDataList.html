@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Format data PPSE-style</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for extractDataList {antaresRead}"><tr><td>extractDataList {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Format data PPSE-style</h2>
+
+<h3>Description</h3>
+
+<p>This function converts an &quot;readAntares&quot; object in the data structure used
+by PPSE : instead of having one table for areas, one for links and one for
+clusters, the function creates a list with one element per area. Each element
+is a data.table containing the data about the area and one column per cluster
+of the area containing the production of this cluster.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+extractDataList(x, areas = NULL)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>x</code></td>
+<td>
+<p>object of class &quot;antaresData&quot; or &quot;antaresTable&quot; created by the function
+<code><a href="../../antaresRead/help/readAntares.html">readAntares</a></code></p>
+</td></tr>
+<tr valign="top"><td><code>areas</code></td>
+<td>
+<p>character vector containing the name of areas to keep in the
+final object. If <code>NULL</code>, all areas are kept in the final object.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>a list of data.tables with one element per area. The list also
+contains an element named &quot;areaList&quot; containing the name of areas in the
+object and a table called &quot;infos&quot; that contains for each area the number
+of variables of different type (values, details, link).
+</p>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

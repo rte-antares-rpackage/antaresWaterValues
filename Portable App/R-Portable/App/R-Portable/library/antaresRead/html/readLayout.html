@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Read areas layout</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for readLayout {antaresRead}"><tr><td>readLayout {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Read areas layout</h2>
+
+<h3>Description</h3>
+
+<p>This function reads in the input files of an antares study the current areas
+layout, ie. the position of the areas It may be useful for plotting the
+network. 
+</p>
+<p>Be aware that the layout is read in the input files so they may have
+changed since a simulation has been run.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+readLayout(opts = simOptions(), xyCompare = c("union", "intersect"))
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+<tr valign="top"><td><code>xyCompare</code></td>
+<td>
+<p>Use when passing multiple opts, can be &quot;union&quot; or &quot;intersect&quot;.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list with three elements:
+</p>
+<table summary="R valueblock">
+<tr valign="top"><td><code>areas: </code></td>
+<td>
+<p>A data.frame containing the name, the color and the coordinate
+of each area</p>
+</td></tr>
+<tr valign="top"><td><code>district: </code></td>
+<td>
+<p>A data.frame containing the name, the color and the coordinate
+of each district</p>
+</td></tr>
+<tr valign="top"><td><code>links: </code></td>
+<td>
+<p>A data.frame containing the name, the coordinates of the origin
+and the destination of each link</p>
+</td></tr>
+</table>
+<p>By default, <code>readLayout</code> reads the layout for the current default
+antares study. It is possible to specify another study with the parameter
+<code>opts</code>. And we can pass multiple studies using a <code>list</code> of opts.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+readLayout()
+
+# By default, the function reads layout for the default study,
+# but it is possible to specify another study with parameter "opts"
+sim1 &lt;- setSimulationPath()
+
+#[... code that modifies the default antares study]
+
+readLayout(sim1)
+
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

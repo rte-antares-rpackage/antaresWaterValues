@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Get the tags of Github releases of a repository</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for github_releases {xfun}"><tr><td>github_releases {xfun}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Get the tags of Github releases of a repository</h2>
+
+<h3>Description</h3>
+
+<p>Read the HTML source of the release page and parse the tags of the releases.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+github_releases(repo, subpath = "", pattern = "(v[0-9.]+)")
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>repo</code></td>
+<td>
+<p>The repository name of the form <code>user/repo</code>, e.g.,
+<code>"yihui/xfun"</code>.</p>
+</td></tr>
+<tr valign="top"><td><code>subpath</code></td>
+<td>
+<p>A character string to be appended to the URL of Github
+releases (i.e., <code style="white-space: pre;">https://github.com/user/repo/releases/</code>). For
+example, you may use <code>subpath = "latest"</code> to get the tag of the latest
+release.</p>
+</td></tr>
+<tr valign="top"><td><code>pattern</code></td>
+<td>
+<p>A regular expression to extract the tags from the HTML source.
+It must contain a group (i.e., must have a pair of parentheses).</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A character vector of (GIT) tags.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+
+xfun::github_releases("yihui/xfun")
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>xfun</em> version 0.28 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

@@ -1,0 +1,37 @@
+Package: periscope
+Type: Package
+Title: Enterprise Streamlined 'Shiny' Application Framework
+Version: 1.0.0
+Authors@R: c(
+    person("Constance", "Brett", email="connie@aggregate-genius.com", role = c("aut", "cre")),
+    person("Isaac", "Neuhaus", role = "aut", comment = "canvasXpress JavaScript Library Maintainer"),
+    person("Ger", "Inberg", role = c("ctb")),
+    person("Bristol-Meyers Squibb (BMS)", role = c("cph"))
+    )
+Description: An enterprise-targeted scalable and UI-standardized 'shiny' framework 
+    including a variety of developer convenience functions with the goal of both 
+    streamlining robust application development while assisting with creating a 
+    consistent user experience regardless of application or developer.
+URL: https://github.com/cb4ds/periscope, http://periscopeapps.org:3838
+BugReports: https://github.com/cb4ds/periscope/issues
+License: GPL-3
+Encoding: UTF-8
+Language: en-US
+Depends: R (>= 3.5)
+Imports: shiny (>= 1.5), shinydashboard (>= 0.5), shinyBS (>= 0.61),
+        lubridate (>= 1.6), DT (>= 0.2), writexl (>= 1.3), ggplot2 (>=
+        2.2), methods, utils, fresh, yaml, grDevices
+RoxygenNote: 7.1.1
+Suggests: knitr, rmarkdown, shinydashboardPlus, testthat (>= 3.0),
+        canvasXpress, openxlsx (>= 3.0), colourpicker
+VignetteBuilder: knitr
+NeedsCompilation: no
+Packaged: 2021-10-28 14:45:17 UTC; conniebrett
+Author: Constance Brett [aut, cre],
+  Isaac Neuhaus [aut] (canvasXpress JavaScript Library Maintainer),
+  Ger Inberg [ctb],
+  Bristol-Meyers Squibb (BMS) [cph]
+Maintainer: Constance Brett <connie@aggregate-genius.com>
+Repository: CRAN
+Date/Publication: 2021-10-28 15:10:02 UTC
+Built: R 4.1.1; ; 2021-11-01 15:06:32 UTC; windows

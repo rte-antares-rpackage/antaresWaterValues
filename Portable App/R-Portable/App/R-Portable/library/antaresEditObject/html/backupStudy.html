@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Create a backup with an Antares Study</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for backupStudy {antaresEditObject}"><tr><td>backupStudy {antaresEditObject}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Create a backup with an Antares Study</h2>
+
+<h3>Description</h3>
+
+<p>Save an Antares Study or only inputs in a <code>.tar.gz</code> file
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+backupStudy(
+  backupfile,
+  what = c("input", "study"),
+  opts = antaresRead::simOptions()
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>backupfile</code></td>
+<td>
+<p>Name of the backup, without extension. If missing,
+either the name of the study or 'input' according argument <code>what</code>.</p>
+</td></tr>
+<tr valign="top"><td><code>what</code></td>
+<td>
+<p>Which folder to save, <code>input</code> for the input folder
+or <code>study</code> for the whole study.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The path of the backup
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+backupStudy()
+
+## End(Not run)
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresEditObject</em> version 0.3.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

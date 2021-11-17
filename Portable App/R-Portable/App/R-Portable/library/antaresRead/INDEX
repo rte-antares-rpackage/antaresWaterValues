@@ -1,0 +1,34 @@
+.writeIni               Write ini file from list obtain by
+                        antaresRead:::readIniFile and modify by user
+as.antaresDataList      Convert objects to antaresDataTable
+as.antaresDataTable     Convert objects to antaresDataTable
+changeTimeStep          Change the timestep of an output
+copyToClipboard         Copy data to the clipboard
+extractDataList         Format data PPSE-style
+getAreas                Select and exclude areas
+getIdCols               get Id columns
+getLinks                Retrieve links connected to a set of areas
+hvdcModification        hvdc straitement
+isH5Opts                Test if opts is h5
+parAggregateMCall       Creation of Mc_all (only antares > V6)
+ponderateMcAggregation
+                        Mcyear aggregation weigthed by wd
+readAntares             Read the data of an Antares simulation
+readAntaresAreas        Read output for a list of areas
+readBindingConstraints
+                        Read binding constraints
+readClusterDesc         Import clusters description
+readInputTS             Read Input time series
+readLayout              Read areas layout
+readOptimCriteria       Read Optimization Criteria
+removeVirtualAreas      Remove virtual areas
+setHvdcAreas            Set hvdc areas
+setRam                  Specify RAM limit
+setSimulationPath       Set Path to an Antares simulation
+setTimeoutAPI           Change API Timeout
+showAliases             show aliases for variables
+simOptions              Extract simulation options
+subset.antaresDataList
+                        Subset an antaresDataList
+viewAntares             View the content of an antares output
+writeAntaresH5          Convert antares output to h5 file

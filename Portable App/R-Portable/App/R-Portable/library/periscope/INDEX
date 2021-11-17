@@ -1,0 +1,30 @@
+add_left_sidebar        Add the left sidebar to an existing
+                        application.
+add_reset_button        Add the reset button to an existing
+                        application.
+add_right_sidebar       Add the right sidebar to an existing
+                        application.
+add_ui_body             Add UI Elements to the Body area
+add_ui_sidebar_advanced
+                        Add UI Elements to the Sidebar (Advanced Tab)
+add_ui_sidebar_basic    Add UI Elements to the Sidebar (Basic Tab)
+add_ui_sidebar_right    Add UI Elements to the Right Sidebar
+create_new_application
+                        Create a new templated framework application
+downloadFile            downloadFile Module
+downloadFileButton      downloadFileButton UI
+downloadFile_AvailableTypes
+                        downloadFile Helper
+downloadFile_ValidateTypes
+                        downloadFile Helper
+downloadablePlot        downloadablePlot Module
+downloadablePlotUI      downloadablePlot UI
+downloadableTable       downloadableTable Module
+downloadableTableUI     downloadableTable UI
+get_url_parameters      Get URL Parameters
+logging-entrypoints     Entry points for logging actions
+periscope               Periscope Shiny Application Framework
+remove_reset_button     Remove the reset button from an existing
+                        application.
+set_app_parameters      Set Application Parameters
+ui_tooltip              Insert a standardized tooltip

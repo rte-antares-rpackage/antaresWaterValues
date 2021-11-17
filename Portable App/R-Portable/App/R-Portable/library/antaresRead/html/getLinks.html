@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Retrieve links connected to a set of areas</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for getLinks {antaresRead}"><tr><td>getLinks {antaresRead}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Retrieve links connected to a set of areas</h2>
+
+<h3>Description</h3>
+
+<p>This function finds the names of the links connected to a set of areas.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+getLinks(
+  areas = NULL,
+  exclude = NULL,
+  opts = simOptions(),
+  internalOnly = FALSE,
+  namesOnly = TRUE,
+  withDirection = FALSE
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>areas</code></td>
+<td>
+<p>Vector containing area names. It represents the set of areas we are interested
+in. If <code>NULL</code>, all areas of the study are used.</p>
+</td></tr>
+<tr valign="top"><td><code>exclude</code></td>
+<td>
+<p>Vector containing area names. If not <code>NULL</code>, all links connected to 
+one of these areas are omitted.</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>list of simulation parameters returned by the function
+<code><a href="../../antaresRead/help/setSimulationPath.html">setSimulationPath</a></code></p>
+</td></tr>
+<tr valign="top"><td><code>internalOnly</code></td>
+<td>
+<p>If <code>TRUE</code>, only links that connect two areas from parameter <code>areas</code> are returned. 
+If not, the function also returns all the links that connect an area from the list with 
+an area outside the list.</p>
+</td></tr>
+<tr valign="top"><td><code>namesOnly</code></td>
+<td>
+<p>If <code>TRUE</code>, the function returns a vector with link names, else it
+returns a table containing the name, the origin and the destination of each
+selected link.</p>
+</td></tr>
+<tr valign="top"><td><code>withDirection</code></td>
+<td>
+<p>Used only if <code>namesOnly = FALSE</code>. If <code>FALSE</code>, then the function
+returns a table with one line per link, containing the link name, the 
+origin and the destination of the link. If <code>TRUE</code>, then it returns a
+table with columns <code>area</code>, <code>link</code>, <code>to</code> and <code>direction</code>
+which is equal is equal to
+1 if the link connects <code>area</code> to <code>to</code> and -1 if it connects
+<code>to</code> to <code>area</code>.
+The column <code>area</code> contains only areas that are compatible with parameters 
+<code>areas</code> and <code>exclude</code>. Note that the same link can appear twice 
+in the table with different directions.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>If <code>namesOnly = TRUE</code> the function returns a vector containing link names 
+</p>
+<p>If <code>namesOnly = FALSE</code> and <code>withDirection = FALSE</code>, it returns a
+<code>data.table</code> with <strong>exactly one line per link</strong> and with three columns:
+</p>
+<table summary="R valueblock">
+<tr valign="top"><td><code>link</code></td>
+<td>
+<p>Link name</p>
+</td></tr>
+<tr valign="top"><td><code>from</code></td>
+<td>
+<p>First area connected to the link</p>
+</td></tr>
+<tr valign="top"><td><code>to</code></td>
+<td>
+<p>Second area connected to the link</p>
+</td></tr>
+</table>
+<p>If <code>namesOnly = FALSE</code> and <code>withDirection = TRUE</code>, it returns a
+<code>data.table</code> with <strong>one or two lines per link</strong> and with four columns:
+</p>
+<table summary="R valueblock">
+<tr valign="top"><td><code>area</code></td>
+<td>
+<p>Area name</p>
+</td></tr>
+<tr valign="top"><td><code>link</code></td>
+<td>
+<p>Link name</p>
+</td></tr>
+<tr valign="top"><td><code>to</code></td>
+<td>
+<p>Area connected to <code>area</code> by <code>link</code></p>
+</td></tr>
+<tr valign="top"><td><code>direction</code></td>
+<td>
+<p>1 if the link connects <code>area</code> to <code>to</code> else -1</p>
+</td></tr>
+</table>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+
+# Get all links of a study
+getLinks()
+
+# Get all links with their origins and destinations
+getLinks(namesOnly = FALSE)
+
+# Get all links connected to French areas (assuming their names contain "fr")
+getLinks(getAreas("fr"))
+
+# Same but with only links connecting two French areas
+getLinks(getAreas("fr"), internalOnly = TRUE)
+
+# Exclude links connecting real areas with pumped storage virtual areas
+# (assuming their names contain "psp")
+getLinks(getAreas("fr"), exclude = getAreas("psp"))
+
+
+## End(Not run)
+
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresRead</em> version 2.2.91 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

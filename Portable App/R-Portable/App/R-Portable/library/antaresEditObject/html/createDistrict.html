@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><title>R: Create a district</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="R.css" />
+</head><body><div class="container">
+
+<table width="100%" summary="page for createDistrict {antaresEditObject}"><tr><td>createDistrict {antaresEditObject}</td><td style="text-align: right;">R Documentation</td></tr></table>
+
+<h2>Create a district</h2>
+
+<h3>Description</h3>
+
+<p>Allows selecting a set of areas so as to bundle them together in a &quot;district&quot;.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre>
+createDistrict(
+  name,
+  caption = NULL,
+  comments = NULL,
+  apply_filter = "none",
+  add_area = NULL,
+  remove_area = NULL,
+  output = FALSE,
+  overwrite = FALSE,
+  opts = antaresRead::simOptions()
+)
+</pre>
+
+
+<h3>Arguments</h3>
+
+<table summary="R argblock">
+<tr valign="top"><td><code>name</code></td>
+<td>
+<p>District's name.</p>
+</td></tr>
+<tr valign="top"><td><code>caption</code></td>
+<td>
+<p>Caption for the district.</p>
+</td></tr>
+<tr valign="top"><td><code>comments</code></td>
+<td>
+<p>Comments for the district.</p>
+</td></tr>
+<tr valign="top"><td><code>apply_filter</code></td>
+<td>
+<p>Possible values are <code>add-all</code> to add all areas to the district,
+<code>remove-all</code> to clear the district, or <code>none</code> (default) to don't apply a filter.</p>
+</td></tr>
+<tr valign="top"><td><code>add_area</code></td>
+<td>
+<p>Character vector of area(s) to add to the district.</p>
+</td></tr>
+<tr valign="top"><td><code>remove_area</code></td>
+<td>
+<p>Character vector of area(s) to remove from the district.</p>
+</td></tr>
+<tr valign="top"><td><code>output</code></td>
+<td>
+<p>Logical, compute the results for the district or not?</p>
+</td></tr>
+<tr valign="top"><td><code>overwrite</code></td>
+<td>
+<p>Logical, should the district be overwritten if already exist?</p>
+</td></tr>
+<tr valign="top"><td><code>opts</code></td>
+<td>
+<p>List of simulation parameters returned by the function
+<code>antaresRead::setSimulationPath</code></p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An updated list containing various information about the simulation.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre>
+## Not run: 
+createDistrict(name = "mydistrict", 
+                apply_filter = "add-all", 
+                remove_area = c("fr", "be"))
+
+## End(Not run)
+</pre>
+
+<hr /><div style="text-align: center;">[Package <em>antaresEditObject</em> version 0.3.0 <a href="00Index.html">Index</a>]</div>
+</div></body></html>

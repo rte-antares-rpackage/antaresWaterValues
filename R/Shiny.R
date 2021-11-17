@@ -314,13 +314,13 @@ ui <- fluidPage(
                        align = "center"),
           shinyBS::bsTooltip("Calculate", "Click to start the calculation of te water values using the selected parameters",
                              "bottom"),
-
-          materialSwitch("show_negative","Show negative Water values",
-                        value=T,status = "danger")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title ="Applicate a filter to remove the negative values in the graph.
-NB: this is only a display filter the values are unchanged.")),
+#
+#           materialSwitch("show_negative","Show negative Water values",
+#                         value=T,status = "danger")%>%
+#             shinyInput_label_embed(
+#               shiny_iconlink() %>%
+#                 bs_embed_popover(title ="Applicate a filter to remove the negative values in the graph.
+# NB: this is only a display filter the values are unchanged.")),
 
 
 

@@ -10,7 +10,8 @@ plot_reservoir(
   mcyear = NULL,
   simulation_name = NULL,
   opts = antaresRead::simOptions(),
-  shiny = F
+  shiny = F,
+  only_g = F
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ Null plot the synthesis. Default NULL}
 \code{antaresRead::setSimulationPath}}
 
 \item{shiny}{Boolean. True to run the script in shiny mod.}
+
+\item{only_g}{Boolean. True plot only constraints graph.}
 }
 \value{
 a \code{ggplot} object

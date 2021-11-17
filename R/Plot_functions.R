@@ -320,6 +320,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param shiny Boolean. True to run the script in shiny mod.
+#' @param only_g Boolean. True plot only constraints graph.
 #' @import data.table
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
 #' @importFrom dplyr left_join
@@ -330,7 +331,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio
 #' @export
 
 
-plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions(),shiny=F){
+plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NULL,opts=antaresRead::simOptions(),shiny=F,only_g=F){
 
   reservoir <- readReservoirLevels(area, timeStep = timeStep, byReservoirCapacity = FALSE, opts = opts)
   reservoir$level_avg <- NULL
@@ -366,8 +367,9 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
     temp <- dplyr::left_join(x=reservoir,y=inflow,by="timeId")
     p <- ggplot2::ggplot(data=temp, ggplot2::aes(x=timeId)) +
       ggplot2::geom_line(ggplot2::aes(y = level_low ), color = "red") +
-      ggplot2::geom_line(ggplot2::aes(y = level_high ), color="red")+
-      ggplot2::geom_line(ggplot2::aes(y = `H. LEV` ), color="blue")
+      ggplot2::geom_line(ggplot2::aes(y = level_high ), color="red")
+    if(!only_g){
+      p <- p+ggplot2::geom_line(ggplot2::aes(y = `H. LEV` ), color="blue")}
     p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path for MC synthesis",area))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
     print(p)
@@ -390,7 +392,8 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
     p <- ggplot2::ggplot(data=temp1, ggplot2::aes(x=timeId)) +
       ggplot2::geom_line(ggplot2::aes(y = level_low ), color = "red") +
       ggplot2::geom_line(ggplot2::aes(y = level_high ), color="red")+
-      ggplot2::geom_line(ggplot2::aes(y =MC_year ), color="blue")
+    if(!only_g){
+      p <- p+ggplot2::geom_line(ggplot2::aes(y =MC_year ), color="blue")}
     p <- p+ggplot2::ggtitle(sprintf("%s Reservoir Path for MC year %d",area,mcyear))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
 

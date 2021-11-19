@@ -1248,7 +1248,7 @@ server <- function(input, output, session) {
             monotonic_JM(post_result())
           }else{
             if(input$force_monotonic_JM2){
-              monotonic_JM2(results_temp())
+              monotonic_JM2(post_result())
               }else{
           post_result()
             }

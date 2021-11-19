@@ -223,7 +223,7 @@
       Data_week[, value_node := correct_outliers(value_node)]
     }
 
-    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio))
+    Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio,na.rm =T))
 
 
     return(Data_week)

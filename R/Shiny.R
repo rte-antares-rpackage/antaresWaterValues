@@ -298,7 +298,7 @@ ui <- fluidPage(
                              "bottom"),
 
           sliderInput("inaccessible_states","Eliminate inaccessible states",
-                         value=100,min = 0,max = 100,post  = " %",),
+                         value=100,min = 0,max = 99,post  = " %",),
 
           shinyBS::bsTooltip("inaccessible_states","Tolerance of inaccessible states. For example if equal to 90% we delete the state if this states is inaccessible by 90% of the scenarios.","bottom"),
 

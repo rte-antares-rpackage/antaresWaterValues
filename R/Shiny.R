@@ -1048,8 +1048,7 @@ server <- function(input, output, session) {
 
     watervalues <- eventReactive(input$plot,
                                  {waterValuesViz(rv$results,
-                                    filtre_ratio =input$filtre_ratio/100,
-                                    show_negative=input$show_negative)})
+                                    filtre_ratio =input$filtre_ratio/100)})
 
     output$Watervalues <- renderPlot(watervalues())
 

@@ -166,7 +166,7 @@
     }
     inflow[with(inflow, order(mcYear, timeId)),]
     inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
-    inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
+    # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
     inflow[, timeId := as.numeric(timeId)]
     inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)] # sum
 

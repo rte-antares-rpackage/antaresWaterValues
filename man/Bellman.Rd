@@ -21,6 +21,7 @@ Bellman(
   counter,
   inaccessible_states = 1,
   stop_rate = 5,
+  debugger_feas = F,
   ...
 )
 }
@@ -72,6 +73,8 @@ For example if equal to 0.9 we delete the state if this states is inaccessible b
 \item{stop_rate}{the percent from which the calculation stop. for example
 \code{stop_rate=5} means the calculation stop if there is a week with less then
 5\% accessibles states.}
+
+\item{debugger_feas}{open debug mode in case there is an error of no accessible states}
 
 \item{...}{further arguments passed to or from other methods.}
 }

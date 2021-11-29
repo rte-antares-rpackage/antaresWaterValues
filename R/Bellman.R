@@ -32,6 +32,7 @@
   #' @param stop_rate the percent from which the calculation stop. for example
   #' \code{stop_rate=5} means the calculation stop if there is a week with less then
   #' 5\% accessibles states.
+  #' @param debugger_feas open debug mode in case there is an error of no accessible states
   #' @param ... further arguments passed to or from other methods.
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @importFrom stats ave quantile
@@ -41,7 +42,7 @@
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       niveau_max,method,na_rm=TRUE,max_mcyear,print_test=FALSE,
                       correct_outliers=FALSE,q_ratio=0.75,test_week,counter,inaccessible_states=1,
-                      stop_rate=5,...){
+                      stop_rate=5,debugger_feas=F,...){
 
 
 
@@ -189,7 +190,7 @@
 
 
   # test feasible week
-    feasible_test_week(Data_week$value_node,counter,stop_rate)
+    feasible_test_week(Data_week$value_node,counter,stop_rate,debug_feas=debugger_feas)
 
   # test scenarios
     Data_week <- scanarios_check(Data_week,counter)

@@ -263,7 +263,7 @@ bellman_calculator <- function(decisions,next_week_values,decision_rewards,state
 
 
 
-feasible_test_week <- function(value_node,counter,stop_rate){
+feasible_test_week <- function(value_node,counter,stop_rate,debug_feas=F){
 
 
   ratio <- round((sum(is.finite(value_node))/length(value_node))*100)
@@ -273,6 +273,9 @@ feasible_test_week <- function(value_node,counter,stop_rate){
                         To reduce the problem:
                         - Relax the reservoir level max and min constraints.
                         - Increase the number of states by increasing the states_step_ratio parameter.",counter )
+    if(debug_feas){
+      browser()
+    }
 
     stop(message)
   }
@@ -282,6 +285,9 @@ feasible_test_week <- function(value_node,counter,stop_rate){
                        To reduce the problem:
                         - Relax the reservoir level max and min constraints.
                         - Increase the number of states by increasing the states_step_ratio parameter.",ratio,counter)
+    if(debug_feas){
+      browser()
+    }
     stop(message)
   }
 

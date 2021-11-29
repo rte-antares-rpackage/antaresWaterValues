@@ -47,6 +47,7 @@
 #' @param stop_rate the percent from which the calculation stop. for example
 #' \code{stop_rate=5} means the calculation stop if there is a week with less then
 #' 5\% accessibles states.
+#' @param debug_week the number of the week to open the process in debug mode
 #' @param ... further arguments passed to or from other methods.
 #' @return a \code{data.table}
 #' @export
@@ -80,7 +81,8 @@
                              convergence_rate=0.9,
                              convergence_criteria=1,
                              cycle_limit=10,
-                             pumping=F,efficiency=1,stop_rate=5,
+                             pumping=F,efficiency=1,stop_rate=0,
+                             debug_week=54,
                         ...) {
 
 
@@ -280,6 +282,7 @@
           next_level_low <- watervalues$level_low[i+1]
         }
 
+        if(debug_week==i)browser()
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,

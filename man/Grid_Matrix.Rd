@@ -32,7 +32,8 @@ Grid_Matrix(
   cycle_limit = 10,
   pumping = F,
   efficiency = 1,
-  stop_rate = 5,
+  stop_rate = 0,
+  debug_week = 54,
   ...
 )
 }
@@ -110,6 +111,8 @@ between two water values is less then this value those values are converged.}
 \item{stop_rate}{the percent from which the calculation stop. for example
 \code{stop_rate=5} means the calculation stop if there is a week with less then
 5\% accessibles states.}
+
+\item{debug_week}{the number of the week to open the process in debug mode}
 
 \item{...}{further arguments passed to or from other methods.}
 }

@@ -6,20 +6,22 @@
 \usage{
 setupWaterValuesSimulation(
   area,
-  fictive_area = paste0("watervalue_", area),
+  fictive_area_name = paste0("watervalue_", area),
   thermal_cluster = "WaterValueCluster",
   overwrite = FALSE,
   remove_areas = NULL,
   opts = antaresRead::simOptions(),
   reset_hydro = T,
   link_from = NULL,
+  pumping = F,
+  max_load = 1e+08,
   ...
 )
 }
 \arguments{
 \item{area}{The area concerned by the simulation.}
 
-\item{fictive_area}{Name of the fictive area to create.}
+\item{fictive_area_name}{Name of the fictive area to create.}
 
 \item{thermal_cluster}{Name of the thermal cluster to create.}
 
@@ -34,6 +36,10 @@ setupWaterValuesSimulation(
 
 \item{link_from}{area that will be linked to the created fictive area. If it's
 \code{NULL} it will takes the area concerned by the simulation.}
+
+\item{pumping}{Boolean. True to take into account the pumping.}
+
+\item{max_load}{the maximum load to put it in the fictive areas.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

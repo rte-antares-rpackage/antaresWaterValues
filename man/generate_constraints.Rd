@@ -4,14 +4,22 @@
 \alias{generate_constraints}
 \title{This function generate binding constraints for \code{runWaterValuesSimulation}}
 \usage{
-generate_constraints(constraint_value, coeff, name_bc, opts)
+generate_constraints(
+  constraint_value,
+  coeff,
+  name_constraint,
+  efficiency = 0.75,
+  opts
+)
 }
 \arguments{
 \item{constraint_value}{the value of the constraint}
 
 \item{coeff}{the sens of the constraint notation in Antares.}
 
-\item{name_bc}{the name of the constraint.}
+\item{name_constraint}{the name of the constraint.}
+
+\item{efficiency}{in [0,1]. efficient ratio of pumping.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

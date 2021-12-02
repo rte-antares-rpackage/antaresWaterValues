@@ -61,7 +61,7 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
 
   reward <- rbindlist(reward)   #merge the all simulations tables together
   reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
-  vars <- simulation_names # setdiff(names(reward), c("timeId", "mcYear"))
+  vars <- colnames(reward)[3:length(simulation_names)]
   setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
 
 

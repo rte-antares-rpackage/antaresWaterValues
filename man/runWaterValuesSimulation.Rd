@@ -23,6 +23,7 @@ runWaterValuesSimulation(
   otp_dest = NULL,
   file_name = NULL,
   pumping = F,
+  efficiency = NULL,
   launch_simulations = T,
   reset_hydro = T,
   ...
@@ -67,6 +68,8 @@ will be created from maximum pumping power to the hydro storage maximum and of l
 \item{file_name}{the Rdata file name.}
 
 \item{pumping}{Boolean. True to take into account the pumping.}
+
+\item{efficiency}{in [0,1]. efficient ratio of pumping.}
 
 \item{launch_simulations}{Boolean. True to to run the simulations.}
 

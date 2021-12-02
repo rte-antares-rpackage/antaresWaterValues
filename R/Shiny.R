@@ -108,7 +108,7 @@ ui <- fluidPage(
 
              sliderInput("sim_mcyears",label="choose the number of MC years to simulate",min=1,
                          max=opts$parameters$general$nbyears,
-                         value=opts$parameters$general$nbyears,step=1),
+                         value=c(1,opts$parameters$general$nbyears),step=1),
              shinyBS::bsTooltip("sim_mcyears", " Number of Monte Carlo years to simulate.",
                                 "bottom"),
 

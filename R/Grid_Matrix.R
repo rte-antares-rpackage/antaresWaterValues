@@ -154,7 +154,7 @@
     efficiency <- getPumpEfficiency(area = area,opts = opts)
   }
   decision_space <- simulation_values
-  decision_space <- unlist(lapply(decision_space,FUN = function(x) efficiency_effect(x,efficiency)))
+  # decision_space <- unlist(lapply(decision_space,FUN = function(x) efficiency_effect(x,efficiency)))
   decision_space <- round(decision_space)
 
   decimals <- 6

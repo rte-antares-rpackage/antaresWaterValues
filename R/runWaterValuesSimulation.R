@@ -171,28 +171,29 @@ runWaterValuesSimulation <- function(area,
 
 
     iii <- which(num_equal(i, constraint_values))
-    message("#  ------------------------------------------------------------------------")
-    message(paste0("Running simulation: ", iii, " - ", sprintf(simulation_name, format(i, decimal.mark = ","))))
-    message("#  ------------------------------------------------------------------------")
+    ii <- round(i/1000)
 
+    message("#  ------------------------------------------------------------------------")
+    message(paste0("Running simulation: ", iii, " - ", sprintf(simulation_name, format(ii, decimal.mark = ","))))
+    message("#  ------------------------------------------------------------------------")
     # run the simulation
     if(launch_simulations){
       antaresEditObject::runSimulation(
-        name = sprintf(simulation_name, format(i, decimal.mark = ",")),
+        name = sprintf(simulation_name, format(ii, decimal.mark = ",")),
         mode = "economy",
         wait = wait,
         path_solver = path_solver,
         show_output_on_console = show_output_on_console,
         opts = opts
       )}
-    simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(i, decimal.mark = ","))
+    simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(ii, decimal.mark = ","))
 
     #remove the Binding Constraints
 
     disable_constraint(constraint_value,name_bc,pumping,opts)
 
     #Simulation Control
-    sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
+    sim_name <-  sprintf(simulation_name, format(ii, decimal.mark = ","))
     sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
     sim_check <- paste0(opts$studyPath,"/output")
     sim_check <- paste(sim_check,sim_name,sep="/")

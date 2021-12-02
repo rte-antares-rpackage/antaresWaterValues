@@ -108,8 +108,10 @@ runWaterValuesSimulation <- function(area,
 
   # Get max hydro power that can be generated in a week
 
-  constraint_values <- constraint_generator(area,nb_disc_stock,pumping,
-                                            pumping_efficiency=1,opts)
+  constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
+                                            pumping=pumping,
+                                            pumping_efficiency = efficiency,
+                                            opts=opts)
 
   # Get efficiency
 

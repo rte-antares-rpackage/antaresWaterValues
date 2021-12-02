@@ -1,7 +1,7 @@
 
 efficiency_effect <- function(energy,efficiency){
 
-  if(energy<0) energy <- energy/efficiency
+  if(energy<0) energy <- energy*efficiency
   return(energy)
 
 }

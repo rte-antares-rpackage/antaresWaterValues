@@ -185,8 +185,8 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 
   if(pumping){
     total <- maxi-mini
-    pump_rat <- round((abs(mini)/total)*nb_disc_stock)
-    turb_rat <- round((abs(maxi)/total)*nb_disc_stock)
+    pump_rat <- round((abs(mini)/total)*(nb_disc_stock+1))
+    turb_rat <- round((abs(maxi)/total)*(nb_disc_stock+1))
     constraint_values_pump <- seq(from=mini,to=0,length.out=pump_rat)
     constraint_values_turb <- seq(from=0,to=maxi,length.out=turb_rat)
 

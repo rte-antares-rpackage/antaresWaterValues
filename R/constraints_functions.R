@@ -182,14 +182,23 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   maxi <- min(max_hydro$turb,res_cap+max_app)
   mini <- -max_hydro$pump*pumping_efficiency
 
+
   if(pumping){
-    constraint_values <- seq(from = mini, to = maxi, length.out = nb_disc_stock)
-    constraint_values <- round(constraint_values, 3)
+    total <- maxi-mini
+    pump_rat <- round((abs(mini)/total)*nb_disc_stock)
+    turb_rat <- round((abs(maxi)/total)*nb_disc_stock)
+    constraint_values_pump <- seq(from=mini,to=0,length.out=pump_rat)
+    constraint_values_turb <- seq(from=0,to=maxi,length.out=turb_rat)
+
+    constraint_values <- append(constraint_values_pump,constraint_values_turb)
+    constraint_values <- constraint_values[!duplicated(constraint_values)]
+
+    constraint_values <- round(constraint_values)
     constraint_values <- unlist(lapply(constraint_values,FUN = function(x) efficiency_effect(x,pumping_efficiency)))
-    constraint_values[which(abs(constraint_values)==min(abs(constraint_values)))] <- 0
-  }else{
+
+    }else{
     constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
-    constraint_values <- round(constraint_values, 3)
+    constraint_values <- round(constraint_values)
   }
 
   return(constraint_values)

@@ -149,6 +149,7 @@ runWaterValuesSimulation <- function(area,
     coeff <- c(coeff_turb,coeff_pump)
 
   }else{
+    fictive_areas <- fictive_area
     coeff <- generate_link_coeff(area,fictive_area)
   }
 

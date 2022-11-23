@@ -203,6 +203,7 @@ runWaterValuesSimulation <- function(area,
 
     if(launch_simulations){
       if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
+        stop("Simulation Error. Please check simulation log.")
         # remove the fictive area
         if(launch_simulations){
           for (fictive_area in fictive_areas){
@@ -212,7 +213,6 @@ runWaterValuesSimulation <- function(area,
         # restore hydrostorage
         restoreHydroStorage(area = area, opts = opts)
         restorePumpPower(area = area, opts = opts)
-        stop("Simulation Error. Please check simulation log.")
       }
     }
   }

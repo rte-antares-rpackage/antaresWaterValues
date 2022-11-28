@@ -92,24 +92,30 @@ setupWaterValuesSimulation <- function(area,
     })
 
     # Create thermal cluster
-    suppressWarnings({
-      opts <- antaresEditObject::createCluster(
-        area = fictive_area,
-        cluster_name = thermal_cluster,
-        group = "other", unitcount = "1",
-        time_series = time_series,
-        nominalcapacity = nominalcapacity,
-        prepro_modulation = prepro_modulation,
-        `min-down-time` = "1",
-        `marginal-cost` = 0.01,
-        `market-bid-cost` = 0.01,
-        overwrite = overwrite,
-        opts = opts
-      )
-    })
+    if(!grepl("_pump", fictive_area)){
+      suppressWarnings({
+        opts <- antaresEditObject::createCluster(
+          area = fictive_area,
+          cluster_name = thermal_cluster,
+          group = "other", unitcount = "1",
+          time_series = time_series,
+          nominalcapacity = nominalcapacity,
+          prepro_modulation = prepro_modulation,
+          `min-down-time` = "1",
+          `marginal-cost` = 0.01,
+          `market-bid-cost` = 0.01,
+          overwrite = overwrite,
+          opts = opts
+        )
+      })
+    }
 
-    #add load
-    antaresEditObject::writeInputTS(fictive_area, type = "load", data = matrix(rep(max_load, 8760*1), nrow = 8760))
+    if(grepl("_pump", fictive_area)){
+      #add load
+      max_pump <- hydro_storage_max[, list(pumpingMaxPower)]
+      antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump)
+    }
+
 
     # Create link
     suppressWarnings({

@@ -41,14 +41,14 @@ setupWaterValuesSimulation <- function(area,
     suppressWarnings(resetHydroStorage(area = area, opts = opts))
   }
 
-  # Reset Pumping power
-  suppressWarnings(resetPumpPower(area = area, opts = opts))
-
   # Get hydro max power
   hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   hydro_storage_max <- rbind(
     hydro_storage_max, tail(hydro_storage_max, 24)
   )
+
+  # Reset Pumping power
+  suppressWarnings(resetPumpPower(area = area, opts = opts))
 
   # Prepare thermal Cluster parameters
   if (utils::hasName(hydro_storage_max, "hstorPMaxHigh")) {

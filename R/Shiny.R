@@ -922,7 +922,7 @@ server <- function(input, output, session) {
                      area=input$sim_area,
                      simulation_name = input$sim_simulation_name,
                      nb_disc_stock = input$sim_nb_disc_stock,
-                     nb_mcyears = input$sim_mcyears,
+                     nb_mcyears = seq(from = input$sim_mcyears[1], to = input$sim_mcyears[2]),
                      path_solver =input$solver_path,
                      binding_constraint = input$sim_binding_constraint,
                      fictive_area = input$sim_fictive_area,

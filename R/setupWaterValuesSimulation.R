@@ -92,7 +92,7 @@ setupWaterValuesSimulation <- function(area,
     })
 
     # Create thermal cluster
-    if(!grepl("_pump", fictive_area)){
+    if(!grepl("_pump$", fictive_area)){
       suppressWarnings({
         opts <- antaresEditObject::createCluster(
           area = fictive_area,
@@ -110,7 +110,7 @@ setupWaterValuesSimulation <- function(area,
       })
     }
 
-    if(grepl("_pump", fictive_area)){
+    if(grepl("_pump$", fictive_area)){
       #add load
       max_pump <- hydro_storage_max[, list(pumpingMaxPower)]
       antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump)

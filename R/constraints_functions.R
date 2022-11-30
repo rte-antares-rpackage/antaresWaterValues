@@ -58,9 +58,9 @@ disable_constraint <- function(constraint_value,name_bc,pumping=F,opts){
   opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
   opts <- antaresEditObject::editBindingConstraint(name = "Turb", opts = opts,enabled = FALSE)
   if(pumping){
-  opts <- antaresEditObject::editBindingConstraint(name = "Pump", opts = opts,enabled = FALSE)
+    opts <- antaresEditObject::editBindingConstraint(name = "Pump", opts = opts,enabled = FALSE)
   }
- return(opts)
+  return(opts)
 }
 
 
@@ -84,13 +84,13 @@ disable_constraint <- function(constraint_value,name_bc,pumping=F,opts){
 generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts){
 
 
-  if(length(coeff)==1){
+  if(length(coeff)==2){
 
     opts <-  antaresEditObject::createBindingConstraint(
       name = "Turb",
       enabled = TRUE,
       operator = "greater",
-      coefficients = coeff,
+      coefficients = coeff[2],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -103,7 +103,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       timeStep = "weekly",
       operator = "less",
       overwrite = TRUE,
-      coefficients = coeff,
+      coefficients = coeff[1],
       opts = opts)
   }else{
 
@@ -114,7 +114,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       name = "Pump",
       enabled = TRUE,
       operator = "greater",
-      coefficients = -coeff[2],
+      coefficients = -coeff[3],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -126,7 +126,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       name = "Turb",
       enabled = TRUE,
       operator = "greater",
-      coefficients = coeff[1],
+      coefficients = coeff[2],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -143,13 +143,13 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       timeStep = "weekly",
       operator = "equal",
       overwrite = TRUE,
-      coefficients = c(coeff[1],efficiency*coeff[2]),
+      coefficients = c(coeff[1],efficiency*coeff[3]),
       opts = opts)
   }
 
 
-    return(opts)
-    }
+  return(opts)
+}
 
 
 
@@ -196,7 +196,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
     constraint_values <- round(constraint_values)
     constraint_values <- unlist(lapply(constraint_values,FUN = function(x) efficiency_effect(x,pumping_efficiency)))
 
-    }else{
+  }else{
     constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
     constraint_values <- round(constraint_values)
   }
@@ -207,12 +207,28 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 
 
 
-generate_link_coeff <- function(area,fictive_area){
+generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = simOptions()){
 
-  if (match(area, sort(c(area, fictive_area))) == 1) {
-    coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
-  } else {
-    coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
+  # For the case of the pumping node, the constraint will be applied on the flow from the real area to the pumping node
+  if(pumping == TRUE & grepl("_pump$", fictive_area)){
+    if (match(area, sort(c(area, fictive_area))) == 1) {
+      coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+    } else {
+      coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
+    }
+  } #Otherwise, the constraint will be applied on the generation from the thermal cluster
+  else{
+    cluster_desc <- readClusterDesc(opts)
+    fictive_cluster <- cluster_desc[area == fictive_area, cluster]
+    coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
+
+    if (match(area, sort(c(area, fictive_area))) == 1) {
+      coeff2 <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+    } else {
+      coeff2 <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
+    }
+    coeff <- c(coeff1, coeff2)
   }
+
   return(coeff)
 }

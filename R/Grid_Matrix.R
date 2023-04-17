@@ -195,7 +195,7 @@
   }
 
   # preparation DATA (generate a table of weeks and years)
-  watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = mcyears))
+  watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = mcyears, statesid=seq_len(nrow(states))))
 
   # add states
   {
@@ -211,8 +211,8 @@
     statesplus1 <- copy(statesdt)
     statesplus1[, weeks := weeks - 1]
     statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = weeks]
-    statesplus1 <- dplyr::left_join(x = statesdt, y = statesplus1, by = c("weeks"), all.x = TRUE)
-    watervalues <- dplyr::left_join(x = watervalues, y = statesplus1, by = "weeks", all.x = TRUE, all.y = FALSE, allow.cartesian = TRUE)
+    statesplus1 <- dplyr::left_join(x = statesdt, y = statesplus1, by = c("weeks"))
+    watervalues <- dplyr::right_join(x = watervalues, y = statesplus1, by = c("weeks","statesid"))
   }
 
   # add inflow
@@ -231,7 +231,7 @@
   #at this point we added the rewards for each weekly_amount
 
   # add reservoir
-  watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = timeId, level_low, level_high)], by = "weeks", all = TRUE)
+  watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = timeId, level_low, level_high)], by = "weeks")
   #here we added the lvl_high and low of the reservoir
 
   # add empty columns ---------------------

@@ -67,22 +67,18 @@
         states_next <- unlist(states_next, use.names = FALSE)
 
 
-        if (i%% (nrow(Data_week)/max_mcyear) ==1){
-          next_week_values <- next_week_values_l[i:(i+(nrow(Data_week)/max_mcyear)-1)]
-        }
-
-
+        next_week_values <- next_week_values_l[which(Data_week$years==Data_week$years[i])]
 
         }
 
 
 
     #eliminate non accessible states
-    if (states > round(level_high, decimals) - alpha) {
+    if (states > round(level_high, decimals) + alpha) {
       Data_week$value_node[i] <- -Inf
       next
     }
-    if (states < round(level_low, decimals) + alpha) {
+    if (states < round(level_low, decimals) - alpha) {
       Data_week$value_node[i] <- -Inf
       next
     }
@@ -150,7 +146,7 @@
     ld <-length(decisions)
     sorted_Bellman <- sort(Bellman_values)
     lb <- length(sorted_Bellman)
-    t <- 1
+    t <- 0
     while (t<ld){
       max_bell <- sorted_Bellman[lb-t]
       if(is.finite(suppressWarnings(min(Bellman$next_bellman_value[which(Bellman_values==max_bell)])))){

@@ -309,6 +309,12 @@ ui <- fluidPage(
               shiny_iconlink() %>%
                 bs_embed_popover(title ="Outliers in Bellman values are replaced by spline interpolations.")),
 
+          # correct concavity option
+          materialSwitch("correct_concavity","Correct concavity of Bellman values",
+                         value=T,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Correct concavity of Bellman values to have monotone water values")),
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),
@@ -1023,7 +1029,8 @@ server <- function(input, output, session) {
         convergence_criteria = input$convergence_criteria,
         cycle_limit = input$cycle_limit,
         pumping = input$pumping_cal,
-        efficiency = input$efficiency
+        efficiency = input$efficiency,
+        correct_concavity = input$correct_concavity
         )$aggregated_results
 
       isolate(rv$results <- results)

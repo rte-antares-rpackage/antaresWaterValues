@@ -83,6 +83,7 @@
                              cycle_limit=10,
                              pumping=F,efficiency=1,stop_rate=0,
                              debug_week=54,
+                              correct_concavity = TRUE,
                         ...) {
 
 
@@ -341,6 +342,9 @@
 
         }
 
+        if(correct_concavity){
+          temp$value_node <- correct_concavity(temp,i:i)
+        }
 
         watervalues[weeks==i,value_node :=temp$value_node]
         watervalues[weeks==i,transition :=temp$transition]

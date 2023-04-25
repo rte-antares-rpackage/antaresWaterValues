@@ -312,3 +312,43 @@ check_resh_vu_dec <- function(reshaped_results){
   print(sprintf("success rate %.0f %% ",(100*count/365)))
 }
 
+
+#' Correct concavity of Bellman values to have nice monotony for watervalues
+#'
+#' @param results Intermediate results for Bellman values
+#' @param weeks Weeks for which we want to correct concativity
+#'
+#' @return vector of corrected Bellman values
+#' @export
+correct_concavity <- function(results, weeks){
+
+  df_value_node <- results
+
+  for (s in weeks){
+    i <- 1
+    df_week <- df_value_node[df_value_node$weeks==s,c("weeks","states","value_node")]
+    df_week <- unique(df_week)
+    df_week <- filter(df_week,!is.na(df_week$value_node))
+    df_week <- filter(df_week,is.finite(df_week$value_node))
+    df_week <- arrange(df_week,states)
+    n <- nrow(df_week)
+    df_week$new_value <- df_week$value_node
+    while(i<n){
+      df_week$coef <- (df_week$new_value-df_week$new_value[i])/(df_week$states-df_week$states[i])
+      m <- max(df_week$coef[i+1:length(df_week$coef)], na.rm=TRUE)
+      j <- last(which(df_week$coef==m))
+      if (m<0){
+        m <- 0
+        j <- length(df_week$coef)
+      }
+      if (i+1<=j-1){
+        df_week$new_value[(i+1):(j-1)] <- m*(df_week$states[(i+1):(j-1)]-df_week$states[i])+df_week$new_value[i]
+      }
+      i <- j
+    }
+    df_value_node[df_value_node$weeks==s,"new_value"]  <- left_join(df_value_node[df_value_node$weeks==s,c("weeks","states")],
+                                                                    df_week[,c("weeks","states","new_value")], by=c("weeks","states"))$new_value
+  }
+  df_value_node[is.na(new_value),new_value:=-Inf]
+  return(df_value_node$new_value)
+}

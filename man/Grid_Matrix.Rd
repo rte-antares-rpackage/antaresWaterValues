@@ -34,6 +34,7 @@ Grid_Matrix(
   efficiency = 1,
   stop_rate = 0,
   debug_week = 54,
+  correct_concavity = TRUE,
   ...
 )
 }

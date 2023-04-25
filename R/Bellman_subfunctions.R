@@ -94,11 +94,11 @@ decisions_cover <- function(turbined_energy,decisions_current){
 accessible_rewards <- function(decision_cover,decision_space,value_reward){
   provisional_steps <- decision_space[decision_space<=max(decision_cover)&decision_space>=min(decision_cover)]
 
-  df_reward = data.frame(u=as.double(str_replace(str_extract(names(value_reward), "\\.?\\d+"),"\\.","-"))*1000,value=value_reward)
+  df_reward = data.frame(u=as.double(str_replace(str_extract(names(value_reward), "\\.?\\d+"),"\\.","-")),value=value_reward)
   df_reward <- arrange(df_reward,u)
 
 
-  provisional_reward_line <- filter(df_reward, u %in% provisional_steps)$value
+  provisional_reward_line <- filter(df_reward, u %in% round(provisional_steps/1000))$value
 
 
   provisional <- list()

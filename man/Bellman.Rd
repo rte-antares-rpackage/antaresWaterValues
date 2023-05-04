@@ -10,19 +10,17 @@ Bellman(
   decision_space,
   E_max,
   P_max = 0,
-  niveau_max,
   method,
-  na_rm = TRUE,
-  max_mcyear,
-  print_test = FALSE,
+  mcyears,
   correct_outliers = FALSE,
   q_ratio = 0.75,
-  test_week,
   counter,
   inaccessible_states = 1,
   stop_rate = 5,
   debugger_feas = F,
-  ...
+  prev_level_high,
+  prev_level_low,
+  states_steps
 )
 }
 \arguments{
@@ -46,24 +44,15 @@ hydro storage over one step of time.}
 \item{P_max}{Numeric of length 1. Maximum energy that can be pumped to
 reservoir over one step of time.}
 
-\item{niveau_max}{Numeric of length 1. Reservoir capacity.}
-
 \item{method}{Character. Perform mean of grids algorithm or grid of means algorithm or
 grid of quantile algorithm.}
 
-\item{na_rm}{Boolean. Remove NAs}
-
-\item{max_mcyear}{Numeric of length 1. Number of Monte-Carlo year
-used in simulations}
-
-\item{print_test}{Boolean. print Bellman values.}
+\item{mcyears}{Vector. Monte Carlo years}
 
 \item{correct_outliers}{If TRUE, outliers in Bellman values are replaced by spline
 interpolations. Defaults to FALSE.}
 
 \item{q_ratio}{numeric in [0,1]. the probability used in quantile algorithm.}
-
-\item{test_week}{Numeric of length 1. number of the week to print in test.}
 
 \item{counter}{Numeric of length 1. number of the week in calculation.}
 
@@ -76,7 +65,11 @@ For example if equal to 0.9 we delete the state if this states is inaccessible b
 
 \item{debugger_feas}{open debug mode in case there is an error of no accessible states}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{prev_level_high}{Numeric. Level high for the beginning fo the week.}
+
+\item{prev_level_low}{Numeric. Level low for the beginning fo the week.}
+
+\item{states_steps}{Numeric. Discretization step of reservoir.}
 }
 \value{
 a \code{data.table} like Data_week with the Bellman values

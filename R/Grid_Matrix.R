@@ -167,10 +167,10 @@
     if(is.null(inflow)){
       tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
       tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = tmp_name)
-      inflow <- antaresRead::readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = mcyears, opts = tmp_opt)
+      inflow <-antaresRead::readInputTS(hydroStorage = area, timeStep="weekly")
     }
-    inflow[with(inflow, order(mcYear, timeId)),]
-    inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
+    inflow[with(inflow, order(tsId, timeId)),]
+    inflow <- inflow[, list(area, tsId , timeId, time, hydroStorage)]
     # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
     inflow[, timeId := as.numeric(timeId)]
     inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)] # sum

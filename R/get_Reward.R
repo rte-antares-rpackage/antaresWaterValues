@@ -19,7 +19,7 @@
 
 get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NULL,
                        district_name = "water values district",
-                       opts = antaresRead::simOptions()) {
+                       opts = antaresRead::simOptions(), correct_monotony = FALSE) {
 
   assertthat::assert_that(class(opts) == "simOptions")
   assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
@@ -60,6 +60,41 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
 
 
   reward <- rbindlist(reward)   #merge the all simulations tables together
+
+  if (correct_monotony){
+    cost <- reward
+    cost$control <- cost$simulation %>%
+      str_extract("\\-?\\d+") %>% as.double()
+    U <- cost %>% select(control) %>% distinct()
+    cost <- cost %>% mutate(min_previous_reward=`OV. COST`) %>%
+      arrange(mcYear, timeId, control)
+    for (u in U$control){
+      cost[cost$control==u,'min_previous_reward'] <- cost %>% filter(control<=u) %>%
+        group_by(mcYear, timeId) %>%
+        mutate(min_previous_reward = min(`OV. COST`)) %>%
+        ungroup %>%
+        filter(control==u) %>%
+        select(min_previous_reward)
+    }
+
+    # cost <- cost %>%
+    #   mutate(err = if_else((min_previous_reward!=`OV. COST`),1,0)) %>%
+    #   group_by(mcYear, timeId) %>%
+    #   mutate(week_err = min(sum(err),1))
+    #
+    # nb_week_err <- cost %>%
+    #   filter(week_err==1) %>%
+    #   select(timeId,mcYear) %>%
+    #   n_distinct()
+    #
+    # pour_week_err <- nb_week_err/n_distinct(select(reward,timeId,mcYear))*100
+
+    cost <- cost %>% select(timeId,mcYear,simulation,min_previous_reward) %>%
+      rename(`OV. COST` = min_previous_reward)
+
+    reward <- cost[,c("timeId","mcYear","OV. COST","simulation")]
+  }
+
   reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
   vars <- colnames(reward)[3:length(reward)]
   setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))

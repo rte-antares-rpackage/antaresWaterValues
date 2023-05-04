@@ -309,12 +309,19 @@ ui <- fluidPage(
               shiny_iconlink() %>%
                 bs_embed_popover(title ="Outliers in Bellman values are replaced by spline interpolations.")),
 
-          # correct concavity option
+          # correct concavity option for Bellman values
           materialSwitch("correct_concavity","Correct concavity of Bellman values",
                          value=T,status = "success")%>%
             shinyInput_label_embed(
               shiny_iconlink() %>%
-                bs_embed_popover(title ="Correct concavity of Bellman values to have monotone water values")),
+                bs_embed_popover(title ="Correct concavity of Bellman values to have monotone water values (not compatible with mean-grid)")),
+
+          # correct monotony option for gains
+          materialSwitch("correct_monotony_gain","Correct monotony of gains",
+                         value=T,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Correct monotony of gain, ie the more water is turbined the less the cost of the electric system is high")),
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),
@@ -1030,7 +1037,8 @@ server <- function(input, output, session) {
         cycle_limit = input$cycle_limit,
         pumping = input$pumping_cal,
         efficiency = input$efficiency,
-        correct_concavity = input$correct_concavity
+        correct_concavity = input$correct_concavity,
+        correct_monotony_gain = input$correct_monotony_gain
         )$aggregated_results
 
       isolate(rv$results <- results)

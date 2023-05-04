@@ -83,7 +83,8 @@
                              cycle_limit=10,
                              pumping=F,efficiency=1,stop_rate=0,
                              debug_week=54,
-                              correct_concavity = FALSE,
+                             correct_concavity = FALSE,
+                             correct_monotony_gain = FALSE,
                         ...) {
 
 
@@ -180,7 +181,9 @@
     if(is.null(reward_db))
     {
 
-    reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name, opts = opts)$reward
+    reward_db <- get_Reward(simulation_names = simulation_names,
+                            district_name = district_name, opts = opts,
+                            correct_monotony=correct_monotony_gain)$reward
     }
 
     reward_db <- reward_db[timeId %in% seq_len(n_week)]}

@@ -443,6 +443,9 @@
 
         }
 
+        if(correct_concavity){
+          temp$value_node <- correct_concavity(temp,i:i)
+        }
 
         watervalues[weeks==i,value_node :=temp$value_node]
         watervalues[weeks==i,transition :=temp$transition]

@@ -281,12 +281,12 @@
 
 
         temp <- watervalues[weeks==i]
-        if(i==52){
-        next_level_high <- watervalues$level_high[1]
-        next_level_low <- watervalues$level_low[1]
+        if(i==1){
+          prev_level_high <- watervalues[weeks==52,]$level_high[1]
+          prev_level_low <- watervalues[weeks==52,]$level_low[1]
         }else{
-          next_level_high <- watervalues$level_high[i+1]
-          next_level_low <- watervalues$level_low[i+1]
+          prev_level_high <- watervalues[weeks==i-1,]$level_high[1]
+          prev_level_low <- watervalues[weeks==i-1,]$level_low[1]
         }
 
         if(debug_week==i)browser()
@@ -296,16 +296,15 @@
                         decision_space=decision_space,
                         E_max=E_max,
                         P_max=P_max,
-                        niveau_max=niveau_max,
+                        states_steps=states_steps,
                         method=method,
-                        max_mcyear = max_mcyear,
+                        mcyears = mcyears,
                         q_ratio= q_ratio,
                         correct_outliers = correct_outliers,
-                        test_week = test_week,
                         counter = i,
                         inaccessible_states=inaccessible_states,
-                        next_level_high=next_level_high,
-                        next_level_low=next_level_low,
+                        prev_level_high=prev_level_high,
+                        prev_level_low=prev_level_low,
                         stop_rate=stop_rate)
 
 
@@ -392,21 +391,29 @@
 
         temp <- watervalues[weeks==i]
 
-          temp <- Bellman(Data_week=temp,
-                          next_week_values_l = next_week_values,
-                          decision_space=decision_space,
-                          E_max=E_max,
-                          P_max=P_max,
-                          niveau_max=niveau_max,
-                          method=method,
-                          max_mcyear = max_mcyear,
-                          q_ratio= q_ratio,
-                          correct_outliers = correct_outliers,
-                          test_week = test_week,
-                          counter = i,
-                          inaccessible_states=inaccessible_states)
+        if(i==1){
+          prev_level_high <- watervalues[weeks==52,]$level_high[1]
+          prev_level_low <- watervalues[weeks==52,]$level_low[1]
+        }else{
+          prev_level_high <- watervalues[weeks==i-1,]$level_high[1]
+          prev_level_low <- watervalues[weeks==i-1,]$level_low[1]
+        }
 
-
+        temp <- Bellman(Data_week=temp,
+                        next_week_values_l = next_week_values,
+                        decision_space=decision_space,
+                        E_max=E_max,
+                        P_max=P_max,
+                        states_steps=states_steps,
+                        method=method,
+                        mcyears = mcyears,
+                        q_ratio= q_ratio,
+                        correct_outliers = correct_outliers,
+                        counter = i,
+                        inaccessible_states=inaccessible_states,
+                        prev_level_high=prev_level_high,
+                        prev_level_low=prev_level_low,
+                        stop_rate=stop_rate)
 
         if(shiny&n_cycl==1&i==52){
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")

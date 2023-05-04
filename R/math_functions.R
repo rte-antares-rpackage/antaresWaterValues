@@ -14,6 +14,15 @@ build_data_watervalues <- function(watervalues,inaccessible_states,statesdt,rese
 
   value_nodes_dt <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)
   value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
+
+  prev_level <- value_nodes_dt %>% select(weeks,level_low,level_high) %>%
+    distinct() %>% mutate(prev_week=if_else(weeks==52,1,weeks+1)) %>%
+    rename(prev_level_low=level_low,prev_level_high=level_high) %>%
+    select(prev_week,prev_level_low,prev_level_high)
+
+  value_nodes_dt <- value_nodes_dt %>% left_join(prev_level,by=c("weeks"="prev_week"))
+  value_nodes_dt[(states>=prev_level_high)|(states<=prev_level_low),vu:=NaN]
+
   inacc <- is.finite(value_nodes_dt$value_node)
   # temp1 <- value_nodes_dt[weeks==1]$vu
   # temp2 <- value_nodes_dt[weeks>1&weeks<53]$vu

@@ -311,3 +311,73 @@ scanarios_check <- function(Data_week,counter){
 
   return(Data_week)
 }
+
+get_reward_interpolation <- function(Data_week,decision_space,mcyears){
+  decisions <- data.frame(control=decision_space) %>% mutate(u=round(control/1000))
+
+  reward <- distinct(Data_week[,c('years','reward_db')]) %>%
+    unnest_longer(reward_db) %>%
+    mutate(u=as.double(str_replace(str_extract(reward_db_id, "\\.?\\d+"),"\\.","-"))) %>%
+    left_join(decisions,by="u")
+
+  f_reward_year <- c()
+  for (year in mcyears){
+    df <- filter(reward, years==year)
+    f <- approxfun(df$control, df$reward_db)
+    f_reward_year <- c(f_reward_year,f)
+  }
+
+  return(f_reward_year)
+}
+
+get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears){
+
+  df_next_week <- data.frame(years = Data_week$years,
+                             next_state = Data_week$states,
+                             next_value = next_week_values)
+
+  f_next_value <- c()
+  for (year in mcyears){
+    df <- filter(df_next_week, years==year)
+    f <- approxfun(df$next_state, df$next_value)#,yleft = 0, yright=0)
+    f_next_value <- c(f_next_value,f)
+  }
+
+  return(f_next_value)
+}
+
+build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
+                                         mcyears,level_high,level_low,E_max,P_max,
+                                         next_week_values){
+
+  df_next_week <- data.frame(years = Data_week$years,
+                             next_state = Data_week$states,
+                             next_value = next_week_values)
+
+  future_states <- Data_week %>% filter(!is.infinite(value_node)) %>%
+    inner_join(df_next_week,by="years", relationship="many-to-many") %>%
+    mutate(control = -next_state+states+hydroStorage)
+
+  control_possible <- Data_week  %>% filter(!is.infinite(value_node)) %>%
+    mutate(control=list(decision_space)) %>%
+    unnest_longer(control) %>%
+    mutate(next_state=states+hydroStorage-control) %>%
+    mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
+
+  control_min <- Data_week %>% filter(!is.infinite(value_node)) %>%
+    mutate(next_state=level_high) %>%
+    mutate(control = -next_state+states+hydroStorage) %>%
+    mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
+
+  control_max <- Data_week %>% filter(!is.infinite(value_node)) %>%
+    mutate(next_state=level_low) %>%
+    mutate(control = -next_state+states+hydroStorage) %>%
+    mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
+
+  df_SDP <- bind_rows(future_states, control_possible, control_min, control_max) %>%
+    mutate(guide_check = if_else((level_low<=next_state)&(next_state<=level_high),1,0),
+           control_valid = if_else((-E_max<=control)&(control<=P_max),1,0)) %>%
+    filter(guide_check&control_valid)
+
+  return(df_SDP)
+}

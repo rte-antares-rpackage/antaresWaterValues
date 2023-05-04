@@ -9,7 +9,8 @@ get_Reward(
   simulation_names = NULL,
   pattern = NULL,
   district_name = "water values district",
-  opts = antaresRead::simOptions()
+  opts = antaresRead::simOptions(),
+  correct_monotony = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ get_Reward(
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{correct_monotony}{Binary argument (default to false). True to correct monotony of rewards.}
 }
 \value{
 a data.table {timeid,MCyear,simulation overall cost}

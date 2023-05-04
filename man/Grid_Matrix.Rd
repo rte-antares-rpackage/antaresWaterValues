@@ -34,7 +34,8 @@ Grid_Matrix(
   efficiency = 1,
   stop_rate = 0,
   debug_week = 54,
-  correct_concavity = TRUE,
+  correct_concavity = FALSE,
+  correct_monotony_gain = FALSE,
   ...
 )
 }
@@ -114,6 +115,10 @@ between two water values is less then this value those values are converged.}
 5\% accessibles states.}
 
 \item{debug_week}{the number of the week to open the process in debug mode}
+
+\item{correct_concavity}{Binary argument (default to false). True to correct concavity of Bellman values.}
+
+\item{correct_monotony_gain}{Binary argument (default to false). True to correct monotony of gains.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

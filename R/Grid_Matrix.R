@@ -48,7 +48,10 @@
 #' \code{stop_rate=5} means the calculation stop if there is a week with less then
 #' 5\% accessibles states.
 #' @param debug_week the number of the week to open the process in debug mode
+#' @param correct_concavity Binary argument (default to false). True to correct concavity of Bellman values.
+#' @param correct_monotony_gain Binary argument (default to false). True to correct monotony of gains.
 #' @param ... further arguments passed to or from other methods.
+#'
 #' @return a \code{data.table}
 #' @export
 #'

@@ -314,7 +314,7 @@ ui <- fluidPage(
                          value=T,status = "success")%>%
             shinyInput_label_embed(
               shiny_iconlink() %>%
-                bs_embed_popover(title ="Correct concavity of Bellman values to have monotone water values (not compatible with mean-grid)")),
+                bs_embed_popover(title ="Correct concavity of Bellman values to have monotone water values.")),
 
           # correct monotony option for gains
           materialSwitch("correct_monotony_gain","Correct monotony of gains",

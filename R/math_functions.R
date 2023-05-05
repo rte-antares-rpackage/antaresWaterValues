@@ -322,41 +322,42 @@ check_resh_vu_dec <- function(reshaped_results){
 }
 
 
-#' Correct concavity of Bellman values to have nice monotony for watervalues
+#' Correct concavity of Bellman values to have nice monotony for water values
 #'
 #' @param results Intermediate results for Bellman values
-#' @param weeks Weeks for which we want to correct concativity
+#' @param weeks Weeks for which we want to correct concavity
 #'
 #' @return vector of corrected Bellman values
 #' @export
-correct_concavity <- function(results, weeks){
-
-  df_value_node <- results
+correct_concavity <- function(df_value_node, weeks){
 
   for (s in weeks){
-    i <- 1
-    df_week <- df_value_node[df_value_node$weeks==s,c("weeks","states","value_node")]
-    df_week <- unique(df_week)
+    df_week <- df_value_node[df_value_node$weeks==s,c("weeks","states","value_node","years")]
     df_week <- filter(df_week,!is.na(df_week$value_node))
     df_week <- filter(df_week,is.finite(df_week$value_node))
-    df_week <- arrange(df_week,states)
+    df_week <- unique(df_week)
+    df_week <- arrange(df_week,states,years)
     n <- nrow(df_week)
     df_week$new_value <- df_week$value_node
-    while(i<n){
-      df_week$coef <- (df_week$new_value-df_week$new_value[i])/(df_week$states-df_week$states[i])
-      m <- max(df_week$coef[i+1:length(df_week$coef)], na.rm=TRUE)
-      j <- last(which(df_week$coef==m))
-      if (m<0){
-        m <- 0
-        j <- length(df_week$coef)
-      }
-      if (i+1<=j-1){
-        df_week$new_value[(i+1):(j-1)] <- m*(df_week$states[(i+1):(j-1)]-df_week$states[i])+df_week$new_value[i]
-      }
-      i <- j
+    states <- distinct(df_week,states) %>% pull(states)
+    for (x in states){
+      df_week <- df_week %>% filter(states==x) %>%
+        rename(value_x=new_value,states_x=states) %>%
+        select(years, states_x, value_x) %>%
+        right_join(df_week, by=c("years")) %>%
+        mutate(coef=(new_value-value_x)/(states-states_x)) %>%
+        mutate(coef=if_else(coef<0,0,coef))
+      df_week <- df_week %>% filter(states>x) %>% group_by(years) %>%
+        slice(which.max(coef)) %>%
+        transmute(m=coef,states_y=states, years=years) %>%
+        right_join(df_week,by="years") %>%
+        mutate(new_value=if_else((states>states_x)&(states<=states_y),
+                                 m*(states-states_x)+value_x,new_value)) %>%
+        select(years, weeks, states, value_node, new_value)
     }
-    df_value_node[df_value_node$weeks==s,"new_value"]  <- left_join(df_value_node[df_value_node$weeks==s,c("weeks","states")],
-                                                                    df_week[,c("weeks","states","new_value")], by=c("weeks","states"))$new_value
+    df_value_node[df_value_node$weeks==s,"new_value"]  <- left_join(df_value_node[df_value_node$weeks==s,c("weeks","states","years")],
+                                                                    df_week[,c("weeks","states","new_value","years")],
+                                                                    by=c("weeks","states","years"))$new_value
   }
   df_value_node[is.na(new_value),new_value:=-Inf]
   return(df_value_node$new_value)

@@ -79,6 +79,14 @@ test_that("check accessible_reward()",
             decision_cover <- c(-35000,55000)
             decision_space <- seq(-90000,100000,by=10000)
             value_reward <- decision_space*2.5
+            names_sim <- c()
+            for (v in decision_space){
+              names_sim <- c(names_sim,ifelse(v>=0,paste0("weekly_water_amount_",
+                                                           format(v/1000, scientific = FALSE)),
+                                               paste0("weekly_water_amount_",".",
+                                                      format(-v/1000, scientific = FALSE))))
+            }
+            names(value_reward) <- names_sim
 
             res_steps <- seq(-30000,50000,by=10000)
             res_rewards <-  res_steps*2.5

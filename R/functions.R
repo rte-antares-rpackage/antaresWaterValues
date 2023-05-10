@@ -447,6 +447,6 @@ return(reshaped_matrix)
 #'
 #' @export
 unregister <- function() {
-  env <- foreach:::.foreachGlobals
+  env <- utils::getFromNamespace(".foreachGlobals", "foreach")
   rm(list=ls(name=env), pos=env)
 }

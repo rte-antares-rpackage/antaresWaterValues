@@ -324,8 +324,8 @@ check_resh_vu_dec <- function(reshaped_results){
 
 #' Correct concavity of Bellman values to have nice monotony for water values
 #'
-#' @param results Intermediate results for Bellman values
 #' @param weeks Weeks for which we want to correct concavity
+#' @param df_value_node DataFrame containing bellman values
 #'
 #' @return vector of corrected Bellman values
 #' @export

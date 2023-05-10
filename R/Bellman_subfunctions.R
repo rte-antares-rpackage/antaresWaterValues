@@ -301,10 +301,11 @@ feasible_test_week <- function(value_node,counter,stop_rate,debug_feas=F){
 
 scanarios_check <- function(Data_week,counter){
 
-  Data_week[,acc_states:=is.finite(value_node)]
-  Data_week[, `:=` (accessibility = sum(acc_states)), by = c("statesid","weeks") ]
+  Data_week <- mutate(Data_week, acc_states=is.finite(value_node))
+  Data_week <- Data_week %>% group_by(statesid,weeks) %>%
+    mutate(accessibility = sum(acc_states)) %>% ungroup()
   maxi <- max(Data_week$accessibility,na.rm = T)
-  Data_week[, max_acc:=maxi]
+  Data_week <- mutate(Data_week, max_acc=maxi)
   if(maxi==0) {
     message <- sprintf("No feasible scenario in the week %d",counter)
     stop(message)}
@@ -348,36 +349,35 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 
 build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
                                          mcyears,level_high,level_low,E_max,P_max,
-                                         next_week_values){
+                                         next_week_values,niveau_max){
 
   df_next_week <- data.frame(years = Data_week$years,
                              next_state = Data_week$states,
                              next_value = next_week_values)
 
-  future_states <- Data_week %>% filter(!is.infinite(value_node)) %>%
+  future_states <- Data_week %>%
     inner_join(df_next_week,by="years", relationship="many-to-many") %>%
     mutate(control = -next_state+states+hydroStorage)
 
-  control_possible <- Data_week  %>% filter(!is.infinite(value_node)) %>%
+  control_possible <- Data_week  %>%
     mutate(control=list(decision_space)) %>%
     tidyr::unnest_longer(control) %>%
-    mutate(next_state=states+hydroStorage-control) %>%
+    mutate(next_state=if_else(states+hydroStorage-control>niveau_max,niveau_max,
+                              states+hydroStorage-control)) %>%
     mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
 
-  control_min <- Data_week %>% filter(!is.infinite(value_node)) %>%
+  control_min <- Data_week %>%
     mutate(next_state=level_high) %>%
     mutate(control = -next_state+states+hydroStorage) %>%
     mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
 
-  control_max <- Data_week %>% filter(!is.infinite(value_node)) %>%
+  control_max <- Data_week %>%
     mutate(next_state=level_low) %>%
     mutate(control = -next_state+states+hydroStorage) %>%
     mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
 
   df_SDP <- bind_rows(future_states, control_possible, control_min, control_max) %>%
-    mutate(guide_check = if_else((level_low<=next_state)&(next_state<=level_high),1,0),
-           control_valid = if_else((-E_max<=control)&(control<=P_max),1,0)) %>%
-    filter(guide_check&control_valid)
+    filter((-E_max<=control)&(control<=P_max)&(next_state>=0))
 
   return(df_SDP)
 }

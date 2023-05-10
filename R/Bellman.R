@@ -40,8 +40,8 @@
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       method,mcyears,correct_outliers=FALSE,q_ratio=0.75,
                       counter,inaccessible_states=1,
-                      stop_rate=5,debugger_feas=F,prev_level_high,prev_level_low,
-                      states_steps){
+                      stop_rate=5,debugger_feas=F,niveau_max,
+                      states_steps,penalty_level_low,penalty_level_high){
 
 
     decision_space <- unlist(decision_space, use.names = FALSE)
@@ -55,47 +55,40 @@
     states_next <- Data_week$states_next[[1]]
     states_next <- unlist(states_next, use.names = FALSE)
 
-    # eliminate states we don't need for linear interpolation
-    Data_week <- mutate(Data_week,
-                        value_node=if_else((states >= round(prev_level_high + states_steps, decimals)+alpha)|
-                                             (states <= round(prev_level_low - states_steps, decimals)-alpha),
-                                           -Inf, NA_real_))
-
     f_reward_year <- get_reward_interpolation(Data_week,decision_space,mcyears)
 
     f_next_value <- get_bellman_values_interpolation(Data_week,next_week_values_l,mcyears)
 
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
                                            mcyears,level_high,level_low,E_max,P_max,
-                                           next_week_values_l)
+                                           next_week_values_l,niveau_max)
 
     # find maximum for each year and each state of reward plus next bellman value
     df_SDP <- df_SDP %>%
       mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), years, control),
-             sum=gain+next_value) %>%
+             penalty_low = if_else(next_state<=level_low,penalty_level_low*(next_state-level_low),0),
+             penalty_high = if_else(next_state>=level_high,penalty_level_high*(level_high-next_state),0),
+             sum=gain+next_value+penalty_low+penalty_high) %>%
       group_by(years,states) %>%
-      slice(which.max(sum))
+      slice(which.max(sum)) %>%
+      select(-c("value_node","transition","transition_reward",
+                "next_bellman_value")) %>%
+      rename("value_node"="sum","transition"="control","transition_reward"="gain",
+             "next_bellman_value"="next_value")
 
     # reorder df_SDP as Data_week
-    bellman_values <- left_join(Data_week[!is.infinite(value_node),c("years","states")],df_SDP,
-                                by=c("years","states"))
-
-
-    Data_week[!is.infinite(value_node),c("value_node","transition","transition_reward",
-                                         "next_bellman_value")] <- bellman_values[,c("sum","control",
-                                                                                     "gain","next_value")]
-
-
-    # test feasible week
-    feasible_test_week(Data_week$value_node,counter,stop_rate,debug_feas=debugger_feas)
+    Data_week <- left_join(Data_week[,-c("value_node","transition","transition_reward",
+                                         "next_bellman_value")],df_SDP[,c("years","states","value_node","transition",
+                                                                          "transition_reward","next_bellman_value")],
+                           by=c("years","states"))
 
     # test scenarios
     Data_week <- scanarios_check(Data_week,counter)
 
     # inaccessible criteria
     nb_mcyear <- length(mcyears)
-    Data_week[,accessibility_percent:=accessibility/nb_mcyear]
-    Data_week[accessibility_percent<inaccessible_states,value_node:=NaN]
+    Data_week <- mutate(Data_week,accessibility_percent=accessibility/nb_mcyear)
+    # Data_week[accessibility_percent<inaccessible_states,value_node:=NaN]
     #------ mean-grid method---------
 
     if (method == "mean-grid") {

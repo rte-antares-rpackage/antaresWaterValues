@@ -88,6 +88,8 @@
                              debug_week=54,
                              correct_concavity = FALSE,
                              correct_monotony_gain = FALSE,
+                             penalty_low = 3000,
+                             penalty_high = 3000,
                         ...) {
 
 
@@ -281,13 +283,6 @@
 
 
         temp <- watervalues[weeks==i]
-        if(i==1){
-          prev_level_high <- watervalues[weeks==52,]$level_high[1]
-          prev_level_low <- watervalues[weeks==52,]$level_low[1]
-        }else{
-          prev_level_high <- watervalues[weeks==i-1,]$level_high[1]
-          prev_level_low <- watervalues[weeks==i-1,]$level_low[1]
-        }
 
         if(debug_week==i)browser()
 
@@ -303,9 +298,10 @@
                         correct_outliers = correct_outliers,
                         counter = i,
                         inaccessible_states=inaccessible_states,
-                        prev_level_high=prev_level_high,
-                        prev_level_low=prev_level_low,
-                        stop_rate=stop_rate)
+                        niveau_max=niveau_max,
+                        stop_rate=stop_rate,
+                        penalty_level_low=penalty_low,
+                        penalty_level_high=penalty_high)
 
 
 
@@ -372,8 +368,10 @@
 
       }
       close(pb)
-      next_week_values <- temp[weeks==1]$value_node
-      watervalues[!is.finite(value_node),value_node:=NaN]
+      next_week_values <- filter(temp,weeks==1)$value_node
+      if(nrow(watervalues[is.na(value_node)&(weeks<=52)])>=1){
+        message("Error in the calculation of Bellman values")
+      }
       value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
 
     }

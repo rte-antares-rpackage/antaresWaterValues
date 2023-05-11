@@ -372,7 +372,7 @@
       if(nrow(watervalues[is.na(value_node)&(weeks<=52)])>=1){
         message("Error in the calculation of Bellman values")
       }
-      value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
 
     }
 

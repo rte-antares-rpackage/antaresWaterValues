@@ -8,30 +8,21 @@ efficiency_effect <- function(energy,efficiency){
 
 
 
-build_data_watervalues <- function(watervalues,inaccessible_states,statesdt,reservoir){
+build_data_watervalues <- function(watervalues,statesdt,reservoir,
+                                   penalty_level_high,penalty_level_low){
+  value_nodes_dt <- value_node_gen(watervalues,statesdt,reservoir)
 
-
-
-  value_nodes_dt <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)
   value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
 
-  prev_level <- value_nodes_dt %>% select(weeks,level_low,level_high) %>%
-    distinct() %>% mutate(prev_week=if_else(weeks==52,1,weeks+1)) %>%
-    rename(prev_level_low=level_low,prev_level_high=level_high) %>%
-    select(prev_week,prev_level_low,prev_level_high)
+  #add penlaties
+  value_nodes_dt <- value_nodes_dt %>%
+    mutate(value_nodes_dt,
+           vu_pen=case_when(states>level_high ~ vu - penalty_level_high,
+                            states<level_low ~ vu + penalty_level_low,
+                            TRUE ~ vu)) %>%
+    rename(vu=vu_pen,vu_pen=vu)
 
-  value_nodes_dt <- value_nodes_dt %>% left_join(prev_level,by=c("weeks"="prev_week"))
-  value_nodes_dt[(states>=prev_level_high)|(states<=prev_level_low),vu:=NaN]
-
-  inacc <- is.finite(value_nodes_dt$value_node)
-  # temp1 <- value_nodes_dt[weeks==1]$vu
-  # temp2 <- value_nodes_dt[weeks>1&weeks<53]$vu
-  # value_nodes_dt[weeks==52]$vu <- temp1
-  # value_nodes_dt[weeks<52]$vu <- temp2
-
-  value_nodes_dt$inacc <- inacc
-  value_nodes_dt[,vu_corr:=inacc*vu]
-  print(waterValuesViz(value_nodes_dt,0.99))
+  print(waterValuesViz(value_nodes_dt,1))
   return(value_nodes_dt)
 
 }
@@ -45,16 +36,9 @@ build_data_watervalues <- function(watervalues,inaccessible_states,statesdt,rese
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
 #' @importFrom dplyr left_join
 #' @export
-value_node_gen <- function(watervalues,inaccessible_states=1,statesdt,reservoir){
-
-    # group the years using the mean
-    if(inaccessible_states<1){
-      value_nodes_dt <- watervalues[, list(value_node = mean_or_inf(value_node,inaccessible_states)),
-                                    by = list(weeks, statesid)]
-    }else{
-      value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
-                                    by = list(weeks, statesid)]
-    }
+value_node_gen <- function(watervalues,statesdt,reservoir){
+    value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
+                                  by = list(weeks, statesid)]
 
     value_nodes_dt[!is.finite(value_node),value_node:=NaN]
 
@@ -64,10 +48,9 @@ value_node_gen <- function(watervalues,inaccessible_states=1,statesdt,reservoir)
 
     #add reservoir
     names(reservoir)[1] <- "weeks"
-    value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by="weeks")
-
-
-
+    value_nodes_dt <- mutate(value_nodes_dt, beg_week=if_else(weeks>1,weeks-1,52))
+    value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
+      select(-c("beg_week"))
 
 
     value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]

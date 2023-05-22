@@ -397,7 +397,7 @@ to_Antares_Format <- function(data,constant=T){
 
   # rescale levels to round percentages ranging from 0 to 100
   states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
-  states_ref[, states_percent := 100*states/max(states)]
+  states_ref <- mutate(states_ref, states_percent = 100*states/max(states))
 
   nearest_states <- states_ref$statesid[sapply(0:100, function(x) which.min(abs(x - states_ref$states_percent)))]
 

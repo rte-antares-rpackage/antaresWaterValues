@@ -29,11 +29,11 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
 
 
 #' Calculate water values from Bellman values
+#'
 #' @param watervalues an intermediate result in Grid_Matrix contains the bellman values
-#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
+#'
 #' @importFrom dplyr left_join
 #' @export
 value_node_gen <- function(watervalues,statesdt,reservoir){
@@ -342,6 +342,5 @@ correct_concavity <- function(df_value_node, weeks){
                                                                     df_week[,c("weeks","states","new_value","years")],
                                                                     by=c("weeks","states","years"))$new_value
   }
-  df_value_node[is.na(new_value),new_value:=-Inf]
   return(df_value_node$new_value)
 }

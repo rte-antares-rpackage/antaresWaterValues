@@ -18,9 +18,10 @@ Bellman(
   inaccessible_states = 1,
   stop_rate = 5,
   debugger_feas = F,
-  prev_level_high,
-  prev_level_low,
-  states_steps
+  niveau_max,
+  states_steps,
+  penalty_level_low,
+  penalty_level_high
 )
 }
 \arguments{
@@ -65,11 +66,13 @@ For example if equal to 0.9 we delete the state if this states is inaccessible b
 
 \item{debugger_feas}{open debug mode in case there is an error of no accessible states}
 
-\item{prev_level_high}{Numeric. Level high for the beginning fo the week.}
-
-\item{prev_level_low}{Numeric. Level low for the beginning fo the week.}
+\item{niveau_max}{Level max of the reservoir}
 
 \item{states_steps}{Numeric. Discretization step of reservoir.}
+
+\item{penalty_level_low}{Penalty for violating the bottom guide curve, comparable to the unsupplied energy}
+
+\item{penalty_level_high}{Penalty for violating the top guide curve, comparable to the spilled energy}
 }
 \value{
 a \code{data.table} like Data_week with the Bellman values

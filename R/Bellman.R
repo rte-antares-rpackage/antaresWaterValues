@@ -27,10 +27,11 @@
   #' \code{stop_rate=5} means the calculation stop if there is a week with less then
   #' 5\% accessibles states.
   #' @param mcyears Vector. Monte Carlo years
-  #' @param prev_level_high Numeric. Level high for the beginning fo the week.
-  #' @param prev_level_low Numeric. Level low for the beginning fo the week.
   #' @param states_steps Numeric. Discretization step of reservoir.
   #' @param debugger_feas open debug mode in case there is an error of no accessible states
+  #' @param niveau_max Level max of the reservoir
+  #' @param penalty_level_low Penalty for violating the bottom guide curve, comparable to the unsupplied energy
+  #' @param penalty_level_high Penalty for violating the top guide curve, comparable to the spilled energy
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @importFrom stats ave quantile

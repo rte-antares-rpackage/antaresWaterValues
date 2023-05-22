@@ -36,6 +36,8 @@ Grid_Matrix(
   debug_week = 54,
   correct_concavity = FALSE,
   correct_monotony_gain = FALSE,
+  penalty_low = 3000,
+  penalty_high = 3000,
   ...
 )
 }
@@ -119,6 +121,10 @@ between two water values is less then this value those values are converged.}
 \item{correct_concavity}{Binary argument (default to false). True to correct concavity of Bellman values.}
 
 \item{correct_monotony_gain}{Binary argument (default to false). True to correct monotony of gains.}
+
+\item{penalty_low}{Penalty for violating the bottom guide curve, comparable to the unsupplied energy}
+
+\item{penalty_high}{Penalty for violating the top guide curve, comparable to the spilled energy}
 
 \item{...}{further arguments passed to or from other methods.}
 }

@@ -276,6 +276,15 @@ ui <- fluidPage(
           shinyBS::bsTooltip("nb_states", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
                              "bottom"),
 
+          # penalty for violation of the bottom guide curve
+          numericInput("penalty_low","penalty for the violation of the bottom guide curve",value=3001),
+          shinyBS::bsTooltip("penalty_low", "Penalty will be add proportionally to the distance from the guide curve, it is directly comparable with the cost of unsupplied energy.",
+                             "bottom"),
+
+          # penalty for violation of the top guide curve
+          numericInput("penalty_high","penalty for the violation of the top guide curve",value=0),
+          shinyBS::bsTooltip("penalty_high", "Penalty will be add proportionally to the distance from the guide curve, it is directly comparable with the cost of spilled energy.",
+                             "bottom"),
 
           #MC years:
           sliderInput("mcyears",label="choose the number of MC years to use",min=1,
@@ -296,11 +305,6 @@ ui <- fluidPage(
 
           shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
                              "bottom"),
-
-          sliderInput("inaccessible_states","Eliminate inaccessible states",
-                         value=100,min = 0,max = 100,post  = " %",),
-
-          shinyBS::bsTooltip("inaccessible_states","Tolerance of inaccessible states. For example if equal to 90% we delete the state if this states is inaccessible by 90% of the scenarios.","bottom"),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
@@ -547,7 +551,7 @@ NB:  - Negative and positive values are affected by this filter.
                      yes = icon("ok",
                                 lib = "glyphicon"))  ),
 
-                 shinyBS::bsTooltip("method_post_process", "the method to use to complete the water values of the inaccessible states and the deleted values. ",
+                 shinyBS::bsTooltip("method_post_process", "the method to use to complete the water values of the deleted values. ",
                                     "bottom"),
 
 
@@ -1030,7 +1034,6 @@ server <- function(input, output, session) {
         correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio/100,
         shiny=T,
-        inaccessible_states = input$inaccessible_states/100,
         until_convergence = input$until_convergence,
         convergence_rate = input$convergence_rate/100,
         convergence_criteria = input$convergence_criteria,
@@ -1038,7 +1041,9 @@ server <- function(input, output, session) {
         pumping = input$pumping_cal,
         efficiency = input$efficiency,
         correct_concavity = input$correct_concavity,
-        correct_monotony_gain = input$correct_monotony_gain
+        correct_monotony_gain = input$correct_monotony_gain,
+        penalty_low = input$penalty_low,
+        penalty_high = input$penalty_high
         )$aggregated_results
 
       isolate(rv$results <- results)
@@ -1067,7 +1072,7 @@ server <- function(input, output, session) {
 
     output$Watervalues <- renderPlot(watervalues())
 
-    shinyBS::addPopover(session,"Watervalues",title = "water values",content = "This graph describe the water values for each week starting from week 1 to week 52 in the X-axis and the level of the reservoir in perecent in the Y-axis. the water values are determined by the colors you can see them in the legend of the graph. The blank zones in the graph mean that those states are inaccessible. ")
+    shinyBS::addPopover(session,"Watervalues",title = "water values",content = "This graph describe the water values for each week starting from week 1 to week 52 in the X-axis and the level of the reservoir in perecent in the Y-axis. the water values are determined by the colors you can see them in the legend of the graph. ")
 
     output$download_wv_plot <- downloadHandler(
       filename = function() {

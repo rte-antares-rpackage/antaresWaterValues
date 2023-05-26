@@ -23,7 +23,7 @@ plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,ou
   temp <- reward[week_id,]
   temp <- as.data.table(t(temp))
 
-  temp$u <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+"))
+  temp$u <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+$"))
   temp <- arrange(temp,u)
   temp$u <- NULL
 
@@ -88,12 +88,12 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 
 
   if(max(t)>100000){
-    temp$"Turbining capacity GWh" <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+"))
+    temp$"Turbining capacity GWh" <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+$"))
     temp <- melt(temp,id.vars="Turbining capacity GWh",variable.name="week")
     setnames(temp,"value","Reward")
     p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity GWh`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
   }else{
-    temp$"Turbining capacity" <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+"))*1000
+    temp$"Turbining capacity" <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+$"))*1000
     temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
     setnames(temp,"value","Reward")
     p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
@@ -143,7 +143,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 
   temp <- as.data.table(t(temp))
   setnames(temp,colnames(temp),names)
-  temp$"Turbining capacity" <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+"))*1000
+  temp$"Turbining capacity" <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+$"))*1000
   temp <- melt(temp,id.vars="Turbining capacity",variable.name="week")
   setnames(temp,"value","Reward")
   if(max(t)>100000){
@@ -198,7 +198,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,constraints_val
   temp <- as.data.table(t(temp))
   t <- seq(from=1,to=(nrow(temp)-1))
 
-  temp$u <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+"))
+  temp$u <- as.double(str_extract(colnames(reward_base)[3:length(reward_base)], "\\-?\\d+$"))
   temp <- arrange(temp,u)
   temp$u <- NULL
   temp <- sapply(temp, diff)

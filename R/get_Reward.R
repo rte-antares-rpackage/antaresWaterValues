@@ -66,7 +66,7 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
   if (correct_monotony){
     cost <- reward
     cost$control <- cost$simulation %>%
-      str_extract("\\-?\\d+") %>% as.double()
+      str_extract("\\-?\\d+$") %>% as.double()
     U <- cost %>% select(control) %>% distinct()
     cost <- cost %>% mutate(min_previous_reward=`OV. COST`) %>%
       arrange(mcYear, timeId, control)

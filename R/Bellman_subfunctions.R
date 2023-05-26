@@ -94,7 +94,7 @@ decisions_cover <- function(turbined_energy,decisions_current){
 accessible_rewards <- function(decision_cover,decision_space,value_reward){
   provisional_steps <- decision_space[decision_space<=max(decision_cover)&decision_space>=min(decision_cover)]
 
-  df_reward = data.frame(u=as.double(stringr::str_replace(stringr::str_extract(names(value_reward), "\\.?\\d+"),"\\.","-")),value=value_reward)
+  df_reward = data.frame(u=as.double(stringr::str_replace(stringr::str_extract(names(value_reward), "\\.?\\d+$"),"\\.","-")),value=value_reward)
   df_reward <- dplyr::arrange(df_reward,u)
 
 
@@ -318,7 +318,7 @@ get_reward_interpolation <- function(Data_week,decision_space,mcyears){
 
   reward <- distinct(Data_week[,c('years','reward_db')]) %>%
     tidyr::unnest_longer(reward_db) %>%
-    mutate(u=as.double(str_replace(str_extract(reward_db_id, "\\.?\\d+"),"\\.","-"))) %>%
+    mutate(u=as.double(str_replace(str_extract(reward_db_id, "\\.?\\d+$"),"\\.","-"))) %>%
     left_join(decisions,by="u")
 
   f_reward_year <- c()

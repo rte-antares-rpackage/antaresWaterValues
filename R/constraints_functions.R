@@ -172,6 +172,9 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 #' @export
 constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts)
 {
+
+  assertthat::assert_that(nb_disc_stock>=3)
+
   if(is.null(pumping_efficiency))
   { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
 
@@ -185,8 +188,20 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 
   if(pumping){
     total <- maxi-mini
-    pump_rat <- round((abs(mini)/total)*(nb_disc_stock+1))
-    turb_rat <- round((abs(maxi)/total)*(nb_disc_stock+1))
+
+    pump_rat <- 2
+    turb_rat <- 2
+    if (nb_disc_stock>=4){
+      for (i in 1:(nb_disc_stock+1-4)){
+        inc_pump <- abs(abs(mini)/(pump_rat+1)-abs(maxi)/turb_rat)
+        inc_turb <- abs(abs(maxi)/(turb_rat+1)-abs(mini)/pump_rat)
+        if (inc_pump<inc_turb){
+          pump_rat <- pump_rat+1
+        } else {
+          turb_rat <- turb_rat+1
+        }
+      }
+    }
     constraint_values_pump <- seq(from=mini,to=0,length.out=pump_rat)
     constraint_values_turb <- seq(from=0,to=maxi,length.out=turb_rat)
 
@@ -194,7 +209,6 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
     constraint_values <- constraint_values[!duplicated(constraint_values)]
 
     constraint_values <- round(constraint_values)
-    constraint_values <- unlist(lapply(constraint_values,FUN = function(x) efficiency_effect(x,pumping_efficiency)))
 
   }else{
     constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)

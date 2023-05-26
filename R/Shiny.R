@@ -276,14 +276,14 @@ ui <- fluidPage(
           shinyBS::bsTooltip("nb_states", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
                              "bottom"),
 
-          # penalty for violation of the bottom guide curve
-          numericInput("penalty_low","penalty for the violation of the bottom guide curve",value=3001),
-          shinyBS::bsTooltip("penalty_low", "Penalty will be add proportionally to the distance from the guide curve, it is directly comparable with the cost of unsupplied energy.",
+          # penalty for violation of the bottom rule curve
+          numericInput("penalty_low","penalty for the violation of the bottom rule curve",value=3001),
+          shinyBS::bsTooltip("penalty_low", "Penalty will be add proportionally to the distance from the rule curve, it is directly comparable with the cost of unsupplied energy.",
                              "bottom"),
 
-          # penalty for violation of the top guide curve
-          numericInput("penalty_high","penalty for the violation of the top guide curve",value=0),
-          shinyBS::bsTooltip("penalty_high", "Penalty will be add proportionally to the distance from the guide curve, it is directly comparable with the cost of spilled energy.",
+          # penalty for violation of the top rule curve
+          numericInput("penalty_high","penalty for the violation of the top rule curve",value=0),
+          shinyBS::bsTooltip("penalty_high", "Penalty will be add proportionally to the distance from the rule curve, it is directly comparable with the cost of spilled energy.",
                              "bottom"),
 
           #MC years:

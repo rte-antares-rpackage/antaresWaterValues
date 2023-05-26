@@ -51,8 +51,8 @@
 #' @param correct_concavity Binary argument (default to false). True to correct concavity of Bellman values.
 #' @param correct_monotony_gain Binary argument (default to false). True to correct monotony of gains.
 #' @param ... further arguments passed to or from other methods.
-#' @param penalty_low Penalty for violating the bottom guide curve, comparable to the unsupplied energy
-#' @param penalty_high Penalty for violating the top guide curve, comparable to the spilled energy
+#' @param penalty_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy
+#' @param penalty_high Penalty for violating the top rule curve, comparable to the spilled energy
 #'
 #' @return a \code{data.table}
 #' @export

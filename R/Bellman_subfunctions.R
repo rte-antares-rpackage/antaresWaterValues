@@ -180,10 +180,10 @@ generate_decisions_rewards <- function(decisions,step_reward,alpha)
 
 
 
-# eliminate decisions that violate the guide graph constraints
+# eliminate decisions that violate the rule graph constraints
 
 
-guide_cs_check <-function(decisions,states,value_inflow,level_high,level_low,alpha){
+rule_cs_check <-function(decisions,states,value_inflow,level_high,level_low,alpha){
 
 
   decisions <- decisions[decisions - alpha <= states + value_inflow - level_low]

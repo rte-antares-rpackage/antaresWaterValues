@@ -30,8 +30,8 @@
   #' @param states_steps Numeric. Discretization step of reservoir.
   #' @param debugger_feas open debug mode in case there is an error of no accessible states
   #' @param niveau_max Level max of the reservoir
-  #' @param penalty_level_low Penalty for violating the bottom guide curve, comparable to the unsupplied energy
-  #' @param penalty_level_high Penalty for violating the top guide curve, comparable to the spilled energy
+  #' @param penalty_level_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy
+  #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @importFrom stats ave quantile
@@ -231,9 +231,9 @@
     decision_rewards <- generate_decisions_rewards(decisions,step_reward,alpha)
 
 
-    # respect the guide graph constraints
+    # respect the rule graph constraints
 
-    decisions <-  guide_cs_check(decisions,states,value_inflow,level_high,level_low,alpha)
+    decisions <-  rule_cs_check(decisions,states,value_inflow,level_high,level_low,alpha)
 
 
     # Bellman calculator

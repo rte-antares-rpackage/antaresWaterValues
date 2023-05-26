@@ -377,7 +377,7 @@ build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
     mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
 
   df_SDP <- bind_rows(future_states, control_possible, control_min, control_max) %>%
-    filter((-E_max<=control)&(control<=P_max)&(next_state>=0))
+    filter((-P_max<=control)&(control<=E_max)&(next_state>=0))
 
   return(df_SDP)
 }

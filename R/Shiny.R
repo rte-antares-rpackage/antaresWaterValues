@@ -1319,7 +1319,9 @@ server <- function(input, output, session) {
                  results <- final_result()
                  results <- results[results$weeks!=53,]
 
-                 reshaped_values <- to_Antares_Format(results)
+                 reshaped_values <- to_Antares_Format(results,
+                                                      input$penalty_low,
+                                                      input$penalty_high)
                  antaresEditObject::writeWaterValues(
                    area = input$Area,
                    data = reshaped_values

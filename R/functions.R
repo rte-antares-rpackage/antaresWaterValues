@@ -392,14 +392,19 @@ names_reward <-function(reward_dt,sim_name_pattern="weekly_water_amount_"){
 #' @importFrom zoo na.spline
 #' @export
 
-to_Antares_Format <- function(data,constant=T){
+to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant=T){
 
+  data <- group_by(data, weeks) %>%
+    arrange(states) %>%
+    mutate(vu_pen=if_else(is.na(vu_pen),lead(vu_pen),vu_pen),
+           vu=if_else(is.na(vu),lead(vu),vu))
+  data <- as.data.table(data)
 
   # rescale levels to round percentages ranging from 0 to 100
   states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
   states_ref <- mutate(states_ref, states_percent = 100*states/max(states))
 
-  nearest_states <- states_ref$statesid[sapply(0:100, function(x) which.min(abs(x - states_ref$states_percent)))]
+  nearest_states <- states_ref$statesid[sapply(0:100, function(x) min(which(x-states_ref$states_percent<=0)))]
 
   states_ref_0_100 <- data.table(
     states_round_percent = 0:100,
@@ -410,7 +415,17 @@ to_Antares_Format <- function(data,constant=T){
 
   res[states_ref_0_100, on = "states_round_percent", statesid := i.statesid]
 
-  res[data, on = c("weeks", "statesid"), vu := i.vu]
+  max_state <- max(states_ref$states)
+
+  res <- res %>% left_join(select(data,weeks,statesid,vu_pen,level_low,level_high),
+                           by = c("weeks", "statesid")) %>%
+    mutate(level_low=level_low/max_state*100,
+           level_high=level_high/max_state*100,
+           vu=case_when(states_round_percent>level_high ~ vu_pen - penalty_level_high,
+                        states_round_percent<level_low ~ vu_pen + penalty_level_low,
+                            TRUE ~ vu_pen)) %>%
+    mutate(weeks=if_else(weeks>=2,weeks-1,52))
+
 
   # reshape
   value_nodes_matrix <- dcast(
@@ -420,6 +435,8 @@ to_Antares_Format <- function(data,constant=T){
   )
 
   value_nodes_matrix$weeks <- NULL
+
+  value_nodes_matrix_0 <- value_nodes_matrix[52,]
 
   if(!constant){
     reshaped_matrix <- double(length = 0)
@@ -438,7 +455,7 @@ to_Antares_Format <- function(data,constant=T){
   }else{
     reshaped_matrix <- value_nodes_matrix[rep(seq_len(nrow(value_nodes_matrix)), each = 7), ]
   }
-  reshaped_matrix <- rbind(reshaped_matrix,value_nodes_matrix[1,])
+  reshaped_matrix <- rbind(value_nodes_matrix_0,reshaped_matrix)
 
 return(reshaped_matrix)
 }

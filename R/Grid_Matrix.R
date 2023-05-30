@@ -520,21 +520,6 @@
       }
     }# end else
 
-  #scenario elimination criteria Info
-  elim_ratio <- 1-(min(watervalues$max_acc,na.rm = T)/max_mcyear)
-  if(elim_ratio>0){
-    message <- sprintf("Please select an elimnation criterea greater then %0.f%% to avoid infesable week.",elim_ratio*100)
-    message(message)
-  }
-
-
-  if(min(value_nodes_dt,na.rm = T)<0.5)
-  {
-    value_nodes_dt[is.finite(vu)&vu<0.5,vu:=0.5]
-    message("Minimal water value is 0.5 lesser valuers are changed automatically to 0.5.
-            This change is done to assure the well functioning with Antares hydro model")
-  }
-
 
   if(shiny){
 

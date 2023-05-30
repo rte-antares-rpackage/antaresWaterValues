@@ -344,18 +344,7 @@ ui <- fluidPage(
           materialSwitch("filter","Filter water values",value=F,status = "success")%>%
             shinyInput_label_embed(
               shiny_iconlink() %>%
-                bs_embed_popover(title ="Applicate a filter to remove the outliers values in the graph.
-NB:  - Negative and positive values are affected by this filter.
-       - This is only a display filter the values are unchanged.
-                                 ")),
-
-          conditionalPanel(
-            condition = "input.filter",
-            sliderInput("filtre_ratio",label="Filter extreme water values ratio",min=0,
-                        max=100,value=100,post  = " %"),
-          ),
-          shinyBS::bsTooltip("filtre_ratio", "The filter ratio define the percent to keep from water values eliminating the rest (extreme negatives and positives)",
-                             "bottom"),
+                bs_embed_popover(title ="Visualize only watervalues inside rule curves")),
 
 
           actionButton("plot","Show"),
@@ -1067,8 +1056,7 @@ server <- function(input, output, session) {
 
 
     watervalues <- eventReactive(input$plot,
-                                 {waterValuesViz(rv$results,
-                                    filtre_ratio =input$filtre_ratio/100)})
+                                 {waterValuesViz(rv$results,input$filter)})
 
     output$Watervalues <- renderPlot(watervalues())
 

@@ -22,7 +22,7 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
                             TRUE ~ vu)) %>%
     rename(vu=vu_pen,vu_pen=vu)
 
-  print(waterValuesViz(value_nodes_dt,1))
+  print(waterValuesViz(value_nodes_dt))
   return(value_nodes_dt)
 
 }

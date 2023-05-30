@@ -12,18 +12,17 @@
 #' @importFrom viridis scale_fill_viridis
 #'
 # @examples
-waterValuesViz <- function(Data, filtre_ratio=1,show_negative=TRUE) {
+waterValuesViz <- function(Data, filter_penalties=FALSE) {
 
 
   value_nodes <- copy(Data)
 
+  if (filter_penalties){
+    value_nodes <- mutate(value_nodes,
+                          vu=if_else((states<=level_high)&(states>=level_low),
+                                     vu,NaN))
+  }
 
-  q <- quantile(value_nodes$vu,filtre_ratio,na.rm = TRUE)
-  value_nodes[vu>q,vu:=q]
-  q_down <- quantile(value_nodes$vu,1-filtre_ratio,na.rm = TRUE)
-  value_nodes[vu<q_down,vu:=q_down]
-  if(!show_negative){  value_nodes[vu<0,vu:=0]
-}
   value_nodes <- states_to_percent(value_nodes,states_step_ratio=0.025)
   setnames(value_nodes,"states_round_percent","states")
   p <- ggplot2::ggplot(data = value_nodes)

@@ -222,7 +222,7 @@ ui <- fluidPage(
           conditionalPanel(
             condition="input.smart_interpolation_reward",
             sliderInput("hours","Number of hours to use to calculate rewards",max=168,min=1,value=10),
-            numericInput("controls","Number of controls to calculate",min=2, value=3)
+            numericInput("controls","Number of controls to calculate",min=0, value=3)
           ),
 
           conditionalPanel(

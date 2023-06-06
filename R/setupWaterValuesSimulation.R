@@ -145,7 +145,7 @@ setupWaterValuesSimulation <- function(area,
       caption = "water values district",
       comments = "Used for calculate water values",
       apply_filter = "add-all",
-      remove_area = append(remove_areas,fictive_areas),
+      remove_area = fictive_areas,
       output = TRUE,
       overwrite = TRUE,
       opts = opts

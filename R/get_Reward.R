@@ -169,13 +169,8 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max){
 
 
   price <- readAntares(area=area,select=c("MRG. PRICE",
-                                          "LOAD",
-                                          "BALANCE",
-                                          "AVL DTG",
-                                          "MAX MRG",
-                                          "UNSP. ENRG",
-                                          "SPIL. ENRG",
-                                          "OV. COST"),opts=opts,mcYears = mcyears) %>%
+                                          "BALANCE"),
+                       opts=opts,mcYears = mcyears) %>%
     mutate(week=(timeId-1)%/%168+1,hour_in_week=if_else(timeId%%168>0,timeId%%168,168)) %>%
     select(-c("area")) %>% rename(price=`MRG. PRICE`,balance=BALANCE)
 
@@ -330,13 +325,7 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max){
 
 get_local_reward_turb <- function(opts,possible_controls){
   price <- readAntares(area=area,select=c("MRG. PRICE",
-                                          "LOAD",
-                                          "BALANCE",
-                                          "AVL DTG",
-                                          "MAX MRG",
-                                          "UNSP. ENRG",
-                                          "SPIL. ENRG",
-                                          "OV. COST"),opts=opts,mcYears = mcyears) %>%
+                                          "BALANCE"),opts=opts,mcYears = mcyears) %>%
     mutate(week=(timeId-1)%/%168+1,hour_in_week=if_else(timeId%%168>0,timeId%%168,168)) %>%
     select(-c("area")) %>% rename(price=`MRG. PRICE`,balance=BALANCE)
 
@@ -397,7 +386,7 @@ get_local_reward_turb <- function(opts,possible_controls){
 
 reward_offset <- function(opts, df_reward, u0=NaN){
   cost <- antaresRead::readAntares(districts = "water values district", mcYears = mcyears,
-                                   timeStep = "weekly", opts = opts) %>%
+                                   timeStep = "weekly", opts = opts, select=c("OV. COST")) %>%
     rename(week=timeId,ov_cost='OV. COST') %>%
     select(mcYear,week,ov_cost) %>%
     as.data.frame()

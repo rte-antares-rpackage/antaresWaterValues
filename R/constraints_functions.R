@@ -173,7 +173,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts)
 {
 
-  assertthat::assert_that(nb_disc_stock>=3)
+
 
   if(is.null(pumping_efficiency))
   { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
@@ -187,6 +187,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 
 
   if(pumping){
+    assertthat::assert_that(nb_disc_stock>=3)
     total <- maxi-mini
 
     pump_rat <- 2
@@ -211,6 +212,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
     constraint_values <- round(constraint_values)
 
   }else{
+    assertthat::assert_that(nb_disc_stock>=2)
     constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
     constraint_values <- round(constraint_values)
   }

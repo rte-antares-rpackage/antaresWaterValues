@@ -1155,7 +1155,8 @@ server <- function(input, output, session) {
                                             hours = if(input$smart_interpolation_reward){round(seq(0,168,length.out=input$hours))},
                                             possible_controls = possible_controls(),
                                             P_max=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)$pump},
-                                            T_max=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)$turb})
+                                            T_max=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)$turb},
+                                            mcyears=input$mcyears[1]:input$mcyears[2])
                     rv$reward_dt <- reward_dt
                     shinybusy::remove_modal_spinner()
                     show_alert(

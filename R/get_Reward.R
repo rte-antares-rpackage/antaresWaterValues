@@ -23,7 +23,7 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
                        district_name = "water values district",
                        opts = antaresRead::simOptions(), correct_monotony = FALSE,
                        method_old = TRUE, hours=0:168, possible_controls = NULL,
-                       T_max, P_max) {
+                       T_max, P_max, mcyears = "all") {
 
   assertthat::assert_that(class(opts) == "simOptions")
   assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
@@ -55,7 +55,7 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
     {reward <- lapply(
       X = opts_o,
       FUN = function(o) {
-        res <- antaresRead::readAntares(districts = district_name, mcYears = "all", timeStep = "weekly", opts = o)
+        res <- antaresRead::readAntares(districts = district_name, mcYears = mcyears, timeStep = "weekly", opts = o)
         res <- res[timeId == 53L, timeId := 1L]
         res <- res[, lapply(.SD, sum, na.rm = TRUE), by = list(timeId, mcYear), .SDcols = "OV. COST"]
         res$simulation <- o$name

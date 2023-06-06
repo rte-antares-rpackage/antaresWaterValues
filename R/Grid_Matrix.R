@@ -206,7 +206,7 @@
                            method_old = method_old_gain,P_max=P_max,T_max=E_max,
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
-                           simulation_res = simulation_res)
+                           simulation_res = simulation_res, mcyears=mcyears)
       decision_space <- reward_db$simulation_values
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward

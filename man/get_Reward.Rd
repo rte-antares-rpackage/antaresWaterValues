@@ -10,7 +10,12 @@ get_Reward(
   pattern = NULL,
   district_name = "water values district",
   opts = antaresRead::simOptions(),
-  correct_monotony = FALSE
+  correct_monotony = FALSE,
+  method_old = TRUE,
+  hours = 0:168,
+  possible_controls = NULL,
+  T_max,
+  P_max
 )
 }
 \arguments{

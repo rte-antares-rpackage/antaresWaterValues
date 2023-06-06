@@ -21,7 +21,9 @@
 
 get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NULL,
                        district_name = "water values district",
-                       opts = antaresRead::simOptions(), correct_monotony = FALSE) {
+                       opts = antaresRead::simOptions(), correct_monotony = FALSE,
+                       method_old = TRUE, hours=0:168, possible_controls = NULL,
+                       T_max, P_max) {
 
   assertthat::assert_that(class(opts) == "simOptions")
   assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
@@ -47,78 +49,369 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
     )
   }
 
+  if(method_old){
 
-  #generate a table containing the year, the time id and OVerall cost
-  {reward <- lapply(
-    X = opts_o,
-    FUN = function(o) {
-      res <- antaresRead::readAntares(districts = district_name, mcYears = "all", timeStep = "weekly", opts = o)
-      res <- res[timeId == 53L, timeId := 1L]
-      res <- res[, lapply(.SD, sum, na.rm = TRUE), by = list(timeId, mcYear), .SDcols = "OV. COST"]
-      res$simulation <- o$name
-      res
+    #generate a table containing the year, the time id and OVerall cost
+    {reward <- lapply(
+      X = opts_o,
+      FUN = function(o) {
+        res <- antaresRead::readAntares(districts = district_name, mcYears = "all", timeStep = "weekly", opts = o)
+        res <- res[timeId == 53L, timeId := 1L]
+        res <- res[, lapply(.SD, sum, na.rm = TRUE), by = list(timeId, mcYear), .SDcols = "OV. COST"]
+        res$simulation <- o$name
+        res
+      }
+    )}
+
+
+    reward <- rbindlist(reward)   #merge the all simulations tables together
+
+    if (correct_monotony){
+      cost <- reward
+      cost$control <- cost$simulation %>%
+        str_extract("\\-?\\d+$") %>% as.double()
+      U <- cost %>% select(control) %>% distinct()
+      cost <- cost %>% mutate(min_previous_reward=`OV. COST`) %>%
+        arrange(mcYear, timeId, control)
+      for (u in U$control){
+        cost[cost$control==u,'min_previous_reward'] <- cost %>% filter(control<=u) %>%
+          group_by(mcYear, timeId) %>%
+          mutate(min_previous_reward = min(`OV. COST`)) %>%
+          ungroup %>%
+          filter(control==u) %>%
+          select(min_previous_reward)
+      }
+
+      cost <- cost %>% select(timeId,mcYear,simulation,min_previous_reward) %>%
+        rename(`OV. COST` = min_previous_reward)
+
+      reward <- cost[,c("timeId","mcYear","OV. COST","simulation")]
     }
-  )}
+
+    reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
+    vars <- colnames(reward)[3:length(reward)]
+    setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
 
 
-  reward <- rbindlist(reward)   #merge the all simulations tables together
+    ind <- which(endsWith(vars,"_0"))
 
-  if (correct_monotony){
-    cost <- reward
-    cost$control <- cost$simulation %>%
-      str_extract("\\-?\\d+$") %>% as.double()
-    U <- cost %>% select(control) %>% distinct()
-    cost <- cost %>% mutate(min_previous_reward=`OV. COST`) %>%
-      arrange(mcYear, timeId, control)
-    for (u in U$control){
-      cost[cost$control==u,'min_previous_reward'] <- cost %>% filter(control<=u) %>%
-        group_by(mcYear, timeId) %>%
-        mutate(min_previous_reward = min(`OV. COST`)) %>%
-        ungroup %>%
-        filter(control==u) %>%
-        select(min_previous_reward)
+    reward <- reward[
+      , (vars) := lapply(.SD, FUN = function(x) {
+        get(vars[ind]) - x
+      }),
+      .SDcols = vars
+    ]
+
+    options("antares" = opts)
+
+    output <- list()
+    output$reward <- reward
+    output$simulation_names <- simulation_names
+    if(!is.null(simulation_res)) output$simulation_values <- simulation_res$simulation_values
+
+  } else {
+
+    if(is.null(possible_controls)){
+      nb_hours <- length(hours)
+      possible_controls <- data.frame(h=1:(2*nb_hours-1)) %>%
+      mutate(i=if_else(h>nb_hours,2*nb_hours-h,h)) %>%
+      mutate(u=if_else(h>nb_hours,T_max*(168-hours[i]),P_max*(hours[i]-168)*pump_eff)) %>%
+      pull(u)
     }
 
-    # To get the pourcent of weeks that are not monotone
-    # cost <- cost %>%
-    #   mutate(err = if_else((min_previous_reward!=`OV. COST`),1,0)) %>%
-    #   group_by(mcYear, timeId) %>%
-    #   mutate(week_err = min(sum(err),1))
-    #
-    # nb_week_err <- cost %>%
-    #   filter(week_err==1) %>%
-    #   select(timeId,mcYear) %>%
-    #   n_distinct()
-    #
-    # pour_week_err <- nb_week_err/n_distinct(select(reward,timeId,mcYear))*100
+    {reward <- mapply(
+      FUN = function(o,u) {
+        if (P_max>0){
+          res <- get_local_reward(o,hours,possible_controls,T_max,P_max)
+        } else {
+          res <- get_local_reward_turb(o,possible_controls)
+        }
+        res <- reward_offset(o,res, u)
+        res
+      },
+      o = opts_o,
+      u = simulation_res$simulation_values,
+      SIMPLIFY = F
+    )}
 
-    cost <- cost %>% select(timeId,mcYear,simulation,min_previous_reward) %>%
-      rename(`OV. COST` = min_previous_reward)
 
-    reward <- cost[,c("timeId","mcYear","OV. COST","simulation")]
+    reward <- rbindlist(reward)   #merge the all simulations tables together
+
+    reward <- reward %>%
+      group_by(mcYear,week,u) %>% summarise(reward=min(reward),.groups="drop")
+
+    reward <- filter(reward,u==0) %>% select(mcYear,week,reward) %>%
+      right_join(reward,by=c("mcYear","week"),suffix=c("_0","")) %>%
+      mutate(reward=reward-reward_0) %>%
+      mutate(control=str_replace(as.character(round(u/1000)),"-",".")) %>%
+      rename(timeId=week) %>%
+      select(-c(u,reward_0)) %>%
+      pivot_wider(names_from = control, values_from = reward)
+    reward <- as.data.table(reward)
+
+    options("antares" = opts)
+
+    output <- list()
+    output$reward <- reward
+    output$simulation_names <- colnames(reward)[3:length(reward)]
+    output$simulation_values <- possible_controls
   }
 
-  reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
-  vars <- colnames(reward)[3:length(reward)]
-  setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
-
-
-  ind <- which(endsWith(vars,"_0"))
-
-  reward <- reward[
-    , (vars) := lapply(.SD, FUN = function(x) {
-      get(vars[ind]) - x
-    }),
-    .SDcols = vars
-  ]
-
-  options("antares" = opts)
-
-  output <- list()
-  output$reward <- reward
-  output$simulation_names <- simulation_names
-  if(!is.null(simulation_res)) output$simulation_values <- simulation_res$simulation_values
-
   class(output) <- "Reward matrix , simulation names and values"
+
   return(output)
+
+}
+
+get_local_reward <- function(opts,hours,possible_controls,T_max,P_max){
+
+  hours <- unique(c(-hours, hours))
+
+
+  price <- readAntares(area=area,select=c("MRG. PRICE",
+                                          "LOAD",
+                                          "BALANCE",
+                                          "AVL DTG",
+                                          "MAX MRG",
+                                          "UNSP. ENRG",
+                                          "SPIL. ENRG",
+                                          "OV. COST"),opts=opts,mcYears = mcyears) %>%
+    mutate(week=(timeId-1)%/%168+1,hour_in_week=if_else(timeId%%168>0,timeId%%168,168)) %>%
+    select(-c("area")) %>% rename(price=`MRG. PRICE`,balance=BALANCE)
+
+
+  price_turb_more <- price %>%
+    group_by(mcYear,week) %>% arrange(desc(price),balance) %>%
+    mutate(reward_turb=cumsum(price*if_else(balance<0,(T_max+balance),T_max)),
+           vol_turb=cumsum(if_else(balance<0,(T_max+balance),T_max)),
+           hour_turb=vol_turb/T_max) %>%
+    select(mcYear,week,hour_turb,reward_turb) %>% ungroup()
+  price_turb_less <- price %>%
+    group_by(mcYear,week) %>% arrange(price,desc(balance)) %>%
+    mutate(reward_turb=cumsum(price*if_else(balance<0,balance,0)),
+           vol_turb=cumsum(if_else(balance<0,balance,0)),
+           hour_turb=vol_turb/T_max) %>%
+    select(mcYear,week,hour_turb,reward_turb) %>% ungroup()
+  price_turb <- rbind(price_turb_less,price_turb_more) %>%
+    distinct(mcYear,week,hour_turb,reward_turb)
+
+  price_turb_int <- price_turb %>%
+    group_by(mcYear,week) %>%
+    arrange(hour_turb) %>%
+    mutate(hour_turb_inf=round(hour_turb,5),reward_turb_inf=reward_turb,
+           hour_turb_sup=round(lead(hour_turb),5),reward_turb_sup=lead(reward_turb)) %>%
+    select(-c(hour_turb,reward_turb)) %>%
+    drop_na()
+
+  hour_turb_0 <- price_turb %>% group_by(mcYear,week) %>%
+    summarise(hour_turb_0=-min(hour_turb),.groups="drop")
+
+  hour_turb <- data.frame(expand_grid(mcYear=mcyears,week=1:52,hour_turb=hours)) %>%
+    rbind(select(mutate(hour_turb_0,hour_turb=round(-hour_turb_0,5)),-c(hour_turb_0))) %>%
+    rbind(select(mutate(hour_turb_0,hour_turb=round(168-hour_turb_0,5)),-c(hour_turb_0))) %>%
+    left_join(hour_turb_0,by=c("mcYear","week")) %>%
+    filter(hour_turb+hour_turb_0>=0,hour_turb+hour_turb_0<=168) %>%
+    select(-c(hour_turb_0)) %>%
+    left_join(price_turb_int, by=join_by(mcYear,week,hour_turb>=hour_turb_inf,
+                                         hour_turb<=hour_turb_sup)) %>%
+    distinct(mcYear,week,hour_turb,.keep_all=T) %>%
+    mutate(reward_turb=if_else(hour_turb_inf!=hour_turb_sup,
+                               reward_turb_inf+(reward_turb_sup-reward_turb_inf)/(hour_turb_sup-hour_turb_inf)*(hour_turb-hour_turb_inf),
+                               reward_turb_inf)) %>%
+    select(-c(hour_turb_inf,hour_turb_sup,reward_turb_inf,reward_turb_sup))
+
+  price_turb_int <- hour_turb %>%
+    group_by(mcYear,week) %>%
+    arrange(hour_turb) %>%
+    mutate(hour_turb_inf=round(hour_turb,5),reward_turb_inf=reward_turb,
+           hour_turb_sup=round(lead(hour_turb),5),reward_turb_sup=lead(reward_turb)) %>%
+    select(-c(hour_turb,reward_turb)) %>%
+    drop_na()
+
+  price_pump_more <- price %>%
+    group_by(mcYear,week) %>% arrange(price,desc(balance)) %>%
+    mutate(cost_pump=cumsum(price*if_else(balance>0,(P_max-balance),P_max)),
+           vol_pump=cumsum(if_else(balance>0,(P_max-balance),P_max)),
+           hour_pump=vol_pump/P_max) %>%
+    select(mcYear,week,hour_pump,cost_pump) %>% ungroup()
+  price_pump_less <- price %>%
+    group_by(mcYear,week) %>% arrange(desc(price),balance) %>%
+    mutate(cost_pump=cumsum(price*if_else(balance>0,-balance,0)),
+           vol_pump=cumsum(if_else(balance>0,-balance,0)),
+           hour_pump=vol_pump/P_max) %>%
+    select(mcYear,week,hour_pump,cost_pump) %>% ungroup()
+  price_pump <- rbind(price_pump_less,price_pump_more) %>%
+    distinct(mcYear,week,hour_pump,cost_pump)
+
+  price_pump_int <- price_pump %>%
+    group_by(mcYear,week) %>%
+    arrange(hour_pump) %>%
+    mutate(hour_pump_inf=round(hour_pump,5),cost_pump_inf=cost_pump,
+           hour_pump_sup=round(lead(hour_pump),5),cost_pump_sup=lead(cost_pump)) %>%
+    select(-c(hour_pump,cost_pump)) %>%
+    drop_na()
+
+  hour_pump_0 <- price_pump_int %>% group_by(mcYear,week) %>%
+    summarise(hour_pump_0=-min(hour_pump_inf),.groups="drop")
+
+  hour_pump <- data.frame(expand_grid(mcYear=mcyears,week=1:52,hour_pump=hours)) %>%
+    rbind(select(mutate(hour_pump_0,hour_pump=round(-hour_pump_0,5)),-c(hour_pump_0))) %>%
+    rbind(select(mutate(hour_pump_0,hour_pump=round(168-hour_pump_0,5)),-c(hour_pump_0))) %>%
+    left_join(hour_pump_0,by=c("mcYear","week")) %>%
+    filter(hour_pump+hour_pump_0>=0,hour_pump+hour_pump_0<=168) %>%
+    select(-c(hour_pump_0)) %>%
+    left_join(price_pump_int, by=join_by(mcYear,week,hour_pump>=hour_pump_inf,
+                                         hour_pump<=hour_pump_sup)) %>%
+    distinct(mcYear,week,hour_pump,.keep_all=T) %>%
+    mutate(cost_pump=if_else(hour_pump_inf!=hour_pump_sup,
+                             cost_pump_inf+(cost_pump_sup-cost_pump_inf)/(hour_pump_sup-hour_pump_inf)*(hour_pump-hour_pump_inf),
+                             cost_pump_inf)) %>%
+    select(-c(hour_pump_inf,hour_pump_sup,cost_pump_inf,cost_pump_sup))
+
+  price_pump_int <- hour_pump %>%
+    group_by(mcYear,week) %>%
+    arrange(hour_pump) %>%
+    mutate(hour_pump_inf=round(hour_pump,5),cost_pump_inf=cost_pump,
+           hour_pump_sup=round(lead(hour_pump),5),cost_pump_sup=lead(cost_pump)) %>%
+    select(-c(hour_pump,cost_pump)) %>%
+    drop_na()
+
+
+  df_reward <- data.frame(expand_grid(mcYear=mcyears,week=1:52,u=possible_controls)) %>%
+    left_join(hour_turb_0,by=c("mcYear","week")) %>%
+    left_join(hour_pump_0,by=c("mcYear","week"))
+
+  df_reward_extreme <- df_reward %>%
+    mutate(hour_turb_exact=round((u+168*P_max*pump_eff)/(T_max+P_max*pump_eff)-hour_turb_0,5),
+           hour_pump_exact=168-hour_turb_exact-hour_pump_0-hour_turb_0) %>%
+    left_join(price_turb_int, by=join_by(mcYear,week,hour_turb_exact>=hour_turb_inf,
+                                         hour_turb_exact<=hour_turb_sup)) %>%
+    mutate(reward_turb=if_else(hour_turb_inf!=hour_turb_sup,
+                               reward_turb_inf+(reward_turb_sup-reward_turb_inf)/(hour_turb_sup-hour_turb_inf)*(hour_turb_exact-hour_turb_inf),
+                               reward_turb_inf),
+           reward_turb=round(reward_turb,5)) %>%
+    select(-c(hour_turb_inf,hour_turb_sup,reward_turb_inf,reward_turb_sup)) %>%
+    rename(hour_turb=hour_turb_exact) %>%
+    distinct(mcYear,week,u,.keep_all = T)
+
+  df_reward_turb <- full_join(hour_turb, df_reward, by=c("mcYear","week"),relationship = "many-to-many") %>%
+    mutate(hour_pump_exact=round((-u+T_max*(hour_turb_0+hour_turb))/pump_eff/P_max-hour_pump_0,5)) %>%
+    filter((hour_pump_exact+hour_pump_0>=0)&(hour_turb+hour_turb_0+hour_pump_exact+hour_pump_0<=168)) %>%
+    rbind(df_reward_extreme) %>%
+    distinct(mcYear,week,hour_turb,u,.keep_all = T) %>%
+    left_join(price_pump_int, by=join_by(mcYear,week,hour_pump_exact>=hour_pump_inf,
+                                         hour_pump_exact<=hour_pump_sup)) %>%
+    mutate(cost_pump=if_else(hour_pump_inf!=hour_pump_sup,
+                             cost_pump_inf+(cost_pump_sup-cost_pump_inf)/(hour_pump_sup-hour_pump_inf)*(hour_pump_exact-hour_pump_inf),
+                             cost_pump_inf),
+           reward = reward_turb-cost_pump) %>%
+    select(mcYear,week,u,reward)
+
+  df_reward_pump <- full_join(hour_pump, df_reward, by=c("mcYear","week"),relationship = "many-to-many") %>%
+    mutate(hour_turb_exact=round((u+P_max*pump_eff*(hour_pump_0+hour_pump))/T_max-hour_turb_0,5)) %>%
+    filter((hour_turb_exact+hour_turb_0>=0)&(hour_turb_exact+hour_turb_0+hour_pump+hour_pump_0<=168)) %>%
+    distinct(mcYear,week,hour_pump,u,.keep_all = T) %>%
+    left_join(price_turb_int, by=join_by(mcYear,week,hour_turb_exact>=hour_turb_inf,
+                                         hour_turb_exact<=hour_turb_sup)) %>%
+    mutate(reward_turb=if_else(hour_turb_inf!=hour_turb_sup,
+                               reward_turb_inf+(reward_turb_sup-reward_turb_inf)/(hour_turb_sup-hour_turb_inf)*(hour_turb_exact-hour_turb_inf),
+                               reward_turb_inf),
+           reward_turb=round(reward_turb,5),
+           reward = reward_turb-cost_pump) %>%
+    select(mcYear,week,u,reward)
+
+  df_reward <- rbind(df_reward_pump,df_reward_turb) %>%
+    group_by(mcYear,week,u) %>%
+    slice_max(reward,with_ties = F) %>% ungroup()
+
+  return(df_reward)
+
+}
+
+get_local_reward_turb <- function(opts,possible_controls){
+  price <- readAntares(area=area,select=c("MRG. PRICE",
+                                          "LOAD",
+                                          "BALANCE",
+                                          "AVL DTG",
+                                          "MAX MRG",
+                                          "UNSP. ENRG",
+                                          "SPIL. ENRG",
+                                          "OV. COST"),opts=opts,mcYears = mcyears) %>%
+    mutate(week=(timeId-1)%/%168+1,hour_in_week=if_else(timeId%%168>0,timeId%%168,168)) %>%
+    select(-c("area")) %>% rename(price=`MRG. PRICE`,balance=BALANCE)
+
+
+  price_turb_more <- price %>%
+    group_by(mcYear,week) %>% arrange(desc(price),balance) %>%
+    mutate(reward_turb=cumsum(price*if_else(balance<0,(T_max+balance),T_max)),
+           vol_turb=cumsum(if_else(balance<0,(T_max+balance),T_max)),
+           hour_turb=vol_turb/T_max) %>%
+    select(mcYear,week,hour_turb,reward_turb) %>% ungroup()
+  price_turb_less <- price %>%
+    group_by(mcYear,week) %>% arrange(price,desc(balance)) %>%
+    mutate(reward_turb=cumsum(price*if_else(balance<0,balance,0)),
+           vol_turb=cumsum(if_else(balance<0,balance,0)),
+           hour_turb=vol_turb/T_max) %>%
+    select(mcYear,week,hour_turb,reward_turb) %>% ungroup()
+  price_turb <- rbind(price_turb_less,price_turb_more) %>%
+    distinct(mcYear,week,hour_turb,reward_turb)
+
+  hour_turb_0 <- price_turb %>% group_by(mcYear,week) %>%
+    summarise(hour_turb_0=-min(hour_turb),.groups="drop")
+
+  price_turb_int <- price_turb %>%
+    group_by(mcYear,week) %>%
+    arrange(hour_turb) %>%
+    mutate(hour_turb_inf=round(hour_turb,5),reward_turb_inf=reward_turb,
+           hour_turb_sup=round(lead(hour_turb),5),reward_turb_sup=lead(reward_turb)) %>%
+    select(-c(hour_turb,reward_turb)) %>%
+    drop_na()
+
+  # hour_turb <- data.frame(expand_grid(mcYear=mcyears,week=1:52,hour_turb=hours)) %>%
+  #   left_join(price_turb_int, by=join_by(mcYear,week,hour_turb>=hour_turb_inf,
+  #                                        hour_turb<=hour_turb_sup)) %>%
+  #   mutate(reward_turb=if_else(hour_turb_inf!=hour_turb_sup,
+  #                         reward_turb_inf+(reward_turb_sup-reward_turb_inf)/(hour_turb_sup-hour_turb_inf)*(hour_turb-hour_turb_inf),
+  #                         reward_turb_inf)) %>%
+  #   select(-c(hour_turb_inf,hour_turb_sup,reward_turb_inf,reward_turb_sup))
+
+  df_reward <- data.frame(expand_grid(mcYear=mcyears,week=1:52,u=possible_controls)) %>%
+    left_join(hour_turb_0,by=c("mcYear","week"))
+
+  df_reward <- df_reward %>%
+    mutate(hour_turb_exact=round(u/T_max-hour_turb_0,5)) %>%
+    left_join(price_turb_int, by=join_by(mcYear,week,hour_turb_exact>=hour_turb_inf,
+                                         hour_turb_exact<=hour_turb_sup)) %>%
+    mutate(reward=if_else(hour_turb_inf!=hour_turb_sup,
+                          reward_turb_inf+(reward_turb_sup-reward_turb_inf)/(hour_turb_sup-hour_turb_inf)*(hour_turb_exact-hour_turb_inf),
+                          reward_turb_inf),
+           reward=round(reward,5)) %>%
+    select(-c(hour_turb_inf,hour_turb_sup,reward_turb_inf,reward_turb_sup)) %>%
+    rename(hour_turb=hour_turb_exact) %>%
+    select(mcYear,week,u,reward) %>%
+    distinct(mcYear,week,u,.keep_all = T)
+
+  return(df_reward)
+
+}
+
+reward_offset <- function(opts, df_reward, u0=NaN){
+  cost <- antaresRead::readAntares(districts = "water values district", mcYears = mcyears,
+                                   timeStep = "weekly", opts = opts) %>%
+    rename(week=timeId,ov_cost='OV. COST') %>%
+    select(mcYear,week,ov_cost) %>%
+    as.data.frame()
+  if (!is.na(u0)){
+    df_reward <- df_reward %>%
+      left_join(select(filter(df_reward,u==u0),
+                       mcYear,week,reward),
+                by=c("mcYear","week"),suffix=c("","_0")) %>%
+      mutate(reward = reward-reward_0) %>%
+      select(-c(reward_0))
+  }
+  df_reward <- df_reward %>%
+    left_join(cost,by=c("mcYear","week")) %>%
+    mutate(reward = reward-ov_cost) %>%
+    select(-c(ov_cost))
+  return(df_reward)
 }

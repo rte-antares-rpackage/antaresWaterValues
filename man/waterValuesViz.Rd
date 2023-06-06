@@ -4,7 +4,7 @@
 \alias{waterValuesViz}
 \title{Visualize mean grid layer}
 \usage{
-waterValuesViz(Data, filtre_ratio = 1, show_negative = TRUE)
+waterValuesViz(Data, filter_penalties = FALSE)
 }
 \arguments{
 \item{Data}{Output from \code{Grid_Matrix}.}

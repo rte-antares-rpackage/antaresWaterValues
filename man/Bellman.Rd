@@ -70,9 +70,9 @@ For example if equal to 0.9 we delete the state if this states is inaccessible b
 
 \item{states_steps}{Numeric. Discretization step of reservoir.}
 
-\item{penalty_level_low}{Penalty for violating the bottom guide curve, comparable to the unsupplied energy}
+\item{penalty_level_low}{Penalty for violating the bottom rule curve, comparable to the unsupplied energy}
 
-\item{penalty_level_high}{Penalty for violating the top guide curve, comparable to the spilled energy}
+\item{penalty_level_high}{Penalty for violating the top rule curve, comparable to the spilled energy}
 }
 \value{
 a \code{data.table} like Data_week with the Bellman values

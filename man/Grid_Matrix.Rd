@@ -38,6 +38,9 @@ Grid_Matrix(
   correct_monotony_gain = FALSE,
   penalty_low = 3000,
   penalty_high = 3000,
+  method_old_gain = F,
+  hours_reward_calculation = c(seq.int(0, 168, 10), 168),
+  controls_reward_calculation = NULL,
   ...
 )
 }
@@ -122,9 +125,9 @@ between two water values is less then this value those values are converged.}
 
 \item{correct_monotony_gain}{Binary argument (default to false). True to correct monotony of gains.}
 
-\item{penalty_low}{Penalty for violating the bottom guide curve, comparable to the unsupplied energy}
+\item{penalty_low}{Penalty for violating the bottom rule curve, comparable to the unsupplied energy}
 
-\item{penalty_high}{Penalty for violating the top guide curve, comparable to the spilled energy}
+\item{penalty_high}{Penalty for violating the top rule curve, comparable to the spilled energy}
 
 \item{...}{further arguments passed to or from other methods.}
 }

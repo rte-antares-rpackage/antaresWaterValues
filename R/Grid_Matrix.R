@@ -92,6 +92,9 @@
                              correct_monotony_gain = FALSE,
                              penalty_low = 3000,
                              penalty_high = 3000,
+                             method_old_gain = F,
+                             hours_reward_calculation = c(seq.int(0,168,10),168),
+                             controls_reward_calculation = NULL,
                         ...) {
 
 
@@ -111,6 +114,8 @@
 
   # max hydro
   max_hydro <- get_max_hydro(area)
+  E_max <-max_hydro$turb
+  P_max <- max_hydro$pump
 
 
   if(is.null(reward_db)){
@@ -187,10 +192,24 @@
   {
     if(is.null(reward_db))
     {
+      if(is.null(controls_reward_calculation)){
+        controls_reward_calculation <- seq(min(simulation_values),
+                                           max(simulation_values),
+                                           (max(simulation_values)-min(simulation_values))%/%10)
+      }
 
-    reward_db <- get_Reward(simulation_names = simulation_names,
-                            district_name = district_name, opts = opts,
-                            correct_monotony=correct_monotony_gain)$reward
+      controls_reward_calculation <- unique(c(simulation_values,controls_reward_calculation))
+
+
+      reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
+                           opts = opts, correct_monotony = correct_monotony_gain,
+                           method_old = method_old_gain,P_max=P_max,T_max=E_max,
+                           hours=hours_reward_calculation,
+                           possible_controls=controls_reward_calculation,
+                           simulation_res = simulation_res)
+      decision_space <- reward_db$simulation_values
+      decision_space <- round(decision_space)
+      reward_db <- reward_db$reward
     }
 
     reward_db <- reward_db[timeId %in% seq_len(n_week)]}
@@ -260,8 +279,6 @@
   if (length(week_53) == 1) week_53 <- rep_len(week_53, length(states))
   next_week_values <- (week_53 * niveau_max)/2   # approximation to get initial bellman values from initial water values
   niveau_max = niveau_max
-  E_max <-max_hydro$turb
-  P_max <- max_hydro$pump
   max_mcyear <- length(mcyears)
   counter <- 0
   if(!pumping)P_max <- 0

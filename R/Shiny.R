@@ -212,6 +212,28 @@ ui <- fluidPage(
                  shiny_iconlink() %>%
                    bs_embed_popover(title = "the district that will be used in calculation of the rewards of transitions.")),
 
+          # Reward calculation
+          materialSwitch("smart_interpolation_reward","Use marginal prices to interpolate rewards",
+                         value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="If marginal prices are used, one can use less Antares simulation to retrieve reward function")),
+
+          conditionalPanel(
+            condition="input.smart_interpolation_reward",
+            sliderInput("hours","Number of hours to use to calculate rewards",max=168,min=1,value=10),
+            numericInput("controls","Number of controls to calculate",min=2, value=3)
+          ),
+
+          conditionalPanel(
+            condition="!input.smart_interpolation_reward",
+            # correct monotony option for gains
+            materialSwitch("correct_monotony_gain","Correct monotony of gains",
+                           value=F,status = "success")%>%
+              shinyInput_label_embed(
+                shiny_iconlink() %>%
+                  bs_embed_popover(title ="Correct monotony of gain, ie the more water is turbined the less the cost of the electric system is high"))
+          ),
 
 
           # Algorithm
@@ -315,17 +337,11 @@ ui <- fluidPage(
 
           # correct concavity option for Bellman values
           materialSwitch("correct_concavity","Correct concavity of Bellman values",
-                         value=T,status = "success")%>%
+                         value=F,status = "success")%>%
             shinyInput_label_embed(
               shiny_iconlink() %>%
                 bs_embed_popover(title ="Correct concavity of Bellman values to have monotone water values.")),
 
-          # correct monotony option for gains
-          materialSwitch("correct_monotony_gain","Correct monotony of gains",
-                         value=T,status = "success")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title ="Correct monotony of gain, ie the more water is turbined the less the cost of the electric system is high")),
 
           actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
                        align = "center"),
@@ -359,6 +375,10 @@ ui <- fluidPage(
             style = "unite",
             color = "primary",
             block = T
+          ),
+          conditionalPanel(
+            condition="input.smart_interpolation_reward",
+            tableOutput("calculated_controls")
           )
 
       )
@@ -1001,6 +1021,20 @@ server <- function(input, output, session) {
       }
     })
 
+    output$calculated_controls <- renderTable({
+      data.frame(From=c("Simulation","Calculated controls","Union"),
+                 Controls=c(toString(simulation_res()$simulation_values),
+                            toString(round(seq(min(simulation_res()$simulation_values),
+                                     max(simulation_res()$simulation_values),
+                                     length.out=input$controls))),
+                            toString(sort(unique(c(simulation_res()$simulation_values,
+                                            round(seq(min(simulation_res()$simulation_values),
+                                                      max(simulation_res()$simulation_values),
+                                                      length.out=input$controls)))))))) %>%
+        mutate(Total=lengths(strsplit(Controls, ",\\s*")))
+
+    })
+
     observeEvent( input$Calculate,
 
    spsUtil::quiet({
@@ -1032,7 +1066,12 @@ server <- function(input, output, session) {
         correct_concavity = input$correct_concavity,
         correct_monotony_gain = input$correct_monotony_gain,
         penalty_low = input$penalty_low,
-        penalty_high = input$penalty_high
+        penalty_high = input$penalty_high,
+        method_old_gain = !input$smart_interpolation_reward,
+        hours_reward_calculation = if(input$smart_interpolation_reward){round(seq(0,168,length.out=input$hours))},
+        controls_reward_calculation = if(input$smart_interpolation_reward){seq(min(simulation_res()$simulation_values),
+                                                                               max(simulation_res()$simulation_values),
+                                                                               length.out=input$controls)}
         )$aggregated_results
 
       isolate(rv$results <- results)
@@ -1097,12 +1136,26 @@ server <- function(input, output, session) {
 
 #--------plot reward page------
 
+    possible_controls <- reactive({
+      possible_controls <- if(input$smart_interpolation_reward){
+      unique(c(seq(min(simulation_res()$simulation_values),
+                   max(simulation_res()$simulation_values),
+                   length.out=input$controls),simulation_res()$simulation_values))} else {
+                     simulation_res()$simulation_values}
+      possible_controls
+    })
+
     observeEvent( input$import_reward,
                   {
                     spsComps::shinyCatch({
                     reward_dt <- get_Reward(simulation_res(),
                                             district_name =input$district_name_rew,
-                                            opts=opts)
+                                            opts=opts,
+                                            method_old = !input$smart_interpolation_reward,
+                                            hours = if(input$smart_interpolation_reward){round(seq(0,168,length.out=input$hours))},
+                                            possible_controls = possible_controls(),
+                                            P_max=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)$pump},
+                                            T_max=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)$turb})
                     rv$reward_dt <- reward_dt
                     shinybusy::remove_modal_spinner()
                     show_alert(
@@ -1124,20 +1177,20 @@ server <- function(input, output, session) {
       week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
       Mc_year <- input$Mc_year[1]:input$Mc_year[2]
       if(input$param_rew=="r")
-      {plot_reward(rv$reward_dt$reward,week_id_rew,input$simulation_name_pattern,constraints_values=simulation_res()$simulation_values)
+      {plot_reward(rv$reward_dt$reward,week_id_rew,input$simulation_name_pattern,constraints_values=possible_controls())
       }else{
         if(input$param_rew=="rv")
-          {plot_reward_variation(rv$reward_dt$reward,week_id_rew,constraints_values=simulation_res()$simulation_values)
+          {plot_reward_variation(rv$reward_dt$reward,week_id_rew,constraints_values=possible_controls())
         }else{
 
         if(input$param_rew=="r1")
           {plot_reward_mc(rv$reward_dt$reward,week_id_rew,
-                          Mc_year,input$simulation_name_pattern,constraints_values=simulation_res()$simulation_values)
+                          Mc_year,input$simulation_name_pattern,constraints_values=possible_controls())
         }else{
 
           if(input$param_rew=="rv1")
           {plot_reward_variation_mc(rv$reward_dt$reward,week_id_rew,
-                              Mc_year,constraints_values=simulation_res()$simulation_values)}
+                              Mc_year,constraints_values=possible_controls())}
         }
         }
         }
@@ -1154,7 +1207,7 @@ server <- function(input, output, session) {
                                 Mc_year)
       }else{
 
-        plot_reward_variation(rv$reward_dt$reward,week_id_rew,constraints_values=simulation_res()$simulation_values)
+        plot_reward_variation(rv$reward_dt$reward,week_id_rew,constraints_values=possible_controls())
       }
 
 

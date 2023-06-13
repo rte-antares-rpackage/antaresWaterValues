@@ -126,68 +126,6 @@ mean_finite <- function(x) {
   }
 }
 
-#-----Mean or inf
-#' Calculate the mean if there is no infinite or missing value.
-#' Return \code{-Inf} in the other case.
-#' @param x numeric vector whose mean is wanted.
-#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
-#' @export
-
-mean_or_inf <- function(x,inaccessible_states){
-  if(inaccessible_states==0){
-  if(any(is.infinite(x)|any(is.nan(x)))){
-    return(-Inf)
-  }else{
-    return(mean(x, na.rm = TRUE))
-  }}
-
-  nb_inaccessible_states <- sum((is.infinite(x))|(is.nan(x)))
-
-  if((nb_inaccessible_states/length(x))>=inaccessible_states){
-    return(-Inf)
-  }else{
-    return(mean_finite(x))
-  }
-
-}
-
-
-#-----quantile or inf
-#' Calculate the quantile if there is no infinite or missing value.
-#' Return \code{-Inf} in the other case.
-#' @param x numeric vector whose quantile is wanted.
-#' @param q_ratio Numeric in [0,1]. Probability of the quantile.
-#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
-#' @importFrom stats quantile
-#' @export
-
-quantile_or_inf <- function(x,q_ratio,inaccessible_states=0){
-
-
-  if(inaccessible_states==0){
-
-    if(any(is.infinite(x))|any(is.nan(x))){
-
-      return(-Inf)
-
-    }else{
-
-      return(stats::quantile(x,q_ratio))
-    }}
-
-  nb_inaccessible_states <- sum((is.infinite(x))|(is.nan(x)))
-  if((nb_inaccessible_states/length(x))>=inaccessible_states){
-    return(-Inf)
-  }else{
-    return(stats::quantile(x,q_ratio))
-  }
-
-}
-
-
-
 #---- monotonicity check functions-----
 #' Check if the vector has increasing values
 #' @param vector numeric vector whose increasing check is wanted.

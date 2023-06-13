@@ -15,7 +15,6 @@ Bellman(
   correct_outliers = FALSE,
   q_ratio = 0.75,
   counter,
-  inaccessible_states = 1,
   stop_rate = 5,
   debugger_feas = F,
   niveau_max,
@@ -56,9 +55,6 @@ interpolations. Defaults to FALSE.}
 \item{q_ratio}{numeric in [0,1]. the probability used in quantile algorithm.}
 
 \item{counter}{Numeric of length 1. number of the week in calculation.}
-
-\item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
-For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
 
 \item{stop_rate}{the percent from which the calculation stop. for example
 \code{stop_rate=5} means the calculation stop if there is a week with less then

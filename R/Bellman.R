@@ -21,8 +21,6 @@
   #' @param counter Numeric of length 1. number of the week in calculation.
   #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
   #'   interpolations. Defaults to FALSE.
-  #' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-  #' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
   #' @param stop_rate the percent from which the calculation stop. for example
   #' \code{stop_rate=5} means the calculation stop if there is a week with less then
   #' 5\% accessibles states.
@@ -40,7 +38,7 @@
 
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       method,mcyears,correct_outliers=FALSE,q_ratio=0.75,
-                      counter,inaccessible_states=1,
+                      counter,
                       stop_rate=5,debugger_feas=F,niveau_max,
                       states_steps,penalty_level_low,penalty_level_high){
 
@@ -83,13 +81,7 @@
                                                                           "transition_reward","next_bellman_value")],
                            by=c("years","states"))
 
-    # test scenarios
-    Data_week <- scanarios_check(Data_week,counter)
 
-    # inaccessible criteria
-    nb_mcyear <- length(mcyears)
-    Data_week <- mutate(Data_week,accessibility_percent=accessibility/nb_mcyear)
-    # Data_week[accessibility_percent<inaccessible_states,value_node:=NaN]
     #------ mean-grid method---------
 
     if (method == "mean-grid") {
@@ -105,7 +97,7 @@
       if (correct_outliers) {
         Data_week[, value_node := correct_outliers(value_node)]
       }
-      Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) mean_or_inf(x,inaccessible_states))
+      Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) mean_finite(x))
 
       return(Data_week)
     }

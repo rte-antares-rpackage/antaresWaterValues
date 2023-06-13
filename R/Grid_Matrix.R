@@ -29,8 +29,6 @@
 #' @param correct_outliers If TRUE, outliers in Bellman values are replaced
 #' by spline interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
-#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
 #' @param until_convergence Boolean. TRUE to repeat cycle until convergence or
 #'  attending the limit.
 #' @param convergence_rate from 0 to 1. Define the convergence level from which
@@ -84,7 +82,6 @@
                              test_week=NULL,
                              opts = antaresRead::simOptions(),
                              shiny=F,
-                             inaccessible_states=1,
                              until_convergence=F,
                              convergence_rate=0.9,
                              convergence_criteria=1,
@@ -320,7 +317,6 @@
                         q_ratio= q_ratio,
                         correct_outliers = correct_outliers,
                         counter = i,
-                        inaccessible_states=inaccessible_states,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
                         penalty_level_low=penalty_low,
@@ -374,8 +370,6 @@
         watervalues[weeks==i,transition :=temp$transition]
         watervalues[weeks==i,transition_reward :=temp$transition_reward]
         watervalues[weeks==i,next_bellman_value :=temp$next_bellman_value]
-        watervalues[weeks==i,accessibility :=temp$accessibility]
-        watervalues[weeks==i,max_acc :=temp$max_acc]
 
 
         if (correct_outliers) {
@@ -431,7 +425,6 @@
                         q_ratio= q_ratio,
                         correct_outliers = correct_outliers,
                         counter = i,
-                        inaccessible_states=inaccessible_states,
                         penalty_level_low=penalty_low,
                         penalty_level_high=penalty_high,
                         stop_rate=stop_rate)
@@ -480,8 +473,8 @@
 
         watervalues[weeks==i,value_node :=temp$value_node]
         watervalues[weeks==i,transition :=temp$transition]
-        watervalues[weeks==i,accessibility :=temp$accessibility]
-        watervalues[weeks==i,max_acc :=temp$max_acc]
+        watervalues[weeks==i,transition_reward :=temp$transition_reward]
+        watervalues[weeks==i,next_bellman_value :=temp$next_bellman_value]
 
 
 
@@ -500,11 +493,11 @@
       close(pb)
       next_week_values <- temp[weeks==1]$value_node
       watervalues[!is.finite(value_node),value_node:=NaN]
-      value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir)
 
 
       if(n_cycl>1){
-        diff_vect <- last_wv -value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
+        diff_vect <- last_wv -value_node_gen(watervalues,statesdt,reservoir)$vu
         convergence_value <- converged(diff_vect,conv=convergence_criteria)
         convergence_percent <- sprintf((convergence_value*100), fmt = '%#.2f')
 
@@ -536,7 +529,7 @@
 
       }
 
-      last_wv <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
+      last_wv <- value_node_gen(watervalues,statesdt,reservoir)$vu
 
       }
     }# end else

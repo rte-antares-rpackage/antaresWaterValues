@@ -25,7 +25,6 @@ Grid_Matrix(
   test_week = NULL,
   opts = antaresRead::simOptions(),
   shiny = F,
-  inaccessible_states = 1,
   until_convergence = F,
   convergence_rate = 0.9,
   convergence_criteria = 1,
@@ -96,9 +95,6 @@ in the console}
 \code{antaresRead::setSimulationPath}}
 
 \item{shiny}{Boolean. True to run the script in shiny mode.}
-
-\item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
-For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
 
 \item{until_convergence}{Boolean. TRUE to repeat cycle until convergence or
 attending the limit.}

@@ -228,12 +228,12 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
     mutate(hour_turb_inf=round(hour_turb,5),reward_turb_inf=reward_turb,
            hour_turb_sup=round(lead(hour_turb),5),reward_turb_sup=lead(reward_turb)) %>%
     select(-c(hour_turb,reward_turb)) %>%
-    drop_na()
+    tidyr::drop_na()
 
   hour_turb_0 <- price_turb %>% group_by(mcYear,week) %>%
     summarise(hour_turb_0=-round(min(hour_turb),5),.groups="drop")
 
-  hour_turb <- data.frame(expand_grid(mcYear=mcyears,week=1:52,hour_turb=hours)) %>%
+  hour_turb <- data.frame(tidyr::expand_grid(mcYear=mcyears,week=1:52,hour_turb=hours)) %>%
     rbind(select(mutate(hour_turb_0,hour_turb=round(-hour_turb_0,5)),-c(hour_turb_0))) %>%
     rbind(select(mutate(hour_turb_0,hour_turb=round(168-hour_turb_0,5)),-c(hour_turb_0))) %>%
     left_join(hour_turb_0,by=c("mcYear","week")) %>%
@@ -253,7 +253,7 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
     mutate(hour_turb_inf=round(hour_turb,5),reward_turb_inf=reward_turb,
            hour_turb_sup=round(lead(hour_turb),5),reward_turb_sup=lead(reward_turb)) %>%
     select(-c(hour_turb,reward_turb)) %>%
-    drop_na()
+    tidyr::drop_na()
 
   price_pump_more <- price %>%
     group_by(mcYear,week) %>% arrange(price,desc(balance)) %>%
@@ -276,12 +276,12 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
     mutate(hour_pump_inf=round(hour_pump,5),cost_pump_inf=cost_pump,
            hour_pump_sup=round(lead(hour_pump),5),cost_pump_sup=lead(cost_pump)) %>%
     select(-c(hour_pump,cost_pump)) %>%
-    drop_na()
+    tidyr::drop_na()
 
   hour_pump_0 <- price_pump_int %>% group_by(mcYear,week) %>%
     summarise(hour_pump_0=-round(min(hour_pump_inf),5),.groups="drop")
 
-  hour_pump <- data.frame(expand_grid(mcYear=mcyears,week=1:52,hour_pump=hours)) %>%
+  hour_pump <- data.frame(tidyr::expand_grid(mcYear=mcyears,week=1:52,hour_pump=hours)) %>%
     rbind(select(mutate(hour_pump_0,hour_pump=round(-hour_pump_0,5)),-c(hour_pump_0))) %>%
     rbind(select(mutate(hour_pump_0,hour_pump=round(168-hour_pump_0,5)),-c(hour_pump_0))) %>%
     left_join(hour_pump_0,by=c("mcYear","week")) %>%
@@ -301,10 +301,10 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
     mutate(hour_pump_inf=round(hour_pump,5),cost_pump_inf=cost_pump,
            hour_pump_sup=round(lead(hour_pump),5),cost_pump_sup=lead(cost_pump)) %>%
     select(-c(hour_pump,cost_pump)) %>%
-    drop_na()
+    tidyr::drop_na()
 
 
-  df_reward <- data.frame(expand_grid(mcYear=mcyears,week=1:52,u=possible_controls)) %>%
+  df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,week=1:52,u=possible_controls)) %>%
     left_join(hour_turb_0,by=c("mcYear","week")) %>%
     left_join(hour_pump_0,by=c("mcYear","week"))
 

@@ -44,12 +44,15 @@ simulation_names_values <- function(area,simulation_name,nb_disc_stock,
 
 
 #' This function disable binding constraints for \code{runWaterValuesSimulation}
+#'
 #' @param constraint_value the value of the constraint
 #' @param name_bc the name of the constraint.
 #' @param pumping Boolean. True to take into account the pumping.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param area Area used to calculate watervalues
+#'
 #' @importFrom antaresEditObject editBindingConstraint
 #' @export
 
@@ -71,6 +74,7 @@ disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL
 
 
 #' This function generate binding constraints for \code{runWaterValuesSimulation}
+#'
 #' @param constraint_value the value of the constraint
 #' @param coeff the sens of the constraint notation in Antares.
 #' @param name_constraint the name of the constraint.
@@ -78,6 +82,8 @@ disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param area Area used to calculate watervalues
+#'
 #' @export
 
 

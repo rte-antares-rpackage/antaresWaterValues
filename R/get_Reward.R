@@ -9,6 +9,15 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param correct_monotony Binary argument (default to false). True to correct monotony of rewards.
+#' @param method_old If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices
+#' @param hours If method_old=F, vector of hours used to evaluate costs/rewards of pumping/generating
+#' @param possible_controls If method_old=F, vector of controls evaluated
+#' @param T_max Max generating power
+#' @param P_max Max pumping power
+#' @param mcyears Vector of years used to evaluate rewards
+#' @param area Area used to calculate watervalues
+#' @param pump_eff Pumping efficiency
+#' @param district_balance Name of district used to evaluate controls on the stock
 #'
 #' @return a data.table {timeid,MCyear,simulation overall cost}
 #' @export
@@ -168,6 +177,21 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
 
 }
 
+#' Calculate rewards for a simulation based on marginal prices
+#'
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param hours vector of hours used to evaluate costs/rewards of pumping/generating
+#' @param possible_controls vector of controls evaluated
+#' @param T_max Max generating power
+#' @param P_max Max pumping power
+#' @param area_price Area used to evaluate marginal prices
+#' @param mcyears Vector of years used to evaluate rewards
+#' @param district_balance Name of district used to evaluate controls on the stock
+#' @param pump_eff Pumping efficiency
+#'
+#' @return a data.table {mcYear,week,u,reward}
+#' @export
 get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price,mcyears,
                              district_balance="water values district",pump_eff=1){
   hours <- unique(c(-hours, hours))
@@ -331,6 +355,18 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
 
 }
 
+#' Calculate rewards for a simulation based on marginal prices for a stock with only generating power
+#'
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param possible_controls vector of controls evaluated
+#' @param T_max Max generating power
+#' @param area_price Area used to evaluate marginal prices
+#' @param mcyears Vector of years used to evaluate rewards
+#' @param district_balance Name of district used to evaluate controls on the stock
+#'
+#' @return a data.table {mcYear,week,u,reward}
+#' @export
 get_local_reward_turb <- function(opts,possible_controls,T_max,area_price,mcyears,
                                   district_balance="water values district"){
   price <- readAntares(area=area_price,select=c("MRG. PRICE"),
@@ -397,6 +433,17 @@ get_local_reward_turb <- function(opts,possible_controls,T_max,area_price,mcyear
 
 }
 
+#' Modify local reward to take into account overall cost of the simulation
+#'
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param df_reward data.table computed by the function \code{get_local_reward}
+#' @param u0 Constraint value used in the simulation, NaN if none
+#' @param mcyears Vector of years used to evaluate rewards
+#' @param district_cost Name of district used to evaluate overall cost
+#'
+#' @return a data.table {mcYear,week,u,reward}
+#' @export
 reward_offset <- function(opts, df_reward, u0=NaN,mcyears,district_cost= "water values district"){
   cost <- antaresRead::readAntares(districts = district_cost, mcYears = mcyears,
                                    timeStep = "weekly", opts = opts, select=c("OV. COST")) %>%

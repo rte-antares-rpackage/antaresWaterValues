@@ -1,17 +1,10 @@
 #' Visualize mean grid layer
 #'
 #' @param Data Output from \code{Grid_Matrix}.
-#' @param filtre_ratio in [1,0]. Define the percent to keep from water values
-#' eliminating the rest (extreme negatives and positives).
-#' @param show_negative Boolean. true to show negative water values and
-#' False to delete them from the graph.
+#' @param filter_penalties Binary paramater. If T, show only watervalues inside rule curves
+#'
 #' @return a \code{ggplot} object
 #' @export
-#'
-#' @importFrom ggplot2 ggplot aes geom_tile theme_minimal labs
-#' @importFrom viridis scale_fill_viridis
-#'
-# @examples
 waterValuesViz <- function(Data, filter_penalties=FALSE) {
 
 

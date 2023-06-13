@@ -15,7 +15,11 @@ get_Reward(
   hours = 0:168,
   possible_controls = NULL,
   T_max,
-  P_max
+  P_max,
+  mcyears = "all",
+  area = NULL,
+  pump_eff = NULL,
+  district_balance = "water values district"
 )
 }
 \arguments{
@@ -31,6 +35,24 @@ get_Reward(
 \code{antaresRead::setSimulationPath}}
 
 \item{correct_monotony}{Binary argument (default to false). True to correct monotony of rewards.}
+
+\item{method_old}{If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices}
+
+\item{hours}{If method_old=F, vector of hours used to evaluate costs/rewards of pumping/generating}
+
+\item{possible_controls}{If method_old=F, vector of controls evaluated}
+
+\item{T_max}{Max generating power}
+
+\item{P_max}{Max pumping power}
+
+\item{mcyears}{Vector of years used to evaluate rewards}
+
+\item{area}{Area used to calculate watervalues}
+
+\item{pump_eff}{Pumping efficiency}
+
+\item{district_balance}{Name of district used to evaluate controls on the stock}
 }
 \value{
 a data.table {timeid,MCyear,simulation overall cost}

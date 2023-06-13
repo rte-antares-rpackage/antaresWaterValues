@@ -125,9 +125,15 @@ between two water values is less then this value those values are converged.}
 
 \item{correct_monotony_gain}{Binary argument (default to false). True to correct monotony of gains.}
 
-\item{penalty_low}{Penalty for violating the bottom rule curve, comparable to the unsupplied energy}
+\item{penalty_low}{Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost}
 
-\item{penalty_high}{Penalty for violating the top rule curve, comparable to the spilled energy}
+\item{penalty_high}{Penalty for violating the top rule curve, comparable to the spilled energy cost}
+
+\item{method_old_gain}{If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices}
+
+\item{hours_reward_calculation}{If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating}
+
+\item{controls_reward_calculation}{If method_old_gain=F, vector of controls evaluated}
 
 \item{...}{further arguments passed to or from other methods.}
 }

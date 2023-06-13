@@ -23,8 +23,8 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
                        district_name = "water values district",
                        opts = antaresRead::simOptions(), correct_monotony = FALSE,
                        method_old = TRUE, hours=0:168, possible_controls = NULL,
-                       T_max, P_max, mcyears = "all") {
-
+                       T_max, P_max, mcyears = "all",area=NULL,pump_eff=NULL,
+                       district_balance="water values district") {
   assertthat::assert_that(class(opts) == "simOptions")
   assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
   studyPath <- opts$studyPath
@@ -110,6 +110,9 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
     if(!is.null(simulation_res)) output$simulation_values <- simulation_res$simulation_values
 
   } else {
+    if(is.null(pump_eff)){
+      pump_eff <- getPumpEfficiency(area=area, opts = opts)
+    }
 
     if(is.null(possible_controls)){
       nb_hours <- length(hours)
@@ -122,11 +125,13 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
     {reward <- mapply(
       FUN = function(o,u) {
         if (P_max>0){
-          res <- get_local_reward(o,hours,possible_controls,T_max,P_max)
+          res <- get_local_reward(o,hours,possible_controls,T_max,P_max,area,mcyears,
+                                  district_balance,pump_eff)
         } else {
-          res <- get_local_reward_turb(o,possible_controls)
+          res <- get_local_reward_turb(o,possible_controls,T_max,area,mcyears,
+                                       district_balance)
         }
-        res <- reward_offset(o,res, u)
+        res <- reward_offset(o,res, u,mcyears,district_name)
         res
       },
       o = opts_o,
@@ -163,16 +168,19 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
 
 }
 
-get_local_reward <- function(opts,hours,possible_controls,T_max,P_max){
-
+get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price,mcyears,
+                             district_balance="water values district",pump_eff=1){
   hours <- unique(c(-hours, hours))
 
 
-  price <- readAntares(area=area,select=c("MRG. PRICE",
-                                          "BALANCE"),
+  price <- readAntares(area=area_price,select=c("MRG. PRICE"),
                        opts=opts,mcYears = mcyears) %>%
+    select(-c("day","month","hour","area","time")) %>%
+    left_join(readAntares(district=district_balance,select=c("BALANCE"),
+                          opts=opts,mcYears = mcyears),by=c("timeId","mcYear")) %>%
+    select(-c("day","month","hour","district","time")) %>%
     mutate(week=(timeId-1)%/%168+1,hour_in_week=if_else(timeId%%168>0,timeId%%168,168)) %>%
-    select(-c("area")) %>% rename(price=`MRG. PRICE`,balance=BALANCE)
+    rename(price=`MRG. PRICE`,balance=BALANCE)
 
 
   price_turb_more <- price %>%
@@ -199,7 +207,7 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max){
     drop_na()
 
   hour_turb_0 <- price_turb %>% group_by(mcYear,week) %>%
-    summarise(hour_turb_0=-min(hour_turb),.groups="drop")
+    summarise(hour_turb_0=-round(min(hour_turb),5),.groups="drop")
 
   hour_turb <- data.frame(expand_grid(mcYear=mcyears,week=1:52,hour_turb=hours)) %>%
     rbind(select(mutate(hour_turb_0,hour_turb=round(-hour_turb_0,5)),-c(hour_turb_0))) %>%
@@ -247,7 +255,7 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max){
     drop_na()
 
   hour_pump_0 <- price_pump_int %>% group_by(mcYear,week) %>%
-    summarise(hour_pump_0=-min(hour_pump_inf),.groups="drop")
+    summarise(hour_pump_0=-round(min(hour_pump_inf),5),.groups="drop")
 
   hour_pump <- data.frame(expand_grid(mcYear=mcyears,week=1:52,hour_pump=hours)) %>%
     rbind(select(mutate(hour_pump_0,hour_pump=round(-hour_pump_0,5)),-c(hour_pump_0))) %>%
@@ -323,11 +331,16 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max){
 
 }
 
-get_local_reward_turb <- function(opts,possible_controls){
-  price <- readAntares(area=area,select=c("MRG. PRICE",
-                                          "BALANCE"),opts=opts,mcYears = mcyears) %>%
+get_local_reward_turb <- function(opts,possible_controls,T_max,area_price,mcyears,
+                                  district_balance="water values district"){
+  price <- readAntares(area=area_price,select=c("MRG. PRICE"),
+                        opts=opts,mcYears = mcyears) %>%
+    select(-c("day","month","hour","area","time")) %>%
+    left_join(readAntares(district=district_balance,select=c("BALANCE"),
+                          opts=opts,mcYears = mcyears),by=c("timeId","mcYear")) %>%
+    select(-c("day","month","hour","district","time")) %>%
     mutate(week=(timeId-1)%/%168+1,hour_in_week=if_else(timeId%%168>0,timeId%%168,168)) %>%
-    select(-c("area")) %>% rename(price=`MRG. PRICE`,balance=BALANCE)
+    rename(price=`MRG. PRICE`,balance=BALANCE)
 
 
   price_turb_more <- price %>%
@@ -384,8 +397,8 @@ get_local_reward_turb <- function(opts,possible_controls){
 
 }
 
-reward_offset <- function(opts, df_reward, u0=NaN){
-  cost <- antaresRead::readAntares(districts = "water values district", mcYears = mcyears,
+reward_offset <- function(opts, df_reward, u0=NaN,mcyears,district_cost= "water values district"){
+  cost <- antaresRead::readAntares(districts = district_cost, mcYears = mcyears,
                                    timeStep = "weekly", opts = opts, select=c("OV. COST")) %>%
     rename(week=timeId,ov_cost='OV. COST') %>%
     select(mcYear,week,ov_cost) %>%

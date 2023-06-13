@@ -203,10 +203,11 @@
 
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,
-                           method_old = method_old_gain,P_max=P_max,T_max=E_max,
+                           method_old = method_old_gain,P_max=P_max/168,T_max=E_max/168,
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
-                           simulation_res = simulation_res, mcyears=mcyears)
+                           simulation_res = simulation_res, mcyears=mcyears,area=area,
+                           district_balance=district_name)
       decision_space <- reward_db$simulation_values
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward

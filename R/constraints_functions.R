@@ -53,12 +53,12 @@ simulation_names_values <- function(area,simulation_name,nb_disc_stock,
 #' @importFrom antaresEditObject editBindingConstraint
 #' @export
 
-disable_constraint <- function(constraint_value,name_bc,pumping=F,opts){
+disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL){
 
-  opts <- antaresEditObject::editBindingConstraint(name = name_bc, opts = opts,enabled = FALSE)
-  opts <- antaresEditObject::editBindingConstraint(name = "Turb", opts = opts,enabled = FALSE)
+  opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
+  opts <- antaresEditObject::removeBindingConstraint(name = paste0("Turb",area), opts = opts)
   if(pumping){
-    opts <- antaresEditObject::editBindingConstraint(name = "Pump", opts = opts,enabled = FALSE)
+    opts <- antaresEditObject::removeBindingConstraint(name = paste0("Pump",area), opts = opts)
   }
   return(opts)
 }
@@ -81,13 +81,13 @@ disable_constraint <- function(constraint_value,name_bc,pumping=F,opts){
 #' @export
 
 
-generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts){
+generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts,area=NULL){
 
 
   if(length(coeff)==2){
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name = "Turb",
+      name =  paste0("Turb",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = coeff[2],
@@ -107,11 +107,10 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       opts = opts)
   }else{
 
-
     # Implement the flow sens in the study Pumping
 
     opts <- antaresEditObject::createBindingConstraint(
-      name = "Pump",
+      name = paste0("Pump",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = -coeff[3],
@@ -123,7 +122,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
     # Implement the flow sens in the study Turbining
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name = "Turb",
+      name = paste0("Turb",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = coeff[2],

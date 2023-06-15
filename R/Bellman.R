@@ -54,7 +54,7 @@
     states_next <- Data_week$states_next[[1]]
     states_next <- unlist(states_next, use.names = FALSE)
 
-    f_reward_year <- get_reward_interpolation(Data_week,decision_space,mcyears)
+    f_reward_year <- get_reward_interpolation(Data_week)
 
     f_next_value <- get_bellman_values_interpolation(Data_week,next_week_values_l,mcyears)
 

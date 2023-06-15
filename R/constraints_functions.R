@@ -104,7 +104,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(less = rep(constraint_value, times = 366)),
+      values = data.frame(less = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "less",
@@ -143,7 +143,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(equal = rep(constraint_value, times = 366)),
+      values = data.frame(equal = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
@@ -184,12 +184,31 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
 
 
-  max_hydro <- get_max_hydro(area,opts)
+  max_hydro <- get_max_hydro(area,opts,timeStep = "weekly")
   res_cap <- get_reservoir_capacity(area,opts)
-  max_app <- max( antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage)
-  maxi <- min(max_hydro$turb,res_cap+max_app)
-  mini <- -max_hydro$pump*pumping_efficiency
+  max_app <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly") %>%
+    group_by(timeId) %>%
+    summarise(max_app=max(hydroStorage))
+  max_hydro <- left_join(max_hydro,max_app,by=c("timeId"))
 
+  weeks <- distinct(max_hydro,timeId)$timeId
+  df_constraint <- data.frame(week=weeks)
+  df_constraint$u <- sapply(df_constraint$week,
+                            FUN = function(w) constraint_week(pumping,pumping_efficiency,nb_disc_stock,res_cap,filter(max_hydro,timeId==w)),
+                            simplify = F)
+
+  df_constraint <- tidyr::unnest_wider(df_constraint,u,names_sep = "_")
+  df_constraint <- df_constraint %>%
+    tidyr::pivot_longer(cols=2:length(df_constraint),names_to="sim",values_to="u") %>%
+    arrange(week,u)
+
+  return(df_constraint)
+}
+
+
+constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro){
+  maxi <- min(hydro$turb,res_cap+hydro$max_app)
+  mini <- -hydro$pump*pumping_efficiency
 
   if(pumping){
     assertthat::assert_that(nb_disc_stock>=3)
@@ -221,12 +240,8 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
     constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
     constraint_values <- round(constraint_values)
   }
-
   return(constraint_values)
 }
-
-
-
 
 generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = simOptions()){
 

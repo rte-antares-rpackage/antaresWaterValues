@@ -7,7 +7,7 @@
 get_local_reward_turb(
   opts,
   possible_controls,
-  T_max,
+  max_hydro,
   area_price,
   mcyears,
   district_balance = "water values district"
@@ -17,9 +17,9 @@ get_local_reward_turb(
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
-\item{possible_controls}{vector of controls evaluated}
+\item{possible_controls}{data.frame {week,u} of controls evaluated per week}
 
-\item{T_max}{Max generating power}
+\item{max_hydro}{data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values}
 
 \item{area_price}{Area used to evaluate marginal prices}
 

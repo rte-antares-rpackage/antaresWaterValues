@@ -54,6 +54,7 @@
 #' @param method_old_gain If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices
 #' @param hours_reward_calculation If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating
 #' @param controls_reward_calculation If method_old_gain=F, vector of controls evaluated
+#' @param simulation_res
 #'
 #' @return a \code{data.table}
 #' @export
@@ -67,7 +68,8 @@
 #'
 
 
-  Grid_Matrix <- function(area, simulation_names,reward_db=NULL,inflow=NULL,
+  Grid_Matrix <- function(area, simulation_names,
+                          simulation_res=NULL,reward_db=NULL,inflow=NULL,
                              simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,
                              week_53 = 0,
@@ -101,7 +103,6 @@
 
   #----- shiny Loader
 
-
   methods <- c("mean-grid","grid-mean","quantile")
   if (!method %in% methods){
     stop("Unknown method. available methods: ('mean-grid','grid-mean','quantile') ")
@@ -111,12 +112,6 @@
 
   # Number of weeks
   n_week <- 52
-
-  # max hydro
-  max_hydro <- get_max_hydro(area)
-  E_max <-max_hydro$turb
-  P_max <- max_hydro$pump
-
 
   if(is.null(reward_db)){
     if(!is.null(simulation_names)){
@@ -167,9 +162,6 @@
   {
     efficiency <- getPumpEfficiency(area = area,opts = opts)
   }
-  decision_space <- simulation_values
-  # decision_space <- unlist(lapply(decision_space,FUN = function(x) efficiency_effect(x,efficiency)))
-  decision_space <- round(decision_space)
 
   decimals <- 6
   {
@@ -188,27 +180,37 @@
 
   options("antares" = opts)
 
+  # max hydro
+  max_hydro <- get_max_hydro(area,timeStep = "hourly")
+  E_max <-max_hydro$turb
+  P_max <- max_hydro$pump
+
   # Reward
   {
     if(is.null(reward_db))
     {
       if(is.null(controls_reward_calculation)){
-        controls_reward_calculation <- seq(min(simulation_values),
-                                           max(simulation_values),
-                                           (max(simulation_values)-min(simulation_values))%/%10)
+        controls_reward_calculation <- constraint_generator(area=area,nb_disc_stock=10,
+                                                            pumping=pumping,
+                                                            pumping_efficiency=efficiency,
+                                                            opts=opts)
       }
 
-      controls_reward_calculation <- unique(c(simulation_values,controls_reward_calculation))
+      controls_reward_calculation <- rbind(simulation_values,controls_reward_calculation) %>%
+        select(week,u) %>%
+        distinct() %>%
+        arrange(week,u)
 
 
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,
-                           method_old = method_old_gain,P_max=P_max/168,T_max=E_max/168,
+                           method_old = method_old_gain,max_hydro=max_hydro,
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
                            simulation_res = simulation_res, mcyears=mcyears,area=area,
                            district_balance=district_name)
-      decision_space <- reward_db$simulation_values
+
+      decision_space <- reward_db$simulation_values[,c("week","u")]
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward
     }
@@ -251,12 +253,7 @@
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
 
   #add reward
-  col_names <- make.names(colnames(reward_db))
-  setnames(reward_db,col_names)
-  reward_l <- reward_db[, list(reward_db = list(unlist(.SD))), .SDcols =col_names[c(-1,-2)], by = list(weeks = timeId, years = mcYear)]
-
-
-  watervalues <- dplyr::left_join(x = watervalues, y = reward_l, by = c("weeks","years"))
+  watervalues <- dplyr::nest_join(x = watervalues, y = reward_db, by = c("weeks"="timeId","years"="mcYear"))
 
 
   #at this point we added the rewards for each weekly_amount
@@ -271,7 +268,10 @@
   watervalues$transition_reward <- NA_real_
   watervalues$next_bellman_value <- NA_real_
 
-
+  # max hydro
+  max_hydro <- get_max_hydro(area,timeStep = "weekly")
+  E_max <-max_hydro$turb
+  P_max <- max_hydro$pump
 
 
 
@@ -282,7 +282,6 @@
   niveau_max = niveau_max
   max_mcyear <- length(mcyears)
   counter <- 0
-  if(!pumping)P_max <- 0
 
   }
 
@@ -308,9 +307,9 @@
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=decision_space,
-                        E_max=E_max,
-                        P_max=P_max,
+                        decision_space=sort(filter(decision_space,week==i)$u),
+                        E_max=E_max[i],
+                        P_max=P_max[i],
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
@@ -406,28 +405,21 @@
 
         temp <- watervalues[weeks==i]
 
-        if(i==1){
-          prev_level_high <- watervalues[weeks==52,]$level_high[1]
-          prev_level_low <- watervalues[weeks==52,]$level_low[1]
-        }else{
-          prev_level_high <- watervalues[weeks==i-1,]$level_high[1]
-          prev_level_low <- watervalues[weeks==i-1,]$level_low[1]
-        }
-
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=decision_space,
-                        E_max=E_max,
-                        P_max=P_max,
+                        decision_space=sort(filter(decision_space,week==i)$u),
+                        E_max=E_max[i],
+                        P_max=P_max[i],
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
                         q_ratio= q_ratio,
                         correct_outliers = correct_outliers,
                         counter = i,
+                        niveau_max=niveau_max,
+                        stop_rate=stop_rate,
                         penalty_level_low=penalty_low,
-                        penalty_level_high=penalty_high,
-                        stop_rate=stop_rate)
+                        penalty_level_high=penalty_high)
 
         if(shiny&n_cycl==1&i==52){
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")

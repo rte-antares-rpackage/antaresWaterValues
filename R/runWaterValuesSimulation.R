@@ -107,7 +107,6 @@ runWaterValuesSimulation <- function(area,
   thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
 
   # Get max hydro power that can be generated in a week
-
   constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
                                             pumping=pumping,
                                             pumping_efficiency = efficiency,
@@ -133,7 +132,7 @@ runWaterValuesSimulation <- function(area,
     opts = opts,
     link_from = link_from,
     pumping=pumping,
-    max_load=max(abs(constraint_values))*10
+    max_load=max(abs(constraint_values$u))*10
   )
 
 
@@ -155,48 +154,42 @@ runWaterValuesSimulation <- function(area,
 
   # Start the simulations
 
-  simulation_names <- vector(mode = "character", length = length(constraint_values))
+  simulation_names <- vector(mode = "character", length = length(constraint_values)/nb_disc_stock)
 
 
 
-  for (i in constraint_values) {
-
+  for (i in 1:nb_disc_stock) {
+    browser()
     # Prepare simulation parameters
     name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
-    constraint_value <- round(i  / 7)
+    constraint_value <- constraint_values$u[seq.int(i,nrow(constraint_values),nb_disc_stock)]/7
 
 
     # Implement binding constraint
 
     generate_constraints(constraint_value,coeff,name_bc,efficiency,opts)
 
-
-
-
-    iii <- which(num_equal(i, constraint_values))
-    ii <- round(i/1000)
-
     message("#  ------------------------------------------------------------------------")
-    message(paste0("Running simulation: ", iii, " - ", sprintf(simulation_name, format(ii, decimal.mark = ","))))
+    message(paste0("Running simulation: ", i, " - ", sprintf(simulation_name, format(i, decimal.mark = ","))))
     message("#  ------------------------------------------------------------------------")
     # run the simulation
     if(launch_simulations){
       antaresEditObject::runSimulation(
-        name = sprintf(simulation_name, format(ii, decimal.mark = ",")),
+        name = sprintf(simulation_name, format(i, decimal.mark = ",")),
         mode = "economy",
         wait = wait,
         path_solver = path_solver,
         show_output_on_console = show_output_on_console,
         opts = opts
       )}
-    simulation_names[which(constraint_values == i)] <- sprintf(simulation_name, format(ii, decimal.mark = ","))
+    simulation_names[i] <- sprintf(simulation_name, format(i, decimal.mark = ","))
 
     #remove the Binding Constraints
 
     disable_constraint(constraint_value,name_bc,pumping,opts)
 
     #Simulation Control
-    sim_name <-  sprintf(simulation_name, format(ii, decimal.mark = ","))
+    sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
     sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
     sim_check <- paste0(opts$studyPath,"/output")
     sim_check <- paste(sim_check,sim_name,sep="/")

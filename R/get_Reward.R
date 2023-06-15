@@ -11,15 +11,14 @@
 #' @param correct_monotony Binary argument (default to false). True to correct monotony of rewards.
 #' @param method_old If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices
 #' @param hours If method_old=F, vector of hours used to evaluate costs/rewards of pumping/generating
-#' @param possible_controls If method_old=F, vector of controls evaluated
-#' @param T_max Max generating power
-#' @param P_max Max pumping power
+#' @param possible_controls If method_old=F, data.frame {week,u} of controls evaluated per week
 #' @param mcyears Vector of years used to evaluate rewards
 #' @param area Area used to calculate watervalues
 #' @param pump_eff Pumping efficiency
 #' @param district_balance Name of district used to evaluate controls on the stock
+#' @param max_hydro data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values
 #'
-#' @return a data.table {timeid,MCyear,simulation overall cost}
+#' @return list containing a data.table {timeid,MCyear,simulation overall cost}, list of simulations names and list of simulations values
 #' @export
 #' @import data.table
 #' @importFrom assertthat assert_that
@@ -32,7 +31,7 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
                        district_name = "water values district",
                        opts = antaresRead::simOptions(), correct_monotony = FALSE,
                        method_old = TRUE, hours=0:168, possible_controls = NULL,
-                       T_max, P_max, mcyears = "all",area=NULL,pump_eff=NULL,
+                       max_hydro, mcyears = "all",area=NULL,pump_eff=NULL,
                        district_balance="water values district") {
   assertthat::assert_that(class(opts) == "simOptions")
   assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
@@ -75,41 +74,41 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
 
     reward <- rbindlist(reward)   #merge the all simulations tables together
 
+    decisions <- simulation_res$simulation_values %>%
+      mutate(sim=as.double(str_extract(sim, "\\d+$")))
+
+    reward <- reward %>%
+      mutate(sim=as.double(str_extract(simulation, "\\d+$"))) %>%
+      left_join(decisions,by=c("sim","timeId"="week")) %>%
+      rename(reward=`OV. COST`,control=u)
+
     if (correct_monotony){
       cost <- reward
-      cost$control <- cost$simulation %>%
-        str_extract("\\-?\\d+$") %>% as.double()
-      U <- cost %>% select(control) %>% distinct()
-      cost <- cost %>% mutate(min_previous_reward=`OV. COST`) %>%
+      U <- cost %>% select(control) %>% distinct() %>% arrange()
+      cost <- cost %>% mutate(min_previous_reward=reward) %>%
         arrange(mcYear, timeId, control)
       for (u in U$control){
         cost[cost$control==u,'min_previous_reward'] <- cost %>% filter(control<=u) %>%
           group_by(mcYear, timeId) %>%
-          mutate(min_previous_reward = min(`OV. COST`)) %>%
+          mutate(min_previous_reward = min(reward)) %>%
           ungroup %>%
           filter(control==u) %>%
           select(min_previous_reward)
       }
 
-      cost <- cost %>% select(timeId,mcYear,simulation,min_previous_reward) %>%
-        rename(`OV. COST` = min_previous_reward)
+      cost <- cost %>% select(-c(reward)) %>%
+        rename(reward = min_previous_reward)
 
-      reward <- cost[,c("timeId","mcYear","OV. COST","simulation")]
+      reward <- cost[,c("timeId","mcYear","reward","simulation","sim","control")]
     }
 
-    reward <- dcast(reward, timeId + mcYear ~ simulation, value.var = "OV. COST")
-    vars <- colnames(reward)[3:length(reward)]
-    setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
+    reward <- filter(reward,control==0) %>% select(mcYear,timeId,reward) %>%
+      right_join(reward,by=c("mcYear","timeId"),suffix=c("_0","")) %>%
+      mutate(reward=reward_0-reward) %>%
+      select(-c(reward_0,simulation,sim))
+    reward <- as.data.table(reward)
 
 
-    ind <- which(endsWith(vars,"_0"))
-
-    reward <- reward[
-      , (vars) := lapply(.SD, FUN = function(x) {
-        get(vars[ind]) - x
-      }),
-      .SDcols = vars
-    ]
 
     options("antares" = opts)
 
@@ -123,28 +122,37 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
       pump_eff <- getPumpEfficiency(area=area, opts = opts)
     }
 
+    max_hydro <- rename(max_hydro,P_max=pump,T_max=turb)
+
     if(is.null(possible_controls)){
       nb_hours <- length(hours)
-      possible_controls <- data.frame(h=1:(2*nb_hours-1)) %>%
-      mutate(i=if_else(h>nb_hours,2*nb_hours-h,h)) %>%
-      mutate(u=if_else(h>nb_hours,T_max*(168-hours[i]),P_max*(hours[i]-168)*pump_eff)) %>%
-      pull(u)
+      possible_controls <- data.frame(expand.grid(h=1:(2*nb_hours-1),week=1:52)) %>%
+        left_join(get_max_hydro(area,opts,"weekly"),by=c("week"="timeId")) %>%
+        mutate(i=if_else(h>nb_hours,2*nb_hours-h,h)) %>%
+        mutate(u=if_else(h>nb_hours,T_max/168*(168-hours[i]),P_max/168*(hours[i]-168)*pump_eff)) %>%
+        select(week,u)
     }
 
+    u <- simulation_res$simulation_values %>%
+      mutate(sim=as.double(str_extract(sim,"\\d+$"))) %>%
+      arrange(sim) %>%
+      pivot_wider(names_from=sim,values_from=u) %>%
+      arrange(week) %>%
+      select(-c(week))
     {reward <- mapply(
       FUN = function(o,u) {
-        if (P_max>0){
-          res <- get_local_reward(o,hours,possible_controls,T_max,P_max,area,mcyears,
+        if (min(max_hydro$P_max)>0){
+          res <- get_local_reward(o,hours,possible_controls,max_hydro,area,mcyears,
                                   district_balance,pump_eff)
         } else {
-          res <- get_local_reward_turb(o,possible_controls,T_max,area,mcyears,
+          res <- get_local_reward_turb(o,possible_controls,max_hydro,area,mcyears,
                                        district_balance)
         }
         res <- reward_offset(o,res, u,mcyears,district_name)
         res
       },
       o = opts_o,
-      u = simulation_res$simulation_values,
+      u = u,
       SIMPLIFY = F
     )}
 
@@ -157,17 +165,15 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
     reward <- filter(reward,u==0) %>% select(mcYear,week,reward) %>%
       right_join(reward,by=c("mcYear","week"),suffix=c("_0","")) %>%
       mutate(reward=reward-reward_0) %>%
-      mutate(control=str_replace(as.character(round(u/1000)),"-",".")) %>%
-      rename(timeId=week) %>%
-      select(-c(u,reward_0)) %>%
-      pivot_wider(names_from = control, values_from = reward)
+      rename(timeId=week,control=u) %>%
+      select(-c(reward_0))
     reward <- as.data.table(reward)
 
     options("antares" = opts)
 
     output <- list()
     output$reward <- reward
-    output$simulation_names <- colnames(reward)[3:length(reward)]
+    output$simulation_names <- simulation_names
     output$simulation_values <- possible_controls
   }
 
@@ -182,17 +188,16 @@ get_Reward <- function(simulation_res = NULL,simulation_names=NULL, pattern = NU
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param hours vector of hours used to evaluate costs/rewards of pumping/generating
-#' @param possible_controls vector of controls evaluated
-#' @param T_max Max generating power
-#' @param P_max Max pumping power
+#' @param possible_controls data.frame {week,u} of controls evaluated per week
 #' @param area_price Area used to evaluate marginal prices
 #' @param mcyears Vector of years used to evaluate rewards
 #' @param district_balance Name of district used to evaluate controls on the stock
 #' @param pump_eff Pumping efficiency
+#' @param max_hydro data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values
 #'
 #' @return a data.table {mcYear,week,u,reward}
 #' @export
-get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price,mcyears,
+get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,mcyears,
                              district_balance="water values district",pump_eff=1){
   hours <- unique(c(-hours, hours))
 
@@ -209,12 +214,15 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
 
   price_turb_more <- price %>%
     group_by(mcYear,week) %>% arrange(desc(price),balance) %>%
+    left_join(max_hydro,by=c("timeId")) %>%
     mutate(reward_turb=cumsum(price*if_else(balance<0,(T_max+balance),T_max)),
            vol_turb=cumsum(if_else(balance<0,(T_max+balance),T_max)),
            hour_turb=vol_turb/T_max) %>%
     select(mcYear,week,hour_turb,reward_turb) %>% ungroup()
   price_turb_less <- price %>%
-    group_by(mcYear,week) %>% arrange(price,desc(balance)) %>%
+    group_by(mcYear,week) %>%
+    left_join(max_hydro,by=c("timeId")) %>%
+    arrange(price,desc(balance)) %>%
     mutate(reward_turb=cumsum(price*if_else(balance<0,balance,0)),
            vol_turb=cumsum(if_else(balance<0,balance,0)),
            hour_turb=vol_turb/T_max) %>%
@@ -256,13 +264,17 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
     tidyr::drop_na()
 
   price_pump_more <- price %>%
-    group_by(mcYear,week) %>% arrange(price,desc(balance)) %>%
+    group_by(mcYear,week) %>%
+    left_join(max_hydro,by=c("timeId")) %>%
+    arrange(price,desc(balance)) %>%
     mutate(cost_pump=cumsum(price*if_else(balance>0,(P_max-balance),P_max)),
            vol_pump=cumsum(if_else(balance>0,(P_max-balance),P_max)),
            hour_pump=vol_pump/P_max) %>%
     select(mcYear,week,hour_pump,cost_pump) %>% ungroup()
   price_pump_less <- price %>%
-    group_by(mcYear,week) %>% arrange(desc(price),balance) %>%
+    group_by(mcYear,week) %>%
+    left_join(max_hydro,by=c("timeId")) %>%
+    arrange(desc(price),balance) %>%
     mutate(cost_pump=cumsum(price*if_else(balance>0,-balance,0)),
            vol_pump=cumsum(if_else(balance>0,-balance,0)),
            hour_pump=vol_pump/P_max) %>%
@@ -303,8 +315,13 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
     select(-c(hour_pump,cost_pump)) %>%
     tidyr::drop_na()
 
+  max_hydro <- max_hydro %>%
+    mutate(week=(timeId-1)%/%168+1) %>%
+    group_by(week) %>%
+    summarise(P_max=mean(P_max),T_max=mean(T_max),.groups = "drop")
 
-  df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,week=1:52,u=possible_controls)) %>%
+  df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,possible_controls)) %>%
+    left_join(max_hydro,by=c("week")) %>%
     left_join(hour_turb_0,by=c("mcYear","week")) %>%
     left_join(hour_pump_0,by=c("mcYear","week"))
 
@@ -359,15 +376,15 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
 #'
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @param possible_controls vector of controls evaluated
-#' @param T_max Max generating power
+#' @param possible_controls data.frame {week,u} of controls evaluated per week
 #' @param area_price Area used to evaluate marginal prices
 #' @param mcyears Vector of years used to evaluate rewards
 #' @param district_balance Name of district used to evaluate controls on the stock
+#' @param max_hydro data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values
 #'
 #' @return a data.table {mcYear,week,u,reward}
 #' @export
-get_local_reward_turb <- function(opts,possible_controls,T_max,area_price,mcyears,
+get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mcyears,
                                   district_balance="water values district"){
   price <- readAntares(area=area_price,select=c("MRG. PRICE"),
                         opts=opts,mcYears = mcyears) %>%
@@ -380,13 +397,17 @@ get_local_reward_turb <- function(opts,possible_controls,T_max,area_price,mcyear
 
 
   price_turb_more <- price %>%
-    group_by(mcYear,week) %>% arrange(desc(price),balance) %>%
+    group_by(mcYear,week) %>%
+    left_join(max_hydro,by=c("timeId")) %>%
+    arrange(desc(price),balance) %>%
     mutate(reward_turb=cumsum(price*if_else(balance<0,(T_max+balance),T_max)),
            vol_turb=cumsum(if_else(balance<0,(T_max+balance),T_max)),
            hour_turb=vol_turb/T_max) %>%
     select(mcYear,week,hour_turb,reward_turb) %>% ungroup()
   price_turb_less <- price %>%
-    group_by(mcYear,week) %>% arrange(price,desc(balance)) %>%
+    group_by(mcYear,week) %>%
+    left_join(max_hydro,by=c("timeId")) %>%
+    arrange(price,desc(balance)) %>%
     mutate(reward_turb=cumsum(price*if_else(balance<0,balance,0)),
            vol_turb=cumsum(if_else(balance<0,balance,0)),
            hour_turb=vol_turb/T_max) %>%
@@ -413,7 +434,8 @@ get_local_reward_turb <- function(opts,possible_controls,T_max,area_price,mcyear
   #                         reward_turb_inf)) %>%
   #   select(-c(hour_turb_inf,hour_turb_sup,reward_turb_inf,reward_turb_sup))
 
-  df_reward <- data.frame(expand_grid(mcYear=mcyears,week=1:52,u=possible_controls)) %>%
+  df_reward <- data.frame(expand_grid(mcYear=mcyears,possible_controls)) %>%
+    left_join(max_hydro,by=c("week"="timeId")) %>%
     left_join(hour_turb_0,by=c("mcYear","week"))
 
   df_reward <- df_reward %>%
@@ -438,25 +460,28 @@ get_local_reward_turb <- function(opts,possible_controls,T_max,area_price,mcyear
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param df_reward data.table computed by the function \code{get_local_reward}
-#' @param u0 Constraint value used in the simulation, NaN if none
+#' @param u0 Constraint values per week used in the simulation, empty list if none
 #' @param mcyears Vector of years used to evaluate rewards
 #' @param district_cost Name of district used to evaluate overall cost
 #'
 #' @return a data.table {mcYear,week,u,reward}
 #' @export
-reward_offset <- function(opts, df_reward, u0=NaN,mcyears,district_cost= "water values district"){
+reward_offset <- function(opts, df_reward, u0=c(),mcyears,district_cost= "water values district"){
   cost <- antaresRead::readAntares(districts = district_cost, mcYears = mcyears,
                                    timeStep = "weekly", opts = opts, select=c("OV. COST")) %>%
     rename(week=timeId,ov_cost='OV. COST') %>%
     select(mcYear,week,ov_cost) %>%
     as.data.frame()
-  if (!is.na(u0)){
+  if (length(u0)>0){
+    u0 <- data.frame(week=1:52,u0=u0)
+    df_reward <- df_reward %>%
+      left_join(u0,by=c("week"))
     df_reward <- df_reward %>%
       left_join(select(filter(df_reward,u==u0),
                        mcYear,week,reward),
                 by=c("mcYear","week"),suffix=c("","_0")) %>%
       mutate(reward = reward-reward_0) %>%
-      select(-c(reward_0))
+      select(-c(reward_0,u0))
   }
   df_reward <- df_reward %>%
     left_join(cost,by=c("mcYear","week")) %>%

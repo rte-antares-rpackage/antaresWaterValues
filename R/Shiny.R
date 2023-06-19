@@ -72,15 +72,15 @@ ui <- fluidPage(
                  shiny_iconlink() %>%
                    bs_embed_popover(title = "The area concerned by the simulation.")),
 
-             pickerInput("remove_areas",
-                         "choose the areas to eliminate from result calculation",
-                         opts$areaList,
-                         options = list(
-                           `live-search` = TRUE),
-                         multiple = TRUE)%>%
-               shinyInput_label_embed(
-                 shiny_iconlink() %>%
-                   bs_embed_popover(title = "area(s) to remove from the created district.")),
+             # pickerInput("remove_areas",
+             #             "choose the areas to eliminate from result calculation",
+             #             opts$areaList,
+             #             options = list(
+             #               `live-search` = TRUE),
+             #             multiple = TRUE)%>%
+             #   shinyInput_label_embed(
+             #     shiny_iconlink() %>%
+             #       bs_embed_popover(title = "area(s) to remove from the created district.")),
 
              textInput("solver_path","Solver path "
                        ,value="xxxxxxx/bin/antares-8.0-solver.exe"),
@@ -100,11 +100,19 @@ ui <- fluidPage(
                  shiny_iconlink() %>%
                    bs_embed_popover(title ="Take into account the pumping in the area.")),
 
+             materialSwitch("reduce","Use reduced number of simulations",
+                            value=F,status = "success")%>%
+               shinyInput_label_embed(
+                 shiny_iconlink() %>%
+                   bs_embed_popover(title ="If used, only 2 or 3 simulations will be run, should be used with interpolation when calculating watervalues")),
 
-             numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
-                          min=1),
-             shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
-                                "bottom"),
+
+             conditionalPanel(
+               condition="!input.reduce",
+               numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
+                            min=1),
+               shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
+                                  "bottom")),
 
              sliderInput("sim_mcyears",label="choose the number of MC years to simulate",min=1,
                          max=opts$parameters$general$nbyears,
@@ -947,20 +955,21 @@ server <- function(input, output, session) {
                      simulation_res <-    runWaterValuesSimulation(
                      area=input$sim_area,
                      simulation_name = input$sim_simulation_name,
-                     nb_disc_stock = input$sim_nb_disc_stock,
+                     nb_disc_stock = if(!input.reduce){input$sim_nb_disc_stock},
                      nb_mcyears = seq(from = input$sim_mcyears[1], to = input$sim_mcyears[2]),
                      path_solver =input$solver_path,
                      binding_constraint = input$sim_binding_constraint,
                      fictive_area = input$sim_fictive_area,
                      thermal_cluster = input$sim_thermal_cluster,
-                     remove_areas=input$remove_areas,
+                     # remove_areas=input$remove_areas,
                      overwrite = T,
                      link_from=input$link_from,
                      opts = opts,
                      shiny=T,
                      otp_dest=input$sim_output_dir,
                      file_name=input$file_name,
-                     pumping = input$pumping)},prefix = "")},print_cat = F,
+                     pumping = input$pumping,
+                     reduce_number_simulations = input$reduce)},prefix = "")},print_cat = F,
                   message = F, warning = silent))
 
 
@@ -1024,13 +1033,9 @@ server <- function(input, output, session) {
     output$calculated_controls <- renderTable({
       data.frame(From=c("Simulation","Calculated controls","Union"),
                  Controls=c(toString(simulation_res()$simulation_values),
-                            toString(round(seq(min(simulation_res()$simulation_values),
-                                     max(simulation_res()$simulation_values),
-                                     length.out=input$controls))),
+                            toString(constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal)),
                             toString(sort(unique(c(simulation_res()$simulation_values,
-                                            round(seq(min(simulation_res()$simulation_values),
-                                                      max(simulation_res()$simulation_values),
-                                                      length.out=input$controls)))))))) %>%
+                                                   constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal))))))) %>%
         mutate(Total=lengths(strsplit(Controls, ",\\s*")))
 
     })
@@ -1044,6 +1049,7 @@ server <- function(input, output, session) {
         area = input$Area,
         simulation_names = simulation_res()$simulation_names,
         simulation_values = simulation_res()$simulation_values,
+        simulation_res = simulation_res(),
         reward_db = reward_db(),
         inflow = inflow(),
         nb_cycle = input$nb_cycle,
@@ -1069,9 +1075,7 @@ server <- function(input, output, session) {
         penalty_high = input$penalty_high,
         method_old_gain = !input$smart_interpolation_reward,
         hours_reward_calculation = if(input$smart_interpolation_reward){round(seq(0,168,length.out=input$hours))},
-        controls_reward_calculation = if(input$smart_interpolation_reward){seq(min(simulation_res()$simulation_values),
-                                                                               max(simulation_res()$simulation_values),
-                                                                               length.out=input$controls)}
+        controls_reward_calculation = if(input$smart_interpolation_reward){constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal)}
         )$aggregated_results
 
       isolate(rv$results <- results)

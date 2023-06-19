@@ -26,20 +26,20 @@ runWaterValuesSimulation(
   efficiency = NULL,
   launch_simulations = T,
   reset_hydro = T,
+  reduce_number_simulations = F,
   ...
 )
 }
 \arguments{
-\item{area}{The area concerned by the simulation.}
+\item{area}{area}
 
-\item{simulation_name}{The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.}
+\item{simulation_name}{character}
 
-\item{nb_disc_stock}{Number of simulation to launch, a vector of energy constraint
-will be created from maximum pumping power to the hydro storage maximum and of length this parameter.}
+\item{nb_disc_stock}{integer}
 
-\item{nb_mcyears}{Number of Monte Carlo years to simulate or a vector of years indexes to launch.}
+\item{nb_mcyears}{list}
 
-\item{binding_constraint}{Name of the binding constraint.}
+\item{binding_constraint}{character}
 
 \item{fictive_area}{Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.}
 
@@ -74,6 +74,8 @@ will be created from maximum pumping power to the hydro storage maximum and of l
 \item{launch_simulations}{Boolean. True to to run the simulations.}
 
 \item{reset_hydro}{Boolean. True to reset hydro inflow to 0 before the simulation.}
+
+\item{reduce_number_simulations}{T if you want to generate only 2 or 3 simulations (depending if there is pumping or not) that are then used in interpolation mode}
 
 \item{...}{further arguments passed to or from other methods.}
 }

@@ -68,6 +68,7 @@
 
 
   Grid_Matrix <- function(area, simulation_names,reward_db=NULL,inflow=NULL,
+                          simulation_res=NULL,
                              simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,
                              week_53 = 0,

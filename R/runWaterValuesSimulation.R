@@ -8,6 +8,7 @@
 #' @param binding_constraint Name of the binding constraint.
 #  constraint_values Vector of energy constraints on the link between the area and the fictive area.
 #' @param fictive_area Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
+#'
 #' @param thermal_cluster Name of the thermal cluster to create, argument passed to \code{\link{setupWaterValuesSimulation}}.
 #' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param wait Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
@@ -27,6 +28,12 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param ... further arguments passed to or from other methods.
+#' @param area area
+#' @param simulation_name character
+#' @param nb_disc_stock integer
+#' @param nb_mcyears list
+#' @param binding_constraint character
+#' @param reduce_number_simulations T if you want to generate only 2 or 3 simulations (depending if there is pumping or not) that are then used in interpolation mode
 #'
 #' @note This function have side effects on the Antares study used, a fictive area is created and a new district as well.
 #'
@@ -57,7 +64,9 @@ runWaterValuesSimulation <- function(area,
                                      pumping=F,
                                      efficiency=NULL,
                                      launch_simulations=T,
-                                     reset_hydro=T,...){
+                                     reset_hydro=T,
+                                     reduce_number_simulations=F,
+                                     ...){
 
 
 
@@ -111,7 +120,8 @@ runWaterValuesSimulation <- function(area,
   constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
                                             pumping=pumping,
                                             pumping_efficiency = efficiency,
-                                            opts=opts)
+                                            opts=opts,
+                                            reduce_number_simulations=reduce_number_simulations)
 
   # Get efficiency
 
@@ -173,7 +183,7 @@ runWaterValuesSimulation <- function(area,
 
 
 
-    iii <- which(num_equal(i, constraint_values))
+    iii <- which(constraint_values==i)
     ii <- round(i/1000)
 
     message("#  ------------------------------------------------------------------------")

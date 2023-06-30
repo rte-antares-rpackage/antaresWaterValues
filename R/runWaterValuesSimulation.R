@@ -207,7 +207,7 @@ runWaterValuesSimulation <- function(area,
 
     #Simulation Control
     sim_name <-  sprintf(simulation_name, format(ii, decimal.mark = ","))
-    sim_name <- getSimulationNames(pattern =sim_name , opts = opts)[1]
+    sim_name <- tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
     sim_check <- paste0(opts$studyPath,"/output")
     sim_check <- paste(sim_check,sim_name,sep="/")
 

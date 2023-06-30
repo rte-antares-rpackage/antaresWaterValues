@@ -7,7 +7,6 @@
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param constraints_values the value of the constraint
 #' @param output Boolean. TRUE to return the table of values with the plot.
-#' @importFrom grDevices rgb
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
@@ -72,7 +71,6 @@ plot_reward_variation <- function(reward_base,week_id,constraints_values=NULL,ou
 #' @param sim_name_pattern the name of simulations used in \code{runWaterValuesSimulation()}
 #' @importFrom stats aggregate
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
-#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
@@ -126,7 +124,6 @@ plot_reward <- function(reward_base,week_id,sim_name_pattern="weekly_water_amoun
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #' @param sim_name_pattern the name of simulations used in \code{runWaterValuesSimulation()}
 #' @param constraints_values the value of the constraint
-#' @importFrom grDevices rgb
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
@@ -187,7 +184,6 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year,sim_name_pattern="weekly_
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #' @param constraints_values the value of the constraint
-#' @importFrom grDevices rgb
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
@@ -244,21 +240,12 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,constraints_val
 #'
 #' @param value_nodes_dt A data.table contains the Bellman and water values .
 #' Obtained using the function Grid_Matrix()
+#' @param penalty_low Penalty for the lower rule curve
+#' @param penalty_high Penalty for the higher rule curve
 #' @param week_number Numeric of length 1. number of the week to plot.
-#' @param param string contains the element to plot
-#'   * "vu" to plot only water values
-#'   * "b" to plot only bellman values
-#'   * "both" to plot both water and bellman values
-#'   Default "vu"
-#' @param bellman_week Numeric of length 1. number of the week to plot
-#' the correspondent Bellman values.
-#' @param states_step_ratio put the ratio to change reservoir discretization in percent
-#' 0.01 to augment by 1\%
-#' @param ... further arguments passed to or from other methods.
+#'
 #' @import data.table
-#' @importFrom  cowplot draw_label ggdraw plot_grid
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
-#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
@@ -266,48 +253,41 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,constraints_val
 plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_high=10000){
 
 
-  if (rlang::is_installed("cowplot")){
+  temp <- value_nodes_dt[weeks %in%week_number]
 
-    temp <- value_nodes_dt[weeks %in%week_number]
+  temp <- temp %>% dplyr::mutate(value_node=dplyr::case_when(states>level_high ~ value_node - penalty_high*(states-level_high),
+                                                             states<level_low ~ value_node  - penalty_low*(level_low-states),
+                                                             TRUE ~ value_node ),
+                                 states_round_percent=states/max(temp$states)*100)
 
-    temp <- temp %>% dplyr::mutate(value_node=dplyr::case_when(states>level_high ~ value_node - penalty_high*(states-level_high),
-                                                               states<level_low ~ value_node  - penalty_low*(level_low-states),
-                                                               TRUE ~ value_node ),
-                                   states_round_percent=states/max(temp$states)*100)
+  temp <- temp[, value_node_dif := c(NA, diff(value_node)), by = weeks]
 
-    temp <- temp[, value_node_dif := c(NA, diff(value_node)), by = weeks]
+  # temp <- states_to_percent(temp,states_step_ratio)
 
-    # temp <- states_to_percent(temp,states_step_ratio)
-
-    temp <- temp[is.finite(vu)&(!is.nan(vu))]
+  temp <- temp[is.finite(vu)&(!is.nan(vu))]
 
 
 
 
-    setnames(temp,"value_node","Bellman_Value")
-    setnames(temp,"states_round_percent","Reservoir_percent")
-    setnames(temp,"vu","Watervalues")
-    setnames(temp,"value_node_dif","Gradient_Bellman")
-    setnames(temp,"weeks","Week")
+  setnames(temp,"value_node","Bellman_Value")
+  setnames(temp,"states_round_percent","Reservoir_percent")
+  setnames(temp,"vu","Watervalues")
+  setnames(temp,"value_node_dif","Gradient_Bellman")
+  setnames(temp,"weeks","Week")
 
-    temp <- tidyr::pivot_longer(temp,cols=c(3,8,11),names_to = "Type of value",
-                                values_to = "Value")
-
-
-    p1 <- ggplot2::ggplot(data = temp, ggplot2::aes(.data$`Reservoir_percent` ,
-                                                    .data$Value,color=.data$`Week`,
-                                                    group=.data$`Week`)) +
-      ggplot2::geom_line() +
-      ggplot2::facet_wrap(dplyr::vars(.data$`Type of value`),scales="free") +
-      ggplot2::scale_color_viridis_c(option = "viridis", direction = 1) +
-      ggplot2::theme_bw()
-
-    return(p1)
-
-  } else {message("Install cowplot package")}
+  temp <- tidyr::pivot_longer(temp,cols=c(3,8,11),names_to = "Type of value",
+                              values_to = "Value")
 
 
+  p1 <- ggplot2::ggplot(data = temp, ggplot2::aes(.data$`Reservoir_percent` ,
+                                                  .data$Value,color=.data$`Week`,
+                                                  group=.data$`Week`)) +
+    ggplot2::geom_line() +
+    ggplot2::facet_wrap(dplyr::vars(.data$`Type of value`),scales="free") +
+    ggplot2::scale_color_viridis_c(option = "viridis", direction = 1) +
+    ggplot2::theme_bw()
 
+  return(p1)
 }
 
 
@@ -331,7 +311,6 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
 #' @importFrom dplyr left_join
 #' @importFrom tidyr pivot_wider
-#' @importFrom grDevices rgb
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @return a \code{ggplot} object
 #' @export
@@ -443,7 +422,6 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
 #' @importFrom  tidyr pivot_wider
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom stats setNames aggregate
-#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
@@ -576,7 +554,6 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #' @param plot_type boolean. True to plot by area. False to plot by simulation
 #' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
 #' @importFrom dplyr select
-#' @importFrom grDevices rgb
 #' @return a \code{ggplot} object
 #' @export
 
@@ -630,7 +607,6 @@ just_plot_report <- function(data,plot_var,plot_type=T){
 #' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
 #' @importFrom dplyr left_join
 #' @importFrom tidyr pivot_wider
-#' @importFrom grDevices rgb
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @return a \code{ggplot} object
 #' @export

@@ -177,7 +177,6 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
 #' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
 #' @importFrom  antaresRead setSimulationPath readAntares
 #' @importFrom dplyr select
-#' @importFrom grDevices rgb
 #' @return a \code{ggplot} or \code{data.table} object
 #' @export
 

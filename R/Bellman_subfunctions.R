@@ -95,10 +95,10 @@ accessible_rewards <- function(decision_cover,decision_space,value_reward){
   provisional_steps <- decision_space[decision_space<=max(decision_cover)&decision_space>=min(decision_cover)]
 
   df_reward = data.frame(u=as.double(stringr::str_replace(stringr::str_extract(names(value_reward), "\\.?\\d+$"),"\\.","-")),value=value_reward)
-  df_reward <- dplyr::arrange(df_reward,u)
+  df_reward <- dplyr::arrange(df_reward,.data$u)
 
 
-  provisional_reward_line <- dplyr::filter(df_reward, u %in% round(provisional_steps/1000))$value
+  provisional_reward_line <- dplyr::filter(df_reward, .data$u %in% round(provisional_steps/1000))$value
 
 
   provisional <- list()
@@ -301,11 +301,11 @@ feasible_test_week <- function(value_node,counter,stop_rate,debug_feas=F){
 
 scanarios_check <- function(Data_week,counter){
 
-  Data_week <- mutate(Data_week, acc_states=is.finite(value_node))
-  Data_week <- Data_week %>% group_by(statesid,weeks) %>%
-    mutate(accessibility = sum(acc_states)) %>% ungroup()
+  Data_week <- dplyr::mutate(Data_week, acc_states=is.finite(value_node))
+  Data_week <- Data_week %>% dplyr::group_by(statesid,weeks) %>%
+    dplyr::mutate(accessibility = sum(acc_states)) %>% dplyr::ungroup()
   maxi <- max(Data_week$accessibility,na.rm = T)
-  Data_week <- mutate(Data_week, max_acc=maxi)
+  Data_week <- dplyr::mutate(Data_week, max_acc=maxi)
   if(maxi==0) {
     message <- sprintf("No feasible scenario in the week %d",counter)
     stop(message)}
@@ -314,17 +314,17 @@ scanarios_check <- function(Data_week,counter){
 }
 
 get_reward_interpolation <- function(Data_week,decision_space,mcyears){
-  decisions <- data.frame(control=decision_space) %>% mutate(u=round(control/1000))
+  decisions <- data.frame(control=decision_space) %>% dplyr::mutate(u=round(.data$control/1000))
 
-  reward <- distinct(Data_week[,c('years','reward_db')]) %>%
-    tidyr::unnest_longer(reward_db) %>%
-    mutate(u=as.double(str_replace(str_extract(reward_db_id, "\\.?\\d+$"),"\\.","-"))) %>%
+  reward <- dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
+    tidyr::unnest_longer(.data$reward_db) %>%
+    dplyr::mutate(u=as.double(stringr::str_replace(stringr::str_extract(.data$reward_db_id, "\\.?\\d+$"),"\\.","-"))) %>%
     left_join(decisions,by="u")
 
   f_reward_year <- c()
   for (year in mcyears){
-    df <- filter(reward, years==year)
-    f <- approxfun(df$control, df$reward_db)
+    df <- dplyr::filter(reward, years==year)
+    f <- stats::approxfun(df$control, df$reward_db)
     f_reward_year <- c(f_reward_year,f)
   }
 
@@ -339,8 +339,8 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 
   f_next_value <- c()
   for (year in mcyears){
-    df <- filter(df_next_week, years==year)
-    f <- approxfun(df$next_state, df$next_value)#,yleft = 0, yright=0)
+    df <- dplyr::filter(df_next_week, years==year)
+    f <- stats::approxfun(df$next_state, df$next_value)#,yleft = 0, yright=0)
     f_next_value <- c(f_next_value,f)
   }
 
@@ -356,28 +356,28 @@ build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
                              next_value = next_week_values)
 
   future_states <- Data_week %>%
-    inner_join(df_next_week,by="years", relationship="many-to-many") %>%
-    mutate(control = -next_state+states+hydroStorage)
+    dplyr::inner_join(df_next_week,by="years", relationship="many-to-many") %>%
+    dplyr::mutate(control = -.data$next_state+states+hydroStorage)
 
   control_possible <- Data_week  %>%
-    mutate(control=list(decision_space)) %>%
-    tidyr::unnest_longer(control) %>%
-    mutate(next_state=if_else(states+hydroStorage-control>niveau_max,niveau_max,
-                              states+hydroStorage-control)) %>%
-    mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
+    dplyr::mutate(control=list(decision_space)) %>%
+    tidyr::unnest_longer(.data$control) %>%
+    dplyr::mutate(next_state=dplyr::if_else(states+hydroStorage-.data$control>niveau_max,niveau_max,
+                              states+hydroStorage-.data$control)) %>%
+    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, .data$next_state))
 
   control_min <- Data_week %>%
-    mutate(next_state=level_high) %>%
-    mutate(control = -next_state+states+hydroStorage) %>%
-    mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
+    dplyr::mutate(next_state=level_high) %>%
+    dplyr::mutate(control = -.data$next_state+states+hydroStorage) %>%
+    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, .data$next_state))
 
   control_max <- Data_week %>%
-    mutate(next_state=level_low) %>%
-    mutate(control = -next_state+states+hydroStorage) %>%
-    mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, next_state))
+    dplyr::mutate(next_state=level_low) %>%
+    dplyr::mutate(control = -.data$next_state+states+hydroStorage) %>%
+    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, .data$next_state))
 
-  df_SDP <- bind_rows(future_states, control_possible, control_min, control_max) %>%
-    filter((-P_max<=control)&(control<=E_max)&(next_state>=0))
+  df_SDP <- dplyr::bind_rows(future_states, control_possible, control_min, control_max) %>%
+    dplyr::filter((-P_max<=.data$control)&(.data$control<=E_max)&(.data$next_state>=0))
 
   return(df_SDP)
 }

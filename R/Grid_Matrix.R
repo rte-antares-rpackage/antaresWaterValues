@@ -68,7 +68,6 @@
 
 
   Grid_Matrix <- function(area, simulation_names,reward_db=NULL,inflow=NULL,
-                          simulation_res=NULL,
                              simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,
                              week_53 = 0,
@@ -194,9 +193,7 @@
     if(is.null(reward_db))
     {
       if(is.null(controls_reward_calculation)){
-        controls_reward_calculation <- seq(min(simulation_values),
-                                           max(simulation_values),
-                                           (max(simulation_values)-min(simulation_values))%/%10)
+        controls_reward_calculation <- constraint_generator(area,10,opts=opts,pumping = pumping)
       }
 
       controls_reward_calculation <- unique(c(simulation_values,controls_reward_calculation))
@@ -207,7 +204,7 @@
                            method_old = method_old_gain,P_max=P_max/168,T_max=E_max/168,
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
-                           simulation_res = simulation_res, mcyears=mcyears,area=area,
+                           simulation_values = simulation_values, mcyears=mcyears,area=area,
                            district_balance=district_name)
       decision_space <- reward_db$simulation_values
       decision_space <- round(decision_space)
@@ -386,7 +383,7 @@
 
       }
       close(pb)
-      next_week_values <- filter(temp,weeks==1)$value_node
+      next_week_values <- dplyr::filter(temp,weeks==1)$value_node
       if(nrow(watervalues[is.na(value_node)&(weeks<=52)])>=1){
         message("Error in the calculation of Bellman values")
       }

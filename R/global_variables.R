@@ -14,5 +14,6 @@ utils::globalVariables(
     "states_percent","vu_band","addBand","MC_year","nvu","transition",
     "Turbining capacity GWh","filteringOptions","transition_reward",
     "next_bellman_value","max_acc","vu_corr","acc_states","max_acc",
-    "reward_base")
+    "reward_base","pumpingMaxPower","cluster","x","y")
 )
+utils::globalVariables(".data")

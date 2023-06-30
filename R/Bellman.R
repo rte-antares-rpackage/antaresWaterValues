@@ -64,15 +64,15 @@
 
     # find maximum for each year and each state of reward plus next bellman value
     df_SDP <- df_SDP %>%
-      mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), years, control),
-             penalty_low = if_else(next_state<=level_low,penalty_level_low*(next_state-level_low),0),
-             penalty_high = if_else(next_state>=level_high,penalty_level_high*(level_high-next_state),0),
-             sum=gain+next_value+penalty_low+penalty_high) %>%
-      group_by(years,states) %>%
-      slice(which.max(sum)) %>%
+      dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
+             penalty_low = dplyr::if_else(.data$next_state<=level_low,penalty_level_low*(.data$next_state-level_low),0),
+             penalty_high = dplyr::if_else(.data$next_state>=level_high,penalty_level_high*(level_high-.data$next_state),0),
+             sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
+      dplyr::group_by(years,states) %>%
+      dplyr::slice(which.max(sum)) %>%
       select(-c("value_node","transition","transition_reward",
                 "next_bellman_value")) %>%
-      rename("value_node"="sum","transition"="control","transition_reward"="gain",
+      dplyr::rename("value_node"="sum","transition"="control","transition_reward"="gain",
              "next_bellman_value"="next_value")
 
     # reorder df_SDP as Data_week

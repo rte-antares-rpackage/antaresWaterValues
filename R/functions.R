@@ -397,15 +397,15 @@ names_reward <-function(reward_dt,sim_name_pattern="weekly_water_amount_"){
 
 to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant=T){
 
-  data <- group_by(data, weeks) %>%
-    arrange(states) %>%
-    mutate(vu_pen=if_else(is.na(vu_pen),lead(vu_pen),vu_pen),
-           vu=if_else(is.na(vu),lead(vu),vu))
+  data <- dplyr::group_by(data, weeks) %>%
+    dplyr::arrange(states) %>%
+    dplyr::mutate(vu_pen=dplyr::if_else(is.na(.data$vu_pen),dplyr::lead(.data$vu_pen),.data$vu_pen),
+           vu=dplyr::if_else(is.na(vu),dplyr::lead(vu),vu))
   data <- as.data.table(data)
 
   # rescale levels to round percentages ranging from 0 to 100
   states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
-  states_ref <- mutate(states_ref, states_percent = 100*states/max(states))
+  states_ref <- dplyr::mutate(states_ref, states_percent = 100*states/max(states))
 
   nearest_states <- states_ref$statesid[sapply(0:100, function(x) min(which(x-states_ref$states_percent<=0)))]
 
@@ -420,14 +420,14 @@ to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant
 
   max_state <- max(states_ref$states)
 
-  res <- res %>% left_join(select(data,weeks,statesid,vu_pen,level_low,level_high),
+  res <- res %>% left_join(select("data","weeks","statesid","vu_pen","level_low","level_high"),
                            by = c("weeks", "statesid")) %>%
-    mutate(level_low=level_low/max_state*100,
+    dplyr::mutate(level_low=level_low/max_state*100,
            level_high=level_high/max_state*100,
-           vu=case_when(states_round_percent>level_high ~ vu_pen - penalty_level_high,
-                        states_round_percent<level_low ~ vu_pen + penalty_level_low,
-                            TRUE ~ vu_pen)) %>%
-    mutate(weeks=if_else(weeks>=2,weeks-1,52))
+           vu=dplyr::case_when(states_round_percent>level_high ~ .data$vu_pen - penalty_level_high,
+                        states_round_percent<level_low ~ .data$vu_pen + penalty_level_low,
+                            TRUE ~ .data$vu_pen)) %>%
+    dplyr::mutate(weeks=dplyr::if_else(weeks>=2,weeks-1,52))
 
 
   # reshape

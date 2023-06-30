@@ -63,6 +63,7 @@ ui <- fluidPage(
 
 
            sidebarPanel(
+             h2("Study parameters"),
              pickerInput("sim_area",
                          "Choose the area",
                          opts$areaList,
@@ -88,7 +89,7 @@ ui <- fluidPage(
              shinyBS::bsTooltip("solver_path", "The path of the Antares solver you found in your Antares installation directory.",
                                 "bottom"),
 
-
+             h2("Simulation parameters"),
              textInput("sim_simulation_name","Simulation name "
                        ,value="weekly_water_amount_%s"),
 
@@ -145,6 +146,7 @@ ui <- fluidPage(
              shinyBS::bsTooltip("sim_thermal_cluster", " Name of thermal cluster to create which will generate the free power in the fictive area.",
                                 "bottom"),
 
+             h2("Saving parameters"),
 
              uiOutput("dir"),
              shinyBS::bsTooltip("dir", " the path where the simulation results Rdata file will be saved. ",
@@ -181,12 +183,13 @@ ui <- fluidPage(
       sidebarLayout(
 
         sidebarPanel(
-          materialSwitch("wv_input","Auto calculated",
-                         value=F,status = "success")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title ="If you have your simulations output use the auto mode to recalculate the inflows and rewards. If you have those data in R files use custom mode.")),
-
+          # materialSwitch("wv_input","Auto calculated",
+          #                value=F,status = "success")%>%
+          #   shinyInput_label_embed(
+          #     shiny_iconlink() %>%
+          #       bs_embed_popover(title ="If you have your simulations output use the auto mode to recalculate the inflows and rewards. If you have those data in R files use custom mode.")),
+          h1("Calculate watervalues"),
+          h2("Study parameters"),
 
           fileInput("ini_file", label = "Rdata file containing the simulations"),
           shinyBS::bsTooltip("ini_file", " Select the Rdata file that contains the simulation results.",
@@ -201,7 +204,7 @@ ui <- fluidPage(
           ),
           #area
           pickerInput("Area",
-            "choose the area",
+            "Choose the area",
             opts$areaList,
             options = list(
               `live-search` = TRUE))%>%
@@ -212,7 +215,7 @@ ui <- fluidPage(
 
           #District List
           pickerInput("district_name",
-                      "choose the District",
+                      "Choose the district",
                       opts$districtList,
                       options = list(
                         `live-search` = TRUE))%>%
@@ -220,6 +223,19 @@ ui <- fluidPage(
                  shiny_iconlink() %>%
                    bs_embed_popover(title = "the district that will be used in calculation of the rewards of transitions.")),
 
+          materialSwitch("pumping_cal","Pumping",
+                         value=F,status = "success")%>%
+            shinyInput_label_embed(
+              shiny_iconlink() %>%
+                bs_embed_popover(title ="Take pumping into account. Use it when your simulations have aggregated pumping.")),
+
+          conditionalPanel(condition = "input.pumping_cal",
+                           uiOutput("eff") ),
+
+
+          shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
+                             "bottom"),
+          h2("Reward calculation"),
           # Reward calculation
           materialSwitch("smart_interpolation_reward","Use marginal prices to interpolate rewards",
                          value=F,status = "success")%>%
@@ -243,7 +259,7 @@ ui <- fluidPage(
                   bs_embed_popover(title ="Correct monotony of gain, ie the more water is turbined the less the cost of the electric system is high"))
           ),
 
-
+          h2("Bellman values calculation"),
           # Algorithm
           radioGroupButtons(
             inputId = "method",
@@ -263,7 +279,7 @@ ui <- fluidPage(
             condition = "input.method=='quantile'",
             sliderInput("q_ratio",label=NULL,min=0,max=100,value=50,post  = " %"),
           ),
-          shinyBS::bsTooltip("q_ratio", " the bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
+          shinyBS::bsTooltip("q_ratio", "The bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
                              "bottom"),
 
           materialSwitch("until_convergence","Repeat until convergence",
@@ -275,7 +291,7 @@ ui <- fluidPage(
           #number of cycles
           conditionalPanel(
           condition="!input.until_convergence",
-          numericInput("nb_cycle","number of cycle to calculate",value=2,
+          numericInput("nb_cycle","Number of cycle to calculate",value=2,
                        min=1)),
           shinyBS::bsTooltip("nb_cycle", " Number of times to run the algorithm to reduce the initial values effects.",
                              "bottom"),
@@ -296,45 +312,34 @@ ui <- fluidPage(
                              "bottom"),
 
           #week 53 value
-          numericInput("week_53","water value initial condition",value=0),
+          numericInput("week_53","Water value initial condition",value=0),
           shinyBS::bsTooltip("week_53", " Water values for week 53, will be mutiplied by the half capacity of the reservoir to genrate an approximitive bellman values as initial condition",
                              "bottom"),
 
           #number of states:
-          sliderInput("nb_states",label="choose the number of states",min=5,
+          sliderInput("nb_states",label="Choose the number of states",min=5,
                       max=100,value=40,step=1),
           shinyBS::bsTooltip("nb_states", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
                              "bottom"),
 
           # penalty for violation of the bottom rule curve
-          numericInput("penalty_low","penalty for the violation of the bottom rule curve",value=3001),
-          shinyBS::bsTooltip("penalty_low", "Penalty will be add proportionally to the distance from the rule curve, it is directly comparable with the cost of unsupplied energy.",
+          numericInput("penalty_low","Penalty for the violation of the bottom rule curve",value=3001),
+          shinyBS::bsTooltip("penalty_low", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of unsupplied energy.",
                              "bottom"),
 
           # penalty for violation of the top rule curve
-          numericInput("penalty_high","penalty for the violation of the top rule curve",value=0),
-          shinyBS::bsTooltip("penalty_high", "Penalty will be add proportionally to the distance from the rule curve, it is directly comparable with the cost of spilled energy.",
+          numericInput("penalty_high","p$Penalty for the violation of the top rule curve",value=0),
+          shinyBS::bsTooltip("penalty_high", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of spilled energy.",
                              "bottom"),
 
           #MC years:
-          sliderInput("mcyears",label="choose the number of MC years to use",min=1,
+          sliderInput("mcyears",label="Choose the number of MC years to use",min=1,
                       max=opts$parameters$general$nbyears,
                       value=c(1,opts$parameters$general$nbyears),step=1),
 
           shinyBS::bsTooltip("mcyears", " Monte-Carlo years to consider in water values calculation.",
                              "bottom"),
-          materialSwitch("pumping_cal","Pumping",
-                         value=F,status = "success")%>%
-            shinyInput_label_embed(
-              shiny_iconlink() %>%
-                bs_embed_popover(title ="Take pumping into account. Use it when your simulations have aggregated pumping.")),
 
-          conditionalPanel(condition = "input.pumping_cal",
-                           uiOutput("eff") ),
-
-
-          shinyBS::bsTooltip("efficiency", " The the efficiency ratio of pumpin you want to take in account in simulations.",
-                             "bottom"),
 
           # correct outliers option
           materialSwitch("correct_outliers","Use correct outlier to remove noise",
@@ -351,7 +356,7 @@ ui <- fluidPage(
                 bs_embed_popover(title ="Correct concavity of Bellman values to have monotone water values.")),
 
 
-          actionButton("Calculate","launch caulculs", icon = icon("check-circle"),
+          actionButton("Calculate","Launch calculation", icon = icon("check-circle"),
                        align = "center"),
           shinyBS::bsTooltip("Calculate", "Click to start the calculation of te water values using the selected parameters",
                              "bottom"),
@@ -363,7 +368,7 @@ ui <- fluidPage(
 #                 bs_embed_popover(title ="Applicate a filter to remove the negative values in the graph.
 # NB: this is only a display filter the values are unchanged.")),
 
-
+          h2("Plot"),
 
           materialSwitch("filter","Filter water values",value=F,status = "success")%>%
             shinyInput_label_embed(
@@ -397,6 +402,7 @@ ui <- fluidPage(
     tabPanel("Bellman plot",
        sidebarLayout(
          sidebarPanel(
+           h1("Bellman plot"),
            numericInput("week_id","Week to show",value=2,
                         min=1,max = 52),
 
@@ -408,7 +414,7 @@ ui <- fluidPage(
                                              "water values and Bellman"="both",
                                              "add Gradient bellman"="all")),
            sliderInput("states_step_ratio",
-                       label="choose the reservoir states ratio",min=5,
+                       label="Choose the reservoir states ratio",min=5,
                        max=100,value=40,step=1),
 
            shinyBS::bsTooltip("states_step_ratio", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
@@ -430,16 +436,18 @@ ui <- fluidPage(
        ), # Siderbar
   ),#tabpanel 2
 
-
   #------ Reward Plot ------------
     tabPanel("Rewards Plot",
 
           sidebarLayout(
 
+
             sidebarPanel(
+              h1("Rewards plot"),
+
 
               pickerInput("district_name_rew",
-                          "choose the District",
+                          "Choose the District",
                           opts$districtList,
                           options = list(
                             `live-search` = TRUE)),
@@ -447,7 +455,7 @@ ui <- fluidPage(
                                  "bottom"),
               actionButton("import_reward","Import reward"),
 
-              textInput("simulation_name_pattern","simulation name patern"
+              textInput("simulation_name_pattern","Simulation name patern"
                         ,value="weekly_water_amount_"),
               shinyBS::bsTooltip("simulation_name_pattern", " the simulation name pattern must be adequate with the simulaion names (just remove constraints values from the names).",
                                  "bottom"),
@@ -508,6 +516,7 @@ ui <- fluidPage(
              sidebarLayout(fluid = TRUE,
 
                sidebarPanel(
+                 h1("Post process"),
                  h3(strong("Remove outlier water values")),
                  switchInput("Run_remove_out",
                                value=F, offStatus = "danger",
@@ -955,7 +964,7 @@ server <- function(input, output, session) {
                      simulation_res <-    runWaterValuesSimulation(
                      area=input$sim_area,
                      simulation_name = input$sim_simulation_name,
-                     nb_disc_stock = if(!input.reduce){input$sim_nb_disc_stock},
+                     nb_disc_stock = if(!input$reduce){input$sim_nb_disc_stock},
                      nb_mcyears = seq(from = input$sim_mcyears[1], to = input$sim_mcyears[2]),
                      path_solver =input$solver_path,
                      binding_constraint = input$sim_binding_constraint,
@@ -1036,7 +1045,7 @@ server <- function(input, output, session) {
                             toString(constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal)),
                             toString(sort(unique(c(simulation_res()$simulation_values,
                                                    constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal))))))) %>%
-        mutate(Total=lengths(strsplit(Controls, ",\\s*")))
+        dplyr::mutate(Total=lengths(strsplit(.data$Controls, ",\\s*")))
 
     })
 
@@ -1142,9 +1151,8 @@ server <- function(input, output, session) {
 
     possible_controls <- reactive({
       possible_controls <- if(input$smart_interpolation_reward){
-      unique(c(seq(min(simulation_res()$simulation_values),
-                   max(simulation_res()$simulation_values),
-                   length.out=input$controls),simulation_res()$simulation_values))} else {
+        unique(c(simulation_res()$simulation_values,
+                      constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal)))} else {
                      simulation_res()$simulation_values}
       possible_controls
     })
@@ -1152,7 +1160,8 @@ server <- function(input, output, session) {
     observeEvent( input$import_reward,
                   {
                     spsComps::shinyCatch({
-                    reward_dt <- get_Reward(simulation_res(),
+                    reward_dt <- get_Reward(simulation_names = simulation_res()$simulation_names,
+                                            simulation_values = simulation_res()$simulation_values,
                                             district_name =input$district_name_rew,
                                             opts=opts,
                                             method_old = !input$smart_interpolation_reward,
@@ -1241,7 +1250,7 @@ server <- function(input, output, session) {
     observe({
       if(!is.null(rv$reward_dt))
         isolate(
-          reward_base <<- rv$reward_dt
+          reward_base <- rv$reward_dt
         )
     })
 
@@ -1275,14 +1284,14 @@ server <- function(input, output, session) {
 
 
       if(input$use_filtred){
-        withProgress( post_process(results = results_temp(),max_cost=input$max_cost,
+        withProgress( post_process(results_dt = results_temp(),max_cost=input$max_cost,
                      min_cost =input$min_cost,
                      full_imputation=input$full_imputation,
                      impute_method=input$impute_method,fix = fix_v,
                      max_vu =input$max_vu,min_vu = input$min_vu ))
       }else{
 
-        withProgress(post_process(results = rv$results,max_cost=input$max_cost,
+        withProgress(post_process(results_dt = rv$results,max_cost=input$max_cost,
                      min_cost =input$min_cost,
                      full_imputation=input$full_imputation,
                      impute_method=input$impute_method,fix = fix_v,

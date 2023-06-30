@@ -16,11 +16,11 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
 
   #add penlaties
   value_nodes_dt <- value_nodes_dt %>%
-    mutate(value_nodes_dt,
-           vu_pen=case_when(states>level_high ~ vu - penalty_level_high,
+    dplyr::mutate(value_nodes_dt,
+           vu_pen=dplyr::case_when(states>level_high ~ vu - penalty_level_high,
                             states<level_low ~ vu + penalty_level_low,
                             TRUE ~ vu)) %>%
-    rename(vu=vu_pen,vu_pen=vu)
+    dplyr::rename(vu=.data$vu_pen,vu_pen=.data$vu)
 
   print(waterValuesViz(value_nodes_dt))
   return(value_nodes_dt)
@@ -48,7 +48,7 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
 
     #add reservoir
     names(reservoir)[1] <- "weeks"
-    value_nodes_dt <- mutate(value_nodes_dt, beg_week=if_else(weeks>1,weeks-1,52))
+    value_nodes_dt <- dplyr::mutate(value_nodes_dt, beg_week=dplyr::if_else(weeks>1,weeks-1,52))
     value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
       select(-c("beg_week"))
 
@@ -254,27 +254,27 @@ correct_concavity <- function(df_value_node, weeks){
 
   for (s in weeks){
     df_week <- df_value_node[df_value_node$weeks==s,c("weeks","states","value_node","years")]
-    df_week <- filter(df_week,!is.na(df_week$value_node))
-    df_week <- filter(df_week,is.finite(df_week$value_node))
+    df_week <- dplyr::filter(df_week,!is.na(df_week$value_node))
+    df_week <- dplyr::filter(df_week,is.finite(df_week$value_node))
     df_week <- unique(df_week)
-    df_week <- arrange(df_week,states,years)
+    df_week <- dplyr::arrange(df_week,states,years)
     n <- nrow(df_week)
     df_week$new_value <- df_week$value_node
-    states <- distinct(df_week,states) %>% pull(states)
+    states <- dplyr::distinct(df_week,states) %>% dplyr::pull(states)
     for (x in states){
-      df_week <- df_week %>% filter(states==x) %>%
-        rename(value_x=new_value,states_x=states) %>%
-        select(years, states_x, value_x) %>%
-        right_join(df_week, by=c("years")) %>%
-        mutate(coef=(new_value-value_x)/(states-states_x)) %>%
-        mutate(coef=if_else(coef<0,0,coef))
-      df_week <- df_week %>% filter(states>x) %>% group_by(years) %>%
-        slice(which.max(coef)) %>%
-        transmute(m=coef,states_y=states, years=years) %>%
-        right_join(df_week,by="years") %>%
-        mutate(new_value=if_else((states>states_x)&(states<=states_y),
-                                 m*(states-states_x)+value_x,new_value)) %>%
-        select(years, weeks, states, value_node, new_value)
+      df_week <- df_week %>% dplyr::filter(states==x) %>%
+        dplyr::rename(value_x=.data$new_value,states_x=states) %>%
+        select("years", "states_x", "value_x") %>%
+        dplyr::right_join(df_week, by=c("years")) %>%
+        dplyr::mutate(coef=(.data$new_value-.data$value_x)/(states-.data$states_x)) %>%
+        dplyr::mutate(coef=dplyr::if_else(.data$coef<0,0,.data$coef))
+      df_week <- df_week %>% dplyr::filter(states>x) %>% dplyr::group_by(years) %>%
+        dplyr::slice(which.max(.data$coef)) %>%
+        dplyr::transmute(m=.data$coef,states_y=states, years=years) %>%
+        dplyr::right_join(df_week,by="years") %>%
+        dplyr::mutate(new_value=dplyr::if_else((states>.data$states_x)&(states<=.data$states_y),
+                                 .data$m*(states-.data$states_x)+.data$value_x,.data$new_value)) %>%
+        select("years", "weeks", "states", "value_node", "new_value")
     }
     df_value_node[df_value_node$weeks==s,"new_value"]  <- left_join(df_value_node[df_value_node$weeks==s,c("weeks","states","years")],
                                                                     df_week[,c("weeks","states","new_value","years")],

@@ -11,8 +11,8 @@ waterValuesViz <- function(Data, filter_penalties=FALSE) {
   value_nodes <- copy(Data)
 
   if (filter_penalties){
-    value_nodes <- mutate(value_nodes,
-                          vu=if_else((states<=level_high)&(states>=level_low),
+    value_nodes <- dplyr::mutate(value_nodes,
+                          vu=dplyr::if_else((states<=level_high)&(states>=level_low),
                                      vu,NaN))
   }
 

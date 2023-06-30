@@ -14,7 +14,6 @@ Imports:
     antaresEditObject (>= 0.2.2),
     antaresRead (>= 2.2.8),
     assertthat (>= 0.2.1),
-    cowplot (>= 1.1.1),
     mice (>= 3.13.0),
     dplyr (>= 1.0.7),
     ggplot2 (>= 3.3.5),

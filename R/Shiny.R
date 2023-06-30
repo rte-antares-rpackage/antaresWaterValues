@@ -328,7 +328,7 @@ ui <- fluidPage(
                              "bottom"),
 
           # penalty for violation of the top rule curve
-          numericInput("penalty_high","p$Penalty for the violation of the top rule curve",value=0),
+          numericInput("penalty_high","Penalty for the violation of the top rule curve",value=0),
           shinyBS::bsTooltip("penalty_high", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of spilled energy.",
                              "bottom"),
 
@@ -403,21 +403,10 @@ ui <- fluidPage(
        sidebarLayout(
          sidebarPanel(
            h1("Bellman plot"),
-           numericInput("week_id","Week to show",value=2,
-                        min=1,max = 52),
+           sliderInput("week_id","Week to show",value=c(2,2),
+                       min=1,max = 52),
 
-           shinyBS::bsTooltip("week_id", "The number of the week you want to plot",
-                              "bottom"),
-
-           selectInput("param","Variables",c("Water Values"="vu",
-                                             "Bellman"="bell",
-                                             "water values and Bellman"="both",
-                                             "add Gradient bellman"="all")),
-           sliderInput("states_step_ratio",
-                       label="Choose the reservoir states ratio",min=5,
-                       max=100,value=40,step=1),
-
-           shinyBS::bsTooltip("states_step_ratio", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
+           shinyBS::bsTooltip("week_id", "The number of the week you want to plot (Bellman values are plotted for the end of the week and watervalues for the beginning of the week)",
                               "bottom"),
 
 
@@ -1128,9 +1117,8 @@ server <- function(input, output, session) {
 
 #--------Plot Bellman page----
 
-    output$plot_Bellman <- renderPlot(plot_Bellman(rv$results,input$week_id,
-                                                   input$param,states_step_ratio =
-                                                   1/input$states_step_ratio))
+    output$plot_Bellman <- renderPlot(plot_Bellman(rv$results,input$week_id[1]:input$week_id[2],
+                                                   input$penalty_low,input$penalty_high))
 
     output$download_Bellman_plot <- downloadHandler(
       filename = function() {
@@ -1140,9 +1128,8 @@ server <- function(input, output, session) {
 
         grDevices::png(con ,width = 1200,
             height = 766)
-        print(plot_Bellman(rv$results,input$week_id,
-                           input$param,states_step_ratio =
-                             1/input$states_step_ratio))
+        print(plot_Bellman(rv$results,input$week_id[1]:input$week_id[2],
+                           input$penalty_low,input$penalty_high))
         grDevices::dev.off()
       }
     )

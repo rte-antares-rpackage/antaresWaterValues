@@ -263,56 +263,49 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year,constraints_val
 #' @export
 
 
-plot_Bellman <- function(value_nodes_dt,week_number,param="vu",states_step_ratio=0.01,bellman_week=NULL,...){
-
-  # if(week_number<52){
-  #   next_week_number <- week_number+1
-  # }else{
-  #   next_week_number ==1
-  # }
-  next_week_number <- week_number
-
-  if(param=="bell"){next_week_number <- week_number}
-  if(is.numeric(bellman_week)){next_week_number <- bellman_week}
-  temp <- value_nodes_dt[weeks ==next_week_number]
-
-  temp$vu <- value_nodes_dt[weeks ==week_number]$vu
-
-  temp <- states_to_percent(temp,states_step_ratio)
-
-  temp <- temp[is.finite(vu)&(!is.nan(vu))]
+plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_high=10000){
 
 
-  setnames(temp,"value_node","Bellman_Value")
-  setnames(temp,"states_round_percent","Reservoir_percent")
+  if (rlang::is_installed("cowplot")){
+
+    temp <- value_nodes_dt[weeks %in%week_number]
+
+    temp <- temp %>% dplyr::mutate(value_node=dplyr::case_when(states>level_high ~ value_node - penalty_high*(states-level_high),
+                                                               states<level_low ~ value_node  - penalty_low*(level_low-states),
+                                                               TRUE ~ value_node ),
+                                   states_round_percent=states/max(temp$states)*100)
+
+    temp <- temp[, value_node_dif := c(NA, diff(value_node)), by = weeks]
+
+    # temp <- states_to_percent(temp,states_step_ratio)
+
+    temp <- temp[is.finite(vu)&(!is.nan(vu))]
 
 
-  p1 <- ggplot2::ggplot(data = temp, ggplot2::aes(Reservoir_percent , vu)) +ggplot2::geom_line(size=1,color="purple 4")
-  p1 <- p1+ggplot2::ggtitle(sprintf("Water Values"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
-  p2 <- ggplot2::ggplot(data = temp, ggplot2::aes(Reservoir_percent ,Bellman_Value)) +ggplot2::geom_line(size=1,color="red 4")
-  p2 <- p2+ggplot2::ggtitle(sprintf("Bellman Values %d",next_week_number))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
-  p3 <- ggplot2::ggplot(data = temp, ggplot2::aes(Reservoir_percent ,value_node_dif)) +ggplot2::geom_line(size=1,color="green 4")
-  p3 <- p3+ggplot2::ggtitle(sprintf("Gradien Bellman %d",next_week_number))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+    setnames(temp,"value_node","Bellman_Value")
+    setnames(temp,"states_round_percent","Reservoir_percent")
+    setnames(temp,"vu","Watervalues")
+    setnames(temp,"value_node_dif","Gradient_Bellman")
+    setnames(temp,"weeks","Week")
 
-  if (param=="vu") {
+    temp <- tidyr::pivot_longer(temp,cols=c(3,8,11),names_to = "Type of value",
+                                values_to = "Value")
+
+
+    p1 <- ggplot2::ggplot(data = temp, ggplot2::aes(.data$`Reservoir_percent` ,
+                                                    .data$Value,color=.data$`Week`,
+                                                    group=.data$`Week`)) +
+      ggplot2::geom_line() +
+      ggplot2::facet_wrap(dplyr::vars(.data$`Type of value`),scales="free") +
+      ggplot2::scale_color_viridis_c(option = "viridis", direction = 1) +
+      ggplot2::theme_bw()
+
     return(p1)
-  }else if(param=="both") {
 
-    tit <- sprintf("VU for Week %d",week_number)
-    title <- cowplot::ggdraw() + cowplot::draw_label(tit, fontface='bold')
-    p <- cowplot::plot_grid(p1,p2)
-    cowplot::plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1)) # rel_heights values control title margins
-  }else if(param=="bell")
-  {return(p2)
-  }else {
-    tit <- sprintf("VU for Week %d",week_number)
-    title <- cowplot::ggdraw() + cowplot::draw_label(tit, fontface='bold')
-    p <- cowplot::plot_grid(p1,p2,p3)
-    cowplot::plot_grid(title, p, ncol=1, rel_heights=c(0.1, 1))
-    return(p)
-  }
+  } else {message("Install cowplot package")}
+
 
 
 }

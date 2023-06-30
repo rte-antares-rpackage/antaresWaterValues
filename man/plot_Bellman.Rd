@@ -7,10 +7,8 @@
 plot_Bellman(
   value_nodes_dt,
   week_number,
-  param = "vu",
-  states_step_ratio = 0.01,
-  bellman_week = NULL,
-  ...
+  penalty_low = 10000,
+  penalty_high = 10000
 )
 }
 \arguments{
@@ -25,11 +23,11 @@ Obtained using the function Grid_Matrix()}
 * "both" to plot both water and bellman values
 Default "vu"}
 
-\item{states_step_ratio}{put the ratio to change reservoir discretization in percent
-0.01 to augment by 1\%}
-
 \item{bellman_week}{Numeric of length 1. number of the week to plot
 the correspondent Bellman values.}
+
+\item{states_step_ratio}{put the ratio to change reservoir discretization in percent
+0.01 to augment by 1\%}
 
 \item{...}{further arguments passed to or from other methods.}
 }

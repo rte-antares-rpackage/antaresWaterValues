@@ -97,7 +97,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
       reward <- cost[,c("timeId","mcYear","OV. COST","simulation")]
     }
 
-    reward <- dcast(reward, timeId + mcYear ~ .data$simulation, value.var = "OV. COST")
+    reward <- dcast(reward, timeId + mcYear ~ reward$simulation, value.var = "OV. COST")
     vars <- colnames(reward)[3:length(reward)]
     setcolorder(x = reward, neworder = c("timeId", "mcYear", vars))
 

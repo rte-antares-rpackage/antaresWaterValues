@@ -419,7 +419,7 @@ to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant
 
   max_state <- max(states_ref$states)
 
-  res <- res %>% left_join(select("data","weeks","statesid","vu_pen","level_low","level_high"),
+  res <- res %>% left_join(select(data,"weeks","statesid","vu_pen","level_low","level_high"),
                            by = c("weeks", "statesid")) %>%
     dplyr::mutate(level_low=level_low/max_state*100,
            level_high=level_high/max_state*100,

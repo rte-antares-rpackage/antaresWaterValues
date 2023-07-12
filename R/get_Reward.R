@@ -203,7 +203,7 @@ get_local_reward <- function(opts,hours,possible_controls,T_max,P_max,area_price
                           opts=opts,mcYears = mcyears),by=c("timeId","mcYear")) %>%
     select(-c("day","month","hour","district","time")) %>%
     dplyr::mutate(week=(timeId-1)%/%168+1,hour_in_week=dplyr::if_else(timeId%%168>0,timeId%%168,168)) %>%
-    dplyr::rename(price=.data$`MRG. PRICE`,balance=.data$BALANCE)
+    dplyr::rename(price="MRG. PRICE",balance="BALANCE")
 
 
   price_turb_more <- price %>%

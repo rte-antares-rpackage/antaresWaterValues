@@ -123,7 +123,7 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
     hydro_storage <- utils::read.table(file = path_hydro_storage)
     hydro_storage[] <- 0
     utils::write.table(
-      x = hydro_storage[, 1, drop = FALSE],
+      x = hydro_storage[,, drop = FALSE],
       file = path_hydro_storage,
       row.names = FALSE,
       col.names = FALSE,

@@ -313,20 +313,12 @@ scanarios_check <- function(Data_week,counter){
   return(Data_week)
 }
 
-get_reward_interpolation <- function(Data_week,decision_space,mcyears){
-  decisions <- data.frame(control=decision_space) %>% dplyr::mutate(u=round(.data$control/1000))
 
-  reward <- dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
-    tidyr::unnest_longer(.data$reward_db) %>%
-    dplyr::mutate(u=as.double(stringr::str_replace(stringr::str_extract(.data$reward_db_id, "\\.?\\d+$"),"\\.","-"))) %>%
-    left_join(decisions,by="u")
+get_reward_interpolation <- function(Data_week){
 
-  f_reward_year <- c()
-  for (year in mcyears){
-    df <- dplyr::filter(reward, years==year)
-    f <- stats::approxfun(df$control, df$reward_db)
-    f_reward_year <- c(f_reward_year,f)
-  }
+  reward <- dplyr::distinct(Data_week[,c('years','reward_db')])
+
+  f_reward_year <- sapply(reward$reward_db,FUN = function(df) stats::approxfun(df$control,df$reward))
 
   return(f_reward_year)
 }

@@ -14,13 +14,11 @@ get_Reward(
   method_old = TRUE,
   hours = 0:168,
   possible_controls = NULL,
-  T_max,
-  P_max,
+  max_hydro,
   mcyears = "all",
   area = NULL,
   pump_eff = NULL,
-  district_balance = "water values district",
-  ind = NaN
+  district_balance = "water values district"
 )
 }
 \arguments{
@@ -41,11 +39,9 @@ get_Reward(
 
 \item{hours}{If method_old=F, vector of hours used to evaluate costs/rewards of pumping/generating}
 
-\item{possible_controls}{If method_old=F, vector of controls evaluated}
+\item{possible_controls}{If method_old=F, data.frame {week,u} of controls evaluated per week}
 
-\item{T_max}{Max generating power}
-
-\item{P_max}{Max pumping power}
+\item{max_hydro}{data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values}
 
 \item{mcyears}{Vector of years used to evaluate rewards}
 
@@ -54,11 +50,9 @@ get_Reward(
 \item{pump_eff}{Pumping efficiency}
 
 \item{district_balance}{Name of district used to evaluate controls on the stock}
-
-\item{ind}{name of simulation that corresponds to 0}
 }
 \value{
-a data.table {timeid,MCyear,simulation overall cost}
+list containing a data.table {timeid,MCyear,simulation overall cost}, list of simulations names and list of simulations values
 }
 \description{
 Get the reward matrix from simulations

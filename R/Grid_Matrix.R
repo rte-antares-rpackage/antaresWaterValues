@@ -112,10 +112,6 @@
   # Number of weeks
   n_week <- 52
 
-  # max hydro
-  max_hydro <- get_max_hydro(area)
-  E_max <-max_hydro$turb
-  P_max <- max_hydro$pump
 
 
   if(is.null(reward_db)){
@@ -167,15 +163,10 @@
   {
     efficiency <- getPumpEfficiency(area = area,opts = opts)
   }
-  decision_space <- simulation_values
-  # decision_space <- unlist(lapply(decision_space,FUN = function(x) efficiency_effect(x,efficiency)))
-  decision_space <- round(decision_space)
 
   decimals <- 6
   {
     if(is.null(inflow)){
-      # tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
-      # tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = tmp_name)
       inflow <-antaresRead::readInputTS(hydroStorage = area, timeStep="weekly")
     }
     inflow[with(inflow, order(tsId, timeId)),]
@@ -188,27 +179,42 @@
 
   options("antares" = opts)
 
+  # max hydro
+  max_hydro <- get_max_hydro(area,timeStep = "hourly")
+
   # Reward
   {
     if(is.null(reward_db))
     {
       if(is.null(controls_reward_calculation)){
-        controls_reward_calculation <- constraint_generator(area,10,opts=opts,pumping = pumping)
+          controls_reward_calculation <- constraint_generator(area=area,nb_disc_stock=10,
+                                                            pumping=pumping,
+                                                            pumping_efficiency=efficiency,
+                                                            opts=opts)
       }
 
-      controls_reward_calculation <- unique(c(simulation_values,controls_reward_calculation))
+      controls_reward_calculation <- rbind(simulation_values,controls_reward_calculation) %>%
+        select("week","u") %>%
+        dplyr::distinct() %>%
+        dplyr::arrange(.data$week,.data$u)
 
 
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,
-                           method_old = method_old_gain,P_max=P_max/168,T_max=E_max/168,
+                           method_old = method_old_gain,max_hydro=max_hydro,
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
                            simulation_values = simulation_values, mcyears=mcyears,area=area,
                            district_balance=district_name)
-      decision_space <- reward_db$simulation_values
+
+      decision_space <- reward_db$simulation_values[,c("week","u")]
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward
+
+
+    } else {
+      decision_space <- simulation_values[,c("week","u")]
+      decision_space <- round(decision_space)
     }
 
     reward_db <- reward_db[timeId %in% seq_len(n_week)]}
@@ -249,12 +255,7 @@
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
 
   #add reward
-  col_names <- make.names(colnames(reward_db))
-  setnames(reward_db,col_names)
-  reward_l <- reward_db[, list(reward_db = list(unlist(.SD))), .SDcols =col_names[c(-1,-2)], by = list(weeks = timeId, years = mcYear)]
-
-
-  watervalues <- dplyr::left_join(x = watervalues, y = reward_l, by = c("weeks","years"))
+  watervalues <- dplyr::nest_join(x = watervalues, y = reward_db, by = c("weeks"="timeId","years"="mcYear"))
 
 
   #at this point we added the rewards for each weekly_amount
@@ -270,6 +271,10 @@
   watervalues$next_bellman_value <- NA_real_
 
 
+  # max hydro
+  max_hydro <- get_max_hydro(area,timeStep = "weekly")
+  E_max <-max_hydro$turb
+  P_max <- max_hydro$pump
 
 
 
@@ -280,7 +285,6 @@
   niveau_max = niveau_max
   max_mcyear <- length(mcyears)
   counter <- 0
-  if(!pumping)P_max <- 0
 
   }
 
@@ -306,9 +310,9 @@
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=decision_space,
-                        E_max=E_max,
-                        P_max=P_max,
+                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        E_max=E_max[i],
+                        P_max=P_max[i],
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
@@ -404,28 +408,21 @@
 
         temp <- watervalues[weeks==i]
 
-        if(i==1){
-          prev_level_high <- watervalues[weeks==52,]$level_high[1]
-          prev_level_low <- watervalues[weeks==52,]$level_low[1]
-        }else{
-          prev_level_high <- watervalues[weeks==i-1,]$level_high[1]
-          prev_level_low <- watervalues[weeks==i-1,]$level_low[1]
-        }
-
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=decision_space,
-                        E_max=E_max,
-                        P_max=P_max,
+                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        E_max=E_max[i],
+                        P_max=P_max[i],
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
                         q_ratio= q_ratio,
                         correct_outliers = correct_outliers,
                         counter = i,
+                        niveau_max=niveau_max,
+                        stop_rate=stop_rate,
                         penalty_level_low=penalty_low,
-                        penalty_level_high=penalty_high,
-                        stop_rate=stop_rate)
+                        penalty_level_high=penalty_high)
 
         if(shiny&n_cycl==1&i==52){
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")

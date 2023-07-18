@@ -391,7 +391,7 @@ ui <- fluidPage(
           ),
           conditionalPanel(
             condition="input.smart_interpolation_reward",
-            tableOutput("calculated_controls")
+            dataTableOutput("calculated_controls")
           )
 
       )
@@ -1028,14 +1028,28 @@ server <- function(input, output, session) {
       }
     })
 
-    output$calculated_controls <- renderTable({
-      data.frame(From=c("Simulation","Calculated controls","Union"),
-                 Controls=c(toString(simulation_res()$simulation_values),
-                            toString(constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal)),
-                            toString(sort(unique(c(simulation_res()$simulation_values,
-                                                   constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal))))))) %>%
-        dplyr::mutate(Total=lengths(strsplit(.data$Controls, ",\\s*")))
+    calculated_controls <- reactive({
+      rbind(dplyr::mutate(simulation_res()$simulation_values,From="Simulation"),
+            dplyr::mutate(constraint_generator(area=input$Area,
+                                        opts=opts,
+                                        pumping=input$pumping_cal,
+                                        nb_disc_stock = input$controls,
+                                        pumping_efficiency = input$efficiency),
+                   From="Calculated controls")) %>%
+        select(-c("sim")) %>%
+        dplyr::group_by(.data$week,.data$From) %>%
+        dplyr::summarise(Controls=list(.data$u),.groups="drop") %>%
+        pivot_wider(names_from = .data$From,values_from = .data$Controls) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(Union=list(union(.data$`Calculated controls`,.data$Simulation))) %>%
+        tidyr::pivot_longer(cols=2:4,names_to = "From",values_to = "Controls") %>%
+        dplyr::mutate(Total=lengths(.data$Controls)) %>%
+        dplyr::mutate(Controls=as.character(.data$Controls)) %>%
+        as.data.table()
+    })
 
+    output$calculated_controls <- DT::renderDataTable({
+      calculated_controls()
     })
 
     observeEvent( input$Calculate,
@@ -1047,7 +1061,6 @@ server <- function(input, output, session) {
         area = input$Area,
         simulation_names = simulation_res()$simulation_names,
         simulation_values = simulation_res()$simulation_values,
-        simulation_res = simulation_res(),
         reward_db = reward_db(),
         inflow = inflow(),
         nb_cycle = input$nb_cycle,
@@ -1073,7 +1086,11 @@ server <- function(input, output, session) {
         penalty_high = input$penalty_high,
         method_old_gain = !input$smart_interpolation_reward,
         hours_reward_calculation = if(input$smart_interpolation_reward){round(seq(0,168,length.out=input$hours))},
-        controls_reward_calculation = if(input$smart_interpolation_reward){constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal)}
+        controls_reward_calculation = if(input$smart_interpolation_reward){constraint_generator(area=input$Area,
+                                                                                                opts=opts,
+                                                                                                pumping=input$pumping_cal,
+                                                                                                nb_disc_stock = input$controls,
+                                                                                                pumping_efficiency = input$efficiency)}
         )$aggregated_results
 
       isolate(rv$results <- results)
@@ -1138,9 +1155,15 @@ server <- function(input, output, session) {
 
     possible_controls <- reactive({
       possible_controls <- if(input$smart_interpolation_reward){
-        unique(c(simulation_res()$simulation_values,
-                      constraint_generator(input$Area,input$controls,opts=opts,pumping = input$pumping_cal)))} else {
-                     simulation_res()$simulation_values}
+        rbind(simulation_res()$simulation_values,constraint_generator(area=input$Area,
+                                                    opts=opts,
+                                                    pumping=input$pumping_cal,
+                                                    nb_disc_stock = input$controls,
+                                                    pumping_efficiency = input$efficiency)) %>%
+          select("week","u") %>%
+          dplyr::distinct() %>%
+          dplyr::arrange(week,.data$u)} else {
+                     simulation_res()$simulation_values %>% select("week","u")}
       possible_controls
     })
 
@@ -1154,8 +1177,7 @@ server <- function(input, output, session) {
                                             method_old = !input$smart_interpolation_reward,
                                             hours = if(input$smart_interpolation_reward){round(seq(0,168,length.out=input$hours))},
                                             possible_controls = possible_controls(),
-                                            P_max=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)$pump/168},
-                                            T_max=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)$turb/168},
+                                            max_hydro=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)},
                                             mcyears=input$mcyears[1]:input$mcyears[2],
                                             area=input$Area,
                                             district_balance=input$district_name_rew)
@@ -1174,26 +1196,25 @@ server <- function(input, output, session) {
     rewardplot <- reactive(
 
       {
-
       if(is.null(rv$reward))rv$reward <- reward_db()
 
       week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
       Mc_year <- input$Mc_year[1]:input$Mc_year[2]
       if(input$param_rew=="r")
-      {plot_reward(rv$reward_dt$reward,week_id_rew,input$simulation_name_pattern,constraints_values=possible_controls())
+      {plot_reward(rv$reward_dt$reward,week_id_rew)
       }else{
         if(input$param_rew=="rv")
-          {plot_reward_variation(rv$reward_dt$reward,week_id_rew,constraints_values=possible_controls())
+          {plot_reward_variation(rv$reward_dt$reward,week_id_rew)
         }else{
 
         if(input$param_rew=="r1")
           {plot_reward_mc(rv$reward_dt$reward,week_id_rew,
-                          Mc_year,input$simulation_name_pattern,constraints_values=possible_controls())
+                          Mc_year)
         }else{
 
           if(input$param_rew=="rv1")
           {plot_reward_variation_mc(rv$reward_dt$reward,week_id_rew,
-                              Mc_year,constraints_values=possible_controls())}
+                              Mc_year)}
         }
         }
         }
@@ -1210,7 +1231,7 @@ server <- function(input, output, session) {
                                 Mc_year)
       }else{
 
-        plot_reward_variation(rv$reward_dt$reward,week_id_rew,constraints_values=possible_controls())
+        plot_reward_variation(rv$reward_dt$reward,week_id_rew)
       }
 
 

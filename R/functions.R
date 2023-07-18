@@ -299,29 +299,45 @@ return(reservoir_capacity)
 
 
 #' Get max hydro power that can be generated in a week
+#'
 #' @param area The area concerned by the simulation.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param timeStep among "hourly", "daily" and "weekly"
 #'
 #' @importFrom antaresRead readInputTS
 #' @importFrom utils hasName
 #' @export
 
-get_max_hydro <- function(area, opts=antaresRead::simOptions())
+get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly")
 {
 #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
 max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
 if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
   max_turb <- max_hydro[, max(hstorPMaxHigh)] * 168
 } else {
-  max_turb <- max(max_hydro$generatingMaxPower) * 168
-  max_pump <- max(max_hydro$pumpingMaxPower) * 168
+  if (timeStep=="hourly"){
+    max_turb <- max_hydro$generatingMaxPower
+    max_pump <- max_hydro$pumpingMaxPower
+  } else if (timeStep=="daily"){
+    max_hydro$day <- (max_hydro$timeId-1)%/%24+1
+    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,day),turb=sum(generatingMaxPower),
+                           pump=sum(pumpingMaxPower))
+    max_turb <- max_hydro$turb
+    max_pump <- max_hydro$pump
+  } else if (timeStep=="weekly"){
+    max_hydro$week <- (max_hydro$timeId-1)%/%168+1
+    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,week),turb=sum(generatingMaxPower),
+                           pump=sum(pumpingMaxPower))
+    max_turb <- max_hydro$turb
+    max_pump <- max_hydro$pump
+  } else {message("timeStep not supported, change to hourly, weekly or daily")}
+
 }
-max_hydro <- list()
+max_hydro <- data.frame(timeId=seq(nrow(max_hydro)))
 max_hydro$pump <- max_pump
 max_hydro$turb <- max_turb
-class(max_hydro) <- "max turbining and pumping weekly energy"
 return(max_hydro)
 }
 

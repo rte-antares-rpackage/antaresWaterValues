@@ -104,7 +104,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(less = rep(constraint_value, times = 366)),
+      values = data.frame(less = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "less",
@@ -143,7 +143,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(equal = rep(constraint_value, times = 366)),
+      values = data.frame(equal = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
@@ -174,10 +174,9 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 #' @param pumping_efficiency between 0 and 1. the pumping efficiency ratio.
 #' @param opts
 #'   List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}
-#' @param reduce_number_simulations If T, generate 3 simulations : max pumping, 0 and intermediate generating
 #'
 #' @export
-constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts,reduce_number_simulations=F)
+constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts)
 {
 
 
@@ -186,64 +185,74 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
 
 
-  max_hydro <- get_max_hydro(area,opts)
+  max_hydro <- get_max_hydro(area,opts,timeStep = "weekly")
   res_cap <- get_reservoir_capacity(area,opts)
-  max_app <- max(max( antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")$hydroStorage),0)
-  maxi <- min(max_hydro$turb,res_cap+max_app)
-  mini <- -max_hydro$pump*pumping_efficiency
+  max_app <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly") %>%
+    dplyr::group_by(timeId) %>%
+    dplyr::summarise(max_app=max(hydroStorage))
+  max_hydro <- left_join(max_hydro,max_app,by=c("timeId"))
 
+  weeks <- dplyr::distinct(max_hydro,timeId)$timeId
+  df_constraint <- data.frame(week=weeks)
+  df_constraint$u <- sapply(df_constraint$week,
+                            FUN = function(w) constraint_week(pumping,pumping_efficiency,nb_disc_stock,res_cap,dplyr::filter(max_hydro,timeId==w)),
+                            simplify = F)
 
-  if(!reduce_number_simulations){
-    if(pumping){
-      if (nb_disc_stock<3){
-        message("nb_disc_stock should be greater than 2")
-        constraint_values <- c(0)
-      } else {
-        total <- maxi-mini
+  df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
+  df_constraint <- df_constraint %>%
+    tidyr::pivot_longer(cols=2:length(df_constraint),names_to="sim",values_to="u") %>%
+    dplyr::arrange(.data$week,.data$u)
 
-        pump_rat <- 2
-        turb_rat <- 2
-        if (nb_disc_stock>=4){
-          for (i in 1:(nb_disc_stock+1-4)){
-            inc_pump <- abs(abs(mini)/(pump_rat+1)-abs(maxi)/turb_rat)
-            inc_turb <- abs(abs(maxi)/(turb_rat+1)-abs(mini)/pump_rat)
-            if (inc_pump<inc_turb){
-              pump_rat <- pump_rat+1
-            } else {
-              turb_rat <- turb_rat+1
-            }
-          }
-        }
-        constraint_values_pump <- seq(from=mini,to=0,length.out=pump_rat)
-        constraint_values_turb <- seq(from=0,to=maxi,length.out=turb_rat)
-
-        constraint_values <- append(constraint_values_pump,constraint_values_turb)
-        constraint_values <- constraint_values[!duplicated(constraint_values)]
-
-        constraint_values <- round(constraint_values)
-
-      }
-
-    }else{
-      if (nb_disc_stock<2){
-        message("nb_disc_stock should be greater than 1")
-        constraint_values <- c(0)
-      } else {
-        constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
-        constraint_values <- round(constraint_values)
-        }
-      }
-  } else {
-    constraint_values <- append(seq(from=mini,to=0,length.out=2),seq(from=0,to=maxi/2,length.out=2))
-    constraint_values <- constraint_values[!duplicated(constraint_values)]
-  }
-
-
-  return(constraint_values)
+  return(df_constraint)
 }
 
 
+constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro){
+  maxi <- min(hydro$turb,res_cap+hydro$max_app)
+  mini <- -hydro$pump*pumping_efficiency
 
+  if(pumping){
+    if(nb_disc_stock<3){
+      message("nb_disc_stock should be greater than 2")
+      constraint_values <- c(0)
+    } else {
+      total <- maxi-mini
+
+      pump_rat <- 2
+      turb_rat <- 2
+      if (nb_disc_stock>=4){
+        for (i in 1:(nb_disc_stock+1-4)){
+          inc_pump <- abs(abs(mini)/(pump_rat+1)-abs(maxi)/turb_rat)
+          inc_turb <- abs(abs(maxi)/(turb_rat+1)-abs(mini)/pump_rat)
+          if (inc_pump<inc_turb){
+            pump_rat <- pump_rat+1
+          } else {
+            turb_rat <- turb_rat+1
+          }
+        }
+      }
+      constraint_values_pump <- seq(from=mini,to=0,length.out=pump_rat)
+      constraint_values_turb <- seq(from=0,to=maxi,length.out=turb_rat)
+
+      constraint_values <- append(constraint_values_pump,constraint_values_turb)
+      constraint_values <- constraint_values[!duplicated(constraint_values)]
+
+      constraint_values <- round(constraint_values)
+    }
+
+
+  }else{
+    if(nb_disc_stock<2){
+      message("nb_disc_stock should be greater than 1")
+      constraint_values <- c(0)
+    } else {
+      constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
+      constraint_values <- round(constraint_values)
+    }
+
+  }
+  return(constraint_values)
+}
 
 generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = simOptions()){
 

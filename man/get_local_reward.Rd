@@ -8,8 +8,7 @@ get_local_reward(
   opts,
   hours,
   possible_controls,
-  T_max,
-  P_max,
+  max_hydro,
   area_price,
   mcyears,
   district_balance = "water values district",
@@ -22,11 +21,9 @@ get_local_reward(
 
 \item{hours}{vector of hours used to evaluate costs/rewards of pumping/generating}
 
-\item{possible_controls}{vector of controls evaluated}
+\item{possible_controls}{data.frame {week,u} of controls evaluated per week}
 
-\item{T_max}{Max generating power}
-
-\item{P_max}{Max pumping power}
+\item{max_hydro}{data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values}
 
 \item{area_price}{Area used to evaluate marginal prices}
 

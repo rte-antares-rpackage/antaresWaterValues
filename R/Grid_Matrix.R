@@ -166,8 +166,6 @@
   decimals <- 6
   {
     if(is.null(inflow)){
-      tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
-      tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = tmp_name)
       inflow <-antaresRead::readInputTS(hydroStorage = area, timeStep="weekly")
     }
     inflow[with(inflow, order(tsId, timeId)),]
@@ -213,6 +211,11 @@
       decision_space <- reward_db$simulation_values[,c("week","u")]
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward
+
+
+    } else {
+      decision_space <- simulation_values[,c("week","u")]
+      decision_space <- round(decision_space)
     }
 
     reward_db <- reward_db[timeId %in% seq_len(n_week)]}

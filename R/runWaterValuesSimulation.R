@@ -57,7 +57,8 @@ runWaterValuesSimulation <- function(area,
                                      pumping=F,
                                      efficiency=NULL,
                                      launch_simulations=T,
-                                     reset_hydro=T,...){
+                                     reset_hydro=T,
+                                     constraint_values=NULL,...){
 
 
 
@@ -107,10 +108,13 @@ runWaterValuesSimulation <- function(area,
   thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
 
   # Get max hydro power that can be generated in a week
-  constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
-                                            pumping=pumping,
-                                            pumping_efficiency = efficiency,
-                                            opts=opts)
+  if (is.null(constraint_values)){
+    constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
+                                              pumping=pumping,
+                                              pumping_efficiency = efficiency,
+                                              opts=opts)
+  }
+
 
   # Get efficiency
 
@@ -159,7 +163,6 @@ runWaterValuesSimulation <- function(area,
 
 
   for (i in 1:nb_disc_stock) {
-    browser()
     # Prepare simulation parameters
     name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
     constraint_value <- constraint_values$u[seq.int(i,nrow(constraint_values),nb_disc_stock)]/7

@@ -211,34 +211,44 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
   mini <- -hydro$pump*pumping_efficiency
 
   if(pumping){
-    assertthat::assert_that(nb_disc_stock>=3)
-    total <- maxi-mini
+    if(nb_disc_stock<3){
+      message("nb_disc_stock should be greater than 2")
+      constraint_values <- c(0)
+    } else {
+      total <- maxi-mini
 
-    pump_rat <- 2
-    turb_rat <- 2
-    if (nb_disc_stock>=4){
-      for (i in 1:(nb_disc_stock+1-4)){
-        inc_pump <- abs(abs(mini)/(pump_rat+1)-abs(maxi)/turb_rat)
-        inc_turb <- abs(abs(maxi)/(turb_rat+1)-abs(mini)/pump_rat)
-        if (inc_pump<inc_turb){
-          pump_rat <- pump_rat+1
-        } else {
-          turb_rat <- turb_rat+1
+      pump_rat <- 2
+      turb_rat <- 2
+      if (nb_disc_stock>=4){
+        for (i in 1:(nb_disc_stock+1-4)){
+          inc_pump <- abs(abs(mini)/(pump_rat+1)-abs(maxi)/turb_rat)
+          inc_turb <- abs(abs(maxi)/(turb_rat+1)-abs(mini)/pump_rat)
+          if (inc_pump<inc_turb){
+            pump_rat <- pump_rat+1
+          } else {
+            turb_rat <- turb_rat+1
+          }
         }
       }
+      constraint_values_pump <- seq(from=mini,to=0,length.out=pump_rat)
+      constraint_values_turb <- seq(from=0,to=maxi,length.out=turb_rat)
+
+      constraint_values <- append(constraint_values_pump,constraint_values_turb)
+      constraint_values <- constraint_values[!duplicated(constraint_values)]
+
+      constraint_values <- round(constraint_values)
     }
-    constraint_values_pump <- seq(from=mini,to=0,length.out=pump_rat)
-    constraint_values_turb <- seq(from=0,to=maxi,length.out=turb_rat)
 
-    constraint_values <- append(constraint_values_pump,constraint_values_turb)
-    constraint_values <- constraint_values[!duplicated(constraint_values)]
-
-    constraint_values <- round(constraint_values)
 
   }else{
-    assertthat::assert_that(nb_disc_stock>=2)
-    constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
-    constraint_values <- round(constraint_values)
+    if(nb_disc_stock<2){
+      message("nb_disc_stock should be greater than 1")
+      constraint_values <- c(0)
+    } else {
+      constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
+      constraint_values <- round(constraint_values)
+    }
+
   }
   return(constraint_values)
 }

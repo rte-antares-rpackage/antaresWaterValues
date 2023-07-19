@@ -40,6 +40,8 @@ Grid_Matrix(
   method_old_gain = F,
   hours_reward_calculation = c(seq.int(0, 168, 10), 168),
   controls_reward_calculation = NULL,
+  max_hydro_hourly = NULL,
+  max_hydro_weekly = NULL,
   ...
 )
 }
@@ -130,6 +132,10 @@ between two water values is less then this value those values are converged.}
 \item{hours_reward_calculation}{If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating}
 
 \item{controls_reward_calculation}{If method_old_gain=F, vector of controls evaluated}
+
+\item{max_hydro_hourly}{Hourly maximum pumping and turbining powers}
+
+\item{max_hydro_weekly}{Weekly maximum pumping and turbining powers}
 
 \item{...}{further arguments passed to or from other methods.}
 }

@@ -174,9 +174,12 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 #' @param pumping_efficiency between 0 and 1. the pumping efficiency ratio.
 #' @param opts
 #'   List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}
+#' @param max_hydro weekly pumping and turbining maximum powers
+#' @param inflow weekly inflow
 #'
 #' @export
-constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts)
+constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts,max_hydro=NULL,
+                                 inflow=NULL)
 {
 
 
@@ -185,9 +188,14 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
 
 
-  max_hydro <- get_max_hydro(area,opts,timeStep = "weekly")
+  if(is.null(max_hydro)){
+    max_hydro <- get_max_hydro(area,opts,timeStep = "weekly")
+  }
   res_cap <- get_reservoir_capacity(area,opts)
-  max_app <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly") %>%
+  if (is.null(inflow)){
+    inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly")
+  }
+  max_app <- inflow %>%
     dplyr::group_by(timeId) %>%
     dplyr::summarise(max_app=max(hydroStorage))
   max_hydro <- left_join(max_hydro,max_app,by=c("timeId"))

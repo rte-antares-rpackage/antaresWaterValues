@@ -195,7 +195,7 @@ runWaterValuesSimulation <- function(area,
 
     #remove the Binding Constraints
 
-    disable_constraint(constraint_value,name_bc,pumping,opts)
+    disable_constraint(constraint_value,name_bc,pumping,opts,area = area)
 
     #Simulation Control
     sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))

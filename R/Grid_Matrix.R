@@ -54,6 +54,8 @@
 #' @param method_old_gain If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices
 #' @param hours_reward_calculation If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating
 #' @param controls_reward_calculation If method_old_gain=F, vector of controls evaluated
+#' @param max_hydro_hourly Hourly maximum pumping and turbining powers
+#' @param max_hydro_weekly Weekly maximum pumping and turbining powers
 #'
 #' @return a \code{data.table}
 #' @export
@@ -95,6 +97,8 @@
                              method_old_gain = F,
                              hours_reward_calculation = c(seq.int(0,168,10),168),
                              controls_reward_calculation = NULL,
+                          max_hydro_hourly=NULL,
+                          max_hydro_weekly=NULL,
                         ...) {
 
 
@@ -180,7 +184,10 @@
   options("antares" = opts)
 
   # max hydro
-  max_hydro <- get_max_hydro(area,timeStep = "hourly")
+  if (is.null(max_hydro_hourly)){
+    max_hydro_hourly <- get_max_hydro(area,timeStep = "hourly")
+  }
+
 
   # Reward
   {
@@ -201,7 +208,7 @@
 
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,
-                           method_old = method_old_gain,max_hydro=max_hydro,
+                           method_old = method_old_gain,max_hydro=max_hydro_hourly,
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
                            simulation_values = simulation_values, mcyears=mcyears,area=area,
@@ -272,9 +279,11 @@
 
 
   # max hydro
-  max_hydro <- get_max_hydro(area,timeStep = "weekly")
-  E_max <-max_hydro$turb
-  P_max <- max_hydro$pump
+  if (is.null(max_hydro_weekly)){
+    max_hydro_weekly <- get_max_hydro(area,timeStep = "weekly")
+  }
+  E_max <-max_hydro_weekly$turb
+  P_max <- max_hydro_weekly$pump
 
 
 

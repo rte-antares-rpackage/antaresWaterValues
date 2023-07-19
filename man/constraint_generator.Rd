@@ -9,7 +9,9 @@ constraint_generator(
   nb_disc_stock,
   pumping = F,
   pumping_efficiency = NULL,
-  opts
+  opts,
+  max_hydro = NULL,
+  inflow = NULL
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ constraint_generator(
 \item{pumping_efficiency}{between 0 and 1. the pumping efficiency ratio.}
 
 \item{opts}{List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}}
+
+\item{max_hydro}{weekly pumping and turbining maximum powers}
+
+\item{inflow}{weekly inflow}
 }
 \description{
 Generate the list of constraint values of the link between the fictive area and the real one

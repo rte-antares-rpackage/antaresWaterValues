@@ -20,7 +20,7 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
            vu_pen=dplyr::case_when(states>level_high ~ vu - penalty_level_high,
                             states<level_low ~ vu + penalty_level_low,
                             TRUE ~ vu)) %>%
-    dplyr::rename(vu=.data$vu_pen,vu_pen=.data$vu)
+    dplyr::rename(vu="vu_pen",vu_pen="vu")
 
   print(waterValuesViz(value_nodes_dt))
   return(value_nodes_dt)
@@ -263,7 +263,7 @@ correct_concavity <- function(df_value_node, weeks){
     states <- dplyr::distinct(df_week,states) %>% dplyr::pull(states)
     for (x in states){
       df_week <- df_week %>% dplyr::filter(states==x) %>%
-        dplyr::rename(value_x=.data$new_value,states_x=states) %>%
+        dplyr::rename(value_x="new_value",states_x="states") %>%
         select("years", "states_x", "value_x") %>%
         dplyr::right_join(df_week, by=c("years")) %>%
         dplyr::mutate(coef=(.data$new_value-.data$value_x)/(states-.data$states_x)) %>%

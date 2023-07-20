@@ -1,4 +1,4 @@
-#' Restore the hydro storage time series
+#' Restore the hydro storage time series, used in \code{runWaterValuesSimulation}
 #'
 #' @param area A valid Antares area.
 #' @param path Path to a manual backup.
@@ -52,7 +52,7 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
 
 
 
-#' Reset to 0 the hydro storage time series
+#' Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}
 #'
 #'
 #' @param area A valid Antares area.
@@ -272,6 +272,13 @@ getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOption
   Pump_Efficiency
 }
 
+#' Change the mode of management of an area
+#'
+#' @param watervalues Binary. T if use watervalues
+#' @param heuristic Binary. T if use heuristic
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param area Antares area
 changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
   hydro_ini <- antaresEditObject::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
   assert_that(area %in% names(hydro_ini$reservoir),msg = "No reservoir managment for this area, check Antares study")

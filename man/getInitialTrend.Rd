@@ -3,7 +3,7 @@
 \name{getInitialTrend}
 \alias{getInitialTrend}
 \title{Calculate a trajectory for the reservoir levels inside rule curves
-taking into account the mean inflow}
+taking into account the mean inflow, used in \code{calculateBellmanWithIterativeSimulations}}
 \usage{
 getInitialTrend(
   level_init,
@@ -42,5 +42,5 @@ to evaluate (constraint) for each week (w)
 }
 \description{
 Calculate a trajectory for the reservoir levels inside rule curves
-taking into account the mean inflow
+taking into account the mean inflow, used in \code{calculateBellmanWithIterativeSimulations}
 }

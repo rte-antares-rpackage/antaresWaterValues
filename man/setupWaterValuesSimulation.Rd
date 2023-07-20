@@ -2,7 +2,8 @@
 % Please edit documentation in R/setupWaterValuesSimulation.R
 \name{setupWaterValuesSimulation}
 \alias{setupWaterValuesSimulation}
-\title{Setup a simulation before running it for calculating Water Values}
+\title{Setup a simulation before running it for calculating Water Values,
+used in \code{runWaterValuesSimulation}}
 \usage{
 setupWaterValuesSimulation(
   area,
@@ -47,5 +48,6 @@ setupWaterValuesSimulation(
 The result of antaresRead::simOptions
 }
 \description{
-Setup a simulation before running it for calculating Water Values
+Setup a simulation before running it for calculating Water Values,
+used in \code{runWaterValuesSimulation}
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/iterations_simulation_DP.R
 \name{updateReward}
 \alias{updateReward}
-\title{Update df_rewards with latest simulation run}
+\title{Update df_rewards with latest simulation run,
+used in \code{calculateBellmanWithIterativeSimulations}}
 \usage{
 updateReward(
   study_path,
@@ -51,5 +52,6 @@ iteration number}
 Updated data frame df_rewards
 }
 \description{
-Update df_rewards with latest simulation run
+Update df_rewards with latest simulation run,
+used in \code{calculateBellmanWithIterativeSimulations}
 }

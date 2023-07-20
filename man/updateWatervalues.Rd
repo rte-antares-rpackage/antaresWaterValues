@@ -2,7 +2,8 @@
 % Please edit documentation in R/iterations_simulation_DP.R
 \name{updateWatervalues}
 \alias{updateWatervalues}
-\title{Calculate water values with \code{Grid_Matrix} from estimated reward}
+\title{Calculate water values with \code{Grid_Matrix} from estimated reward,
+used in \code{calculateBellmanWithIterativeSimulations}}
 \usage{
 updateWatervalues(
   reward,
@@ -64,5 +65,6 @@ powers for each week,returned by the function  \code{get_max_hydro}}
 List containing aggregated water values and the data table with all years
 }
 \description{
-Calculate water values with \code{Grid_Matrix} from estimated reward
+Calculate water values with \code{Grid_Matrix} from estimated reward,
+used in \code{calculateBellmanWithIterativeSimulations}
 }

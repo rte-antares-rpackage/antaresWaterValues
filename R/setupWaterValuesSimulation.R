@@ -1,4 +1,5 @@
-#' Setup a simulation before running it for calculating Water Values
+#' Setup a simulation before running it for calculating Water Values,
+#' used in \code{runWaterValuesSimulation}
 #'
 #' @param area The area concerned by the simulation.
 #' @param fictive_area_name Name of the fictive area to create.

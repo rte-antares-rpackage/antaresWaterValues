@@ -2,7 +2,7 @@
 % Please edit documentation in R/hydro_storage_functions.R
 \name{restoreHydroStorage}
 \alias{restoreHydroStorage}
-\title{Restore the hydro storage time series}
+\title{Restore the hydro storage time series, used in \code{runWaterValuesSimulation}}
 \usage{
 restoreHydroStorage(
   area,
@@ -25,5 +25,5 @@ restoreHydroStorage(
 An updated list containing various information about the simulation.
 }
 \description{
-Restore the hydro storage time series
+Restore the hydro storage time series, used in \code{runWaterValuesSimulation}
 }

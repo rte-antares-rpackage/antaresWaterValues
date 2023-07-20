@@ -2,7 +2,7 @@
 % Please edit documentation in R/math_functions.R
 \name{converged}
 \alias{converged}
-\title{test a difference vector convergence}
+\title{test a difference vector convergence, used in \code{Grid_Matrix}}
 \usage{
 converged(diff_vect, conv = 1)
 }
@@ -12,5 +12,5 @@ converged(diff_vect, conv = 1)
 \item{conv}{is the value from which the difference become converged}
 }
 \description{
-test a difference vector convergence
+test a difference vector convergence, used in \code{Grid_Matrix}
 }

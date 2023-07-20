@@ -2,7 +2,8 @@
 % Please edit documentation in R/get_Reward.R
 \name{get_local_reward_turb}
 \alias{get_local_reward_turb}
-\title{Calculate rewards for a simulation based on marginal prices for a stock with only generating power}
+\title{Calculate rewards for a simulation based on marginal prices for a stock
+with only generating power, mainly used in \code{Get_Reward}}
 \usage{
 get_local_reward_turb(
   opts,
@@ -31,5 +32,6 @@ get_local_reward_turb(
 a data.table {mcYear,week,u,reward}
 }
 \description{
-Calculate rewards for a simulation based on marginal prices for a stock with only generating power
+Calculate rewards for a simulation based on marginal prices for a stock
+with only generating power, mainly used in \code{Get_Reward}
 }

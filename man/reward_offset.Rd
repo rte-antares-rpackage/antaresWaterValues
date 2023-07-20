@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_Reward.R
 \name{reward_offset}
 \alias{reward_offset}
-\title{Modify local reward to take into account overall cost of the simulation}
+\title{Modify local reward to take into account overall cost of the simulation, mainly used in \code{Get_Reward}}
 \usage{
 reward_offset(
   opts,
@@ -28,5 +28,5 @@ reward_offset(
 a data.table {mcYear,week,u,reward}
 }
 \description{
-Modify local reward to take into account overall cost of the simulation
+Modify local reward to take into account overall cost of the simulation, mainly used in \code{Get_Reward}
 }

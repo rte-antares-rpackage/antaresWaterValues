@@ -3,7 +3,8 @@
 \name{getOptimalTrend}
 \alias{getOptimalTrend}
 \title{Calculate an optimal trajectory for the reservoir levels based on water values
-taking into account the mean inflow}
+taking into account the mean inflow,
+used in \code{calculateBellmanWithIterativeSimulations}}
 \usage{
 getOptimalTrend(
   level_init,
@@ -45,5 +46,6 @@ to evaluate (constraint) for each week (w)
 }
 \description{
 Calculate an optimal trajectory for the reservoir levels based on water values
-taking into account the mean inflow
+taking into account the mean inflow,
+used in \code{calculateBellmanWithIterativeSimulations}
 }

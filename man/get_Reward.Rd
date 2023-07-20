@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_Reward.R
 \name{get_Reward}
 \alias{get_Reward}
-\title{Get the reward matrix from simulations}
+\title{Get the reward matrix from simulations, mainly used in \code{Grid_Matrix}}
 \usage{
 get_Reward(
   simulation_values = NULL,
@@ -55,5 +55,5 @@ get_Reward(
 list containing a data.table {timeid,MCyear,simulation overall cost}, list of simulations names and list of simulations values
 }
 \description{
-Get the reward matrix from simulations
+Get the reward matrix from simulations, mainly used in \code{Grid_Matrix}
 }

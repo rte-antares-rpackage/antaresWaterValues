@@ -2,7 +2,7 @@
 % Please edit documentation in R/Bellman.R
 \name{Bellman}
 \alias{Bellman}
-\title{Compute Bellman values at step i from step i+1}
+\title{Compute Bellman values at step i from step i+1, used in \code{Grid_Matrix}}
 \usage{
 Bellman(
   Data_week,
@@ -74,5 +74,5 @@ interpolations. Defaults to FALSE.}
 a \code{data.table} like Data_week with the Bellman values
 }
 \description{
-Compute Bellman values at step i from step i+1
+Compute Bellman values at step i from step i+1, used in \code{Grid_Matrix}
 }

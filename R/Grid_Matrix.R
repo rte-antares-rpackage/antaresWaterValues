@@ -57,7 +57,8 @@
 #' @param max_hydro_hourly Hourly maximum pumping and turbining powers
 #' @param max_hydro_weekly Weekly maximum pumping and turbining powers
 #'
-#' @return a \code{data.table}
+#' @return List of a data.frame with aggregated water values and
+#' a data.frame of more detailed water values
 #' @export
 #'
 #' @importFrom assertthat assert_that

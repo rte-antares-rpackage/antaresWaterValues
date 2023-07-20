@@ -2,7 +2,8 @@
 % Please edit documentation in R/iterations_simulation_DP.R
 \name{getCalculatedReward}
 \alias{getCalculatedReward}
-\title{Compare expected reward and Antares calculated reward}
+\title{Compare expected reward and Antares calculated reward,
+used in \code{calculateBellmanWithIterativeSimulations}}
 \usage{
 getCalculatedReward(reward, levels, expected_reward)
 }
@@ -19,5 +20,6 @@ to evaluate (constraint) for each week (w)}
 Data frame with expected reward, calculated reward and gap between them
 }
 \description{
-Compare expected reward and Antares calculated reward
+Compare expected reward and Antares calculated reward,
+used in \code{calculateBellmanWithIterativeSimulations}
 }

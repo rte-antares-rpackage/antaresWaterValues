@@ -2,7 +2,8 @@
 % Please edit documentation in R/math_functions.R
 \name{value_node_gen}
 \alias{value_node_gen}
-\title{Calculate water values from Bellman values}
+\title{Calculate water values from Bellman values, used in \code{Grid_Matrix} and
+\code{build_data_watervalues}}
 \usage{
 value_node_gen(watervalues, statesdt, reservoir)
 }
@@ -14,5 +15,6 @@ value_node_gen(watervalues, statesdt, reservoir)
 \item{reservoir}{an intermediate result in Grid_Matrix contains the reservoir levels}
 }
 \description{
-Calculate water values from Bellman values
+Calculate water values from Bellman values, used in \code{Grid_Matrix} and
+\code{build_data_watervalues}
 }

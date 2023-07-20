@@ -2,7 +2,8 @@
 % Please edit documentation in R/iterations_simulation_DP.R
 \name{getExpectedReward}
 \alias{getExpectedReward}
-\title{Calculate the expected reward based on df_rewards for the new controls to evaluate}
+\title{Calculate the expected reward based on df_rewards for the new controls to evaluate,
+used in \code{calculateBellmanWithIterativeSimulations}}
 \usage{
 getExpectedReward(reward, levels)
 }
@@ -17,5 +18,6 @@ to evaluate (constraint) for each week (w)}
 Data frame {mcYear, week, u, reward}
 }
 \description{
-Calculate the expected reward based on df_rewards for the new controls to evaluate
+Calculate the expected reward based on df_rewards for the new controls to evaluate,
+used in \code{calculateBellmanWithIterativeSimulations}
 }

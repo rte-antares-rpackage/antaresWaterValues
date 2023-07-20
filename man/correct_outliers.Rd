@@ -2,7 +2,7 @@
 % Please edit documentation in R/math_functions.R
 \name{correct_outliers}
 \alias{correct_outliers}
-\title{Replace outliers values by spline}
+\title{Replace outliers values by spline, used in \code{Bellman} and \code{Grid_Matrix}}
 \usage{
 correct_outliers(vector)
 }
@@ -10,5 +10,5 @@ correct_outliers(vector)
 \item{vector}{numeric vector to remove outliers values from it.}
 }
 \description{
-Replace outliers values by spline
+Replace outliers values by spline, used in \code{Bellman} and \code{Grid_Matrix}
 }

@@ -140,7 +140,8 @@ between two water values is less then this value those values are converged.}
 \item{...}{further arguments passed to or from other methods.}
 }
 \value{
-a \code{data.table}
+List of a data.frame with aggregated water values and
+a data.frame of more detailed water values
 }
 \description{
 Calculate grid layer matrix of Bellman values and water values

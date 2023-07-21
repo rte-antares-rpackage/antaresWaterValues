@@ -78,7 +78,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
   reservoir <- reservoir[, timeId := c(rep(seq_len(52), each = 7), 52)]
   reservoir <- reservoir[, lapply(.SD, mean), by = timeId, .SDcols = vars]
   if (byReservoirCapacity) {
-    reservoirCapacity <- getReservoirCapacity(area = area, opts = opts)
+    reservoirCapacity <- get_reservoir_capacity(area = area, opts = opts)
     if (!is.null(reservoirCapacity)) {
       vars <- c("level_low", "level_avg", "level_high")
       reservoir <- reservoir[,
@@ -131,7 +131,7 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
     reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = timeId, .SDcols = vars]
   }
   if (byReservoirCapacity) {
-    reservoirCapacity <- getReservoirCapacity(area = area, opts = opts)
+    reservoirCapacity <- get_reservoir_capacity(area = area, opts = opts)
     if (!is.null(reservoirCapacity)) {
       vars <- c("level_low", "level_avg", "level_high")
       reservoir <- reservoir[

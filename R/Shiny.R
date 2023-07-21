@@ -30,15 +30,6 @@ shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
 opts <- antaresRead::setSimulationPath(simulation = "input")
 options("antares" = opts)
 
-otp_variables <- c("Real OV. COST","stockDiff","hydro_price",
-                   "hydro_stockDiff_cost","hydro_cost","total_hydro_cost"
-                   ,"OV. COST", "OP. COST","MRG. PRICE", "CO2 EMIS.", "BALANCE",
-    "ROW BAL.", "PSP", "MISC. NDG", "LOAD", "H. ROR","WIND", "SOLAR", "NUCLEAR",
-    "LIGNITE","COAL",  "GAS", "OIL","MIX. FUEL","MISC. DTG","H. STOR",
-    "H. PUMP","H. LEV", "H. INFL", "H. OVFL","H. VAL", "H. COST","UNSP. ENRG",
-    "SPIL. ENRG", "LOLD","LOLP", "AVL DTG", "DTG MRG","MAX MRG", "NP COST",
-    "NODU")
-
 
 #------User interface-----
 linebreaks <- function(n){shiny::HTML(strrep(shiny::br(), n))}
@@ -71,16 +62,6 @@ ui <- shiny::fluidPage(
                  bsplus::shiny_iconlink() %>%
                    bsplus::bs_embed_popover(title = "The area concerned by the simulation.")),
 
-             # shinyWidgets::pickerInput("remove_areas",
-             #             "choose the areas to eliminate from result calculation",
-             #             opts$areaList,
-             #             options = list(
-             #               `live-search` = TRUE),
-             #             multiple = TRUE)%>%
-             #   bsplus::shinyInput_label_embed(
-             #     bsplus::shiny_iconlink() %>%
-             #       bs_embed_popover(title = "area(s) to remove from the created district.")),
-
              shiny::textInput("solver_path","Solver path "
                        ,value="xxxxxxx/bin/antares-8.0-solver.exe"),
 
@@ -88,60 +69,22 @@ ui <- shiny::fluidPage(
                                 "bottom"),
 
              shiny::h2("Simulation parameters"),
-             shiny::textInput("sim_simulation_name","Simulation name "
-                       ,value="weekly_water_amount_%s"),
-
-             shinyBS::bsTooltip("sim_simulation_name", " The name of the simulation, add %s in the end to add constraints values to the names.",
-                                "bottom"),
 
              shinyWidgets::materialSwitch("pumping","Activate Pumping",value=F,status = "success")%>%
                bsplus::shinyInput_label_embed(
                  bsplus::shiny_iconlink() %>%
                    bsplus::bs_embed_popover(title ="Take into account the pumping in the area.")),
 
-             shinyWidgets::materialSwitch("reduce","Use reduced number of simulations",
-                            value=F,status = "success")%>%
-               bsplus::shinyInput_label_embed(
-                 bsplus::shiny_iconlink() %>%
-                   bsplus::bs_embed_popover(title ="If used, only 2 or 3 simulations will be run, should be used with interpolation when calculating watervalues")),
 
-
-             shiny::conditionalPanel(
-               condition="!input.reduce",
-               shiny::numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
+             shiny::numericInput("sim_nb_disc_stock","Number of reservoir discretization",value=2,
                             min=1),
                shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
-                                  "bottom")),
+                                  "bottom"),
 
              shiny::sliderInput("sim_mcyears",label="choose the number of MC years to simulate",min=1,
                          max=opts$parameters$general$nbyears,
                          value=c(1,opts$parameters$general$nbyears),step=1),
              shinyBS::bsTooltip("sim_mcyears", " Number of Monte Carlo years to simulate.",
-                                "bottom"),
-
-             shinyWidgets::pickerInput("link_from",
-                         "Choose the area to link with the fictive area",
-                         opts$areaList,
-                         options = list(
-                           `live-search` = TRUE)) %>%
-               bsplus::shinyInput_label_embed(
-                 bsplus::shiny_iconlink() %>%
-                   bsplus::bs_embed_popover(title = "The area that will be linked with the created fictive area.")),
-
-
-             shiny::textInput("sim_binding_constraint","Name of the binding constraint "
-                       ,value="WeeklyWaterAmount"),
-             shinyBS::bsTooltip("sim_binding_constraint", " Name of the binding constraint of energy on the link between the area and the fictive area.",
-                                "bottom"),
-
-             shiny::textInput("sim_fictive_area","Name of the fictive area to create "
-                       ,value="fictive_watervalues"),
-             shinyBS::bsTooltip("sim_fictive_area", " Name of the fictive area to create.",
-                                "bottom"),
-
-             shiny::textInput("sim_thermal_cluster","Name of the thermal cluster to create.",value = "WaterValueCluster"),
-
-             shinyBS::bsTooltip("sim_thermal_cluster", " Name of thermal cluster to create which will generate the free power in the fictive area.",
                                 "bottom"),
 
              shiny::h2("Saving parameters"),
@@ -181,25 +124,13 @@ ui <- shiny::fluidPage(
       shiny::sidebarLayout(
 
         shiny::sidebarPanel(
-          # shinyWidgets::materialSwitch("wv_input","Auto calculated",
-          #                value=F,status = "success")%>%
-          #   bsplus::shinyInput_label_embed(
-          #     bsplus::shiny_iconlink() %>%
-          #       bs_embed_popover(title ="If you have your simulations output use the auto mode to recalculate the inflows and rewards. If you have those data in R files use custom mode.")),
           shiny::h1("Calculate watervalues"),
           shiny::h2("Study parameters"),
 
           shiny::fileInput("ini_file", label = "Rdata file containing the simulations"),
           shinyBS::bsTooltip("ini_file", " Select the Rdata file that contains the simulation results.",
                              "bottom"),
-          shiny::conditionalPanel(condition="input.wv_input",
-          shiny::fileInput("reward_file", label = "Rdata file containing the Reward Matrix"),
-          shinyBS::bsTooltip("reward_file", " Select the Rdata file that contains the reward matrix.",
-                             "bottom"),
-          shiny::fileInput("inflow_file", label = "Rdata file containing the weekly inflow "),
-          shinyBS::bsTooltip("inflow_file", " Select the Rdata file that contains the weekly inflow generated by ReadAntares",
-                             "bottom"),
-          ),
+
           #area
           shinyWidgets::pickerInput("Area",
             "Choose the area",
@@ -210,16 +141,6 @@ ui <- shiny::fluidPage(
               bsplus::shiny_iconlink() %>%
                 bsplus::bs_embed_popover(title = "the area which you will calculate the water values in it.")),
 
-
-          #District List
-          shinyWidgets::pickerInput("district_name",
-                      "Choose the district",
-                      opts$districtList,
-                      options = list(
-                        `live-search` = TRUE))%>%
-               bsplus::shinyInput_label_embed(
-                 bsplus::shiny_iconlink() %>%
-                   bsplus::bs_embed_popover(title = "the district that will be used in calculation of the rewards of transitions.")),
 
           shinyWidgets::materialSwitch("pumping_cal","Pumping",
                          value=F,status = "success")%>%
@@ -432,20 +353,7 @@ ui <- shiny::fluidPage(
             shiny::sidebarPanel(
               shiny::h1("Rewards plot"),
 
-
-              shinyWidgets::pickerInput("district_name_rew",
-                          "Choose the District",
-                          opts$districtList,
-                          options = list(
-                            `live-search` = TRUE)),
-              shinyBS::bsTooltip("district_name_rew", " the district that will be used in calculation of the rewards of transitions.",
-                                 "bottom"),
               shiny::actionButton("import_reward","Import reward"),
-
-              shiny::textInput("simulation_name_pattern","Simulation name patern"
-                        ,value="weekly_water_amount_"),
-              shinyBS::bsTooltip("simulation_name_pattern", " the simulation name pattern must be adequate with the simulaion names (just remove constraints values from the names).",
-                                 "bottom"),
 
               shiny::sliderInput("week_id_rew","Week to show",value=c(2,2),
                            min=1,max = 52),
@@ -766,257 +674,6 @@ shiny::tabPanel("Iterative calculation of Bellman values",
 
 ),
 
-  #----------Results UI-------
-  shiny::navbarMenu("Results panels",
-
-  shiny::tabPanel("Results",
-
-
-            shiny::sidebarLayout(
-              shiny::sidebarPanel(
-
-
-                shinyWidgets::pickerInput(
-                  inputId = "res_sim_name",
-                  label = "Choose your simulation",
-                  choices = getSimulationNames("",opts = opts),
-                  options = list(
-                    `live-search` = TRUE)
-                ),
-
-                shinyWidgets::pickerInput(
-                  inputId = "res_area",
-                  label = "Choose your Area",
-                  choices = opts$areaList,
-                  options = list(
-                    `live-search` = TRUE)
-                ),
-
-                shinyWidgets::radioGroupButtons(
-                  inputId = "res_timeStep",
-                  label = "Select Time Step",
-                  choices = c("daily","weekly","monthly"),
-                  individual = TRUE,
-                  justified = TRUE,
-                  checkIcon = list(
-                    yes = shiny::icon("ok",
-                               lib = "glyphicon"))
-                ),
-
-
-                shinyWidgets::radioGroupButtons(
-                  inputId = "res_MC",
-                  label = "Select Monte Carlo Year",
-                  choices = c("Synthesis Year"="NULL","All"='all',"Custom"),
-                  individual = TRUE,
-                  justified = TRUE,
-                  checkIcon = list(
-                    yes = shiny::icon("ok",
-                               lib = "glyphicon"))
-                ),
-
-                shiny::conditionalPanel(
-                  condition="input.res_MC=='Custom'",
-                  shiny::sliderInput("res_mc_year",label="choose the MC years to use",min=1,
-                              max=opts$parameters$general$nbyears,
-                              value=c(1,opts$parameters$general$nbyears),step=1)
-                ),
-
-
-                shiny::h3(shiny::strong("Check Pmin and Pmax")),
-                shinyWidgets::switchInput("Run_P_check",
-                            value=F, offStatus = "danger",
-                            onStatus = "success"),
-                shiny::conditionalPanel(
-
-                  condition = "input.Run_P_check",
-                  shiny::fileInput("Pmin_file","select your Pmin txt file",accept=".txt"),
-                  shiny::fileInput("Pmax_file","select your Pmax txt file",accept=".txt"),
-                  shinyWidgets::radioGroupButtons(
-                    inputId = "P_timeStep",
-                    label = "Select Time Step",
-                    choices = c("hourly","daily"),
-                    individual = TRUE,
-                    justified = TRUE,
-                    checkIcon = list(
-                      yes = shiny::icon("ok",
-                                 lib = "glyphicon"))  ) )
-
-
-
-              ),   # end sidebarpanel
-
-              shiny::mainPanel(
-
-                shinycustomloader::withLoader(shiny::plotOutput("reservoir"), type="html", loader="dnaspin"),
-                shinyWidgets::downloadBttn(
-                  outputId = "download_reservoir_plot",
-                  style = "unite",
-                  color = "primary",
-                  block = T
-                ),
-
-                shinycustomloader::withLoader(shiny::plotOutput("flow"), type="html", loader="dnaspin"),
-                shinyWidgets::downloadBttn(
-                  outputId = "download_flow",
-                  style = "unite",
-                  color = "primary",
-                  block = T
-                ),
-
-                shinycustomloader::withLoader(shiny::plotOutput("pmin_pmax"), type="html", loader="dnaspin"),
-                shinyWidgets::downloadBttn(
-                  outputId = "download_pmin_pmax_plot",
-                  style = "unite",
-                  color = "primary",
-                  block = T
-                )
-
-
-              )
-
-              ) #end sidebar Panel
-
-           ),  #end tabpanel "Results"
-
-  #---- Reporting ------
-
-  shiny::tabPanel("Reporting",
-
-           shiny::sidebarLayout(
-
-             shiny::sidebarPanel(
-
-
-               shinyWidgets::radioGroupButtons(
-                 inputId = "report_type",
-                 label = "Select ",
-                 choices = c("area","district"),
-                 individual = TRUE,
-                 justified = TRUE,
-                 checkIcon = list(
-                   yes = shiny::icon("ok",
-                              lib = "glyphicon"))),
-
-              shiny::conditionalPanel(
-                condition = "input.report_type=='area'",
-                shinyWidgets::pickerInput("report_area",
-                            "choose the area",
-                            append(opts$areaList,"all",after=0),
-                            options = list(
-                              `live-search` = TRUE),
-                            multiple = TRUE)
-              ),
-
-              shiny::conditionalPanel(
-                condition = "input.report_type=='district'",
-                shinyWidgets::pickerInput("report_district",
-                            "choose the district",
-                            append(opts$districtList,"all",after=0),
-                            options = list(
-                              `live-search` = TRUE),
-                            multiple = TRUE)
-              ),
-
-              shinyWidgets::pickerInput(inputId = "report_sim1",
-                          label = "Select simulations Set 1",
-                          choices = getSimulationNames("",opts = opts),
-                          options = list(
-                            `actions-box` = TRUE,
-                            `live-search` = TRUE),
-                          multiple = TRUE),
-
-
-
-                 shinyWidgets::pickerInput(inputId = "watervalues_areas1",
-                             label = "Select areas using watervalues in Set 1",
-                             choices = opts$areaList,
-                             options = list(
-                               `actions-box` = TRUE,
-                               `live-search` = TRUE),
-                             multiple = TRUE),
-
-              shinyWidgets::pickerInput(inputId = "report_sim2",
-                          label = "Select simulations Set 2",
-                          choices = getSimulationNames("",opts = opts),
-                          options = list(
-                            `actions-box` = TRUE,
-                            `live-search` = TRUE),
-                          multiple = TRUE),
-
-
-
-              shinyWidgets::pickerInput(inputId = "watervalues_areas2",
-                          label = "Select areas using watervalues in Set 2",
-                          choices = opts$areaList,
-                          options = list(
-                            `actions-box` = TRUE,
-                            `live-search` = TRUE),
-                          multiple = TRUE),
-
-              shinyWidgets::pickerInput(
-
-                inputId = "report_vars",
-                label = "Select variables",
-                choices = otp_variables,
-                options = list(
-                  `actions-box` = TRUE,
-                  `live-search` = TRUE),
-                multiple = TRUE),
-
-
-               shinyWidgets::radioGroupButtons(
-                 inputId = "report_mcyear_mode",
-                 label = "Select Time Step",
-                 choices = c("Synthesis","Custom"),
-                 individual = TRUE,
-                 justified = TRUE,
-                 checkIcon = list(
-                   yes = shiny::icon("ok",
-                              lib = "glyphicon"))),
-
-               shiny::conditionalPanel(
-                 condition = "input.report_mcyear_mode=='Custom'",
-
-                 shiny::sliderInput("report_mcyear",
-                             label="choose the number of MC years to use",
-                             min=1,max=opts$parameters$general$nbyears,
-                             value=1, step=1)
-                ),
-
-               shinyWidgets::pickerInput(
-
-                 inputId = "table_vars",
-                 label = "Select table variables",
-                 choices = append(otp_variables,c("area"),after=0),
-                 options = list(
-                   `actions-box` = TRUE,
-                   `live-search` = TRUE),
-                 multiple = TRUE)
-               ),
-
-
-             shiny::mainPanel(
-
-               shinycustomloader::withLoader(shiny::plotOutput("report"), type="html", loader="dnaspin"),
-               shinyWidgets::downloadBttn(
-                 outputId = "download_report_plot",
-                 style = "unite",
-                 color = "primary",
-                 block = T
-               ) ,
-
-               DT::dataTableOutput("report_table")
-             ) #end mainPanel
-           )
-
-
-  )#end tabpanel Reporing
-
-
-  ) #end navbarMenu
-
-
 ) #navbar
 
 ) #UI
@@ -1028,7 +685,7 @@ server <- function(input, output, session) {
   rv <- shiny::reactiveValues()
 
   output$dir <- shiny::renderUI({
-    shiny::textInput("sim_output_dir","Saving directory",value=global$datapath)
+    shiny::textInput("sim_output_dir","Saving directory",value=paste0(opts$studyPath,"/user"))
 
   })
 
@@ -1047,22 +704,20 @@ server <- function(input, output, session) {
                   spsComps::shinyCatch({
                      simulation_res <-    runWaterValuesSimulation(
                      area=input$sim_area,
-                     simulation_name = input$sim_simulation_name,
-                     nb_disc_stock = if(!input$reduce){input$sim_nb_disc_stock},
+                     simulation_name = paste0("weekly_water_amount_", input$sim_area, "_%s"),
+                     nb_disc_stock = input$sim_nb_disc_stock,
                      nb_mcyears = seq(from = input$sim_mcyears[1], to = input$sim_mcyears[2]),
                      path_solver =input$solver_path,
-                     binding_constraint = input$sim_binding_constraint,
-                     fictive_area = input$sim_fictive_area,
-                     thermal_cluster = input$sim_thermal_cluster,
-                     # remove_areas=input$remove_areas,
+                     binding_constraint = "WeeklyWaterAmount_",
+                     fictive_area = "fictive_watervalues",
+                     thermal_cluster = "WaterValueCluster",
                      overwrite = T,
-                     link_from=input$link_from,
+                     link_from=input$sim_area,
                      opts = opts,
                      shiny=T,
                      otp_dest=input$sim_output_dir,
                      file_name=input$file_name,
-                     pumping = input$pumping,
-                     reduce_number_simulations = input$reduce)},prefix = "")},print_cat = F,
+                     pumping = input$pumping)},prefix = "")},print_cat = F,
                   message = F, warning = silent))
 
 
@@ -1161,7 +816,7 @@ server <- function(input, output, session) {
         nb_cycle = input$nb_cycle,
         opts = opts,
         week_53 = input$week_53,
-        district_name =input$district_name ,
+        district_name ="water values district" ,
         method=input$method,
         states_step_ratio=(1/input$nb_states),
         mcyears=input$mcyears[1]:input$mcyears[2],
@@ -1267,7 +922,7 @@ server <- function(input, output, session) {
                     spsComps::shinyCatch({
                     reward_dt <- get_Reward(simulation_names = simulation_res()$simulation_names,
                                             simulation_values = simulation_res()$simulation_values,
-                                            district_name =input$district_name_rew,
+                                            district_name ="water values district",
                                             opts=opts,
                                             method_old = !input$smart_interpolation_reward,
                                             hours = if(input$smart_interpolation_reward){round(seq(0,168,length.out=input$hours))},
@@ -1275,7 +930,7 @@ server <- function(input, output, session) {
                                             max_hydro=if(input$smart_interpolation_reward){get_max_hydro(input$Area,opts)},
                                             mcyears=input$mcyears[1]:input$mcyears[2],
                                             area=input$Area,
-                                            district_balance=input$district_name_rew)
+                                            district_balance="water values district")
                     rv$reward_dt <- reward_dt
                     shinybusy::remove_modal_spinner()
                     shinyWidgets::show_alert(
@@ -1550,165 +1205,7 @@ server <- function(input, output, session) {
                  }
     )
 
-#------Results page--------
-
-
-    reservoir <- shiny::reactive({
-
-      if(input$res_MC=="Custom"){
-        mc_year <- input$res_mc_year[1]:input$res_mc_year[2]
-      }else{
-        if(input$res_MC=="all"){mc_year <- "all"
-        }else{mc_year <- NULL}
-      }
-
-      plot_reservoir(input$res_area,input$res_timeStep,
-                     simulation_name = input$res_sim_name,
-                     mcyear=mc_year,opts = opts, shiny = TRUE)
-    })
-
-    output$reservoir <- shiny::renderPlot(reservoir())
-
-    output$download_reservoir_plot <- shiny::downloadHandler(
-      filename = function() {
-        paste('Reservoir-', Sys.Date(), '.png', sep='')
-      },
-      content = function(con) {
-        grDevices::png(con ,width = 1200,
-            height = 766)
-        print(reservoir())
-        grDevices::dev.off()
-      }
-    )
-
-
-    flow <- shiny::reactive({
-
-      if(input$res_MC=="Custom"){
-        mc_year <- input$res_mc_year[1]:input$res_mc_year[2]
-      }else{
-        if(input$res_MC=="all"){mc_year <- "all"
-        }else{mc_year <- NULL}
-      }
-
-      plot_flow(input$res_area,input$res_timeStep,
-                     simulation_name = input$res_sim_name,
-                     mcyear=mc_year,opts = opts, shiny = TRUE)
-    })
-
-
-
-    output$flow <- shiny::renderPlot(flow())
-
-    output$download_flow <- shiny::downloadHandler(
-      filename = function() {
-        paste('Flow-', Sys.Date(), '.png', sep='')
-      },
-      content = function(con) {
-        grDevices::png(con ,width = 1200,
-                       height = 766)
-        print(flow())
-        grDevices::dev.off()
-      }
-    )
-
-
-    pmin_pmax <- shiny::reactive({
-
-      ext_Pmin <- tools::file_ext(input$Pmin_file$datapath)
-      ext_Pmax <- tools::file_ext(input$Pmax_file$datapath)
-
-      shiny::req(input$Pmin_file)
-      shiny::validate(shiny::need(ext_Pmin == "txt", "Please upload a txt file"))
-      shiny::req(input$Pmax_file)
-      shiny::validate(shiny::need(ext_Pmax == "txt", "Please upload a txt file"))
-
-      if(input$res_MC=="Custom"){
-        mc_year <- input$res_mc_year
-      }else{
-        if(input$res_MC=="all"){mc_year <- "all"
-        }else{mc_year <- NULL}
-      }
-
-      plot_generation(input$res_area,timestep = input$P_timeStep,Mcyear = mc_year,
-                      simulation_name=input$res_sim_name,min_path = input$Pmin_file$datapath,
-                      max_path = input$Pmax_file$datapath,opts = opts)
-
-    })
-
-    output$pmin_pmax <- shiny::renderPlot(pmin_pmax())
-
-    output$download_pmin_pmax_plot <- shiny::downloadHandler(
-      filename = function() {
-        paste('pmin_pmax-', Sys.Date(), '.png', sep='')
-      },
-      content = function(con) {
-        grDevices::png(con ,width = 1200,
-               height = 766)
-        print(pmin_pmax())
-        grDevices::dev.off()
-      }
-    )
-
-
-
-#------ Reporting------
-
-    report <- shiny::reactive({
-      if(input$report_mcyear_mode=="Custom"){
-        mc_year <- input$report_mcyear
-      }else{
-        mc_year <- NULL
-      }
-
-      tab1 <- report_data(simulations=input$report_sim1,type=input$report_type,
-                           area_list = input$report_area,district_list=input$report_district,
-                   mcyears=mc_year,opts=opts,plot_var=input$report_vars,
-                   watervalues_areas=input$watervalues_areas1,return_table = T)
-      tab2 <- report_data(simulations=input$report_sim2,type=input$report_type,
-                           area_list = input$report_area,district_list=input$report_district,
-                           mcyears=mc_year,opts=opts,plot_var=input$report_vars,
-                           watervalues_areas=input$watervalues_areas2,return_table = T)
-      if(is.null(tab2))  data <- tab1
-      if(is.null(tab1))  data <- tab2
-      if(!(is.null(tab1)|is.null(tab2))) data <- rbind(tab1,tab2)
-
-      data
-
-    })
-
-    output$report <- shiny::renderPlot(just_plot_report(report(),input$report_vars,
-                                    plot_type=(input$report_type=="district")))
-
-    output$download_report_plot <- shiny::downloadHandler(
-      filename = function() {
-        paste('report-', Sys.Date(), '.png', sep='')
-      },
-      content = function(con) {
-        grDevices::png(con ,width = 1200,
-            height = 766)
-        print(just_plot_report(report(),input$report_vars,
-                               plot_type=(input$report_type=="district")))
-        grDevices::dev.off()
-      }
-    )
-
-    report_table <- shiny::reactive({
-         table <- dplyr::select(report(),dput(append(input$table_vars,c("sim_name"),after = 0)))
-
-    })
-
-    output$report_table <- DT::renderDataTable(report_table())
-
-
 }
-
-
-
-
-
-
-
 
 
 #------Run-----
@@ -1716,6 +1213,7 @@ options(shiny.launch.browser=TRUE)
 options(shiny.sanitize.errors = FALSE)
 options(shiny.fullstacktrace = FALSE)
 options(shiny.trace = F)
+options(shiny.error = NULL)
 shiny::shinyApp(ui = ui, server = server)
 }
 

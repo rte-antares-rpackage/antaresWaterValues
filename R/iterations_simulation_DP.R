@@ -46,7 +46,11 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   niveau_max <- get_reservoir_capacity(area = area)
 
-  inflow <-antaresRead::readInputTS(hydroStorage = area, timeStep="weekly")
+  try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"),silent = T)
+  if (nrow(inflow)==0){
+    inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area))
+  }
+
 
   controls <- constraint_generator(area = area,nb_disc_stock = nb_control,
                                    pumping = pumping,opts = opts,

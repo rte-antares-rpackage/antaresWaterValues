@@ -36,9 +36,6 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
 #' @param watervalues an intermediate result in Grid_Matrix contains the bellman values
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
-#'
-#' @importFrom dplyr left_join
-#' @export
 value_node_gen <- function(watervalues,statesdt,reservoir){
     value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
                                   by = list(weeks, statesid)]
@@ -53,7 +50,7 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
     names(reservoir)[1] <- "weeks"
     value_nodes_dt <- dplyr::mutate(value_nodes_dt, beg_week=dplyr::if_else(weeks>1,weeks-1,52))
     value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
-      select(-c("beg_week"))
+      dplyr::select(-c("beg_week"))
 
 
     value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]
@@ -69,7 +66,6 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
 #' test a difference vector convergence, used in \code{Grid_Matrix}
 #' @param diff_vect is a vector of water values differences
 #' @param conv is the value from which the difference become converged
-#' @export
 
 converged <- function(diff_vect,conv=1){
   t <- abs(diff_vect)
@@ -84,14 +80,26 @@ converged <- function(diff_vect,conv=1){
 
 #' Replace outliers values by spline, used in \code{Bellman} and \code{Grid_Matrix}
 #' @param vector numeric vector to remove outliers values from it.
-#' @importFrom grDevices boxplot.stats
-#' @export
 
 correct_outliers <- function(vector) {
+  if (!requireNamespace("zoo", quietly = TRUE)) {
+    stop(
+      "Package \"zoo\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  for (p in c("grDevices")){
+    if (!requireNamespace(p, quietly = TRUE)) {
+      stop(
+        paste0("Packageb", p, " must be installed to use this function."),
+        call. = FALSE
+      )
+    }
+  }
   ind_v <- which(is.finite(vector)) # NaN and Inf values shall not be corrected
   v <- vector[ind_v]
   w <- v
-  v[v %in% boxplot.stats(v)$out] <- NA
+  v[v %in% grDevices::boxplot.stats(v)$out] <- NA
   v <- zoo::na.spline(v, na.rm = FALSE)
 
   # in case some values cannot be replaced by approximations
@@ -106,7 +114,6 @@ correct_outliers <- function(vector) {
 #' Calculate the mean of finite values.
 #' Return \code{-Inf} if all \code{-Inf}.
 #' @param x numeric vector whose mean is wanted.
-#' @export
 
 mean_finite <- function(x) {
   if (all(!is.finite(x))) {
@@ -120,7 +127,6 @@ mean_finite <- function(x) {
 #' Convert Reservoir levels from MWh to percent of reservoir.
 #' @param data  A data.table contains the statesid and states columns
 #' @param states_step_ratio percent step between two successive levels.
-#' @export
 
 states_to_percent <- function(data,states_step_ratio=0.01){
 
@@ -155,7 +161,6 @@ states_to_percent <- function(data,states_step_ratio=0.01){
 #' @param df_value_node DataFrame containing bellman values
 #'
 #' @return vector of corrected Bellman values
-#' @export
 correct_concavity <- function(df_value_node, weeks){
 
   for (s in weeks){
@@ -170,7 +175,7 @@ correct_concavity <- function(df_value_node, weeks){
     for (x in states){
       df_week <- df_week %>% dplyr::filter(states==x) %>%
         dplyr::rename(value_x="new_value",states_x="states") %>%
-        select("years", "states_x", "value_x") %>%
+        dplyr::select("years", "states_x", "value_x") %>%
         dplyr::right_join(df_week, by=c("years")) %>%
         dplyr::mutate(coef=(.data$new_value-.data$value_x)/(states-.data$states_x)) %>%
         dplyr::mutate(coef=dplyr::if_else(.data$coef<0,0,.data$coef))
@@ -180,9 +185,9 @@ correct_concavity <- function(df_value_node, weeks){
         dplyr::right_join(df_week,by="years") %>%
         dplyr::mutate(new_value=dplyr::if_else((states>.data$states_x)&(states<=.data$states_y),
                                  .data$m*(states-.data$states_x)+.data$value_x,.data$new_value)) %>%
-        select("years", "weeks", "states", "value_node", "new_value")
+        dplyr::select("years", "weeks", "states", "value_node", "new_value")
     }
-    df_value_node[df_value_node$weeks==s,"new_value"]  <- left_join(df_value_node[df_value_node$weeks==s,c("weeks","states","years")],
+    df_value_node[df_value_node$weeks==s,"new_value"]  <- dplyr::left_join(df_value_node[df_value_node$weeks==s,c("weeks","states","years")],
                                                                     df_week[,c("weeks","states","new_value","years")],
                                                                     by=c("weeks","states","years"))$new_value
   }

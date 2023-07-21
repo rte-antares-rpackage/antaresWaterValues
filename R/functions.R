@@ -6,11 +6,7 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param silent Boolean. True to run without messages.
-#' @return An updated list containing various information about the simulation.
-#'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead setSimulationPath
-#'
+#' @return An updated list containing various information about the simulation
 restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
@@ -62,14 +58,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
 #'
 #' @seealso \link{restoreHydroStorage}
 #'
-#' @importFrom utils read.table write.table
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead setSimulationPath
-#'
 #' @return An updated list containing various information about the simulation.
-#' @export
-#'
-# @examples
 resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
@@ -173,9 +162,6 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
 #'   \code{antaresRead::setSimulationPath}
 #' @param ... further arguments passed to or from other methods.
 #' @import data.table
-#' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
-#' @importFrom  antaresRead setSimulationPath readAntares
-#' @importFrom dplyr select
 #' @return a \code{ggplot} or \code{data.table} object
 #' @export
 
@@ -279,7 +265,6 @@ report_data <- function(simulations,type="area",district_list="all",area_list="a
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @importFrom antaresEditObject readIniFile
 
 get_reservoir_capacity <- function(area, opts=antaresRead::simOptions())
 
@@ -304,9 +289,6 @@ return(reservoir_capacity)
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param timeStep among "hourly", "daily" and "weekly"
-#'
-#' @importFrom antaresRead readInputTS
-#' @importFrom utils hasName
 
 get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly")
 {
@@ -386,8 +368,7 @@ getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::si
 #' @param constant Boolean. Generate daily constant values by week. FALSE to do interpolation.
 #'
 #' @return A 365*101 numeric matrix
-#' @importFrom data.table data.table CJ dcast
-#' @importFrom zoo na.spline
+#' @export
 
 to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant=T){
 
@@ -414,7 +395,7 @@ to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant
 
   max_state <- max(states_ref$states)
 
-  res <- res %>% left_join(select(data,"weeks","statesid","vu_pen","level_low","level_high"),
+  res <- res %>% dplyr::left_join(dplyr::select(data,"weeks","statesid","vu_pen","level_low","level_high"),
                            by = c("weeks", "statesid")) %>%
     dplyr::mutate(level_low=level_low/max_state*100,
            level_high=level_high/max_state*100,
@@ -436,6 +417,12 @@ to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant
   value_nodes_matrix_0 <- value_nodes_matrix[52,]
 
   if(!constant){
+    if (!requireNamespace("zoo", quietly = TRUE)) {
+      stop(
+        "Package \"zoo\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
     reshaped_matrix <- double(length = 0)
     last <- value_nodes_matrix[52,]
     for(i in 1:52){

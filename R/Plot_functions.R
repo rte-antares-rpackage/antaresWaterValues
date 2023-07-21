@@ -5,8 +5,6 @@
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
-#' @importFrom stats aggregate
-#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
 
@@ -18,7 +16,7 @@ plot_reward_variation <- function(reward_base,week_id)
     dplyr::group_by(.data$timeId,.data$control) %>%
     dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
     dplyr::mutate(week=as.character(timeId)) %>%
-    select(-c(timeId)) %>%
+    dplyr::select(-c(timeId)) %>%
     dplyr::group_by(week) %>%
     dplyr::arrange(.data$week,.data$control) %>%
     dplyr::mutate("Reward transition"=(dplyr::lead(.data$Reward)-.data$Reward)/(dplyr::lead(.data$control)-.data$control)) %>%
@@ -31,7 +29,7 @@ plot_reward_variation <- function(reward_base,week_id)
   p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
-    p1 <- p1+ggplot2:: theme(legend.position="none")
+    p1 <- p1+ggplot2::theme(legend.position="none")
   }
   print(p1)
 
@@ -49,8 +47,6 @@ plot_reward_variation <- function(reward_base,week_id)
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #'
-#' @importFrom stats aggregate
-#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
 
@@ -72,7 +68,7 @@ plot_reward <- function(reward_base,week_id)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward week"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
   if(length(unique(temp$week))>10){
-     p1 <- p1+ggplot2:: theme(legend.position="none")
+     p1 <- p1+ggplot2::theme(legend.position="none")
     }
   print(p1)
   temp <-  dplyr::relocate(temp,week, .before = 1)
@@ -93,7 +89,6 @@ plot_reward <- function(reward_base,week_id)
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
-#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
 
@@ -118,7 +113,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward week  MC Year %s",paste(as.character(Mc_year),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
  if(length(unique(temp$week))>10){
-    p1 <- p1+ggplot2:: theme(legend.position="none")
+    p1 <- p1+ggplot2::theme(legend.position="none")
   }
   print(p1)
   temp <-  dplyr::relocate(temp,week, .before = 1)
@@ -140,7 +135,6 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
-#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
 
@@ -151,7 +145,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
     dplyr::group_by(.data$timeId,.data$control) %>%
     dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
     dplyr::mutate(week=as.character(timeId)) %>%
-    select(-c(timeId)) %>%
+    dplyr::select(-c(timeId)) %>%
     dplyr::group_by(week) %>%
     dplyr::arrange(.data$week,.data$control) %>%
     dplyr::mutate("Reward transition"=(dplyr::lead(.data$Reward)-.data$Reward)/(dplyr::lead(.data$control)-.data$control)) %>%
@@ -164,7 +158,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
   p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(Mc_year),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
-    p1 <- p1+ggplot2:: theme(legend.position="none")
+    p1 <- p1+ggplot2::theme(legend.position="none")
   }
   print(p1)
   temp <-  dplyr::relocate(temp,week, .before = 1)
@@ -185,8 +179,6 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 #' @param penalty_high Penalty for the higher rule curve
 #' @param week_number Numeric of length 1. number of the week to plot.
 #'
-#' @import data.table
-#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle theme
 #' @return a \code{ggplot} object
 #' @export
 
@@ -248,11 +240,6 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
 #'   \code{antaresRead::setSimulationPath}
 #' @param shiny Boolean. True to run the script in shiny mod.
 #' @param only_g Boolean. True plot only constraints graph.
-#' @import data.table
-#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
-#' @importFrom dplyr left_join
-#' @importFrom tidyr pivot_wider
-#' @importFrom  antaresRead setSimulationPath readAntares
 #' @return a \code{ggplot} object
 #' @export
 
@@ -357,12 +344,6 @@ plot_reservoir <- function(area,timeStep="weekly",mcyear=NULL,simulation_name=NU
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @import data.table
-#' @importFrom ggplot2 ggplot geom_line ggtitle labs theme
-#' @importFrom  dplyr left_join
-#' @importFrom  tidyr pivot_wider
-#' @importFrom  antaresRead setSimulationPath readAntares
-#' @importFrom stats setNames aggregate
 #' @return a \code{ggplot} object
 #' @export
 
@@ -375,8 +356,8 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 
 {
 
-  Pmin <- read.table(min_path, header = FALSE, sep = "", dec = ".")
-  Pmax <- read.table(max_path, header = FALSE, sep = "", dec = ".")
+  Pmin <- utils::read.table(min_path, header = FALSE, sep = "", dec = ".")
+  Pmax <- utils::read.table(max_path, header = FALSE, sep = "", dec = ".")
   Pmax <- Pmax[-365,]
 
 
@@ -415,14 +396,14 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
   if(is.null(Mcyear)){
     P <- P[order(timeId)]
     P <- P[, list(timeId,`H. STOR` )]
-    Pmin <- Pmin  %>% select(ncol-4,ncol-1,ncol)
-    Pmin <- stats::setNames(Pmin,c("Pmin","hour","day"))
+    Pmin <- Pmin  %>% dplyr::select(ncol-4,ncol-1,ncol)
+    Pmin <- setnames(Pmin,c("Pmin","hour","day"))
   }else{
     P <- P[order(P$mcYear, P$timeId),]
     P <- P[,list(mcYear,timeId,`H. STOR` )]
     P$mcYear <- NULL
     Pmin <-  dplyr::select(Pmin,Mcyear,ncol-1,ncol)
-    Pmin <- stats::setNames(Pmin,c("Pmin","hour","day"))
+    Pmin <- setnames(Pmin,c("Pmin","hour","day"))
   }
 
 
@@ -443,16 +424,16 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     Pmin$day <- NULL
     generation_hourly <- dplyr::left_join(generation_hourly,Pmin,by="hour")
 
-    p <- ggplot2::ggplot(data=generation_hourly, aes(x=hour)) +
-      ggplot2::geom_line(aes(y = Pmin ), color = "red") +
-      ggplot2::geom_line(aes(y = Pmax ), color="red")+
-      ggplot2::geom_line(aes(y =generation ), color="blue")
+    p <- ggplot2::ggplot(data=generation_hourly, ggplot2::aes(x=hour)) +
+      ggplot2::geom_line(ggplot2::aes(y = Pmin ), color = "red") +
+      ggplot2::geom_line(ggplot2::aes(y = Pmax ), color="red")+
+      ggplot2::geom_line(ggplot2::aes(y =generation ), color="blue")
     if(is.null(Mcyear))
     { p <- p+ggplot2::ggtitle(sprintf("Hourly Generation for Synthesis year"))
     }else{
       p <- p+ggplot2::ggtitle(sprintf("Hourly Generation for MC year %d",Mcyear))
     }
-    p <- p+ggplot2::theme(plot.title = element_text(hjust = 0.5))
+    p <- p+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
     p <- p+ ggplot2::labs(x = "hour",
                  y = "MWh")
     otp <- generation_hourly
@@ -466,17 +447,17 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
     t <- stats::aggregate(Pmin~day, data=Pmin, FUN=sum)
     generation_daily$Pmin <- t$Pmin
 
-    p <- ggplot2::ggplot(data=generation_daily, aes(x=day)) +
-      ggplot2::geom_line(aes(y = Pmin ), color = "red") +
-      ggplot2::geom_line(aes(y = Pmax ), color="red")+
-      ggplot2::geom_line(aes(y =generation ), color="blue")
+    p <- ggplot2::ggplot(data=generation_daily, ggplot2::aes(x=day)) +
+      ggplot2::geom_line(ggplot2::aes(y = Pmin ), color = "red") +
+      ggplot2::geom_line(ggplot2::aes(y = Pmax ), color="red")+
+      ggplot2::geom_line(ggplot2::aes(y =generation ), color="blue")
     if(is.null(Mcyear))
     { p <- p+ggplot2::ggtitle(sprintf("Daily Generation for Synthesis year"))
     }else{
       p <- p+ggplot2::ggtitle(sprintf("Daily Generation for MC year %d",Mcyear))
       }
 
-    p <- p+ggplot2::theme(plot.title = element_text(hjust = 0.5))
+    p <- p+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
     p <- p+ ggplot2::labs(x = "day",
                  y = "MWh")
     otp <- generation_daily
@@ -493,8 +474,6 @@ plot_generation <- function(area,timestep="daily",Mcyear=NULL,min_path,max_path,
 #' Obtained using the function plot_results()
 #' @param plot_var list of variables to plot.
 #' @param plot_type boolean. True to plot by area. False to plot by simulation
-#' @importFrom  ggplot2 ggplot geom_col scale_fill_viridis_d facet_grid scale_fill_brewer
-#' @importFrom dplyr select
 #' @return a \code{ggplot} object
 #' @export
 
@@ -512,9 +491,9 @@ just_plot_report <- function(data,plot_var,plot_type=T){
   fin_data <-  melt(data1, id.vars=var)
 
   if(plot_type) {
-    p <-  ggplot2::ggplot(data=fin_data, aes(x=sim_name, y=value, fill=sim_name))
+    p <-  ggplot2::ggplot(data=fin_data, ggplot2::aes(x=sim_name, y=value, fill=sim_name))
   }else{
-    p <-  ggplot2::ggplot(data=fin_data, aes(x=area, y=value, fill=area))
+    p <-  ggplot2::ggplot(data=fin_data, ggplot2::aes(x=area, y=value, fill=area))
   }
     p <- p+ggplot2::geom_col() +
     ggplot2::scale_fill_viridis_d() +
@@ -544,11 +523,6 @@ just_plot_report <- function(data,plot_var,plot_type=T){
 #'   \code{antaresRead::setSimulationPath}
 #' @param shiny Boolean. True to run the script in shiny mod.
 #' @param ... further arguments passed to or from other methods.
-#' @import data.table
-#' @importFrom ggplot2 aes element_text geom_line ggplot ggtitle scale_color_manual theme
-#' @importFrom dplyr left_join
-#' @importFrom tidyr pivot_wider
-#' @importFrom  antaresRead setSimulationPath readAntares
 #' @return a \code{ggplot} object
 #' @export
 

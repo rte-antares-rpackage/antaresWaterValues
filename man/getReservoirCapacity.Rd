@@ -20,10 +20,3 @@ the reservoir capacity (in MWh), or \code{NULL} if none.
 \description{
 Get the reservoir capacity for an area
 }
-\examples{
-\dontrun{
-
-getReservoirCapacity("fr")
-
-}
-}

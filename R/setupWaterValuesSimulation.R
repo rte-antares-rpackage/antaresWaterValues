@@ -16,16 +16,7 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param ... further arguments passed to or from other methods.
 #' @return The result of antaresRead::simOptions
-#' @export
 #'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead simOptions readInputTS
-#' @importFrom antaresEditObject createArea createCluster createDistrict createLink propertiesLinkOptions updateGeneralSettings
-#' @import data.table
-#' @importFrom utils tail hasName
-#'
-#'
-# @examples
 setupWaterValuesSimulation <- function(area,
                                        fictive_area_name = paste0("watervalue_", area),
                                        thermal_cluster = "WaterValueCluster",
@@ -45,7 +36,7 @@ setupWaterValuesSimulation <- function(area,
   # Get hydro max power
   hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   hydro_storage_max <- rbind(
-    hydro_storage_max, tail(hydro_storage_max, 24)
+    hydro_storage_max, utils::tail(hydro_storage_max, 24)
   )
 
   # Reset Pumping power
@@ -164,7 +155,7 @@ setupWaterValuesSimulation <- function(area,
       settings_ini$`variables selection` <- append(settings_ini$`variables selection`,
                                                        list(`select_var +`=p))
     }
-    writeIni(settings_ini, file.path(opts$studyPath, "settings", "generaldata.ini"),overwrite=T)
+    antaresEditObject::writeIni(settings_ini, file.path(opts$studyPath, "settings", "generaldata.ini"),overwrite=T)
   }
 
   return(opts)

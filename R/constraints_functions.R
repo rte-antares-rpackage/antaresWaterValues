@@ -8,8 +8,6 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param area Area used to calculate watervalues
 #'
-#' @importFrom antaresEditObject editBindingConstraint
-#' @export
 
 disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL){
 
@@ -38,8 +36,6 @@ disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param area Area used to calculate watervalues
-#'
-#' @export
 
 
 generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts,area=NULL){
@@ -145,7 +141,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   max_app <- inflow %>%
     dplyr::group_by(timeId) %>%
     dplyr::summarise(max_app=max(hydroStorage))
-  max_hydro <- left_join(max_hydro,max_app,by=c("timeId"))
+  max_hydro <- dplyr::left_join(max_hydro,max_app,by=c("timeId"))
 
   weeks <- dplyr::distinct(max_hydro,timeId)$timeId
   df_constraint <- data.frame(week=weeks)
@@ -227,7 +223,7 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
 #' @param opts List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}
 #'
 #' @return Named vector of coefficients
-generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = simOptions()){
+generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antaresRead::simOptions()){
 
   # For the case of the pumping node, the constraint will be applied on the flow from the real area to the pumping node
   if(pumping == TRUE & grepl("_pump$", fictive_area)){
@@ -238,7 +234,7 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = simOp
     }
   } #Otherwise, the constraint will be applied on the generation from the thermal cluster
   else{
-    cluster_desc <- readClusterDesc(opts)
+    cluster_desc <- antaresRead::readClusterDesc(opts)
     fictive_cluster <- cluster_desc[area == fictive_area, cluster]
     coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
 

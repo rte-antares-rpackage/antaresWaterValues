@@ -7,10 +7,6 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param silent Boolean. True to run without messages.
 #' @return An updated list containing various information about the simulation.
-#' @export
-#'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead setSimulationPath
 #'
 restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
@@ -66,14 +62,9 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
 #'
 #' @seealso \link{restoreHydroStorage}
 #'
-#' @importFrom utils read.table write.table
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead setSimulationPath
 #'
 #' @return An updated list containing various information about the simulation.
-#' @export
 #'
-# @examples
 resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
@@ -164,16 +155,7 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
 #' @return the reservoir capacity (in MWh), or \code{NULL} if none.
 #' @export
 #'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead getAreas
-#' @importFrom antaresEditObject readIniFile
 #'
-#' @examples
-#' \dontrun{
-#'
-#' getReservoirCapacity("fr")
-#'
-#' }
 getReservoirCapacity <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% antaresRead::getAreas(opts = opts))
@@ -198,10 +180,6 @@ getReservoirCapacity <- function(area, force = FALSE, opts = antaresRead::simOpt
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @return A real. the cost of hydro: stock Diff cost and hydro cost.
-#'
-#' @importFrom antaresRead readAntares setSimulationPath
-#' @export
-#'
 #'
 
 hydro_cost <- function(area,mcyears,simulation_name,opts){
@@ -249,16 +227,6 @@ hydro_cost <- function(area,mcyears,simulation_name,opts){
 #' @return the reservoir capacity (in MWh), or \code{NULL} if none.
 #' @export
 #'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead getAreas
-#' @importFrom antaresEditObject readIniFile
-#'
-#' @examples
-#' \dontrun{
-#'
-#' getReservoirCapacity("fr")
-#'
-#' }
 getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% antaresRead::getAreas(opts = opts))
@@ -281,9 +249,9 @@ getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOption
 #' @param area Antares area
 changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
   hydro_ini <- antaresEditObject::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
-  assert_that(area %in% names(hydro_ini$reservoir),msg = "No reservoir managment for this area, check Antares study")
-  assert_that(hydro_ini$reservoir[area]==T,msg="No reservoir managment for this area, check Antares study")
-  assert_that((watervalues|heuristic)==T,msg="Watervalues or heuristic has to be selected")
+  assertthat::assert_that(area %in% names(hydro_ini$reservoir),msg = "No reservoir managment for this area, check Antares study")
+  assertthat::assert_that(hydro_ini$reservoir[area]==T,msg="No reservoir managment for this area, check Antares study")
+  assertthat::assert_that((watervalues|heuristic)==T,msg="Watervalues or heuristic has to be selected")
 
   if (watervalues){
     hydro_ini[["use water"]][[area]] <- TRUE
@@ -296,6 +264,6 @@ changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
       hydro_ini[["use heuristic"]][[area]] <- TRUE
     }
   }
-  writeIni(hydro_ini, file.path(opts$inputPath, "hydro", "hydro.ini"),overwrite=T)
+  antaresEditObject::writeIni(hydro_ini, file.path(opts$inputPath, "hydro", "hydro.ini"),overwrite=T)
 }
 

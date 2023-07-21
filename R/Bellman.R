@@ -32,7 +32,6 @@
   #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
-  #' @importFrom stats ave quantile
 
 
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
@@ -69,13 +68,13 @@
              sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(years,states) %>%
       dplyr::slice(which.max(sum)) %>%
-      select(-c("value_node","transition","transition_reward",
+      dplyr::select(-c("value_node","transition","transition_reward",
                 "next_bellman_value")) %>%
       dplyr::rename("value_node"="sum","transition"="control","transition_reward"="gain",
              "next_bellman_value"="next_value")
 
     # reorder df_SDP as Data_week
-    Data_week <- left_join(Data_week[,-c("value_node","transition","transition_reward",
+    Data_week <- dplyr::left_join(Data_week[,-c("value_node","transition","transition_reward",
                                          "next_bellman_value")],df_SDP[,c("years","states","value_node","transition",
                                                                           "transition_reward","next_bellman_value")],
                            by=c("years","states"))

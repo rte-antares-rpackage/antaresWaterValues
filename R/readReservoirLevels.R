@@ -7,13 +7,6 @@
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
-#' @import data.table
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead getAreas
-#' @importFrom antaresEditObject is_antares_v7
-#' @importFrom zoo na.approx
-#' @importFrom utils head
-#'
 #' @return a data.table
 #' @export
 #'
@@ -22,7 +15,7 @@ readReservoirLevels <- function(area,
                                 byReservoirCapacity = TRUE,
                                 opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
-  if (is_antares_v7(opts = opts)) {
+  if (antaresEditObject::is_antares_v7(opts = opts)) {
     readReservoirLevelsV7(
       area = area,
       timeStep = timeStep,
@@ -49,17 +42,15 @@ readReservoirLevels <- function(area,
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
-#' @import data.table
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead getAreas
-#' @importFrom antaresEditObject is_antares_v7
-#' @importFrom zoo na.approx
-#' @importFrom utils head
-#'
 #' @return a data.table
-#' @export
 
 readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
+  if (!requireNamespace("zoo", quietly = TRUE)) {
+    stop(
+      "Package \"zoo\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly"))
   if (!area %in% antaresRead::getAreas(opts = opts))
     stop("Not a valid area!")
@@ -108,15 +99,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
-#' @import data.table
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead getAreas
-#' @importFrom antaresEditObject is_antares_v7
-#' @importFrom zoo na.approx
-#' @importFrom utils head tail
-#'
 #' @return a data.table
-#' @export
 readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly", "daily"))
   if (!area %in% antaresRead::getAreas(opts = opts))
@@ -140,12 +123,12 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
     data.table::setcolorder(x = reservoir, neworder = c("date", vars))
     reservoir <- reservoir[order(date)]
     reservoir[, timeId := format(date, format = "%Y-%m-01")]
-    reservoir <- reservoir[, lapply(.SD,tail,n=1), by = timeId, .SDcols = vars]
+    reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = timeId, .SDcols = vars]
     reservoir[, timeId := seq_len(nrow(reservoir))]
   }
   if (timeStep == "weekly") {
     reservoir[, timeId := c(rep(seq_len(52), each = 7), 52)]
-    reservoir <- reservoir[, lapply(.SD,tail,n=1), by = timeId, .SDcols = vars]
+    reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = timeId, .SDcols = vars]
   }
   if (byReservoirCapacity) {
     reservoirCapacity <- getReservoirCapacity(area = area, opts = opts)

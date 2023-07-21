@@ -61,13 +61,6 @@
 #' a data.frame of more detailed water values
 #' @export
 #'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead readAntares setSimulationPath
-#' @importFrom utils txtProgressBar setTxtProgressBar
-#' @importFrom dplyr left_join
-#' @import data.table
-#' @importFrom shinybusy show_modal_spinner remove_modal_spinner
-#'
 
 
   Grid_Matrix <- function(area, simulation_names,reward_db=NULL,inflow=NULL,
@@ -202,7 +195,7 @@
       }
 
       controls_reward_calculation <- rbind(simulation_values,controls_reward_calculation) %>%
-        select("week","u") %>%
+        dplyr::select("week","u") %>%
         dplyr::distinct() %>%
         dplyr::arrange(.data$week,.data$u)
 
@@ -309,7 +302,7 @@
 
       cat("Calculating value nodes, cycle number:", n_cycl, "\n")
 
-      pb <- txtProgressBar(min = 0, max = 51, style = 3)
+      pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
@@ -337,6 +330,14 @@
 
 
         if(shiny&n_cycl==1&i==52){
+          for (p in c("shinybusy")){
+            if (!requireNamespace(p, quietly = TRUE)) {
+              stop(
+                paste0("Packageb", p, " must be installed to use this function."),
+                call. = FALSE
+              )
+            }
+          }
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
 
@@ -393,7 +394,7 @@
 
         # next_week_values <- correct_outliers(temp$value_node)
         next_week_values <- temp$value_node
-        setTxtProgressBar(pb = pb, value = 52 - i)
+        utils::setTxtProgressBar(pb = pb, value = 52 - i)
 
       }
       close(pb)
@@ -411,7 +412,7 @@
 
       cat("Calculating value nodes, cycle number:", n_cycl, "\n")
 
-      pb <- txtProgressBar(min = 0, max = 51, style = 3)
+      pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
@@ -435,6 +436,14 @@
                         penalty_level_high=penalty_high)
 
         if(shiny&n_cycl==1&i==52){
+          for (p in c("shinybusy")){
+            if (!requireNamespace(p, quietly = TRUE)) {
+              stop(
+                paste0("Packageb", p, " must be installed to use this function."),
+                call. = FALSE
+              )
+            }
+          }
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
 
@@ -492,7 +501,7 @@
 
         # next_week_values <- correct_outliers(temp$value_node)
         next_week_values <- temp$value_node
-        setTxtProgressBar(pb = pb, value = 52 - i)
+        utils::setTxtProgressBar(pb = pb, value = 52 - i)
 
       }
       close(pb)
@@ -541,7 +550,14 @@
 
 
   if(shiny){
-
+    for (p in c("shinybusy")){
+      if (!requireNamespace(p, quietly = TRUE)) {
+        stop(
+          paste0("Packageb", p, " must be installed to use this function."),
+          call. = FALSE
+        )
+      }
+    }
     shinybusy::remove_modal_spinner()
 
   }

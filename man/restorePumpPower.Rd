@@ -22,7 +22,7 @@ restorePumpPower(
 \item{silent}{Boolean. True to run without messages.}
 }
 \value{
-An updated list containing various information about the simulation.
+An updated list containing various information about the simulation
 }
 \description{
 Restore the Pumping power series, used in \code{runWaterValuesSimulation}

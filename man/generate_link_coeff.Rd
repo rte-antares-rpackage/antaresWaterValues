@@ -4,7 +4,12 @@
 \alias{generate_link_coeff}
 \title{Generate coefficients for biding constraints, used in \code{runWaterValuesSimulation}}
 \usage{
-generate_link_coeff(area, fictive_area, pumping = FALSE, opts = simOptions())
+generate_link_coeff(
+  area,
+  fictive_area,
+  pumping = FALSE,
+  opts = antaresRead::simOptions()
+)
 }
 \arguments{
 \item{area}{Area with the area}

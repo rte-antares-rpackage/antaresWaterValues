@@ -21,6 +21,7 @@
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
 #'
+#' @export
 #' @return List containing aggregated water values and the data table with all years for the last iteration
 calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,opts,
                                                      nb_control=10,nb_itr=3,mcyears,
@@ -172,7 +173,8 @@ getInitialTrend <- function(level_init,controls,inflow,mcyears,niveau_max,
     control <- data.frame(states=level_i) %>%
       dplyr::mutate(control=list(dplyr::filter(controls,.data$week==w)$u)) %>%
       tidyr::unnest_longer(control) %>%
-      dplyr::cross_join(inflow %>% dplyr::filter(.data$timeId==w, .data$tsId %in% mcyears) %>% select(tsId,hydroStorage)) %>%
+      dplyr::cross_join(inflow %>% dplyr::filter(.data$timeId==w, .data$tsId %in% mcyears) %>%
+                          dplyr::select(tsId,hydroStorage)) %>%
       dplyr::mutate(next_state=dplyr::if_else(states+hydroStorage-control>niveau_max,niveau_max,
                                 states+hydroStorage-control)) %>%
       dplyr::filter(.data$next_state>=0) %>%
@@ -216,7 +218,7 @@ getInitialTrend <- function(level_init,controls,inflow,mcyears,niveau_max,
 #' @return Updated data frame df_rewards
 updateReward <- function(study_path,pumping,hours,controls,max_hydro,
                          mcyears,area,pump_eff,u0,df_rewards,i){
-  opts_sim <- setSimulationPath(study_path,simulation=-1)
+  opts_sim <- antaresRead::setSimulationPath(study_path,simulation=-1)
 
   if (pumping){
     reward <- get_local_reward(opts=opts_sim,hours=hours,

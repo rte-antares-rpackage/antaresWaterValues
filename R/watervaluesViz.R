@@ -25,7 +25,7 @@ waterValuesViz <- function(Data, filter_penalties=FALSE) {
   p <- p + viridis::scale_fill_viridis(na.value = "transparent")
   p <- p + ggplot2::theme_minimal()
   p <- p + ggplot2::labs(x = "Weeks", y = "States")
-  p <- p+ggtitle(sprintf("Water Values Plot"))+theme(plot.title = element_text(hjust = 0.5))
+  p <- p+ggplot2::ggtitle(sprintf("Water Values Plot"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
   return(p)
 }

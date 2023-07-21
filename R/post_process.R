@@ -3,9 +3,7 @@
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
 #' @param min_wv minimal water value to use
 #' @param max_wv maximal water value to use
-#' @import data.table
 #' @return a \code{data.table}
-#' @export
 
 constant_fill <- function(results_dt,max_wv,min_wv)
 
@@ -64,16 +62,18 @@ constant_fill <- function(results_dt,max_wv,min_wv)
 #' @param min_vu minimal water value to use in fix strategy
 #' @param max_vu maximal water value to use in fix strategy
 #' @param blocker Boolean False to launch two times the post_process function recursively.
-#' @import data.table
-#' @importFrom mice mice complete
-#' @importFrom dplyr select
-#' @importFrom stats lm predict quantile
 #' @return a \code{data.table}
 #' @export
 
 post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FALSE,
                          impute_method='pmm',fix=F,min_vu=0.5,max_vu=1000,blocker=F){
 
+  if (!requireNamespace("mice", quietly = TRUE)) {
+    stop(
+      "Package \"mice\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   results <- copy(results_dt)
   results[vu==Inf|is.na(vu),vu:=NA]
   maxid <- max(results$statesid)
@@ -114,7 +114,7 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
 
   cat("Prepare Water Values:\n")
 
-  pb <- txtProgressBar(min = 0, max = 51, style = 3)
+  pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
   for (i in 1:52){
     maxi <- max(results[weeks==i]$vu,na.rm = TRUE)
@@ -153,7 +153,7 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
 
 
     }
-    setTxtProgressBar(pb = pb, value = i)
+    utils::setTxtProgressBar(pb = pb, value = i)
   }
   close(pb)
   results[vu<0.5,vu:=0.5]
@@ -169,8 +169,6 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
 #'
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
 #' @param noise_ratio ratio to remove values that overcome the 95\% quantile.
-#' @import data.table
-#' @importFrom stats quantile
 #' @return a \code{data.table}
 #' @export
 
@@ -223,8 +221,6 @@ monotonic_VU <- function(results_dt,noise_ratio=1)
 #' Force monotonic water values
 #'
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
-#' @import data.table
-#' @importFrom stats quantile
 #' @return a \code{data.table}
 #' @export
 
@@ -267,8 +263,6 @@ monotonic_JM <- function(results_dt)
 #' Force monotonic water values Algorithm 2
 #'
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
-#' @import data.table
-#' @importFrom stats quantile
 #' @return a \code{data.table}
 #' @export
 
@@ -424,7 +418,6 @@ monotonic_JM2_fun <- function(vector){
 #' @param max maximal accepted water value
 #' @param NAN boolean. True to replace outlier values by 'NaN' and False to
 #' replace them by 'min' and 'max' values
-#' @import data.table
 #' @return a \code{data.table}
 #' @export
 
@@ -457,7 +450,6 @@ remove_out <- function(results_dt,min=NULL,max=NULL,NAN=T){
 #'
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
 #' @param value value to add to water values
-#' @import data.table
 #' @return a \code{data.table}
 #' @export
 
@@ -479,7 +471,6 @@ adjust_wv <- function(results_dt,value=0){
 #' @param maxi the maximuum of water values
 #' @param statesid the state Id of the the to replace
 #' @param q3 a quantile used in interpolation
-#' @export
 interp_down <- function(maxi,statesid,q3){
 
   maxi*(exp((statesid)/q3))

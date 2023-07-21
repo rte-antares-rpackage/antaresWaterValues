@@ -38,12 +38,6 @@
 #' @note This function have side effects on the Antares study used, a fictive area is created and a new district as well.
 #'
 #' @export
-#' @importFrom assertthat assert_that
-#' @importFrom antaresEditObject createBindingConstraint updateGeneralSettings
-#' removeBindingConstraint writeInputTS readIniFile filteringOptions
-#' writeIni runSimulation removeArea editArea
-#' @importFrom antaresRead readClusterDesc readInputTS
-#' @importFrom stats setNames
 #'
 
 runWaterValuesSimulation <- function(area,
@@ -105,7 +99,7 @@ runWaterValuesSimulation <- function(area,
 
   antaresEditObject::editArea(name = area,
                               filtering =
-                                filteringOptions(filter_synthesis = c("hourly" , "weekly", "annual"),
+                                antaresEditObject::filteringOptions(filter_synthesis = c("hourly" , "weekly", "annual"),
                                                  filter_year_by_year = c("hourly", "weekly", "annual"))
                               ,opts = opts)
 
@@ -199,7 +193,7 @@ runWaterValuesSimulation <- function(area,
 
     #Simulation Control
     sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
-    sim_name <- tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
+    sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
     sim_check <- paste0(opts$studyPath,"/output")
     sim_check <- paste(sim_check,sim_name,sep="/")
 

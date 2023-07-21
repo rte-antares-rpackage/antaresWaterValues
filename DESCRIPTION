@@ -8,20 +8,27 @@ Description: This package aims at generating water values for Antares.
 License: MIT + file LICENSE
 Depends:
     data.table (>= 1.14.0),
-    R (>= 4.1.0),
-    shinyBS (>= 0.61)
+    R (>= 4.1.0)
 Imports:
     antaresEditObject (>= 0.2.2),
     antaresRead (>= 2.2.8),
     assertthat (>= 0.2.1),
     bsplus (>= 0.1.2),
     dplyr (>= 1.0.7),
-    DT (>= 0.18),
     ggplot2 (>= 3.3.5),
+    stats (>= 4.1.0),
+    stringr (>= 1.4.0),
+    tidyr (>= 1.1.3),
+    utils (>= 2.1.0),
+    viridis (>= 0.6.1)
+Suggests: 
+    DT (>= 0.18),
     grDevices (>= 4.1.0),
+    knitr,
     mice (>= 3.13.0),
-    rlang,
+    rmarkdown,
     shiny (>= 1.6.0),
+    shinyBS (>= 0.61),
     shinybusy (>= 0.2.2),
     shinycustomloader (>= 0.9.0),
     shinyjs (>= 2.0.0),
@@ -29,17 +36,9 @@ Imports:
     shinyWidgets (>= 0.6.0),
     spsComps (>= 0.3.0),
     spsUtil,
-    stats (>= 4.1.0),
-    stringr (>= 1.4.0),
-    tidyr (>= 1.1.3),
+    testthat (>= 3.0.0),
     tools (>= 4.1.0),
-    utils (>= 2.1.0),
-    viridis (>= 0.6.1),
     zoo
-Suggests: 
-    knitr,
-    rmarkdown,
-    testthat (>= 3.0.0)
 VignetteBuilder: 
     knitr
 Config/testthat/edition: 3

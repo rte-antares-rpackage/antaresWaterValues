@@ -120,15 +120,18 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
       stop("Impossible to backup hydro storage file")
 
     # read hydro storage series and initialize at 0
-    hydro_storage <- utils::read.table(file = path_hydro_storage)
-    hydro_storage[] <- 0
-    utils::write.table(
-      x = hydro_storage[,, drop = FALSE],
-      file = path_hydro_storage,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
+    hydro_storage <- NULL
+    try (hydro_storage <- utils::read.table(file = path_hydro_storage),silent = T)
+    if (!is.null(hydro_storage)){
+      hydro_storage[] <- 0
+      utils::write.table(
+        x = hydro_storage[,, drop = FALSE],
+        file = path_hydro_storage,
+        row.names = FALSE,
+        col.names = FALSE,
+        sep = "\t"
+      )
+    }
 
   } else {
 

@@ -170,8 +170,9 @@
 
   decimals <- 6
   {
-    if(is.null(inflow)){
-      inflow <-antaresRead::readInputTS(hydroStorage = area, timeStep="weekly")
+    try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"),silent = T)
+    if (nrow(inflow)==0){
+      inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
     }
     inflow[with(inflow, order(tsId, timeId)),]
     inflow <- inflow[, list(area, tsId , timeId, time, hydroStorage)]

@@ -172,7 +172,10 @@
     inflow <- inflow[, c("area", "tsId" , "timeId", "time", "hydroStorage")]
     # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
     inflow[, "timeId" := as.numeric(inflow$timeId)]
-    inflow <- inflow[, list(hydroStorage = sum(inflow$hydroStorage, na.rm = TRUE)), by = c("area", "timeId", "tsId")] # sum
+    inflow <- inflow %>%
+      dplyr::group_by(.data$area, .data$timeId, .data$tsId) %>%
+      dplyr::mutate(hydroStorage = sum(.data$hydroStorage, na.rm = TRUE)) %>%
+      as.data.table()
 
   } # get the table (area,time,tsid,hydroStorage)
 

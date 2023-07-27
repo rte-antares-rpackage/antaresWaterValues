@@ -168,11 +168,11 @@
     if (nrow(inflow)==0){
       inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
     }
-    inflow[with(inflow, order(tsId, timeId)),]
-    inflow <- inflow[, list(area, tsId , timeId, time, hydroStorage)]
+    inflow[with(inflow, order(inflow$tsId, inflow$timeId)),]
+    inflow <- inflow[, c("area", "tsId" , "timeId", "time", "hydroStorage")]
     # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
-    inflow[, timeId := as.numeric(timeId)]
-    inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)] # sum
+    inflow[, "timeId" := as.numeric(inflow$timeId)]
+    inflow <- inflow[, list(hydroStorage = sum(inflow$hydroStorage, na.rm = TRUE)), by = c("area", "timeId", "tsId")] # sum
 
   } # get the table (area,time,tsid,hydroStorage)
 
@@ -219,7 +219,7 @@
       decision_space <- round(decision_space)
     }
 
-    reward_db <- reward_db[timeId %in% seq_len(n_week)]}
+    reward_db <- reward_db[reward_db$timeId %in% seq_len(n_week)]}
 
   # Reservoir (calque)
   {
@@ -238,22 +238,22 @@
   {
     statesdt <- as.data.table(states)  #convert states matrix to data.table
     statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
-    statesdt[, weeks := as.numeric(gsub("V", "", weeks))] #turn weeks to numbers V1==> 1
-    statesdt[, statesid := seq_along(states), by = weeks] # add id to refer to the state
-    statesdt[, states := round(states)]
+    statesdt[, "weeks" := as.numeric(gsub("V", "", statesdt$weeks))] #turn weeks to numbers V1==> 1
+    statesdt[, "statesid" := seq_along(states), by = c("weeks")] # add id to refer to the state
+    statesdt[, "states" := round(statesdt$states)]
   }
 
   # add states plus 1
   {
     statesplus1 <- copy(statesdt)
-    statesplus1[, weeks := weeks - 1]
-    statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = weeks]
+    statesplus1[, "weeks" := statesplus1$weeks - 1]
+    statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = c("weeks")]
     statesplus1 <- dplyr::left_join(x = statesdt, y = statesplus1, by = c("weeks"))
     watervalues <- dplyr::right_join(x = watervalues, y = statesplus1, by = c("weeks","statesid"))
   }
 
   # add inflow
-  watervalues <- dplyr::left_join(x = watervalues, y = inflow[, list(weeks = timeId, years = tsId, hydroStorage)], by = c("weeks", "years"))
+  watervalues <- dplyr::left_join(x = watervalues, y = inflow[, list(weeks = inflow$timeId, years = inflow$tsId, hydroStorage=inflow$hydroStorage)], by = c("weeks", "years"))
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
 
   #add reward
@@ -263,7 +263,9 @@
   #at this point we added the rewards for each weekly_amount
 
   # add reservoir
-  watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = timeId, level_low, level_high)], by = "weeks")
+  watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = reservoir$timeId,
+                                                                        level_low = reservoir$level_low,
+                                                                        level_high = reservoir$level_high)], by = "weeks")
   #here we added the lvl_high and low of the reservoir
 
   # add empty columns ---------------------
@@ -297,7 +299,7 @@
   if (only_input) return(watervalues)
 
   if(!until_convergence){
-    next_week_values <- rep_len(next_week_values, nrow(watervalues[weeks==52]))
+    next_week_values <- rep_len(next_week_values, nrow(watervalues[watervalues$weeks==52]))
 
     for (n_cycl in seq_len(nb_cycle)) {
 
@@ -308,7 +310,7 @@
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
 
-        temp <- watervalues[weeks==i]
+        temp <- watervalues[watervalues$weeks==i]
 
         if(debug_week==i)browser()
 
@@ -353,7 +355,7 @@
 
           if(monotonic_bellman){
             for (k in 1:max_mcyear){
-              temp1 <- temp[weeks==i&years==k]
+              temp1 <- temp[temp$weeks==i&temp$years==k]
               m <- 0
               M <- 0
 
@@ -369,7 +371,7 @@
 
 
               temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
-              temp[(weeks==i&years==k),value_node :=temp1$value_node]
+              temp[(temp$weeks==i&temp$years==k),"value_node" :=temp1$value_node]
             }}
 
 
@@ -380,15 +382,15 @@
           temp$value_node <- correct_concavity(temp,i:i)
         }
 
-        watervalues[weeks==i,value_node :=temp$value_node]
-        watervalues[weeks==i,transition :=temp$transition]
-        watervalues[weeks==i,transition_reward :=temp$transition_reward]
-        watervalues[weeks==i,next_bellman_value :=temp$next_bellman_value]
+        watervalues[watervalues$weeks==i,"value_node" :=temp$value_node]
+        watervalues[watervalues$weeks==i,"transition" :=temp$transition]
+        watervalues[watervalues$weeks==i,"transition_reward" :=temp$transition_reward]
+        watervalues[watervalues$weeks==i,"next_bellman_value" :=temp$next_bellman_value]
 
 
         if (correct_outliers) {
-          watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
-          watervalues[weeks==i&value_node<0&is.finite(value_node),value_node:=NaN]
+          watervalues[watervalues$weeks == i, "value_node" := correct_outliers(watervalues$value_node), by = c("years")]
+          watervalues[watervalues$weeks==i&watervalues$value_node<0&is.finite(watervalues$value_node),"value_node":=NaN]
         }
 
 
@@ -399,8 +401,8 @@
 
       }
       close(pb)
-      next_week_values <- dplyr::filter(temp,weeks==1)$value_node
-      if(nrow(watervalues[is.na(value_node)&(weeks<=52)])>=1){
+      next_week_values <- dplyr::filter(temp,.data$weeks==1)$value_node
+      if(nrow(watervalues[is.na(watervalues$value_node)&(watervalues$weeks<=52)])>=1){
         message("Error in the calculation of Bellman values")
       }
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
@@ -418,7 +420,7 @@
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
 
-        temp <- watervalues[weeks==i]
+        temp <- watervalues[watervalues$weeks==i]
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
@@ -459,7 +461,7 @@
 
           if(monotonic_bellman){
             for (k in 1:max_mcyear){
-              temp1 <- temp[weeks==i&years==k]
+              temp1 <- temp[temp$weeks==i&temp$years==k]
               m <- 0
               M <- 0
 
@@ -475,7 +477,7 @@
 
 
               temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
-              temp[(weeks==i&years==k),value_node :=temp1$value_node]
+              temp[(temp$weeks==i&temp$years==k),"value_node" :=temp1$value_node]
             }}
 
 
@@ -486,16 +488,16 @@
           temp$value_node <- correct_concavity(temp,i:i)
         }
 
-        watervalues[weeks==i,value_node :=temp$value_node]
-        watervalues[weeks==i,transition :=temp$transition]
-        watervalues[weeks==i,transition_reward :=temp$transition_reward]
-        watervalues[weeks==i,next_bellman_value :=temp$next_bellman_value]
+        watervalues[watervalues$weeks==i,"value_node" :=temp$value_node]
+        watervalues[watervalues$weeks==i,"transition" :=temp$transition]
+        watervalues[watervalues$weeks==i,"transition_reward" :=temp$transition_reward]
+        watervalues[watervalues$weeks==i,"next_bellman_value" :=temp$next_bellman_value]
 
 
 
         if (correct_outliers) {
-          watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
-          watervalues[weeks==i&value_node<0&is.finite(value_node),value_node:=NaN]
+          watervalues[watervalues$weeks == i, "value_node" := correct_outliers(watervalues$value_node), by = c("years")]
+          watervalues[watervalues$weeks==i&watervalues$value_node<0&is.finite(watervalues$value_node),"value_node":=NaN]
         }
 
 
@@ -506,8 +508,8 @@
 
       }
       close(pb)
-      next_week_values <- temp[weeks==1]$value_node
-      watervalues[!is.finite(value_node),value_node:=NaN]
+      next_week_values <- temp[temp$weeks==1]$value_node
+      watervalues[!is.finite(watervalues$value_node),"value_node":=NaN]
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir)
 
 

@@ -31,7 +31,7 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 
   f_next_value <- c()
   for (year in mcyears){
-    df <- dplyr::filter(df_next_week, years==year)
+    df <- dplyr::filter(df_next_week, .data$years==year)
     f <- stats::approxfun(df$next_state, df$next_value)#,yleft = 0, yright=0)
     f_next_value <- c(f_next_value,f)
   }
@@ -70,24 +70,24 @@ build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
 
   future_states <- Data_week %>%
     dplyr::inner_join(df_next_week,by="years", relationship="many-to-many") %>%
-    dplyr::mutate(control = -.data$next_state+states+hydroStorage)
+    dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage)
 
   control_possible <- Data_week  %>%
     dplyr::mutate(control=list(decision_space)) %>%
     tidyr::unnest_longer(.data$control) %>%
-    dplyr::mutate(next_state=dplyr::if_else(states+hydroStorage-.data$control>niveau_max,niveau_max,
-                              states+hydroStorage-.data$control)) %>%
-    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, .data$next_state))
+    dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,niveau_max,
+                                            .data$states+.data$hydroStorage-.data$control)) %>%
+    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), .data$years, .data$next_state))
 
   control_min <- Data_week %>%
     dplyr::mutate(next_state=level_high) %>%
-    dplyr::mutate(control = -.data$next_state+states+hydroStorage) %>%
-    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, .data$next_state))
+    dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage) %>%
+    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), .data$years, .data$next_state))
 
   control_max <- Data_week %>%
     dplyr::mutate(next_state=level_low) %>%
-    dplyr::mutate(control = -.data$next_state+states+hydroStorage) %>%
-    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), years, .data$next_state))
+    dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage) %>%
+    dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), .data$years, .data$next_state))
 
   df_SDP <- dplyr::bind_rows(future_states, control_possible, control_min, control_max) %>%
     dplyr::filter((-P_max<=.data$control)&(.data$control<=E_max)&(.data$next_state>=0))

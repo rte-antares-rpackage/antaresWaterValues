@@ -60,8 +60,8 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
       X = opts_o,
       FUN = function(o) {
         res <- antaresRead::readAntares(districts = district_name, mcYears = mcyears, timeStep = "weekly", opts = o)
-        res <- res[timeId == 53L, timeId := 1L]
-        res <- res[, lapply(.SD, sum, na.rm = TRUE), by = list(timeId, mcYear), .SDcols = "OV. COST"]
+        res <- res[res$timeId == 53L, "timeId" := 1L]
+        res <- res[, lapply(.SD, sum, na.rm = TRUE), by = c("timeId", "mcYear"), .SDcols = "OV. COST"]
         res$simulation <- o$name
         res
       }
@@ -88,7 +88,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
         dplyr::arrange(.data$mcYear, .data$timeId, .data$control)
       for (u in U$control){
         cost[cost$control==u,'min_previous_reward'] <- cost %>% dplyr::filter(.data$control<=u) %>%
-          dplyr::group_by(mcYear, timeId) %>%
+          dplyr::group_by(.data$mcYear, .data$timeId) %>%
           dplyr::mutate(min_previous_reward = min(.data$reward)) %>%
           dplyr::ungroup() %>%
           dplyr::filter(.data$control==u) %>%
@@ -129,7 +129,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
       possible_controls <- data.frame(expand.grid(h=1:(2*nb_hours-1),week=1:52)) %>%
         dplyr::left_join(get_max_hydro(area,opts,"weekly"),by=c("week"="timeId")) %>%
         dplyr::mutate(i=dplyr::if_else(.data$h>nb_hours,2*nb_hours-.data$h,.data$h)) %>%
-        dplyr::mutate(u=dplyr::if_else(.data$h>nb_hours,.data$T_max/168*(168-hours[i]),.data$P_max/168*(hours[i]-168)*pump_eff)) %>%
+        dplyr::mutate(u=dplyr::if_else(.data$h>nb_hours,.data$T_max/168*(168-hours[.data$i]),.data$P_max/168*(hours[.data$i]-168)*pump_eff)) %>%
         dplyr::select("week","u")
     }
 
@@ -206,19 +206,19 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::left_join(antaresRead::readAntares(districts=district_balance,select=c("BALANCE"),
                           opts=opts,mcYears = mcyears),by=c("timeId","mcYear")) %>%
     dplyr::select(-c("day","month","hour","district","time")) %>%
-    dplyr::mutate(week=(timeId-1)%/%168+1) %>%
+    dplyr::mutate(week=(.data$timeId-1)%/%168+1) %>%
     dplyr::rename(price="MRG. PRICE",balance="BALANCE")
 
 
   price_turb_more <- price %>%
-    dplyr::group_by(mcYear,week) %>% dplyr::arrange(dplyr::desc(.data$price),.data$balance) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>% dplyr::arrange(dplyr::desc(.data$price),.data$balance) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::mutate(reward_turb=cumsum(price*dplyr::if_else(.data$balance<0,(.data$T_max+.data$balance),.data$T_max)),
                   vol_turb=cumsum(dplyr::if_else(.data$balance<0,(.data$T_max+.data$balance),.data$T_max)),
                   hour_turb=.data$vol_turb/.data$T_max) %>%
     dplyr::select("mcYear","week","hour_turb","reward_turb") %>% dplyr::ungroup()
   price_turb_less <- price %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(.data$price,dplyr::desc(.data$balance)) %>%
     dplyr::mutate(reward_turb=cumsum(price*dplyr::if_else(.data$balance<0,.data$balance,0)),
@@ -230,14 +230,14 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::distinct(.data$mcYear,.data$week,.data$hour_turb,.data$reward_turb)
 
   price_turb_int <- price_turb %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::arrange(.data$hour_turb) %>%
     dplyr::mutate(hour_turb_inf=round(.data$hour_turb,5),reward_turb_inf=.data$reward_turb,
            hour_turb_sup=round(dplyr::lead(.data$hour_turb),5),reward_turb_sup=dplyr::lead(.data$reward_turb)) %>%
     dplyr::select(-c("hour_turb","reward_turb")) %>%
     tidyr::drop_na()
 
-  hour_turb_0 <- price_turb %>% dplyr::group_by(mcYear,week) %>%
+  hour_turb_0 <- price_turb %>% dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::summarise(hour_turb_0=-round(min(.data$hour_turb),5),.groups="drop")
 
   hour_turb <- data.frame(tidyr::expand_grid(mcYear=mcyears,week=1:52,hour_turb=hours)) %>%
@@ -257,7 +257,7 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::select(-c("hour_turb_inf","hour_turb_sup","reward_turb_inf","reward_turb_sup"))
 
   price_turb_int <- hour_turb %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::arrange(.data$hour_turb) %>%
     dplyr::mutate(hour_turb_inf=round(.data$hour_turb,5),reward_turb_inf=.data$reward_turb,
            hour_turb_sup=round(dplyr::lead(.data$hour_turb),5),reward_turb_sup=dplyr::lead(.data$reward_turb)) %>%
@@ -265,7 +265,7 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     tidyr::drop_na()
 
   price_pump_more <- price %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(.data$price,dplyr::desc(.data$balance)) %>%
     dplyr::mutate(cost_pump=cumsum(price*dplyr::if_else(.data$balance>0,(.data$P_max-.data$balance),.data$P_max)),
@@ -273,7 +273,7 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
                   hour_pump=.data$vol_pump/.data$P_max) %>%
     dplyr::select("mcYear","week","hour_pump","cost_pump") %>% dplyr::ungroup()
   price_pump_less <- price %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(dplyr::desc(.data$price),.data$balance) %>%
     dplyr::mutate(cost_pump=cumsum(price*dplyr::if_else(.data$balance>0,-.data$balance,0)),
@@ -284,14 +284,14 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::distinct(.data$mcYear,.data$week,.data$hour_pump,.data$cost_pump)
 
   price_pump_int <- price_pump %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::arrange(.data$hour_pump) %>%
     dplyr::mutate(hour_pump_inf=round(.data$hour_pump,5),cost_pump_inf=.data$cost_pump,
            hour_pump_sup=round(dplyr::lead(.data$hour_pump),5),cost_pump_sup=dplyr::lead(.data$cost_pump)) %>%
     dplyr::select(-c("hour_pump","cost_pump")) %>%
     tidyr::drop_na()
 
-  hour_pump_0 <- price_pump_int %>% dplyr::group_by(mcYear,week) %>%
+  hour_pump_0 <- price_pump_int %>% dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::summarise(hour_pump_0=-round(min(.data$hour_pump_inf),5),.groups="drop")
 
   hour_pump <- data.frame(tidyr::expand_grid(mcYear=mcyears,week=1:52,hour_pump=hours)) %>%
@@ -311,7 +311,7 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::select(-c("hour_pump_inf","hour_pump_sup","cost_pump_inf","cost_pump_sup"))
 
   price_pump_int <- hour_pump %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::arrange(.data$hour_pump) %>%
     dplyr::mutate(hour_pump_inf=round(.data$hour_pump,5),cost_pump_inf=.data$cost_pump,
            hour_pump_sup=round(dplyr::lead(.data$hour_pump),5),cost_pump_sup=dplyr::lead(.data$cost_pump)) %>%
@@ -319,7 +319,7 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     tidyr::drop_na()
 
   max_hydro <- max_hydro %>%
-    dplyr::mutate(week=(timeId-1)%/%168+1) %>%
+    dplyr::mutate(week=(.data$timeId-1)%/%168+1) %>%
     dplyr::group_by(week) %>%
     dplyr::summarise(P_max=mean(.data$P_max),T_max=mean(.data$T_max),.groups = "drop")
 
@@ -402,12 +402,12 @@ get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mc
     dplyr::left_join(antaresRead::readAntares(districts=district_balance,select=c("BALANCE"),
                           opts=opts,mcYears = mcyears),by=c("timeId","mcYear")) %>%
     dplyr::select(-c("day","month","hour","district","time")) %>%
-    dplyr::mutate(week=(timeId-1)%/%168+1) %>%
+    dplyr::mutate(week=(.data$timeId-1)%/%168+1) %>%
     dplyr::rename(price="MRG. PRICE",balance="BALANCE")
 
 
   price_turb_more <- price %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(dplyr::desc(.data$price),.data$balance) %>%
     dplyr::mutate(reward_turb=cumsum(.data$price*dplyr::if_else(.data$balance<0,(.data$T_max+.data$balance),.data$T_max)),
@@ -415,7 +415,7 @@ get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mc
                   hour_turb=.data$vol_turb/.data$T_max) %>%
     dplyr::select("mcYear","week","hour_turb","reward_turb") %>% dplyr::ungroup()
   price_turb_less <- price %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(.data$price,dplyr::desc(.data$balance)) %>%
     dplyr::mutate(reward_turb=cumsum(price*dplyr::if_else(.data$balance<0,.data$balance,0)),
@@ -425,11 +425,11 @@ get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mc
   price_turb <- rbind(price_turb_less,price_turb_more) %>%
     dplyr::distinct(.data$mcYear,.data$week,.data$hour_turb,.data$reward_turb)
 
-  hour_turb_0 <- price_turb %>% dplyr::group_by(mcYear,week) %>%
+  hour_turb_0 <- price_turb %>% dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::summarise(hour_turb_0=-min(.data$hour_turb),.groups="drop")
 
   price_turb_int <- price_turb %>%
-    dplyr::group_by(mcYear,week) %>%
+    dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::arrange(.data$hour_turb) %>%
     dplyr::mutate(hour_turb_inf=round(.data$hour_turb,5),reward_turb_inf=.data$reward_turb,
            hour_turb_sup=round(dplyr::lead(.data$hour_turb),5),reward_turb_sup=dplyr::lead(.data$reward_turb)) %>%

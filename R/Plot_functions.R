@@ -12,11 +12,11 @@
 plot_reward_variation <- function(reward_base,week_id)
 {
   temp <- reward_base %>%
-    dplyr::filter(timeId %in% week_id) %>%
+    dplyr::filter(.data$timeId %in% week_id) %>%
     dplyr::group_by(.data$timeId,.data$control) %>%
     dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
-    dplyr::mutate(week=as.character(timeId)) %>%
-    dplyr::select(-c(timeId)) %>%
+    dplyr::mutate(week=as.character(.data$timeId)) %>%
+    dplyr::select(-c("timeId")) %>%
     dplyr::group_by(week) %>%
     dplyr::arrange(.data$week,.data$control) %>%
     dplyr::mutate("Reward transition"=(dplyr::lead(.data$Reward)-.data$Reward)/(dplyr::lead(.data$control)-.data$control)) %>%
@@ -26,7 +26,7 @@ plot_reward_variation <- function(reward_base,week_id)
   temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
 
 
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
+  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transistion`,.data$`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2::theme(legend.position="none")
@@ -53,17 +53,17 @@ plot_reward_variation <- function(reward_base,week_id)
 plot_reward <- function(reward_base,week_id)
 {
   temp <- reward_base %>%
-    dplyr::filter(timeId %in% week_id) %>%
+    dplyr::filter(.data$timeId %in% week_id) %>%
     dplyr::group_by(.data$timeId,.data$control) %>%
     dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
-    dplyr::mutate(week=as.character(timeId))
+    dplyr::mutate(week=as.character(.data$timeId))
 
   if(max(temp$control)>100000){
     temp$"Turbining capacity GWh" <- temp$control/1000
-    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity GWh`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity GWh`,.data$Reward, col=week)) +ggplot2::geom_line(size=0.5)
   }else{
     temp$"Turbining capacity" <- temp$control
-    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity`,.data$Reward, col=week)) +ggplot2::geom_line(size=0.5)
   }
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward week"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
@@ -94,19 +94,19 @@ plot_reward <- function(reward_base,week_id)
 
 plot_reward_mc <- function(reward_base,week_id,Mc_year)
 {
-  temp <- reward_base[timeId %in% week_id&mcYear%in%Mc_year] %>%
+  temp <- reward_base[reward_base$timeId %in% week_id&reward_base$mcYear%in%Mc_year] %>%
     dplyr::rename("Turbining capacity"="control","Reward"="reward") %>%
-    dplyr::mutate(week=as.character(timeId))
+    dplyr::mutate(week=as.character(.data$timeId))
 
   if(max(temp$`Turbining capacity`)>100000){
     temp$"Turbining capacity GWh" <- round(temp$`Turbining capacity`/1000)
     temp$`Turbining capacity` <- NULL
-    temp <-  dplyr::relocate(temp,`Turbining capacity GWh`, .before = 3)
+    temp <-  dplyr::relocate(temp,"Turbining capacity GWh", .before = 3)
 
-    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity GWh`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity GWh`,.data$Reward, col=week)) +ggplot2::geom_line(size=0.5)
   }else{
-    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining capacity`,Reward, col=week)) +ggplot2::geom_line(size=0.5)
-    temp <-  dplyr::relocate(temp,`Turbining capacity`, .before = 2)
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity`,.data$Reward, col=week)) +ggplot2::geom_line(size=0.5)
+    temp <-  dplyr::relocate(temp,"Turbining capacity", .before = 2)
 
     }
 
@@ -141,11 +141,11 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 {
   temp <- reward_base %>%
-    dplyr::filter(timeId %in% week_id,mcYear%in%Mc_year) %>%
+    dplyr::filter(.data$timeId %in% week_id,.data$mcYear%in%Mc_year) %>%
     dplyr::group_by(.data$timeId,.data$control) %>%
     dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
-    dplyr::mutate(week=as.character(timeId)) %>%
-    dplyr::select(-c(timeId)) %>%
+    dplyr::mutate(week=as.character(.data$timeId)) %>%
+    dplyr::select(-c("timeId")) %>%
     dplyr::group_by(week) %>%
     dplyr::arrange(.data$week,.data$control) %>%
     dplyr::mutate("Reward transition"=(dplyr::lead(.data$Reward)-.data$Reward)/(dplyr::lead(.data$control)-.data$control)) %>%
@@ -155,7 +155,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
   temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
 
 
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=`Turbining transistion`,`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
+  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transistion`,.data$`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(Mc_year),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2::theme(legend.position="none")
@@ -185,21 +185,17 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 
 plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_high=10000){
 
+  temp <- value_nodes_dt[value_nodes_dt$weeks %in%week_number]
 
-  temp <- value_nodes_dt[weeks %in%week_number]
-
-  temp <- temp %>% dplyr::mutate(value_node=dplyr::case_when(states>level_high ~ value_node - penalty_high*(states-level_high),
-                                                             states<level_low ~ value_node  - penalty_low*(level_low-states),
-                                                             TRUE ~ value_node ),
-                                 states_round_percent=states/max(temp$states)*100)
-
-  temp <- temp[, value_node_dif := c(NA, diff(value_node)), by = weeks]
-
-  # temp <- states_to_percent(temp,states_step_ratio)
-
-  temp <- temp[is.finite(vu)&(!is.nan(vu))]
-
-
+  temp <- temp %>% dplyr::mutate(value_node=dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_high*(.data$states-.data$level_high),
+                                                             .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
+                                                             TRUE ~ .data$value_node ),
+                                 states_round_percent=.data$states/max(temp$states)*100) %>%
+    dplyr::group_by(.data$weeks) %>%
+    dplyr::arrange(.data$weeks,.data$states) %>%
+    dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(is.finite(.data$vu),!is.nan(.data$vu))
 
 
   setnames(temp,"value_node","Bellman_Value")

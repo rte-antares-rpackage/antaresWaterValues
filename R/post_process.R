@@ -13,7 +13,7 @@ constant_fill <- function(results_dt,max_wv,min_wv)
 
   for (i in 1:52){
 
-    temp <- results[weeks==i]
+    temp <- results[results$weeks==i]
 
 
     m <- 0
@@ -30,12 +30,12 @@ constant_fill <- function(results_dt,max_wv,min_wv)
     }
     M <- temp[M,]$statesid
 
-    temp[statesid>m,vu:=max_wv]
-    temp[statesid<M,vu:=min_wv]
+    temp[temp$statesid>m,"vu":=max_wv]
+    temp[temp$statesid<M,"vu":=min_wv]
     for (j in 2:nrow(temp)){
       if(is.na(temp$vu[j])) temp$vu[j] <-  temp$vu[j-1]
     }
-    results[weeks==i,vu :=temp$vu]
+    results[results$weeks==i,"vu" :=temp$vu]
   }
 
   return(results)
@@ -75,12 +75,12 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
     )
   }
   results <- copy(results_dt)
-  results[vu==Inf|is.na(vu),vu:=NA]
+  results[results$vu==Inf|is.na(results$vu),"vu":=NA]
   maxid <- max(results$statesid)
   q3 <- stats::quantile(results$statesid,0.75)
   if(!fix){
-  results[vu>max_cost,vu:=NA]
-  results[vu<min_cost,vu:=NA]}
+  results[results$vu>max_cost,"vu":=NA]
+  results[results$vu<min_cost,"vu":=NA]}
 
   # results[vu<-down_cost,vu:=NA]
 
@@ -92,19 +92,19 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
 
     if(!is.numeric(min_vu))min_vu <- min(results$vu,na.rm = T)
     if(!is.numeric(max_vu))max_vu <- min(results$vu,na.rm = T)
-    results[states>level_high,vu:=min_vu]
-    results[states<level_low,vu:=max_vu]
+    results[results$states>results$level_high,"vu":=min_vu]
+    results[results$states<results$level_low,"vu":=max_vu]
     results$nvu <- NA_real_
     for (i in 1:52){
-      temp <- results[weeks==i]
-      temp <- dplyr::select(temp,statesid,vu)
+      temp <- results[results$weeks==i]
+      temp <- dplyr::select(temp,"statesid","vu")
       reg <- stats::lm(vu ~ statesid, temp)
       temp$vu <- stats::predict(reg,temp)
-      results[weeks==i]$nvu <-temp$vu
+      results[results$weeks==i]$nvu <-temp$vu
     }
-    results[is.na(vu),vu:=nvu]
+    results[is.na(results$vu),"vu":=results$nvu]
     results$nvu <- NULL
-    results[vu<0.5,vu:=0.5]
+    results[results$vu<0.5,"vu":=0.5]
     if(!blocker){
     results <- post_process(results,max_cost,min_cost,full_imputation,
                              impute_method,fix,min_vu,max_vu,blocker=T)}
@@ -117,22 +117,22 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
   pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
   for (i in 1:52){
-    maxi <- max(results[weeks==i]$vu,na.rm = TRUE)
-    mini <- min(results[weeks==i]$vu,na.rm = TRUE)
+    maxi <- max(results[results$weeks==i]$vu,na.rm = TRUE)
+    mini <- min(results[results$weeks==i]$vu,na.rm = TRUE)
 
     if(!full_imputation){
-      results[weeks==i&!is.finite(vu)&states>=level_high,vu:=0]
+      results[results$weeks==i&!is.finite(results$vu)&results$states>=results$level_high,"vu":=0]
 
       if (max_cost>0){
-        results[weeks==i&!is.finite(vu)&states<=level_low,vu:=max_cost]
-        results[weeks==i&states<=level_low,vu:=max_cost]
+        results[results$weeks==i&!is.finite(results$vu)&results$states<=results$level_low,"vu":=max_cost]
+        results[results$weeks==i&results$states<=results$level_low,"vu":=max_cost]
       }
-      results[weeks==i&!is.finite(vu)&states<=level_low,vu:=interp_down(maxi,statesid,q3)]
+      results[results$weeks==i&!is.finite(results$vu)&results$states<=results$level_low,"vu":=interp_down(maxi,results$statesid,q3)]
     }else{
-      results[weeks==i&states>level_high,vu:=NA]
-      results[weeks==i&states<level_low,vu:=NA]
-      results[weeks==i&statesid==maxid,vu:=max_cost]
-      results[weeks==i&statesid==1,vu:=min_cost]
+      results[results$weeks==i&results$states>results$level_high,"vu":=NA]
+      results[results$weeks==i&results$states<results$level_low,"vu":=NA]
+      results[results$weeks==i&results$statesid==maxid,"vu":=max_cost]
+      results[results$weeks==i&results$statesid==1,"vu":=min_cost]
     }
 
 
@@ -140,8 +140,8 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
 
 
 
-    temp <- results[weeks==i]
-    temp <- dplyr::select(temp,statesid,vu)
+    temp <- results[results$weeks==i]
+    temp <- dplyr::select(temp,"statesid","vu")
     if (any(is.na(temp))){
 
       imputed_Data <- mice::mice(temp, m=1, maxit = 50, method = impute_method,
@@ -149,14 +149,14 @@ post_process <- function(results_dt,max_cost=3000,min_cost=0,full_imputation=FAL
       completeData <- mice::complete(imputed_Data,1)
 
 
-      results[weeks==i]$vu <- sort(completeData$vu,decreasing = T)
+      results[results$weeks==i]$vu <- sort(completeData$vu,decreasing = T)
 
 
     }
     utils::setTxtProgressBar(pb = pb, value = i)
   }
   close(pb)
-  results[vu<0.5,vu:=0.5]
+  results[results$vu<0.5,"vu":=0.5]
   if(!blocker){
   results <- post_process(results,max_cost=,min_cost,full_imputation,
                           impute_method,fix,min_vu,max_vu,blocker=T)
@@ -176,18 +176,18 @@ monotonic_VU <- function(results_dt,noise_ratio=1)
 
 {
   results <- copy(results_dt)
-  results[vu==Inf|is.na(vu),vu:=NaN]
+  results[results$vu==Inf|is.na(results$vu),"vu":=NaN]
   qm <- stats::quantile(results$vu,0.95,na.rm = TRUE)
-  temp <- results[vu>1.5*qm]
+  temp <- results[results$vu>1.5*qm]
 
   if (dim(temp)[1]>noise_ratio*nrow(results)){
-    results[vu>1.5*qm,vu:=NaN]
+    results[results$vu>1.5*qm,"vu":=NaN]
   }
   temp <- NULL
 
   for (i in 1:52){
 
-    temp <- results[weeks==i]
+    temp <- results[results$weeks==i]
     maxi <- max(temp$vu,na.rm = TRUE)
     meanw <- mean(temp$vu,na.rm = TRUE)
     q9 <- stats::quantile(temp$vu,0.95,na.rm = TRUE)
@@ -208,7 +208,7 @@ monotonic_VU <- function(results_dt,noise_ratio=1)
 
 
       temp$vu[m:M]<- temp$vu[m:M][order(temp$vu[m:M],decreasing = TRUE)]
-      results[weeks==i,vu :=temp$vu]
+      results[results$weeks==i,"vu" :=temp$vu]
   }
 
   return(results)
@@ -228,12 +228,12 @@ monotonic_JM <- function(results_dt)
 
 {
   results <- copy(results_dt)
-  results[vu==Inf|is.na(vu),vu:=NaN]
+  results[results$vu==Inf|is.na(results$vu),"vu":=NaN]
 
 
   for (i in 1:52){
 
-    temp <- results[weeks==i]
+    temp <- results[results$weeks==i]
 
 
     m <- 0
@@ -253,7 +253,7 @@ monotonic_JM <- function(results_dt)
     for (t in m:(M-1)){
       if(temp$vu[t+1]>temp$vu[t])temp$vu[t+1] <-temp$vu[t]
     }
-    results[weeks==i,vu :=temp$vu]
+    results[results$weeks==i,"vu" :=temp$vu]
   }
 
   return(results)
@@ -270,11 +270,11 @@ monotonic_JM2 <- function(results_dt)
 
 {
   results <- copy(results_dt)
-  results[vu==Inf|is.na(vu),vu:=NaN]
+  results[results$vu==Inf|is.na(results$vu),"vu":=NaN]
 
 
   for (i in 1:52){
-    temp <- results[weeks==i]
+    temp <- results[results$weeks==i]
     m <- 0
     M <- 0
 
@@ -339,7 +339,7 @@ monotonic_JM2 <- function(results_dt)
    #
    #  }},error = function(e) e)
 
-    results[weeks==i,vu :=temp$vu]
+    results[results$weeks==i,"vu" :=temp$vu]
   }
 
   return(results)
@@ -426,18 +426,18 @@ remove_out <- function(results_dt,min=NULL,max=NULL,NAN=T){
   results <- copy(results_dt)
   if(is.numeric(max)){
     if (NAN){
-      results[vu>max,vu:=NaN]
+      results[results$vu>max,"vu":=NaN]
     }else{
-      results[vu>max,vu:=max]
+      results[results$vu>max,"vu":=max]
 
     }
   }
 
   if(is.numeric(min)){
     if (NAN){
-      results[vu<min,vu:=NaN]
+      results[results$vu<min,"vu":=NaN]
     }else{
-      results[vu<min,vu:=min]
+      results[results$vu<min,"vu":=min]
 
     }
   }
@@ -459,7 +459,7 @@ adjust_wv <- function(results_dt,value=0){
   }
   results <- copy(results_dt)
 
-    results[,vu:=vu+value]
+    results[,"vu":=results$vu+value]
 
 
   return(results)

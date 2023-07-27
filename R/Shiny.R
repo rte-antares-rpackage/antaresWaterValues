@@ -7,6 +7,7 @@
 #' @param silent Boolean. TRUE to suppress warnings.
 #' @param ... further arguments passed to or from other methods.
 #' @importFrom bsplus `%>%`
+#' @import data.table
 #' @export
 
 shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)

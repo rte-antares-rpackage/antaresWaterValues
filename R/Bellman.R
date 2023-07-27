@@ -66,8 +66,8 @@
              penalty_low = dplyr::if_else(.data$next_state<=level_low,penalty_level_low*(.data$next_state-level_low),0),
              penalty_high = dplyr::if_else(.data$next_state>=level_high,penalty_level_high*(level_high-.data$next_state),0),
              sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
-      dplyr::group_by(years,states) %>%
-      dplyr::slice(which.max(sum)) %>%
+      dplyr::group_by(.data$years,.data$states) %>%
+      dplyr::slice(which.max(.data$sum)) %>%
       dplyr::select(-c("value_node","transition","transition_reward",
                 "next_bellman_value")) %>%
       dplyr::rename("value_node"="sum","transition"="control","transition_reward"="gain",
@@ -84,7 +84,7 @@
 
     if (method == "mean-grid") {
       if (correct_outliers) {
-        Data_week[, value_node := correct_outliers(value_node), by = years]
+        Data_week[, "value_node" := correct_outliers(Data_week$value_node), by = c("years")]
       }
       return(Data_week)
     }
@@ -93,7 +93,7 @@
 
     if(method=="grid-mean"){
       if (correct_outliers) {
-        Data_week[, value_node := correct_outliers(value_node)]
+        Data_week[, "value_node" := correct_outliers(Data_week$value_node)]
       }
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) mean_finite(x))
 
@@ -102,7 +102,7 @@
 
     if (method=="quantile"){
       if (correct_outliers) {
-        Data_week[, value_node := correct_outliers(value_node)]
+        Data_week[, "value_node" := correct_outliers(Data_week$value_node)]
       }
 
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio,na.rm =T))

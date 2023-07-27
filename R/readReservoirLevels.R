@@ -75,8 +75,8 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
     utils::head(zoo::na.approx(c(x, x[1]), na.rm = FALSE), -1)
   }
   reservoir <- reservoir[, (vars) := lapply(.SD, interpolation), .SDcols = vars]
-  reservoir <- reservoir[, timeId := c(rep(seq_len(52), each = 7), 52)]
-  reservoir <- reservoir[, lapply(.SD, mean), by = timeId, .SDcols = vars]
+  reservoir <- reservoir[, "timeId" := c(rep(seq_len(52), each = 7), 52)]
+  reservoir <- reservoir[, lapply(.SD, mean), by = c("timeId"), .SDcols = vars]
   if (byReservoirCapacity) {
     reservoirCapacity <- get_reservoir_capacity(area = area, opts = opts)
     if (!is.null(reservoirCapacity)) {
@@ -116,19 +116,19 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
   )
   reservoir <- reservoir[, date := full_year$date]
   if (timeStep == "daily") {
-    reservoir[, timeId := seq_len(nrow(reservoir))]
+    reservoir[, "timeId" := seq_len(nrow(reservoir))]
     reservoir[, date := NULL]
   }
   if (timeStep == "monthly") {
     data.table::setcolorder(x = reservoir, neworder = c("date", vars))
     reservoir <- reservoir[order(date)]
-    reservoir[, timeId := format(date, format = "%Y-%m-01")]
-    reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = timeId, .SDcols = vars]
-    reservoir[, timeId := seq_len(nrow(reservoir))]
+    reservoir[, "timeId" := format(date, format = "%Y-%m-01")]
+    reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = c("timeId"), .SDcols = vars]
+    reservoir[, "timeId" := seq_len(nrow(reservoir))]
   }
   if (timeStep == "weekly") {
-    reservoir[, timeId := c(rep(seq_len(52), each = 7), 52)]
-    reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = timeId, .SDcols = vars]
+    reservoir[, "timeId" := c(rep(seq_len(52), each = 7), 52)]
+    reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = c("timeId"), .SDcols = vars]
   }
   if (byReservoirCapacity) {
     reservoirCapacity <- get_reservoir_capacity(area = area, opts = opts)

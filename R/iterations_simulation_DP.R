@@ -178,9 +178,9 @@ getInitialTrend <- function(level_init,controls,inflow,mcyears,niveau_max,
       dplyr::mutate(control=list(dplyr::filter(controls,.data$week==w)$u)) %>%
       tidyr::unnest_longer(control) %>%
       dplyr::cross_join(inflow %>% dplyr::filter(.data$timeId==w, .data$tsId %in% mcyears) %>%
-                          dplyr::select(tsId,hydroStorage)) %>%
-      dplyr::mutate(next_state=dplyr::if_else(states+hydroStorage-control>niveau_max,niveau_max,
-                                states+hydroStorage-control)) %>%
+                          dplyr::select("tsId","hydroStorage")) %>%
+      dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,niveau_max,
+                                              .data$states+.data$hydroStorage-.data$control)) %>%
       dplyr::filter(.data$next_state>=0) %>%
       dplyr::cross_join(dplyr::filter(reservoir,.data$timeId==w)) %>%
       dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=.data$level_low*niveau_max,penalty_low*(.data$next_state-.data$level_low*niveau_max),0),
@@ -395,7 +395,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
       dplyr::pull("lev")
 
     transition <- watervalues %>%
-      dplyr::filter(weeks==dplyr::if_else(w<52,w+1,1))
+      dplyr::filter(.data$weeks==dplyr::if_else(w<52,w+1,1))
 
     f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
 

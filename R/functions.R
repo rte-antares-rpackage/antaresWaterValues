@@ -177,21 +177,21 @@ get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"
 #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
 max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
 if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
-  max_turb <- max_hydro[, max(hstorPMaxHigh)] * 168
+  max_turb <- max_hydro[, max(max_hydro$hstorPMaxHigh)] * 168
 } else {
   if (timeStep=="hourly"){
     max_turb <- max_hydro$generatingMaxPower
     max_pump <- max_hydro$pumpingMaxPower
   } else if (timeStep=="daily"){
     max_hydro$day <- (max_hydro$timeId-1)%/%24+1
-    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,day),turb=sum(generatingMaxPower),
-                           pump=sum(pumpingMaxPower))
+    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$day),turb=sum(.data$generatingMaxPower),
+                           pump=sum(.data$pumpingMaxPower))
     max_turb <- max_hydro$turb
     max_pump <- max_hydro$pump
   } else if (timeStep=="weekly"){
     max_hydro$week <- (max_hydro$timeId-1)%/%168+1
-    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,week),turb=sum(generatingMaxPower),
-                           pump=sum(pumpingMaxPower))
+    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$week),turb=sum(.data$generatingMaxPower),
+                           pump=sum(.data$pumpingMaxPower))
     max_turb <- max_hydro$turb
     max_pump <- max_hydro$pump
   } else {message("timeStep not supported, change to hourly, weekly or daily")}
@@ -254,15 +254,15 @@ getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::si
 
 to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant=T){
 
-  data <- dplyr::group_by(data, weeks) %>%
-    dplyr::arrange(states) %>%
+  data <- dplyr::group_by(data, .data$weeks) %>%
+    dplyr::arrange(.data$states) %>%
     dplyr::mutate(vu_pen=dplyr::if_else(is.na(.data$vu_pen),dplyr::lead(.data$vu_pen),.data$vu_pen),
-           vu=dplyr::if_else(is.na(vu),dplyr::lead(vu),vu))
+                  vu=dplyr::if_else(is.na(.data$vu),dplyr::lead(.data$vu),.data$vu))
   data <- as.data.table(data)
 
   # rescale levels to round percentages ranging from 0 to 100
-  states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
-  states_ref <- dplyr::mutate(states_ref, states_percent = 100*states/max(states))
+  states_ref <- data[, .SD[1], by = c("statesid"), .SDcols = "states"]
+  states_ref <- dplyr::mutate(states_ref, states_percent = 100*.data$states/max(.data$states))
 
   nearest_states <- states_ref$statesid[sapply(0:100, function(x) min(which(x-states_ref$states_percent<=0)))]
 
@@ -273,18 +273,21 @@ to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant
 
   res <- CJ(weeks = unique(data$weeks), states_round_percent = 0:100)
 
-  res[states_ref_0_100, on = "states_round_percent", statesid := i.statesid]
+  res <- res %>%
+    dplyr::left_join(dplyr::select(states_ref_0_100,
+                                   c("states_round_percent",
+                                     "statesid")),by=c("states_round_percent"))
 
   max_state <- max(states_ref$states)
 
   res <- res %>% dplyr::left_join(dplyr::select(data,"weeks","statesid","vu_pen","level_low","level_high"),
                            by = c("weeks", "statesid")) %>%
-    dplyr::mutate(level_low=level_low/max_state*100,
-           level_high=level_high/max_state*100,
-           vu=dplyr::case_when(states_round_percent>level_high ~ .data$vu_pen - penalty_level_high,
-                        states_round_percent<level_low ~ .data$vu_pen + penalty_level_low,
-                            TRUE ~ .data$vu_pen)) %>%
-    dplyr::mutate(weeks=dplyr::if_else(weeks>=2,weeks-1,52))
+    dplyr::mutate(level_low=.data$level_low/max_state*100,
+                  level_high=.data$level_high/max_state*100,
+                  vu=dplyr::case_when(.data$states_round_percent>.data$level_high ~ .data$vu_pen - penalty_level_high,
+                               .data$states_round_percent<.data$level_low ~ .data$vu_pen + penalty_level_low,
+                               TRUE ~ .data$vu_pen)) %>%
+    dplyr::mutate(weeks=dplyr::if_else(.data$weeks>=2,.data$weeks-1,52))
 
 
   # reshape

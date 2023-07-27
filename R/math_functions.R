@@ -37,28 +37,27 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
 value_node_gen <- function(watervalues,statesdt,reservoir){
-    value_nodes_dt <- watervalues[, list(value_node = mean_finite(value_node)),
-                                  by = list(weeks, statesid)]
+  value_nodes_dt <- watervalues %>%
+    dplyr::group_by(.data$weeks, .data$statesid) %>%
+    dplyr::mutate(value_node=mean_finite(.data$value_node)) %>%
+    dplyr::mutate(value_node=dplyr::if_else(!is.finite(.data$value_node),
+                                            NaN,.data$value_node)) %>%
+    as.data.table()
 
-    value_nodes_dt[!is.finite(value_node),value_node:=NaN]
-
-    # add states levels
-    value_nodes_dt <- merge(x = value_nodes_dt, y = statesdt, by = c("weeks", "statesid"))
-
-
-    #add reservoir
-    names(reservoir)[1] <- "weeks"
-    value_nodes_dt <- dplyr::mutate(value_nodes_dt, beg_week=dplyr::if_else(weeks>1,weeks-1,52))
-    value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
-      dplyr::select(-c("beg_week"))
-
-
-    value_nodes_dt <- value_nodes_dt[order(weeks, -statesid)]
-    value_nodes_dt[, value_node_dif := c(NA, diff(value_node)), by = weeks]
-    value_nodes_dt[, states_dif := c(NA, diff(states)), by = weeks]
-    value_nodes_dt[, vu := (value_node_dif / states_dif )]
-    value_nodes_dt[,vu:=round(vu,2)]
-    return(value_nodes_dt)
+  #add reservoir
+  names(reservoir)[1] <- "weeks"
+  value_nodes_dt <- dplyr::mutate(value_nodes_dt, beg_week=dplyr::if_else(.data$weeks>1,.data$weeks-1,52)) %>%
+    dplyr::select(-c("level_high","level_low"))
+  value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
+    dplyr::select(-c("beg_week","level_avg")) %>%
+    dplyr::arrange(.data$weeks, -.data$statesid) %>%
+    dplyr::group_by(.data$weeks) %>%
+    dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),
+                  states_dif=.data$states-dplyr::lag(.data$states),
+                  vu=.data$value_node_dif /.data$states_dif,
+                  vu=round(.data$vu,2)) %>%
+    as.data.table()
+  return(value_nodes_dt)
 }
 
 
@@ -130,10 +129,9 @@ mean_finite <- function(x) {
 
 states_to_percent <- function(data,states_step_ratio=0.01){
 
-
   # rescale levels to round percentages ranging from 0 to 100
-  states_ref <- data[, .SD[1], by = statesid, .SDcols = "states"]
-  states_ref[, states_percent := 100*states/max(states)]
+  states_ref <- data[, .SD[1], by = c("statesid"), .SDcols = "states"]
+  states_ref[, "states_percent" := 100*states_ref$states/max(states_ref$states)]
 
   interv <- seq(from=0,to=100,by=round(100*states_step_ratio))
   nearest_states <- states_ref$statesid[sapply(interv, function(x) which.min(abs(x - states_ref$states_percent)))]
@@ -145,11 +143,16 @@ states_to_percent <- function(data,states_step_ratio=0.01){
 
   res <- CJ(weeks = unique(data$weeks), states_round_percent = interv)
 
-  res[states_ref_0_100, on = "states_round_percent", statesid := i.statesid]
+  res <- res %>%
+    dplyr::left_join(dplyr::select(states_ref_0_100,
+                                   c("states_round_percent",
+                                     "statesid")),by=c("states_round_percent")) %>%
+    dplyr::left_join(dplyr::select(data,
+                                   c("weeks", "statesid",
+                                     "value_node","value_node_dif","vu")),
+                                   by=c("weeks", "statesid")) %>%
+    as.data.table()
 
-  res[data, on = c("weeks", "statesid"), value_node := i.value_node]
-  res[data, on = c("weeks", "statesid"), value_node_dif := i.value_node_dif]
-  res[data, on = c("weeks", "statesid"), vu := i.vu]
   return(res)
   }
 
@@ -168,7 +171,7 @@ correct_concavity <- function(df_value_node, weeks){
     df_week <- dplyr::filter(df_week,!is.na(df_week$value_node))
     df_week <- dplyr::filter(df_week,is.finite(df_week$value_node))
     df_week <- unique(df_week)
-    df_week <- dplyr::arrange(df_week,states,years)
+    df_week <- dplyr::arrange(df_week,.data$states,.data$years)
     n <- nrow(df_week)
     df_week$new_value <- df_week$value_node
     states <- dplyr::distinct(df_week,states) %>% dplyr::pull(states)
@@ -179,9 +182,9 @@ correct_concavity <- function(df_value_node, weeks){
         dplyr::right_join(df_week, by=c("years")) %>%
         dplyr::mutate(coef=(.data$new_value-.data$value_x)/(states-.data$states_x)) %>%
         dplyr::mutate(coef=dplyr::if_else(.data$coef<0,0,.data$coef))
-      df_week <- df_week %>% dplyr::filter(states>x) %>% dplyr::group_by(years) %>%
+      df_week <- df_week %>% dplyr::filter(states>x) %>% dplyr::group_by(.data$years) %>%
         dplyr::slice(which.max(.data$coef)) %>%
-        dplyr::transmute(m=.data$coef,states_y=states, years=years) %>%
+        dplyr::transmute(m=.data$coef,states_y=.data$states, years=.data$years) %>%
         dplyr::right_join(df_week,by="years") %>%
         dplyr::mutate(new_value=dplyr::if_else((states>.data$states_x)&(states<=.data$states_y),
                                  .data$m*(states-.data$states_x)+.data$value_x,.data$new_value)) %>%

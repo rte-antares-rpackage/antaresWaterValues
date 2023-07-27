@@ -41,26 +41,25 @@ setupWaterValuesSimulation <- function(area,
 
   # Reset Pumping power
   suppressWarnings(resetPumpPower(area = area, opts = opts))
-
   # Prepare thermal Cluster parameters
   if (utils::hasName(hydro_storage_max, "hstorPMaxHigh")) {
     prepro_modulation <- matrix(
       data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max[, c(hstorPMaxHigh)]/hydro_storage_max[, max(hstorPMaxHigh)],
+               hydro_storage_max$hstorPMaxHigh/hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)],
                rep(0, times = 365 * 24 * 1)),
       ncol = 4
     )
-    time_series <- hydro_storage_max[, list(hstorPMaxHigh)]
-    nominalcapacity <- hydro_storage_max[, max(hstorPMaxHigh)]
+    time_series <- hydro_storage_max$hstorPMaxHigh
+    nominalcapacity <- hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)]
   } else {
     prepro_modulation <- matrix(
       data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max[, c(generatingMaxPower)]/hydro_storage_max[, max(generatingMaxPower)],
+               hydro_storage_max$generatingMaxPower/hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)],
                rep(0, times = 365 * 24 * 1)),
       ncol = 4
     )
-    time_series <- hydro_storage_max[, list(generatingMaxPower)]
-    nominalcapacity <- hydro_storage_max[, max(generatingMaxPower)]
+    time_series <- hydro_storage_max$generatingMaxPower
+    nominalcapacity <- hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)]
   }
 
   # Chose the area to link
@@ -104,7 +103,7 @@ setupWaterValuesSimulation <- function(area,
 
     if(grepl("_pump$", fictive_area)){
       #add load
-      max_pump <- hydro_storage_max[, list(pumpingMaxPower)]
+      max_pump <- hydro_storage_max$pumpingMaxPower
       antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump)
     }
 

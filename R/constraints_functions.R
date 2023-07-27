@@ -142,14 +142,14 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
     }
   }
   max_app <- inflow %>%
-    dplyr::group_by(timeId) %>%
-    dplyr::summarise(max_app=max(hydroStorage))
+    dplyr::group_by(.data$timeId) %>%
+    dplyr::summarise(max_app=max(.data$hydroStorage))
   max_hydro <- dplyr::left_join(max_hydro,max_app,by=c("timeId"))
 
-  weeks <- dplyr::distinct(max_hydro,timeId)$timeId
+  weeks <- dplyr::distinct(max_hydro,.data$timeId)$timeId
   df_constraint <- data.frame(week=weeks)
   df_constraint$u <- sapply(df_constraint$week,
-                            FUN = function(w) constraint_week(pumping,pumping_efficiency,nb_disc_stock,res_cap,dplyr::filter(max_hydro,timeId==w)),
+                            FUN = function(w) constraint_week(pumping,pumping_efficiency,nb_disc_stock,res_cap,dplyr::filter(max_hydro,.data$timeId==w)),
                             simplify = F)
 
   df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
@@ -238,7 +238,7 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
   } #Otherwise, the constraint will be applied on the generation from the thermal cluster
   else{
     cluster_desc <- antaresRead::readClusterDesc(opts)
-    fictive_cluster <- cluster_desc[area == fictive_area, cluster]
+    fictive_cluster <- cluster_desc[cluster_desc$area == fictive_area, ]$cluster
     coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
 
     if (match(area, sort(c(area, fictive_area))) == 1) {

@@ -28,6 +28,8 @@ setupWaterValuesSimulation <- function(area,
 
   assertthat::assert_that(class(opts) == "simOptions")
 
+  changeHydroManagement(opts=opts,watervalues = F, heuristic = T, area=area)
+
   # Reset hydro storage
   if(reset_hydro){
     suppressWarnings(resetHydroStorage(area = area, opts = opts))

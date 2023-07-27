@@ -82,11 +82,14 @@ ui <- shiny::fluidPage(
                shinyBS::bsTooltip("sim_nb_disc_stock", " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
                                   "bottom"),
 
+             shiny::uiOutput("choose_simulation"),
+
              shiny::sliderInput("sim_mcyears",label="choose the number of MC years to simulate",min=1,
                          max=opts$parameters$general$nbyears,
                          value=c(1,opts$parameters$general$nbyears),step=1),
              shinyBS::bsTooltip("sim_mcyears", " Number of Monte Carlo years to simulate.",
                                 "bottom"),
+
 
              shiny::h2("Saving parameters"),
 
@@ -108,7 +111,10 @@ ui <- shiny::fluidPage(
 
              ), #end sidebarPanel
 
-           shiny::mainPanel()
+           shiny::mainPanel(
+             shiny::h2("Controls (u) evaluated for each week and for each simulation (sim)"),
+             DT::dataTableOutput("simulation_constraint")
+           )
 
            )# end sidebar layout
 
@@ -690,6 +696,23 @@ server <- function(input, output, session) {
 
   })
 
+  simulation_constraint <- shiny::reactive({
+    constraint_generator(area=input$sim_area,
+                         opts=opts,
+                         pumping=input$pumping,
+                         nb_disc_stock = input$sim_nb_disc_stock)
+  })
+
+  output$simulation_constraint <- DT::renderDataTable({
+    dplyr::filter(simulation_constraint(),.data$sim %in% input$subset_simulation)
+  })
+
+  output$choose_simulation <- shiny::renderUI({
+    shiny::checkboxGroupInput("subset_simulation","Choose which simulations you want to run",
+                              unique(simulation_constraint()$sim),
+                              selected = unique(simulation_constraint()$sim))
+  })
+
   output$eff <- shiny::renderUI({ shiny::numericInput("efficiency","Efficiency pumping ratio",min=0,max=1,
                              value=getPumpEfficiency(area=input$Area,opts = opts))
   })
@@ -718,7 +741,10 @@ server <- function(input, output, session) {
                      shiny=T,
                      otp_dest=input$sim_output_dir,
                      file_name=input$file_name,
-                     pumping = input$pumping)},prefix = "")},print_cat = F,
+                     pumping = input$pumping,
+                     constraint_values = dplyr::filter(simulation_constraint(),
+                                                       .data$sim %in% input$subset_simulation))},
+                     prefix = "")},print_cat = F,
                   message = F, warning = silent))
 
 

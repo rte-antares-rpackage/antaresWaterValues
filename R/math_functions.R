@@ -50,8 +50,8 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
     dplyr::select(-c("level_high","level_low"))
   value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
     dplyr::select(-c("beg_week","level_avg")) %>%
-    dplyr::arrange(.data$weeks, -.data$statesid) %>%
-    dplyr::group_by(.data$weeks) %>%
+    dplyr::arrange(.data$years,.data$weeks, -.data$statesid) %>%
+    dplyr::group_by(.data$years,.data$weeks) %>%
     dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),
                   states_dif=.data$states-dplyr::lag(.data$states),
                   vu=.data$value_node_dif /.data$states_dif,

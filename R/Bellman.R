@@ -19,8 +19,6 @@
   #'  grid of quantile algorithm.
   #' @param q_ratio numeric in [0,1]. the probability used in quantile algorithm.
   #' @param counter Numeric of length 1. number of the week in calculation.
-  #' @param correct_outliers If TRUE, outliers in Bellman values are replaced by spline
-  #'   interpolations. Defaults to FALSE.
   #' @param stop_rate the percent from which the calculation stop. for example
   #' \code{stop_rate=5} means the calculation stop if there is a week with less then
   #' 5\% accessibles states.
@@ -35,7 +33,7 @@
 
 
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
-                      method,mcyears,correct_outliers=FALSE,q_ratio=0.75,
+                      method,mcyears,q_ratio=0.75,
                       counter,
                       stop_rate=5,debugger_feas=F,niveau_max,
                       states_steps,penalty_level_low,penalty_level_high){
@@ -83,28 +81,18 @@
     #------ mean-grid method---------
 
     if (method == "mean-grid") {
-      if (correct_outliers) {
-        Data_week[, "value_node" := correct_outliers(Data_week$value_node), by = c("years")]
-      }
       return(Data_week)
     }
 
     #------ grid-mean method---------
 
     if(method=="grid-mean"){
-      if (correct_outliers) {
-        Data_week[, "value_node" := correct_outliers(Data_week$value_node)]
-      }
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) mean_finite(x))
 
       return(Data_week)
     }
 
     if (method=="quantile"){
-      if (correct_outliers) {
-        Data_week[, "value_node" := correct_outliers(Data_week$value_node)]
-      }
-
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) stats::quantile(x, q_ratio,na.rm =T))
 
 

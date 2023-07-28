@@ -12,7 +12,6 @@ Bellman(
   P_max = 0,
   method,
   mcyears,
-  correct_outliers = FALSE,
   q_ratio = 0.75,
   counter,
   stop_rate = 5,
@@ -48,9 +47,6 @@ reservoir over one step of time.}
 grid of quantile algorithm.}
 
 \item{mcyears}{Vector. Monte Carlo years}
-
-\item{correct_outliers}{If TRUE, outliers in Bellman values are replaced by spline
-interpolations. Defaults to FALSE.}
 
 \item{q_ratio}{numeric in [0,1]. the probability used in quantile algorithm.}
 

@@ -357,7 +357,6 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
     method = method_dp,
     q_ratio = q_ratio,
     states_step_ratio = states_step_ratio,  # in how many states the reservoirs is divided
-    correct_outliers = FALSE,  # if TRUE interpolate to avoid outliers
     monotonic_bellman = FALSE,  # done in post-process
     inaccessible_states = 99/100,  # for convergence sake
     until_convergence = FALSE,

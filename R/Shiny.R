@@ -273,13 +273,6 @@ ui <- shiny::fluidPage(
                              "bottom"),
 
 
-          # correct outliers option
-          shinyWidgets::materialSwitch("correct_outliers","Use correct outlier to remove noise",
-                        value=F,status = "success")%>%
-            bsplus::shinyInput_label_embed(
-              bsplus::shiny_iconlink() %>%
-                bsplus::bs_embed_popover(title ="Outliers in Bellman values are replaced by spline interpolations.")),
-
           # correct concavity option for Bellman values
           shinyWidgets::materialSwitch("correct_concavity","Correct concavity of Bellman values",
                          value=F,status = "success")%>%
@@ -808,7 +801,6 @@ server <- function(input, output, session) {
         states_step_ratio=(1/input$nb_states),
         mcyears=input$mcyears[1]:input$mcyears[2],
         reservoir_capacity=NULL,
-        correct_outliers =input$correct_outliers,
         q_ratio=input$q_ratio/100,
         shiny=T,
         until_convergence = input$until_convergence,

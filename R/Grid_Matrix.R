@@ -26,8 +26,6 @@
 #'  if \code{NULL} (the default), value in Antares is used if available else
 #'  a prompt ask the user the value to be used.
 #' @param na_rm Remove NAs
-#' @param correct_outliers If TRUE, outliers in Bellman values are replaced
-#' by spline interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
 #' @param until_convergence Boolean. TRUE to repeat cycle until convergence or
 #'  attending the limit.
@@ -70,7 +68,6 @@
                              states_step_ratio = 0.01,
                              reservoir_capacity = NULL,
                              na_rm = FALSE,
-                             correct_outliers = FALSE,
                              method ,
                              only_input=FALSE,
                              q_ratio=0.5,
@@ -296,6 +293,7 @@
   counter <- 0
 
   }
+  browser()
 
   ####
 
@@ -326,7 +324,6 @@
                         method=method,
                         mcyears = mcyears,
                         q_ratio= q_ratio,
-                        correct_outliers = correct_outliers,
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
@@ -391,15 +388,8 @@
         watervalues[watervalues$weeks==i,"next_bellman_value" :=temp$next_bellman_value]
 
 
-        if (correct_outliers) {
-          watervalues[watervalues$weeks == i, "value_node" := correct_outliers(watervalues$value_node), by = c("years")]
-          watervalues[watervalues$weeks==i&watervalues$value_node<0&is.finite(watervalues$value_node),"value_node":=NaN]
-        }
-
-
-
-        # next_week_values <- correct_outliers(temp$value_node)
         next_week_values <- temp$value_node
+
         utils::setTxtProgressBar(pb = pb, value = 52 - i)
 
       }
@@ -434,7 +424,6 @@
                         method=method,
                         mcyears = mcyears,
                         q_ratio= q_ratio,
-                        correct_outliers = correct_outliers,
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
@@ -498,15 +487,8 @@
 
 
 
-        if (correct_outliers) {
-          watervalues[watervalues$weeks == i, "value_node" := correct_outliers(watervalues$value_node), by = c("years")]
-          watervalues[watervalues$weeks==i&watervalues$value_node<0&is.finite(watervalues$value_node),"value_node":=NaN]
-        }
-
-
-
-        # next_week_values <- correct_outliers(temp$value_node)
         next_week_values <- temp$value_node
+
         utils::setTxtProgressBar(pb = pb, value = 52 - i)
 
       }

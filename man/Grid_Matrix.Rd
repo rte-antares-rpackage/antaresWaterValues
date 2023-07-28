@@ -17,7 +17,6 @@ Grid_Matrix(
   states_step_ratio = 0.01,
   reservoir_capacity = NULL,
   na_rm = FALSE,
-  correct_outliers = FALSE,
   method,
   only_input = FALSE,
   q_ratio = 0.5,
@@ -74,9 +73,6 @@ if \code{NULL} (the default), value in Antares is used if available else
 a prompt ask the user the value to be used.}
 
 \item{na_rm}{Remove NAs}
-
-\item{correct_outliers}{If TRUE, outliers in Bellman values are replaced
-by spline interpolations. Defaults to FALSE.}
 
 \item{method}{Perform mean of grids algorithm or grid of means algorithm or
 grid of quantile algorithm.}

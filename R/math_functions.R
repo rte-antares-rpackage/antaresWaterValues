@@ -77,38 +77,6 @@ converged <- function(diff_vect,conv=1){
   return(converge_percent)
   }
 
-#' Replace outliers values by spline, used in \code{Bellman} and \code{Grid_Matrix}
-#' @param vector numeric vector to remove outliers values from it.
-
-correct_outliers <- function(vector) {
-  if (!requireNamespace("zoo", quietly = TRUE)) {
-    stop(
-      "Package \"zoo\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-  for (p in c("grDevices")){
-    if (!requireNamespace(p, quietly = TRUE)) {
-      stop(
-        paste0("Packageb", p, " must be installed to use this function."),
-        call. = FALSE
-      )
-    }
-  }
-  ind_v <- which(is.finite(vector)) # NaN and Inf values shall not be corrected
-  v <- vector[ind_v]
-  w <- v
-  v[v %in% grDevices::boxplot.stats(v)$out] <- NA
-  v <- zoo::na.spline(v, na.rm = FALSE)
-
-  # in case some values cannot be replaced by approximations
-  ind_na <- which(is.na(v))
-  v[ind_na] <- w[ind_na]
-
-  vector[ind_v] <- v
-  return(vector)
-}
-
 #----- Mean of finite values
 #' Calculate the mean of finite values.
 #' Return \code{-Inf} if all \code{-Inf}.

@@ -293,7 +293,6 @@
   counter <- 0
 
   }
-  browser()
 
   ####
 
@@ -403,6 +402,7 @@
     }
 
   }else{
+    next_week_values <- rep_len(next_week_values, nrow(watervalues[watervalues$weeks==52]))
 
     for (n_cycl in seq_len(cycle_limit)) {
 
@@ -494,8 +494,10 @@
       }
       close(pb)
       next_week_values <- temp[temp$weeks==1]$value_node
-      watervalues[!is.finite(watervalues$value_node),"value_node":=NaN]
-      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir)
+      if(nrow(watervalues[is.na(watervalues$value_node)&(watervalues$weeks<=52)])>=1){
+        message("Error in the calculation of Bellman values")
+      }
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
 
 
       if(n_cycl>1){

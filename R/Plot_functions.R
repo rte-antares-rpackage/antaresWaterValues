@@ -103,9 +103,13 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
     temp$`Turbining capacity` <- NULL
     temp <-  dplyr::relocate(temp,"Turbining capacity GWh", .before = 3)
 
-    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity GWh`,.data$Reward, col=week)) +ggplot2::geom_line(size=0.5)
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity GWh`,.data$Reward, col=week)) +
+      ggplot2::geom_line(size=0.5) +
+      ggplot2::facet_wrap(ggplot2::vars(.data$mcYear))
   }else{
-    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity`,.data$Reward, col=week)) +ggplot2::geom_line(size=0.5)
+    p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining capacity`,.data$Reward, col=week)) +
+      ggplot2::geom_line(size=0.5) +
+      ggplot2::facet_wrap(ggplot2::vars(.data$mcYear))
     temp <-  dplyr::relocate(temp,"Turbining capacity", .before = 2)
 
     }
@@ -142,12 +146,10 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 {
   temp <- reward_base %>%
     dplyr::filter(.data$timeId %in% week_id,.data$mcYear%in%Mc_year) %>%
-    dplyr::group_by(.data$timeId,.data$control) %>%
-    dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
+    dplyr::group_by(.data$mcYear,.data$timeId) %>%
+    dplyr::rename(Reward="reward") %>%
     dplyr::mutate(week=as.character(.data$timeId)) %>%
-    dplyr::select(-c("timeId")) %>%
-    dplyr::group_by(week) %>%
-    dplyr::arrange(.data$week,.data$control) %>%
+    dplyr::arrange(.data$control) %>%
     dplyr::mutate("Reward transition"=(dplyr::lead(.data$Reward)-.data$Reward)/(dplyr::lead(.data$control)-.data$control)) %>%
     dplyr::rename(`Turbining transistion`="control") %>%
     tidyr::drop_na()
@@ -155,7 +157,9 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
   temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
 
 
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transistion`,.data$`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
+  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transistion`,.data$`Reward transition`, col=week)) +
+    ggplot2::geom_line(size=0.5)+
+    ggplot2::facet_wrap(ggplot2::vars(.data$mcYear))
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(Mc_year),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2::theme(legend.position="none")

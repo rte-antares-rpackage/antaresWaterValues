@@ -20,6 +20,10 @@
 #' @param hours Vector of hours used to evaluate costs/rewards of pumping/generating
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
+#' @param method_dp Algorithm in dynamic programming part
+#' @param q_ratio from 0 to 1. the probability used in quantile method
+#' to determine a bellman value which q_ratio all bellman values are equal or
+#' less to it. (quantile(q_ratio))
 #'
 #' @export
 #' @return List containing aggregated water values and the data table with all years for the last iteration
@@ -28,7 +32,9 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      penalty_low,penalty_high,
                                                      path_solver,study_path,
                                                      hours=round(seq(0,168,length.out=10)),
-                                                     states_step_ratio=1/50){
+                                                     states_step_ratio=1/50,
+                                                     method_dp = "mean-grid",
+                                                     q_ratio = 0.5){
 
 
   # Initialization
@@ -130,7 +136,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                  penalty_high=penalty_high,
                                  inflow=inflow,max_hydro = max_hydro,
                                  max_hydro_weekly = max_hydro_weekly,
-                                 niveau_max=niveau_max)
+                                 niveau_max=niveau_max,
+                                 method_dp = method_dp, q_ratio = q_ratio)
 
     df_watervalues <- dplyr::bind_rows(df_watervalues,
                                        dplyr::mutate(results$aggregated_results,n=as.character(i)))
@@ -310,12 +317,17 @@ getCalculatedReward <- function(reward,levels,expected_reward){
 #' powers for each hour,returned by the function  \code{get_max_hydro}
 #' @param max_hydro_weekly data.frame {timeId,pump,turb} with maximum pumping and storing
 #' powers for each week,returned by the function  \code{get_max_hydro}
+#' @param method_dp Algorithm in dynamic programming part
+#' @param q_ratio from 0 to 1. the probability used in quantile method
+#' to determine a bellman value which q_ratio all bellman values are equal or
+#' less to it. (quantile(q_ratio))
 #'
 #' @return List containing aggregated water values and the data table with all years
 updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
                               states_step_ratio,pumping,pump_eff,
                               penalty_low,penalty_high,inflow,niveau_max,
-                              max_hydro,max_hydro_weekly){
+                              max_hydro,max_hydro_weekly, method_dp="mean-grid",
+                              q_ratio = 0.5){
 
   reward <- dplyr::filter(reward,.data$u==0) %>%
     dplyr::select("mcYear","week","reward") %>%
@@ -342,7 +354,8 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
     opts = opts,
     week_53 = 0,
     district_name = "water values district",
-    method = c("grid-mean","mean-grid","quantile")[1], # I want "Grille des moyennes"
+    method = method_dp,
+    q_ratio = q_ratio,
     states_step_ratio = states_step_ratio,  # in how many states the reservoirs is divided
     correct_outliers = FALSE,  # if TRUE interpolate to avoid outliers
     monotonic_bellman = FALSE,  # done in post-process

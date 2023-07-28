@@ -643,6 +643,26 @@ shiny::tabPanel("Iterative calculation of Bellman values",
              shinyBS::bsTooltip("itr_nb_states", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
                                 "bottom"),
 
+             shinyWidgets::radioGroupButtons(
+               inputId = "method_dp",
+               label = "Select algorithm to use",
+               choices = c("grid-mean","mean-grid","quantile"),
+               individual = TRUE,
+               justified = TRUE,
+               checkIcon = list(
+                 yes = shiny::icon("ok",
+                                   lib = "glyphicon"))
+             ),
+             shinyBS::bsTooltip("method_dp", " Select the algorithm to use in calculation for more information check documentation.",
+                                "bottom"),
+
+             shiny::conditionalPanel(
+               condition = "input.method_dp=='quantile'",
+               shiny::sliderInput("q_ratio_dp",label=NULL,min=0,max=100,value=50,post  = " %"),
+             ),
+             shinyBS::bsTooltip("q_ratio_dp", "The bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
+                                "bottom"),
+
              # penalty for violation of the bottom rule curve
              shiny::numericInput("itr_penalty_low","Penalty for the violation of the bottom rule curve",value=3001),
              shinyBS::bsTooltip("itr_penalty_low", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of unsupplied energy.",
@@ -744,7 +764,12 @@ server <- function(input, output, session) {
                      pumping = input$pumping,
                      constraint_values = dplyr::filter(simulation_constraint(),
                                                        .data$sim %in% input$subset_simulation))},
-                     prefix = "")},print_cat = F,
+                     prefix = "")
+                 shinyWidgets::show_alert(
+                   title = "Run simulations",
+                   text = "Done !!",
+                   type = "success"
+                 )},print_cat = F,
                   message = F, warning = silent))
 
 
@@ -1195,7 +1220,9 @@ server <- function(input, output, session) {
                        path_solver=input$itr_solver_path,
                        study_path=opts$studyPath,
                        hours=round(seq(0,168,length.out=input$itr_hours)),
-                       states_step_ratio=1/input$itr_nb_states)$aggregated_results
+                       states_step_ratio=1/input$itr_nb_states,
+                       method_dp = input$method_dp,
+                       q_ratio = input$q_ratio_dp/100)$aggregated_results
 
                      shiny::isolate(rv$results <- results)
                      shinyWidgets::show_alert(

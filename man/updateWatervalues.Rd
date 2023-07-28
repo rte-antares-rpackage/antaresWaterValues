@@ -20,7 +20,9 @@ updateWatervalues(
   inflow,
   niveau_max,
   max_hydro,
-  max_hydro_weekly
+  max_hydro_weekly,
+  method_dp = "mean-grid",
+  q_ratio = 0.5
 )
 }
 \arguments{
@@ -60,6 +62,12 @@ powers for each hour,returned by the function  \code{get_max_hydro}}
 
 \item{max_hydro_weekly}{data.frame {timeId,pump,turb} with maximum pumping and storing
 powers for each week,returned by the function  \code{get_max_hydro}}
+
+\item{method_dp}{Algorithm in dynamic programming part}
+
+\item{q_ratio}{from 0 to 1. the probability used in quantile method
+to determine a bellman value which q_ratio all bellman values are equal or
+less to it. (quantile(q_ratio))}
 }
 \value{
 List containing aggregated water values and the data table with all years

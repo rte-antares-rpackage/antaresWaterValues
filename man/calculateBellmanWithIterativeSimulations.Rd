@@ -20,7 +20,9 @@ calculateBellmanWithIterativeSimulations(
   path_solver,
   study_path,
   hours = round(seq(0, 168, length.out = 10)),
-  states_step_ratio = 1/50
+  states_step_ratio = 1/50,
+  method_dp = "mean-grid",
+  q_ratio = 0.5
 )
 }
 \arguments{
@@ -51,6 +53,12 @@ calculateBellmanWithIterativeSimulations(
 
 \item{states_step_ratio}{Discretization ratio to generate steps levels
 between the reservoir capacity and zero}
+
+\item{method_dp}{Algorithm in dynamic programming part}
+
+\item{q_ratio}{from 0 to 1. the probability used in quantile method
+to determine a bellman value which q_ratio all bellman values are equal or
+less to it. (quantile(q_ratio))}
 }
 \value{
 List containing aggregated water values and the data table with all years for the last iteration

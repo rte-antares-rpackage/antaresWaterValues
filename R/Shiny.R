@@ -8,6 +8,7 @@
 #' @param ... further arguments passed to or from other methods.
 #' @importFrom bsplus `%>%`
 #' @import data.table
+#' @import shinyBS
 #' @export
 
 shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
@@ -106,7 +107,11 @@ ui <- shiny::fluidPage(
 
              shiny::actionButton("simulate","Launch simulations"),
              shinyBS::bsTooltip("simulate", " launch simulations with the selected parameters. You can close the web browser after launching but keep the R server.",
-                                "bottom")
+                                "top"),
+
+             shiny::actionButton("reset","Reset"),
+             shinyBS::bsTooltip("reset", "Reset a Antares study in case something went wrong, please check your study before running an other simulation",
+                                "top")
 
 
              ), #end sidebarPanel
@@ -771,6 +776,17 @@ server <- function(input, output, session) {
                    type = "success"
                  )},print_cat = F,
                   message = F, warning = silent))
+
+  shiny::observeEvent(input$reset,
+
+                      spsUtil::quiet({
+                        opts_temp <- antaresRead::setSimulationPath(opts$studyPath, "input")
+                        resetStudy(opts=opts_temp,
+                                   area=input$sim_area,
+                                   pumping = input$pumping,
+                                   fictive_area="fictive_watervalues")
+                        },print_cat = F,
+                        message = F, warning = silent))
 
 
 

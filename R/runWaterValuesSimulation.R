@@ -244,4 +244,33 @@ runWaterValuesSimulation <- function(area,
 
 }
 
+#' Reset an Antares study. In case, there is a problem when executing \code{runWaterValuesSimulation},
+#' run this function to restore the study.
+#'
+#' @param opts  List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param area The area concerned by the simulation
+#' @param pumping Boolean. True to take into account the pumping.
+#' @param fictive_area Name of the fictive area created
+#'
+#' @export
+resetStudy <- function(opts, area, pumping,fictive_area = NULL){
+
+  fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
+
+  if(pumping){
+    fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_pump"))
+  }else{
+    fictive_areas <- fictive_area
+  }
+
+  for (fictive_area in fictive_areas){
+    antaresEditObject::removeArea(fictive_area,opts = opts)
+  }
+
+  # restore hydrostorage
+  restoreHydroStorage(area = area, opts = opts)
+  restorePumpPower(area = area, opts = opts)
+}
+
 

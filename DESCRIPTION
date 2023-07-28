@@ -8,7 +8,9 @@ Description: This package aims at generating water values for Antares.
 License: MIT + file LICENSE
 Depends:
     data.table (>= 1.14.0),
-    R (>= 4.1.0)
+    R (>= 4.1.0),
+    shiny (>= 1.6.0),
+    shinyBS (>= 0.61)
 Imports:
     antaresEditObject (>= 0.2.2),
     antaresRead (>= 2.2.8),
@@ -27,8 +29,6 @@ Suggests:
     knitr,
     mice (>= 3.13.0),
     rmarkdown,
-    shiny (>= 1.6.0),
-    shinyBS (>= 0.61),
     shinybusy (>= 0.2.2),
     shinycustomloader (>= 0.9.0),
     shinyjs (>= 2.0.0),

@@ -9,6 +9,7 @@
 #' @importFrom bsplus `%>%`
 #' @import data.table
 #' @import shinyBS
+#' @import shiny
 #' @export
 
 shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
@@ -109,8 +110,8 @@ ui <- shiny::fluidPage(
              shinyBS::bsTooltip("simulate", " launch simulations with the selected parameters. You can close the web browser after launching but keep the R server.",
                                 "top"),
 
-             shiny::actionButton("reset","Reset"),
-             shinyBS::bsTooltip("reset", "Reset a Antares study in case something went wrong, please check your study before running an other simulation",
+             shiny::actionButton("reset_sim","Reset"),
+             shinyBS::bsTooltip("reset_sim", "Reset a Antares study in case something went wrong, please check your study before running an other simulation",
                                 "top")
 
 
@@ -424,14 +425,13 @@ ui <- shiny::fluidPage(
 
                shiny::sidebarPanel(
                  shiny::h1("Post process"),
-                 shiny::h3(shiny::strong("Remove outlier water values")),
+                 shiny::h3("Remove extreme values"),
                  shinyWidgets::switchInput("Run_remove_out",
                                value=F, offStatus = "danger",
                              onStatus = "success")%>%
                  bsplus::shinyInput_label_embed(
                    bsplus::shiny_iconlink() %>%
-                     bsplus::bs_embed_popover(title ="Activate filter to remove outlier values.
-      NB: this filter affect yourwater values.")),
+                     bsplus::bs_embed_popover(title ="Activate filter to remove extreme values")),
 
 
 
@@ -440,124 +440,43 @@ ui <- shiny::fluidPage(
                  shiny::conditionalPanel(
 
                    condition = "input.Run_remove_out",
-                   shiny::column(4, shiny::numericInput(inputId = "min_rm",
-                                          label = "Min",
+                   shiny::numericInput(inputId = "min_rm",
+                                          label = "Minimum value to keep",
                                           value = 0,
                                           step = 1,
-                                          width = '100%')),
-                   shiny::column(4, shiny::numericInput(inputId = "max_rm",
-                                          label = "Max",
+                                          width = '100%'),
+                   shiny::numericInput(inputId = "max_rm",
+                                          label = "Maximum value to keep",
                                           value = 200,
                                           step = 1,
-                                          width = '100%')),
-                   shiny::column(4, shinyWidgets::materialSwitch("rm_NaN",
-                                          label = "NaN",
-                                          value = T,
-                                          status = "info",
-                                          width = '100%'))),
+                                          width = '100%'),
+
+                   shiny::h3("Replace not defined values"),
+
+                   shinyWidgets::radioGroupButtons(
+                     inputId = "replace_na_method",
+                     label = "Method to replace NaN values",
+                     choices = c("Constant values","Extreme values"),
+                     individual = TRUE,
+                     justified = TRUE
+                   ),
+
+                   shiny::conditionalPanel(
+                     condition = "input.replace_na_method=='Constant values'",
+                     shiny::numericInput("max_vu","Max Water value",value=200),
+                     shinyBS::bsTooltip("max_vu", "The highest water value that you want to affect",
+                                        "bottom"),
+                     shiny::numericInput("min_vu","Min Water value",value=0),
+                     shinyBS::bsTooltip("min_vu", "The smallest water value that you want to affect",
+                                        "bottom"),
+                   ),
+                 ),
                  shinyBS::bsTooltip("min_rm", "Delete all water values that are under this value",
                                     "bottom"),
                  shinyBS::bsTooltip("max_rm", "Delete all water values that are bigger then this value",
                                     "bottom"),
 
-                 linebreaks(3),
 
-                 shiny::h3(shiny::strong("Fill The rest of water values")),
-                 shiny::column(12,shiny::conditionalPanel(
-                   condition = "input.Run_remove_out",
-                   shinyWidgets::materialSwitch("use_filtred",label = "Use Filtred",
-                                  value=F, status="info")%>%
-                     bsplus::shinyInput_label_embed(
-                       bsplus::shiny_iconlink() %>%
-                         bsplus::bs_embed_popover(title ="Use the water values after the application of the filter above or use the original one for the next steps."))
-                   ),
-
-
-                 shinyWidgets::radioGroupButtons(
-                   inputId = "method_post_process",
-                   label = "Select method",
-                   choices = c("Imputation","Constant values","None"),
-                   individual = TRUE,
-                   justified = TRUE,
-                   selected ="None",
-                   checkIcon = list(
-                     yes = shiny::icon("ok",
-                                lib = "glyphicon"))  ),
-
-                 shinyBS::bsTooltip("method_post_process", "the method to use to complete the water values of the deleted values. ",
-                                    "bottom"),
-
-
-                shiny::conditionalPanel(
-
-                  condition="input.method_post_process=='Imputation'",
-
-
-
-                shiny::numericInput("max_cost","Max Water value price",value=3000),
-
-                shinyBS::bsTooltip("max_cost", "the water value that you want to affect when you have an empty reservoir",
-                                   "bottom"),
-                shiny::numericInput("min_cost","Min Water value price",value=-150),
-
-                shinyBS::bsTooltip("min_cost", "the water value that you want to affect when you have a full reservoir",
-                                   "bottom"),
-                shinyWidgets::materialSwitch("full_imputation","Impute NaN values",
-                          value=T,status = "success"),
-
-                shinyWidgets::pickerInput("impute_method","Impute method",
-                    c("pmm", "midastouch", "sample", "cart","rf","mean","norm",
-                      "norm.nob","norm.boot","norm.predict","quadratic","ri",
-                      "2l.norm","2l.lmer","2l.pan","2lonly.mean","2lonly.norm"),
-                    selected="norm.predict",
-                    options = list(
-                      `live-search` = TRUE))%>%
-                  bsplus::shinyInput_label_embed(
-                    bsplus::shiny_iconlink() %>%
-                      bsplus::bs_embed_popover(title ="the method used to impute NaN values you can read on each method details using the command help(mice)."))  ),
-
-
-                shiny::conditionalPanel(
-
-                  condition="input.method_post_process=='Constant values'",
-
-                  shiny::numericInput("max_vu","Max Water value price",value=NULL),
-                  shinyBS::bsTooltip("max_vu", "the water value that you want to affect when you have an empty reservoir",
-                                     "bottom"),
-                  shiny::numericInput("min_vu","Min Water value price",value=NULL),
-                  shinyBS::bsTooltip("min_vu", "the water value that you want to affect when you have a full reservoir",
-                                     "bottom"),
-                  ),
-                ),
-
-
-                shiny::numericInput("adjust","Adjust value",value=0),
-                shinyBS::bsTooltip("adjust", "The value will be added to all the water values. for substraction put negative value",
-                                   "bottom"),
-
-                shiny::h3(shiny::strong("Force Monotonic")),
-
-                shiny::h4("Using permutation"),
-                shinyWidgets::switchInput("force_monotonic",
-                            value=F, offStatus = "danger",
-                            onStatus = "success")%>%
-                  bsplus::shinyInput_label_embed(
-                    bsplus::shiny_iconlink() %>%
-                      bsplus::bs_embed_popover(title ="this filter do a permutation of water values to assure that the water values become decreasing with the reservoir level.")),
-                shiny::h4("Using replacement"),
-                shinyWidgets::switchInput("force_monotonic_JM",
-                            value=F, offStatus = "danger",
-                            onStatus = "success")%>%
-                  bsplus::shinyInput_label_embed(
-                    bsplus::shiny_iconlink() %>%
-                      bsplus::bs_embed_popover(title ="this filter replace a water value by the previous state value if he is bigger water values to assure that the water values become decreasing with the reservoir level.")),
-                shiny::h4("Using 2 direction algorithm"),
-                shinyWidgets::switchInput("force_monotonic_JM2",
-                            value=F, offStatus = "danger",
-                            onStatus = "success")%>%
-                  bsplus::shinyInput_label_embed(
-                    bsplus::shiny_iconlink() %>%
-                      bsplus::bs_embed_popover(title ="this filter replace a water value by the exploring the other levels in two direction simultaneously in the case he find a solution in each way he do the mean.")),
 
 
 
@@ -777,7 +696,7 @@ server <- function(input, output, session) {
                  )},print_cat = F,
                   message = F, warning = silent))
 
-  shiny::observeEvent(input$reset,
+  shiny::observeEvent(input$reset_sim,
 
                       spsUtil::quiet({
                         opts_temp <- antaresRead::setSimulationPath(opts$studyPath, "input")
@@ -1092,92 +1011,16 @@ server <- function(input, output, session) {
 
 
 #--------post process----------
-    results_temp <- shiny::reactive({
+    final_result <- shiny::reactive({
 
       if(input$Run_remove_out){
-      remove_out(rv$results,min = input$min_rm,max=input$max_rm,NAN=input$rm_NaN)
+        remove_out(rv$results,min = input$min_rm,max=input$max_rm,
+                   replace_na_method=input$replace_na_method,max_vu=input$max_vu,
+                   min_vu=input$min_vu)
       }else{
         rv$results
       }
-      })
-
-    post_result <- shiny::reactive({
-      fix_v <- FALSE
-      if(input$method_post_process=="Constant values"){
-        fix_v <- TRUE
-      }
-
-
-
-      if(input$use_filtred){
-        shiny::withProgress( post_process(results_dt = results_temp(),max_cost=input$max_cost,
-                     min_cost =input$min_cost,
-                     full_imputation=input$full_imputation,
-                     impute_method=input$impute_method,fix = fix_v,
-                     max_vu =input$max_vu,min_vu = input$min_vu ))
-      }else{
-
-        shiny::withProgress(post_process(results_dt = rv$results,max_cost=input$max_cost,
-                     min_cost =input$min_cost,
-                     full_imputation=input$full_imputation,
-                     impute_method=input$impute_method,fix = fix_v,
-                     max_vu =input$max_vu,min_vu = input$min_vu ))
-      }
-
     })
-
-
-    pre_final_result <- shiny::reactive({
-
-
-      if(input$method_post_process=="None"){
-        if(input$force_monotonic){
-          monotonic_VU(results_temp())
-        }else{
-          if(input$force_monotonic_JM){
-            monotonic_JM(results_temp())
-          }else{
-            if(input$force_monotonic_JM2){
-              monotonic_JM2(results_temp())
-            }else{
-          results_temp()}
-        }}
-      }else{
-        if(input$force_monotonic){
-          monotonic_VU(post_result())
-        }else{
-          if(input$force_monotonic_JM){
-            monotonic_JM(post_result())
-          }else{
-            if(input$force_monotonic_JM2){
-              monotonic_JM2(post_result())
-              }else{
-          post_result()
-            }
-
-            }
-        }
-     }
-
-    })
-
-    final_result <- shiny::reactive(
-      {
-        adjust_wv(pre_final_result(),value=input$adjust)
-      }
-    )
-
-    shiny::observeEvent(input$reset,
-                 {
-                   rv$result <-rv$pp_results
-                   shinyWidgets::show_alert(
-                     title = "Post process",
-                     text = "Reset Done !!",
-                     type = "success"
-                   )
-                 }
-
-                 )
 
 
 
@@ -1199,22 +1042,22 @@ server <- function(input, output, session) {
 
     shiny::observeEvent(input$to_antares,{
 
-                 results <- final_result()
-                 results <- results[results$weeks!=53,]
+     results <- final_result()
+     results <- results[results$weeks!=53,]
 
-                 reshaped_values <- to_Antares_Format(results,
-                                                      input$penalty_low,
-                                                      input$penalty_high)
-                 antaresEditObject::writeWaterValues(
-                   area = input$Area,
-                   data = reshaped_values
-                 )
-                 shinyWidgets::show_alert(
-                   title = "Implement water values in Antares",
-                   text = " Done !!",
-                   type = "success"
-                 )
-                 }
+     reshaped_values <- to_Antares_Format(results,
+                                          input$penalty_low,
+                                          input$penalty_high)
+     antaresEditObject::writeWaterValues(
+       area = input$Area,
+       data = reshaped_values
+     )
+     shinyWidgets::show_alert(
+       title = "Implement water values in Antares",
+       text = " Done !!",
+       type = "success"
+     )
+     }
 
     )
 

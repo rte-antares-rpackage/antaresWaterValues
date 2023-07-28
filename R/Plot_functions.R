@@ -195,7 +195,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
                                                              .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
                                                              TRUE ~ .data$value_node ),
                                  states_round_percent=.data$states/max(temp$states)*100) %>%
-    dplyr::group_by(.data$weeks) %>%
+    dplyr::group_by(.data$weeks,.data$years) %>%
     dplyr::arrange(.data$weeks,.data$states) %>%
     dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node)) %>%
     dplyr::ungroup() %>%
@@ -208,7 +208,9 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
   setnames(temp,"value_node_dif","Gradient_Bellman")
   setnames(temp,"weeks","Week")
 
-  temp <- tidyr::pivot_longer(temp,cols=c(3,8,11),names_to = "Type of value",
+
+  temp <- tidyr::pivot_longer(temp,cols=c("Bellman_Value","Gradient_Bellman","Watervalues"),
+                              names_to = "Type of value",
                               values_to = "Value")
 
 

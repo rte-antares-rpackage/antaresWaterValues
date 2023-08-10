@@ -15,7 +15,6 @@ Imports:
     antaresEditObject (>= 0.2.2),
     antaresRead (>= 2.2.8),
     assertthat (>= 0.2.1),
-    bsplus (>= 0.1.2),
     dplyr (>= 1.0.7),
     ggplot2 (>= 3.3.5),
     stats (>= 4.1.0),
@@ -24,6 +23,7 @@ Imports:
     utils (>= 2.1.0),
     viridis (>= 0.6.1)
 Suggests: 
+    bsplus (>= 0.1.2),
     DT (>= 0.18),
     grDevices (>= 4.1.0),
     knitr,

@@ -1,5 +1,17 @@
+---
+output: github_document
+---
 
-# <img src="inst/images/antares_simulator.png" width="250" />
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# ![](inst/images/antares_simulator.png){width="250"}
 
 # Watervalues
 
@@ -22,21 +34,17 @@ You can install the package from [GitHub](https://github.com/) with:
 devtools::install_github("rte-antares-rpackage/antaresWaterValues@light_version", build_vignettes = TRUE)
 ```
 
-To install all the package dependencies you can run the script
-`inst/dependencies.R`
+To install all the package dependencies you can run the script `inst/dependencies.R`
 
 ## Using the Shiny app
 
-``` r
+```{r example}
 library(watervalues)
-#> Le chargement a nécessité le package : data.table
-#> Le chargement a nécessité le package : shiny
-#> Le chargement a nécessité le package : shinyBS
 ```
 
 Now we are ready to use our package.
 
-``` r
+```{r eval=FALSE}
 shiny_water_values()
 ```
 
@@ -46,7 +54,7 @@ shiny_water_values()
 
 Begin by defining some parameters about your study.
 
-``` r
+```{r eval=FALSE}
 study_path <- "your/path/to/the/antares/study"
 area <- "name_of_area"
 pumping <- T #T if pumping possible
@@ -58,7 +66,7 @@ pump_eff <- getPumpEfficiency(area,opts=opts)
 
 Then, you have to run simulations.
 
-``` r
+```{r eval=FALSE}
 simulation_res <- runWaterValuesSimulation(
     area=area,
     nb_disc_stock = 5, #number of simulations
@@ -78,9 +86,9 @@ simulation_res <- runWaterValuesSimulation(
   )
 ```
 
-It’s now possible to calculate water values.
+It's now possible to calculate water values.
 
-``` r
+```{r eval=FALSE}
 results <- Grid_Matrix(
   area=area,
   simulation_names=simulation_res$simulation_names,

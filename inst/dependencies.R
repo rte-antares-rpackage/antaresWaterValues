@@ -2,7 +2,7 @@
 to_install <- c("antaresEditObject", "assertthat",
                 "data.table", "dplyr",
                 "ggplot2", "stringr",
-                 "tidyr", "viridis","bsplus")
+                 "tidyr", "viridis","shiny","shinyBS")
 
 
 for (i in to_install) {

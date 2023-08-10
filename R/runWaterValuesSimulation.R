@@ -114,9 +114,8 @@ runWaterValuesSimulation <- function(area,
                                               pumping=pumping,
                                               pumping_efficiency = efficiency,
                                               opts=opts)
-  } else {
-    nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
   }
+  nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 
   # Get efficiency
 
@@ -124,7 +123,6 @@ runWaterValuesSimulation <- function(area,
     efficiency <- getPumpEfficiency(area = area)
 
   }
-
 
   #create the fictive areas
 

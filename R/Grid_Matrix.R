@@ -188,7 +188,7 @@
   {
     if(is.null(reward_db))
     {
-      if(is.null(controls_reward_calculation)){
+      if(is.null(controls_reward_calculation)&method_old_gain==F){
           controls_reward_calculation <- constraint_generator(area=area,nb_disc_stock=10,
                                                             pumping=pumping,
                                                             pumping_efficiency=efficiency,

@@ -27,7 +27,6 @@ Suggests:
     DT (>= 0.18),
     grDevices (>= 4.1.0),
     knitr,
-    mice (>= 3.13.0),
     rmarkdown,
     shinybusy (>= 0.2.2),
     shinycustomloader (>= 0.9.0),

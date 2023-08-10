@@ -39,19 +39,19 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
 value_node_gen <- function(watervalues,statesdt,reservoir){
   value_nodes_dt <- watervalues %>%
     dplyr::group_by(.data$weeks, .data$statesid) %>%
-    dplyr::mutate(value_node=mean_finite(.data$value_node)) %>%
+    dplyr::summarise(value_node=mean_finite(.data$value_node),.groups = "drop") %>%
     dplyr::mutate(value_node=dplyr::if_else(!is.finite(.data$value_node),
                                             NaN,.data$value_node)) %>%
+    dplyr::left_join(statesdt,by=c("statesid","weeks")) %>%
     as.data.table()
 
   #add reservoir
   names(reservoir)[1] <- "weeks"
-  value_nodes_dt <- dplyr::mutate(value_nodes_dt, beg_week=dplyr::if_else(.data$weeks>1,.data$weeks-1,52)) %>%
-    dplyr::select(-c("level_high","level_low"))
+  value_nodes_dt <- dplyr::mutate(value_nodes_dt, beg_week=dplyr::if_else(.data$weeks>1,.data$weeks-1,52))
   value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
     dplyr::select(-c("beg_week","level_avg")) %>%
-    dplyr::arrange(.data$years,.data$weeks, -.data$statesid) %>%
-    dplyr::group_by(.data$years,.data$weeks) %>%
+    dplyr::arrange(.data$weeks, -.data$statesid) %>%
+    dplyr::group_by(.data$weeks) %>%
     dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),
                   states_dif=.data$states-dplyr::lag(.data$states),
                   vu=.data$value_node_dif /.data$states_dif,

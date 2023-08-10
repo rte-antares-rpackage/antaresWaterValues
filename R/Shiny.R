@@ -20,7 +20,7 @@ shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
               "shiny")){
     if (!requireNamespace(p, quietly = TRUE)) {
       stop(
-        paste0("Packageb", p, " must be installed to use this function."),
+        paste0("Package ", p, " must be installed to use this function."),
         call. = FALSE
       )
     }
@@ -255,12 +255,12 @@ ui <- shiny::fluidPage(
                              "bottom"),
 
           # penalty for violation of the bottom rule curve
-          shiny::numericInput("penalty_low","Penalty for the violation of the bottom rule curve",value=3001),
+          shiny::numericInput("penalty_low","Penalty for the violation of the bottom rule curve (euros/MWh)",value=3001),
           shinyBS::bsTooltip("penalty_low", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of unsupplied energy.",
                              "bottom"),
 
           # penalty for violation of the top rule curve
-          shiny::numericInput("penalty_high","Penalty for the violation of the top rule curve",value=0),
+          shiny::numericInput("penalty_high","Penalty for the violation of the top rule curve (euros/MWh)",value=0),
           shinyBS::bsTooltip("penalty_high", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of spilled energy.",
                              "bottom"),
 

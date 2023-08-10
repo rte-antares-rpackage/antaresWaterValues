@@ -195,7 +195,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
                                                              .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
                                                              TRUE ~ .data$value_node ),
                                  states_round_percent=.data$states/max(temp$states)*100) %>%
-    dplyr::group_by(.data$weeks,.data$years) %>%
+    dplyr::group_by(.data$weeks) %>%
     dplyr::arrange(.data$weeks,.data$states) %>%
     dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node)) %>%
     dplyr::ungroup() %>%

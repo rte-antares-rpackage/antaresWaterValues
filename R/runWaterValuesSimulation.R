@@ -158,7 +158,7 @@ runWaterValuesSimulation <- function(area,
 
   # Start the simulations
 
-  simulation_names <- vector(mode = "character", length = length(constraint_values)/nb_disc_stock)
+  simulation_names <- vector(mode = "character", length = nb_disc_stock)
 
 
 

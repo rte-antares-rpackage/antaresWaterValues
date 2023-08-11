@@ -200,6 +200,33 @@
         dplyr::distinct() %>%
         dplyr::arrange(.data$week,.data$u)
 
+      if (pumping==T){
+        if (method_old_gain==T){
+          assertthat::assert_that(length(simulation_names)>=3,
+                                  msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
+        } else {
+          nb_distinct <- controls_reward_calculation %>%
+            dplyr::group_by(.data$week) %>%
+            dplyr::summarise(n=dplyr::n()) %>%
+            dplyr::pull("n") %>%
+            min()
+          assertthat::assert_that(nb_distinct>=3,
+                                  msg="You should have at least 3 different controls for each week.")
+        }
+      } else {
+        if (method_old_gain==T){
+          assertthat::assert_that(length(simulation_names)>=2,
+                                  msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
+        } else {
+          nb_distinct <- controls_reward_calculation %>%
+            dplyr::group_by(.data$week) %>%
+            dplyr::summarise(n=dplyr::n()) %>%
+            dplyr::pull("n") %>%
+            min()
+          assertthat::assert_that(nb_distinct>=2,
+                                  msg="You should have at least 2 different controls for each week.")
+        }
+      }
 
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,

@@ -20,7 +20,6 @@ Grid_Matrix(
   method,
   only_input = FALSE,
   q_ratio = 0.5,
-  monotonic_bellman = FALSE,
   test_week = NULL,
   opts = antaresRead::simOptions(),
   shiny = F,
@@ -82,9 +81,6 @@ grid of quantile algorithm.}
 \item{q_ratio}{from 0 to 1. the probability used in quantile method
 to determine a bellman value which q_ratio all bellman values are equal or
 less to it. (quantile(q_ratio))}
-
-\item{monotonic_bellman}{force increasing bellman values with the stock
-level in the calculation.}
 
 \item{test_week}{the week number u want to see it's calculation information
 in the console}

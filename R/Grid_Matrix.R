@@ -18,8 +18,6 @@
 #' @param q_ratio from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which q_ratio all bellman values are equal or
 #' less to it. (quantile(q_ratio))
-#' @param monotonic_bellman force increasing bellman values with the stock
-#' level in the calculation.
 #' @param test_week the week number u want to see it's calculation information
 #' in the console
 #' @param reservoir_capacity Reservoir capacity for the given area in MWh,
@@ -71,7 +69,6 @@
                              method ,
                              only_input=FALSE,
                              q_ratio=0.5,
-                             monotonic_bellman=FALSE,
                              test_week=NULL,
                              opts = antaresRead::simOptions(),
                              shiny=F,
@@ -370,40 +367,6 @@
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
 
-
-
-
-
-
-
-        # monotonic Bellman
-        {
-
-          if(monotonic_bellman){
-            for (k in 1:max_mcyear){
-              temp1 <- temp[temp$weeks==i&temp$years==k]
-              m <- 0
-              M <- 0
-
-              for (j in 1:nrow(temp1)){
-
-                if (is.na(temp1$value_node[j])|!is.finite(temp1$value_node[j])) next
-
-                if(m==0)m <- j
-
-                M <- j
-
-              }
-
-
-              temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
-              temp[(temp$weeks==i&temp$years==k),"value_node" :=temp1$value_node]
-            }}
-
-
-
-        }
-
         if(correct_concavity){
           temp$value_node <- correct_concavity(temp,i:i)
         }
@@ -467,40 +430,6 @@
             }
           }
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
-        }
-
-
-
-
-
-
-
-        # monotonic Bellman
-        {
-
-          if(monotonic_bellman){
-            for (k in 1:max_mcyear){
-              temp1 <- temp[temp$weeks==i&temp$years==k]
-              m <- 0
-              M <- 0
-
-              for (j in 1:nrow(temp1)){
-
-                if (is.na(temp1$value_node[j])|!is.finite(temp1$value_node[j])) next
-
-                if(m==0)m <- j
-
-                M <- j
-
-              }
-
-
-              temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
-              temp[(temp$weeks==i&temp$years==k),"value_node" :=temp1$value_node]
-            }}
-
-
-
         }
 
         if(correct_concavity){

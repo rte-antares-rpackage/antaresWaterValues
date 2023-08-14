@@ -164,7 +164,9 @@ runWaterValuesSimulation <- function(area,
 
   for (i in 1:nb_disc_stock) {
     # Prepare simulation parameters
-    name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
+    name_sim <- constraint_values$sim[[i]]
+    name_sim <- stringr::str_extract(name_sim, "\\d+$")
+    name_bc <- paste0(binding_constraint, format(name_sim, decimal.mark = ","))
     constraint_value <- constraint_values$u[seq.int(i,nrow(constraint_values),nb_disc_stock)]/7
 
 
@@ -173,26 +175,26 @@ runWaterValuesSimulation <- function(area,
                          efficiency=efficiency,opts=opts,area = area)
 
     message("#  ------------------------------------------------------------------------")
-    message(paste0("Running simulation: ", i, " - ", sprintf(simulation_name, format(i, decimal.mark = ","))))
+    message(paste0("Running simulation: ", i, " - ", sprintf(simulation_name, format(name_sim, decimal.mark = ","))))
     message("#  ------------------------------------------------------------------------")
     # run the simulation
     if(launch_simulations){
       antaresEditObject::runSimulation(
-        name = sprintf(simulation_name, format(i, decimal.mark = ",")),
+        name = sprintf(simulation_name, format(name_sim, decimal.mark = ",")),
         mode = "economy",
         wait = wait,
         path_solver = path_solver,
         show_output_on_console = show_output_on_console,
         opts = opts
       )}
-    simulation_names[i] <- sprintf(simulation_name, format(i, decimal.mark = ","))
+    simulation_names[i] <- sprintf(simulation_name, format(name_sim, decimal.mark = ","))
 
     #remove the Binding Constraints
 
     disable_constraint(constraint_value,name_bc,pumping,opts,area = area)
 
     #Simulation Control
-    sim_name <-  sprintf(simulation_name, format(i, decimal.mark = ","))
+    sim_name <-  sprintf(simulation_name, format(name_sim, decimal.mark = ","))
     sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
     sim_check <- paste0(opts$studyPath,"/output")
     sim_check <- paste(sim_check,sim_name,sep="/")

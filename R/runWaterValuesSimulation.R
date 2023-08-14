@@ -41,7 +41,7 @@
 #'
 
 runWaterValuesSimulation <- function(area,
-                                     simulation_name = "weekly_water_amount_%s",
+                                     simulation_name = "wv_sim_%s",
                                      nb_disc_stock = 10,
                                      nb_mcyears = NULL,
                                      binding_constraint = "WeeklyWaterAmount",
@@ -75,6 +75,10 @@ runWaterValuesSimulation <- function(area,
 
   if(!endsWith(simulation_name,"_%s")){
     simulation_name <- paste0(simulation_name,"_%s")
+  }
+
+  if (!stringr::str_detect(file_name,area)){
+    file_name <- paste0(area,"_",file_name)
   }
 
 
@@ -174,27 +178,27 @@ runWaterValuesSimulation <- function(area,
     generate_constraints(constraint_value=constraint_value,coeff=coeff,name_constraint=name_bc,
                          efficiency=efficiency,opts=opts,area = area)
 
+    sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(i, decimal.mark = ",")))
     message("#  ------------------------------------------------------------------------")
-    message(paste0("Running simulation: ", i, " - ", sprintf(simulation_name, format(name_sim, decimal.mark = ","))))
+    message(paste0("Running simulation: ", i, " - ", sim_name))
     message("#  ------------------------------------------------------------------------")
     # run the simulation
     if(launch_simulations){
       antaresEditObject::runSimulation(
-        name = sprintf(simulation_name, format(name_sim, decimal.mark = ",")),
+        name = sim_name,
         mode = "economy",
         wait = wait,
         path_solver = path_solver,
         show_output_on_console = show_output_on_console,
         opts = opts
       )}
-    simulation_names[i] <- sprintf(simulation_name, format(name_sim, decimal.mark = ","))
+    simulation_names[i] <- sim_name
 
     #remove the Binding Constraints
 
     disable_constraint(constraint_value,name_bc,pumping,opts,area = area)
 
     #Simulation Control
-    sim_name <-  sprintf(simulation_name, format(name_sim, decimal.mark = ","))
     sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
     sim_check <- paste0(opts$studyPath,"/output")
     sim_check <- paste(sim_check,sim_name,sep="/")

@@ -14,7 +14,7 @@ get_reward_interpolation <- function(Data_week){
   return(f_reward_year)
 }
 
-#' Create approximation of Bellman function for each scenario, used in \code{Bellman} and
+#' Create approximation of Bellman function for next week for each scenario, used in \code{Bellman} and
 #' in \code{getOptimalTrend}
 #'
 #' @param Data_week Data frame generated in \code{Grid_Matrix} code containing
@@ -40,7 +40,8 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 }
 
 #' Create a data frame with all possible transition and associated next state for
-#' each scenario and each state for one particular week, used in \code{Bellman}
+#' each scenario and each state for one particular week, used in \code{Bellman}.
+#' For each next state, Bellman value is calculated.
 #'
 #' @param Data_week Data frame generated in \code{Grid_Matrix} code containing
 #' list of states and years evaluated (we suppose there is only one week at a time)

@@ -94,6 +94,7 @@
   #----- shiny Loader
 
 
+  # check the method chosen to calculate Bellman values is a valid method
   methods <- c("mean-grid","grid-mean","quantile")
   if (!method %in% methods){
     stop("Unknown method. available methods: ('mean-grid','grid-mean','quantile') ")
@@ -105,7 +106,7 @@
   n_week <- 52
 
 
-
+  # Replacing NULL values
   if(is.null(reward_db)){
     if(!is.null(simulation_names)){
       if (is.null(simulation_values)) {
@@ -117,7 +118,6 @@
       simulation_values <- reward_db$simulation_values
       reward_db <- as.data.table(reward_db$reward)
       }
-
   if (is.null(mcyears)) {
     mcyears <- opts$parameters$general$nbyears
     mcyears <- seq(0,mcyears)
@@ -125,7 +125,7 @@
 
 
 
-  # Niveau max
+  # Getting reservoir capacity (ie maximum level)
   {if (is.null(reservoir_capacity)) {
     niveau_max <- get_reservoir_capacity(area = area)
     if (length(niveau_max) == 0) {
@@ -140,14 +140,14 @@
   }}
 
 
-  # synchronizing between the simulations and the states discretisation
-  if ((!is.numeric(states_step_ratio))|(states_step_ratio<0)|(states_step_ratio<0))
+  # Checking states_step_ratio
+  if ((!is.numeric(states_step_ratio))|(states_step_ratio<0))
     stop("Failed Not valid States_step_ratio, please change it between 0 and 1.")
 
   states_steps <- niveau_max*states_step_ratio
 
 
-  # States matrix
+  # States matrix for all weeks plus an other week representing the end of the year
   states <- matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1)
 
 
@@ -156,7 +156,7 @@
     efficiency <- getPumpEfficiency(area = area,opts = opts)
   }
 
-  decimals <- 6
+  # Getting inflow in the reservoir
   {
     try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"),silent = T)
     if (nrow(inflow)==0){
@@ -171,17 +171,17 @@
       dplyr::mutate(hydroStorage = sum(.data$hydroStorage, na.rm = TRUE)) %>%
       as.data.table()
 
-  } # get the table (area,time,tsid,hydroStorage)
+  }
 
   options("antares" = opts)
 
-  # max hydro
+  # Getting maximum pumping and generating powers for each hour
   if (is.null(max_hydro_hourly)){
     max_hydro_hourly <- get_max_hydro(area,timeStep = "hourly")
   }
 
 
-  # Reward
+  # Calculating reward
   {
     if(is.null(reward_db))
     {
@@ -192,11 +192,13 @@
                                                             opts=opts)
       }
 
+      # Addig controls used is the simulation to the controls used to interpolate reward
       controls_reward_calculation <- rbind(simulation_values,controls_reward_calculation) %>%
         dplyr::select("week","u") %>%
         dplyr::distinct() %>%
         dplyr::arrange(.data$week,.data$u)
 
+      # Checking the minimum number of controls to calculate reward
       if (pumping==T){
         if (method_old_gain==T){
           assertthat::assert_that(length(simulation_names)>=3,
@@ -225,6 +227,7 @@
         }
       }
 
+      # Calculate reward
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,
                            method_old = method_old_gain,max_hydro=max_hydro_hourly,
@@ -233,6 +236,7 @@
                            simulation_values = simulation_values, mcyears=mcyears,area=area,
                            district_balance=district_name)
 
+      # Retriving controls (u) for each week
       decision_space <- reward_db$simulation_values[,c("week","u")]
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward
@@ -245,7 +249,7 @@
 
     reward_db <- reward_db[reward_db$timeId %in% seq_len(n_week)]}
 
-  # Reservoir (calque)
+  # Reservoir (rule curves)
   {
     reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
@@ -255,10 +259,10 @@
     ]
   }
 
-  # preparation DATA (generate a table of weeks and years)
+  # Prepare data.table watervalues that give Bellman value for each week, each MC year and each state
   watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = mcyears, statesid=seq_len(nrow(states))))
 
-  # add states
+  # add states values
   {
     statesdt <- as.data.table(states)  #convert states matrix to data.table
     statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
@@ -267,7 +271,7 @@
     statesdt[, "states" := round(statesdt$states)]
   }
 
-  # add states plus 1
+  # add states plus 1 (ie states for the following week)
   {
     statesplus1 <- copy(statesdt)
     statesplus1[, "weeks" := statesplus1$weeks - 1]
@@ -286,20 +290,20 @@
 
   #at this point we added the rewards for each weekly_amount
 
-  # add reservoir
+  # add rule curves
   watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = reservoir$timeId,
                                                                         level_low = reservoir$level_low,
                                                                         level_high = reservoir$level_high)], by = "weeks")
   #here we added the lvl_high and low of the reservoir
 
-  # add empty columns ---------------------
+  # add empty columns for future results
   watervalues$value_node <- NA_real_
   watervalues$transition <- NA_real_
   watervalues$transition_reward <- NA_real_
   watervalues$next_bellman_value <- NA_real_
 
 
-  # max hydro
+  # get maximum generating and pumping energy for each week
   if (is.null(max_hydro_weekly)){
     max_hydro_weekly <- get_max_hydro(area,timeStep = "weekly")
   }
@@ -308,21 +312,21 @@
 
 
 
-  # prepare next function inputs
+  # prepare Bellman values for the end of the year (week 53)
   {
   if (length(week_53) == 1) week_53 <- rep_len(week_53, length(states))
   next_week_values <- (week_53 * niveau_max)/2   # approximation to get initial bellman values from initial water values
-  niveau_max = niveau_max
-  max_mcyear <- length(mcyears)
   counter <- 0
 
   }
+
+  # at this state, everything is ready to apply dynamic programming equation
 
   ####
 
   if (only_input) return(watervalues)
 
-  if(!until_convergence){
+  if(!until_convergence){ # with a predefined number of cycles
     next_week_values <- rep_len(next_week_values, nrow(watervalues[watervalues$weeks==52]))
 
     for (n_cycl in seq_len(nb_cycle)) {
@@ -338,6 +342,7 @@
 
         if(debug_week==i)browser()
 
+        # Bellman equation for week i
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
                         decision_space=sort(dplyr::filter(decision_space,week==i)$u),
@@ -367,16 +372,18 @@
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
 
+        # Correct concacity of Bellman values if needed
         if(correct_concavity){
           temp$value_node <- correct_concavity(temp,i:i)
         }
 
+        # Write results for week i
         watervalues[watervalues$weeks==i,"value_node" :=temp$value_node]
         watervalues[watervalues$weeks==i,"transition" :=temp$transition]
         watervalues[watervalues$weeks==i,"transition_reward" :=temp$transition_reward]
         watervalues[watervalues$weeks==i,"next_bellman_value" :=temp$next_bellman_value]
 
-
+        # Get Bellman values for week i that correspond to future Bellman values for week i-1
         next_week_values <- temp$value_node
 
         utils::setTxtProgressBar(pb = pb, value = 52 - i)
@@ -387,11 +394,12 @@
       if(nrow(watervalues[is.na(watervalues$value_node)&(watervalues$weeks<=52)])>=1){
         message("Error in the calculation of Bellman values")
       }
+      # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
 
     }
 
-  }else{
+  }else{ # calculating Bellman values until convergence
     next_week_values <- rep_len(next_week_values, nrow(watervalues[watervalues$weeks==52]))
 
     for (n_cycl in seq_len(cycle_limit)) {
@@ -508,7 +516,7 @@
 
   }
 
-
+  # Prepare output
   result <- list()
   result$watervalues <- watervalues
   result$aggregated_results <- value_nodes_dt

@@ -3,7 +3,8 @@
 \name{build_all_possible_decisions}
 \alias{build_all_possible_decisions}
 \title{Create a data frame with all possible transition and associated next state for
-each scenario and each state for one particular week, used in \code{Bellman}}
+each scenario and each state for one particular week, used in \code{Bellman}.
+For each next state, Bellman value is calculated.}
 \usage{
 build_all_possible_decisions(
   Data_week,
@@ -50,5 +51,6 @@ next value (Bellman value of next state)
 }
 \description{
 Create a data frame with all possible transition and associated next state for
-each scenario and each state for one particular week, used in \code{Bellman}
+each scenario and each state for one particular week, used in \code{Bellman}.
+For each next state, Bellman value is calculated.
 }

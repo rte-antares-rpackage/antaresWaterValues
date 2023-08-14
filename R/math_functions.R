@@ -12,11 +12,13 @@
 #' vu_pen corresponds to water value without penalties
 build_data_watervalues <- function(watervalues,statesdt,reservoir,
                                    penalty_level_high,penalty_level_low){
+  # calculate derivative of Bellman values (ie watervalues not yet penalized)
   value_nodes_dt <- value_node_gen(watervalues,statesdt,reservoir)
 
+  # removing artificial week 53
   value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
 
-  #add penlaties
+  #add penalties
   value_nodes_dt <- value_nodes_dt %>%
     dplyr::mutate(value_nodes_dt,
            vu_pen=dplyr::case_when(states>level_high ~ vu - penalty_level_high,
@@ -24,6 +26,7 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
                             TRUE ~ vu)) %>%
     dplyr::rename(vu="vu_pen",vu_pen="vu")
 
+  # plotting
   print(waterValuesViz(value_nodes_dt))
   return(value_nodes_dt)
 
@@ -37,6 +40,7 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
 value_node_gen <- function(watervalues,statesdt,reservoir){
+  # Calculating mean of Bellman values for each week and each state
   value_nodes_dt <- watervalues %>%
     dplyr::group_by(.data$weeks, .data$statesid) %>%
     dplyr::summarise(value_node=mean_finite(.data$value_node),.groups = "drop") %>%
@@ -45,16 +49,16 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
     dplyr::left_join(statesdt,by=c("statesid","weeks")) %>%
     as.data.table()
 
-  #add reservoir
+  # Adding rule curves for the beginning of the week and then calculating derivative of Bellman values
   names(reservoir)[1] <- "weeks"
   value_nodes_dt <- dplyr::mutate(value_nodes_dt, beg_week=dplyr::if_else(.data$weeks>1,.data$weeks-1,52))
   value_nodes_dt <- dplyr::left_join(value_nodes_dt,reservoir,by=c("beg_week"="weeks")) %>%
     dplyr::select(-c("beg_week","level_avg")) %>%
     dplyr::arrange(.data$weeks, -.data$statesid) %>%
     dplyr::group_by(.data$weeks) %>%
-    dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),
-                  states_dif=.data$states-dplyr::lag(.data$states),
-                  vu=.data$value_node_dif /.data$states_dif,
+    dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),# Delta of Bellman values
+                  states_dif=.data$states-dplyr::lag(.data$states), # Delta of states
+                  vu=.data$value_node_dif /.data$states_dif, # Ratio
                   vu=round(.data$vu,2)) %>%
     as.data.table()
   return(value_nodes_dt)
@@ -125,7 +129,7 @@ states_to_percent <- function(data,states_step_ratio=0.01){
   }
 
 
-#' Correct concavity of Bellman values to have nice monotony for water values,
+#' Correct concavity of Bellman values for the given weeks to have nice monotony for water values,
 #' used in \code{Grid_Matrix}
 #'
 #' @param weeks Weeks for which we want to correct concavity
@@ -135,21 +139,30 @@ states_to_percent <- function(data,states_step_ratio=0.01){
 correct_concavity <- function(df_value_node, weeks){
 
   for (s in weeks){
+    # Getting values for the week s
     df_week <- df_value_node[df_value_node$weeks==s,c("weeks","states","value_node","years")]
+    # Removing NaN and infinite values
     df_week <- dplyr::filter(df_week,!is.na(df_week$value_node))
     df_week <- dplyr::filter(df_week,is.finite(df_week$value_node))
     df_week <- unique(df_week)
     df_week <- dplyr::arrange(df_week,.data$states,.data$years)
     n <- nrow(df_week)
+    # Initialize corrected values
     df_week$new_value <- df_week$value_node
+    # Getting all possible states
     states <- dplyr::distinct(df_week,states) %>% dplyr::pull(states)
     for (x in states){
+      # Getting state x and its Bellman value, then calculating slope between point x
+      # and all other points
       df_week <- df_week %>% dplyr::filter(states==x) %>%
         dplyr::rename(value_x="new_value",states_x="states") %>%
         dplyr::select("years", "states_x", "value_x") %>%
         dplyr::right_join(df_week, by=c("years")) %>%
         dplyr::mutate(coef=(.data$new_value-.data$value_x)/(states-.data$states_x)) %>%
         dplyr::mutate(coef=dplyr::if_else(.data$coef<0,0,.data$coef))
+      # Keeping only states bigger than x then for each year, getting the maximum slope m and
+      # state y associated with this slope. Then for each state between x and y, correct the value
+      # such as the function became concave thanks to slope m
       df_week <- df_week %>% dplyr::filter(states>x) %>% dplyr::group_by(.data$years) %>%
         dplyr::slice(which.max(.data$coef)) %>%
         dplyr::transmute(m=.data$coef,states_y=.data$states, years=.data$years) %>%
@@ -158,6 +171,7 @@ correct_concavity <- function(df_value_node, weeks){
                                  .data$m*(states-.data$states_x)+.data$value_x,.data$new_value)) %>%
         dplyr::select("years", "weeks", "states", "value_node", "new_value")
     }
+    # Replacing values
     df_value_node[df_value_node$weeks==s,"new_value"]  <- dplyr::left_join(df_value_node[df_value_node$weeks==s,c("weeks","states","years")],
                                                                     df_week[,c("weeks","states","new_value","years")],
                                                                     by=c("weeks","states","years"))$new_value

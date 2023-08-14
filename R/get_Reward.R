@@ -53,6 +53,11 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     )
   }
 
+  for (o in 1:length(opts_o)){
+    assertthat::assert_that(all(mcyears %in% opts_o[[o]]$mcYears),
+                            msg="Those MC years didn't have been all simulated, check your simulation.")
+  }
+
   if(method_old){
 
     #generate a table containing the year, the time id and OVerall cost

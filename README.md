@@ -96,8 +96,8 @@ results <- Grid_Matrix(
   efficiency=pump_eff,
   correct_concavity = FALSE,#correct concavity of Bellman values
   correct_monotony_gain = FALSE,#correct monotony of rewards
-  penalty_low = 3000,#penalty for bottom rule curve
-  penalty_high = 3000,#penalty for top rule curve
+  penalty_low = 3,#penalty for bottom rule curve
+  penalty_high = 0,#penalty for top rule curve
   method_old_gain = T,# T if you want a simple linear interpolation of rewards,
                       # F if you want to use marginal price to interpolate
   hours_reward_calculation = c(seq.int(0,168,10),168),# used for marginal prices interpolation
@@ -108,3 +108,70 @@ results <- Grid_Matrix(
                                                      opts=opts)# used for marginal prices interpolation
 )
 ```
+
+You can plot the results
+
+``` r
+waterValuesViz(Data=results$aggregated_results,filter_penalties = F)
+```
+
+<img src="man/figures/README-watervalues-1.png" width="100%" />
+
+``` r
+plot_Bellman(value_nodes_dt = results$aggregated_results, 
+             week_number = c(1,3),
+             penalty_high = 0,
+             penalty_low = 3)
+```
+
+<img src="man/figures/README-bellman-1.png" width="100%" /> You can also
+plot reward functions
+
+``` r
+reward <- get_Reward(
+  simulation_names = simulation_res$simulation_names,
+  simulation_values = simulation_res$simulation_values,
+  opts=opts,
+  area = area,
+  mcyears = mcyears,
+  pump_eff = pump_eff,
+  method_old = T,# T if you want a simple linear interpolation of rewards,
+                 # F if you want to use marginal price to interpolate
+  hours = c(seq.int(0,168,10),168),# used for marginal prices interpolation
+  possible_controls = constraint_generator(area=area,
+                                           nb_disc_stock = 20,
+                                           pumping = pumping,
+                                           pumping_efficiency = pump_eff,
+                                           opts=opts)# used for marginal prices interpolation
+)
+```
+
+``` r
+plot_1 <- plot_reward(reward_base = reward$reward,
+                      week_id = c(1,3))
+```
+
+<img src="man/figures/README-reward-1.png" width="100%" />
+
+``` r
+plot_2 <- plot_reward_mc(reward_base = reward$reward,
+                         week_id = c(1,3),
+                         Mc_year = c(1,2))
+```
+
+<img src="man/figures/README-reward-2.png" width="100%" />
+
+``` r
+plot_3 <- plot_reward_variation(reward_base = reward$reward,
+                                week_id = c(1,3))
+```
+
+<img src="man/figures/README-reward-3.png" width="100%" />
+
+``` r
+plot_4 <- plot_reward_variation_mc(reward_base = reward$reward,
+                                   week_id = c(1,3),
+                                   Mc_year = c(1,2))
+```
+
+<img src="man/figures/README-reward-4.png" width="100%" />

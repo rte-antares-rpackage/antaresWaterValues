@@ -552,7 +552,7 @@ server <- function(input, output, session) {
                   spsComps::shinyCatch({
                      simulation_res <-    runWaterValuesSimulation(
                      area=input$sim_area,
-                     simulation_name = paste0("weekly_water_amount_", input$sim_area, "_%s"),
+                     simulation_name = paste0(input$sim_area, "_wv_sim_%s"),
                      nb_disc_stock = input$sim_nb_disc_stock,
                      nb_mcyears = seq(from = input$sim_mcyears[1], to = input$sim_mcyears[2]),
                      path_solver =input$solver_path,

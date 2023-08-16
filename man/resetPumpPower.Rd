@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{resetPumpPower}
 \alias{resetPumpPower}
-\title{Reset to 0 the pumping power}
+\title{Reset to 0 the pumping power, used in \code{setupWaterValuesSimulation}}
 \usage{
 resetPumpPower(area, path = NULL, opts = antaresRead::simOptions())
 }
@@ -18,7 +18,7 @@ resetPumpPower(area, path = NULL, opts = antaresRead::simOptions())
 An updated list containing various information about the simulation.
 }
 \description{
-Reset to 0 the pumping power
+Reset to 0 the pumping power, used in \code{setupWaterValuesSimulation}
 }
 \note{
 The function makes a copy of the original hydro storage time series,

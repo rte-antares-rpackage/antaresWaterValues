@@ -2,18 +2,20 @@
 % Please edit documentation in R/math_functions.R
 \name{correct_concavity}
 \alias{correct_concavity}
-\title{Correct concavity of Bellman values to have nice monotony for watervalues}
+\title{Correct concavity of Bellman values for the given weeks to have nice monotony for water values,
+used in \code{Grid_Matrix}}
 \usage{
-correct_concavity(results, weeks)
+correct_concavity(df_value_node, weeks)
 }
 \arguments{
-\item{results}{Intermediate results for Bellman values}
+\item{df_value_node}{DataFrame containing bellman values}
 
-\item{weeks}{Weeks for which we want to correct concativity}
+\item{weeks}{Weeks for which we want to correct concavity}
 }
 \value{
 vector of corrected Bellman values
 }
 \description{
-Correct concavity of Bellman values to have nice monotony for watervalues
+Correct concavity of Bellman values for the given weeks to have nice monotony for water values,
+used in \code{Grid_Matrix}
 }

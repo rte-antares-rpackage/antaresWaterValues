@@ -4,25 +4,13 @@
 \alias{plot_reward}
 \title{Plot the reward and return the results in table}
 \usage{
-plot_reward(
-  reward_base,
-  week_id,
-  sim_name_pattern = "weekly_water_amount_",
-  constraints_values = NULL,
-  output = FALSE
-)
+plot_reward(reward_base, week_id)
 }
 \arguments{
 \item{reward_base}{A data.table contains the rewards.
 Obtained using the function get_Reward()}
 
 \item{week_id}{Numeric of length 1. number of the week to plot.}
-
-\item{sim_name_pattern}{the name of simulations used in \code{runWaterValuesSimulation()}}
-
-\item{constraints_values}{the value of the constraint}
-
-\item{output}{Boolean. TRUE to return the table of values with the plot.}
 }
 \value{
 a \code{ggplot} object

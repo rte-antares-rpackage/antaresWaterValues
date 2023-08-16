@@ -17,15 +17,12 @@ Grid_Matrix(
   states_step_ratio = 0.01,
   reservoir_capacity = NULL,
   na_rm = FALSE,
-  correct_outliers = FALSE,
   method,
   only_input = FALSE,
   q_ratio = 0.5,
-  monotonic_bellman = FALSE,
   test_week = NULL,
   opts = antaresRead::simOptions(),
   shiny = F,
-  inaccessible_states = 1,
   until_convergence = F,
   convergence_rate = 0.9,
   convergence_criteria = 1,
@@ -34,7 +31,15 @@ Grid_Matrix(
   efficiency = 1,
   stop_rate = 0,
   debug_week = 54,
-  correct_concavity = TRUE,
+  correct_concavity = FALSE,
+  correct_monotony_gain = FALSE,
+  penalty_low = 3000,
+  penalty_high = 3000,
+  method_old_gain = F,
+  hours_reward_calculation = c(seq.int(0, 168, 10), 168),
+  controls_reward_calculation = NULL,
+  max_hydro_hourly = NULL,
+  max_hydro_weekly = NULL,
   ...
 )
 }
@@ -68,9 +73,6 @@ a prompt ask the user the value to be used.}
 
 \item{na_rm}{Remove NAs}
 
-\item{correct_outliers}{If TRUE, outliers in Bellman values are replaced
-by spline interpolations. Defaults to FALSE.}
-
 \item{method}{Perform mean of grids algorithm or grid of means algorithm or
 grid of quantile algorithm.}
 
@@ -80,9 +82,6 @@ grid of quantile algorithm.}
 to determine a bellman value which q_ratio all bellman values are equal or
 less to it. (quantile(q_ratio))}
 
-\item{monotonic_bellman}{force increasing bellman values with the stock
-level in the calculation.}
-
 \item{test_week}{the week number u want to see it's calculation information
 in the console}
 
@@ -90,9 +89,6 @@ in the console}
 \code{antaresRead::setSimulationPath}}
 
 \item{shiny}{Boolean. True to run the script in shiny mode.}
-
-\item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
-For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
 
 \item{until_convergence}{Boolean. TRUE to repeat cycle until convergence or
 attending the limit.}
@@ -115,10 +111,29 @@ between two water values is less then this value those values are converged.}
 
 \item{debug_week}{the number of the week to open the process in debug mode}
 
+\item{correct_concavity}{Binary argument (default to false). True to correct concavity of Bellman values.}
+
+\item{correct_monotony_gain}{Binary argument (default to false). True to correct monotony of gains.}
+
+\item{penalty_low}{Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost}
+
+\item{penalty_high}{Penalty for violating the top rule curve, comparable to the spilled energy cost}
+
+\item{method_old_gain}{If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices}
+
+\item{hours_reward_calculation}{If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating}
+
+\item{controls_reward_calculation}{If method_old_gain=F, vector of controls evaluated}
+
+\item{max_hydro_hourly}{Hourly maximum pumping and turbining powers}
+
+\item{max_hydro_weekly}{Weekly maximum pumping and turbining powers}
+
 \item{...}{further arguments passed to or from other methods.}
 }
 \value{
-a \code{data.table}
+List of a data.frame with aggregated water values and
+a data.frame of more detailed water values
 }
 \description{
 Calculate grid layer matrix of Bellman values and water values

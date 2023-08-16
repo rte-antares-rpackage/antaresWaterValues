@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{restorePumpPower}
 \alias{restorePumpPower}
-\title{Restore the Pumping power series}
+\title{Restore the Pumping power series, used in \code{runWaterValuesSimulation}}
 \usage{
 restorePumpPower(
   area,
@@ -22,8 +22,8 @@ restorePumpPower(
 \item{silent}{Boolean. True to run without messages.}
 }
 \value{
-An updated list containing various information about the simulation.
+An updated list containing various information about the simulation
 }
 \description{
-Restore the Pumping power series
+Restore the Pumping power series, used in \code{runWaterValuesSimulation}
 }

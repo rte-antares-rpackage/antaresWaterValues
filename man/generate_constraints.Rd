@@ -9,7 +9,8 @@ generate_constraints(
   coeff,
   name_constraint,
   efficiency = 0.75,
-  opts
+  opts,
+  area = NULL
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ generate_constraints(
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{area}{Area used to calculate watervalues}
 }
 \description{
 This function generate binding constraints for \code{runWaterValuesSimulation}

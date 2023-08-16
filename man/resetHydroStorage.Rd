@@ -2,7 +2,7 @@
 % Please edit documentation in R/hydro_storage_functions.R
 \name{resetHydroStorage}
 \alias{resetHydroStorage}
-\title{Reset to 0 the hydro storage time series}
+\title{Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}}
 \usage{
 resetHydroStorage(area, path = NULL, opts = antaresRead::simOptions())
 }
@@ -18,7 +18,7 @@ resetHydroStorage(area, path = NULL, opts = antaresRead::simOptions())
 An updated list containing various information about the simulation.
 }
 \description{
-Reset to 0 the hydro storage time series
+Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}
 }
 \note{
 The function makes a copy of the original hydro storage time series,

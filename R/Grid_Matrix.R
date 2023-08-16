@@ -18,19 +18,13 @@
 #' @param q_ratio from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which q_ratio all bellman values are equal or
 #' less to it. (quantile(q_ratio))
-#' @param monotonic_bellman force increasing bellman values with the stock
-#' level in the calculation.
 #' @param test_week the week number u want to see it's calculation information
 #' in the console
 #' @param reservoir_capacity Reservoir capacity for the given area in MWh,
 #'  if \code{NULL} (the default), value in Antares is used if available else
 #'  a prompt ask the user the value to be used.
 #' @param na_rm Remove NAs
-#' @param correct_outliers If TRUE, outliers in Bellman values are replaced
-#' by spline interpolations. Defaults to FALSE.
 #' @param only_input if TRUE skip bellman values calculation and return the input
-#' @param inaccessible_states Numeric in [0,1]. Tolerance of inaccessible states.
-#' For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.
 #' @param until_convergence Boolean. TRUE to repeat cycle until convergence or
 #'  attending the limit.
 #' @param convergence_rate from 0 to 1. Define the convergence level from which
@@ -48,16 +42,20 @@
 #' \code{stop_rate=5} means the calculation stop if there is a week with less then
 #' 5\% accessibles states.
 #' @param debug_week the number of the week to open the process in debug mode
+#' @param correct_concavity Binary argument (default to false). True to correct concavity of Bellman values.
+#' @param correct_monotony_gain Binary argument (default to false). True to correct monotony of gains.
 #' @param ... further arguments passed to or from other methods.
-#' @return a \code{data.table}
-#' @export
+#' @param penalty_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
+#' @param penalty_high Penalty for violating the top rule curve, comparable to the spilled energy cost
+#' @param method_old_gain If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices
+#' @param hours_reward_calculation If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating
+#' @param controls_reward_calculation If method_old_gain=F, vector of controls evaluated
+#' @param max_hydro_hourly Hourly maximum pumping and turbining powers
+#' @param max_hydro_weekly Weekly maximum pumping and turbining powers
 #'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead readAntares setSimulationPath
-#' @importFrom utils txtProgressBar setTxtProgressBar
-#' @importFrom dplyr left_join
-#' @import data.table
-#' @importFrom shinybusy show_modal_spinner remove_modal_spinner
+#' @return List of a data.frame with aggregated water values and
+#' a data.frame of more detailed water values
+#' @export
 #'
 
 
@@ -68,22 +66,27 @@
                              states_step_ratio = 0.01,
                              reservoir_capacity = NULL,
                              na_rm = FALSE,
-                             correct_outliers = FALSE,
                              method ,
                              only_input=FALSE,
                              q_ratio=0.5,
-                             monotonic_bellman=FALSE,
                              test_week=NULL,
                              opts = antaresRead::simOptions(),
                              shiny=F,
-                             inaccessible_states=1,
                              until_convergence=F,
                              convergence_rate=0.9,
                              convergence_criteria=1,
                              cycle_limit=10,
                              pumping=F,efficiency=1,stop_rate=0,
                              debug_week=54,
-                              correct_concavity = FALSE,
+                             correct_concavity = FALSE,
+                             correct_monotony_gain = FALSE,
+                             penalty_low = 3000,
+                             penalty_high = 3000,
+                             method_old_gain = F,
+                             hours_reward_calculation = c(seq.int(0,168,10),168),
+                             controls_reward_calculation = NULL,
+                          max_hydro_hourly=NULL,
+                          max_hydro_weekly=NULL,
                         ...) {
 
 
@@ -91,6 +94,7 @@
   #----- shiny Loader
 
 
+  # check the method chosen to calculate Bellman values is a valid method
   methods <- c("mean-grid","grid-mean","quantile")
   if (!method %in% methods){
     stop("Unknown method. available methods: ('mean-grid','grid-mean','quantile') ")
@@ -101,10 +105,8 @@
   # Number of weeks
   n_week <- 52
 
-  # max hydro
-  max_hydro <- get_max_hydro(area)
 
-
+  # Replacing NULL values
   if(is.null(reward_db)){
     if(!is.null(simulation_names)){
       if (is.null(simulation_values)) {
@@ -116,7 +118,6 @@
       simulation_values <- reward_db$simulation_values
       reward_db <- as.data.table(reward_db$reward)
       }
-
   if (is.null(mcyears)) {
     mcyears <- opts$parameters$general$nbyears
     mcyears <- seq(0,mcyears)
@@ -124,7 +125,7 @@
 
 
 
-  # Niveau max
+  # Getting reservoir capacity (ie maximum level)
   {if (is.null(reservoir_capacity)) {
     niveau_max <- get_reservoir_capacity(area = area)
     if (length(niveau_max) == 0) {
@@ -139,14 +140,14 @@
   }}
 
 
-  # synchronizing between the simulations and the states discretisation
-  if ((!is.numeric(states_step_ratio))|(states_step_ratio<0)|(states_step_ratio<0))
+  # Checking states_step_ratio
+  if ((!is.numeric(states_step_ratio))|(states_step_ratio<0))
     stop("Failed Not valid States_step_ratio, please change it between 0 and 1.")
 
   states_steps <- niveau_max*states_step_ratio
 
 
-  # States matrix
+  # States matrix for all weeks plus an other week representing the end of the year
   states <- matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1)
 
 
@@ -154,38 +155,101 @@
   {
     efficiency <- getPumpEfficiency(area = area,opts = opts)
   }
-  decision_space <- simulation_values
-  # decision_space <- unlist(lapply(decision_space,FUN = function(x) efficiency_effect(x,efficiency)))
-  decision_space <- round(decision_space)
 
-  decimals <- 6
+  # Getting inflow in the reservoir
   {
-    if(is.null(inflow)){
-      tmp_name <- getSimulationNames(pattern = simulation_names[1], opts = opts)[1]
-      tmp_opt <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = tmp_name)
-      inflow <- antaresRead::readAntares(areas = area, hydroStorage = TRUE, timeStep = "weekly", mcYears = mcyears, opts = tmp_opt)
+    try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"),silent = T)
+    if (nrow(inflow)==0){
+      inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
     }
-    inflow[with(inflow, order(mcYear, timeId)),]
-    inflow <- inflow[, list(area, tsId = mcYear, timeId, time, hydroStorage)]
+    inflow[with(inflow, order(inflow$tsId, inflow$timeId)),]
+    inflow <- inflow[, c("area", "tsId" , "timeId", "time", "hydroStorage")]
     # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
-    inflow[, timeId := as.numeric(timeId)]
-    inflow <- inflow[, list(hydroStorage = sum(hydroStorage, na.rm = TRUE)), by = list(area, timeId, tsId)] # sum
+    inflow[, "timeId" := as.numeric(inflow$timeId)]
+    inflow <- inflow %>%
+      dplyr::group_by(.data$area, .data$timeId, .data$tsId) %>%
+      dplyr::mutate(hydroStorage = sum(.data$hydroStorage, na.rm = TRUE)) %>%
+      as.data.table()
 
-  } # get the table (area,time,tsid,hydroStorage)
+  }
 
   options("antares" = opts)
 
-  # Reward
+  # Getting maximum pumping and generating powers for each hour
+  if (is.null(max_hydro_hourly)){
+    max_hydro_hourly <- get_max_hydro(area,timeStep = "hourly")
+  }
+
+
+  # Calculating reward
   {
     if(is.null(reward_db))
     {
+      if(is.null(controls_reward_calculation)&method_old_gain==F){
+          controls_reward_calculation <- constraint_generator(area=area,nb_disc_stock=10,
+                                                            pumping=pumping,
+                                                            pumping_efficiency=efficiency,
+                                                            opts=opts)
+      }
 
-    reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name, opts = opts)$reward
+      # Addig controls used is the simulation to the controls used to interpolate reward
+      controls_reward_calculation <- rbind(simulation_values,controls_reward_calculation) %>%
+        dplyr::select("week","u") %>%
+        dplyr::distinct() %>%
+        dplyr::arrange(.data$week,.data$u)
+
+      # Checking the minimum number of controls to calculate reward
+      if (pumping==T){
+        if (method_old_gain==T){
+          assertthat::assert_that(length(simulation_names)>=3,
+                                  msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
+        } else {
+          nb_distinct <- controls_reward_calculation %>%
+            dplyr::group_by(.data$week) %>%
+            dplyr::summarise(n=dplyr::n()) %>%
+            dplyr::pull("n") %>%
+            min()
+          assertthat::assert_that(nb_distinct>=3,
+                                  msg="You should have at least 3 different controls for each week.")
+        }
+      } else {
+        if (method_old_gain==T){
+          assertthat::assert_that(length(simulation_names)>=2,
+                                  msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
+        } else {
+          nb_distinct <- controls_reward_calculation %>%
+            dplyr::group_by(.data$week) %>%
+            dplyr::summarise(n=dplyr::n()) %>%
+            dplyr::pull("n") %>%
+            min()
+          assertthat::assert_that(nb_distinct>=2,
+                                  msg="You should have at least 2 different controls for each week.")
+        }
+      }
+
+      # Calculate reward
+      reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
+                           opts = opts, correct_monotony = correct_monotony_gain,
+                           method_old = method_old_gain,max_hydro=max_hydro_hourly,
+                           hours=hours_reward_calculation,
+                           possible_controls=controls_reward_calculation,
+                           simulation_values = simulation_values, mcyears=mcyears,area=area,
+                           district_balance=district_name)
+
+      # Retriving controls (u) for each week
+      decision_space <- reward_db$simulation_values[,c("week","u")]
+      decision_space <- round(decision_space)
+      reward_db <- reward_db$reward
+
+
+    } else {
+      decision_space <- simulation_values[,c("week","u")]
+      decision_space <- round(decision_space)
     }
 
-    reward_db <- reward_db[timeId %in% seq_len(n_week)]}
+    reward_db <- reward_db[reward_db$timeId %in% seq_len(n_week)]}
 
-  # Reservoir (calque)
+  # Reservoir (rule curves)
   {
     reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
@@ -195,279 +259,213 @@
     ]
   }
 
-  # preparation DATA (generate a table of weeks and years)
+  # Prepare data.table watervalues that give Bellman value for each week, each MC year and each state
   watervalues <- data.table(expand.grid(weeks = seq_len(n_week+1), years = mcyears, statesid=seq_len(nrow(states))))
 
-  # add states
+  # add states values
   {
     statesdt <- as.data.table(states)  #convert states matrix to data.table
     statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
-    statesdt[, weeks := as.numeric(gsub("V", "", weeks))] #turn weeks to numbers V1==> 1
-    statesdt[, statesid := seq_along(states), by = weeks] # add id to refer to the state
-    statesdt[, states := round(states)]
+    statesdt[, "weeks" := as.numeric(gsub("V", "", statesdt$weeks))] #turn weeks to numbers V1==> 1
+    statesdt[, "statesid" := seq_along(states), by = c("weeks")] # add id to refer to the state
+    statesdt[, "states" := round(statesdt$states)]
   }
 
-  # add states plus 1
+  # add states plus 1 (ie states for the following week)
   {
     statesplus1 <- copy(statesdt)
-    statesplus1[, weeks := weeks - 1]
-    statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = weeks]
+    statesplus1[, "weeks" := statesplus1$weeks - 1]
+    statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = c("weeks")]
     statesplus1 <- dplyr::left_join(x = statesdt, y = statesplus1, by = c("weeks"))
     watervalues <- dplyr::right_join(x = watervalues, y = statesplus1, by = c("weeks","statesid"))
   }
 
   # add inflow
-  watervalues <- dplyr::left_join(x = watervalues, y = inflow[, list(weeks = timeId, years = tsId, hydroStorage)], by = c("weeks", "years"))
+  watervalues <- dplyr::left_join(x = watervalues, y = inflow[, list(weeks = inflow$timeId, years = inflow$tsId, hydroStorage=inflow$hydroStorage)], by = c("weeks", "years"))
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
 
   #add reward
-  col_names <- make.names(colnames(reward_db))
-  setnames(reward_db,col_names)
-  reward_l <- reward_db[, list(reward_db = list(unlist(.SD))), .SDcols =col_names[c(-1,-2)], by = list(weeks = timeId, years = mcYear)]
-
-
-  watervalues <- dplyr::left_join(x = watervalues, y = reward_l, by = c("weeks","years"))
+  watervalues <- dplyr::nest_join(x = watervalues, y = reward_db, by = c("weeks"="timeId","years"="mcYear"))
 
 
   #at this point we added the rewards for each weekly_amount
 
-  # add reservoir
-  watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = timeId, level_low, level_high)], by = "weeks")
+  # add rule curves
+  watervalues <- dplyr::left_join(x = watervalues, y = reservoir[, list(weeks = reservoir$timeId,
+                                                                        level_low = reservoir$level_low,
+                                                                        level_high = reservoir$level_high)], by = "weeks")
   #here we added the lvl_high and low of the reservoir
 
-  # add empty columns ---------------------
+  # add empty columns for future results
   watervalues$value_node <- NA_real_
   watervalues$transition <- NA_real_
   watervalues$transition_reward <- NA_real_
   watervalues$next_bellman_value <- NA_real_
 
 
+  # get maximum generating and pumping energy for each week
+  if (is.null(max_hydro_weekly)){
+    max_hydro_weekly <- get_max_hydro(area,timeStep = "weekly")
+  }
+  E_max <-max_hydro_weekly$turb
+  P_max <- max_hydro_weekly$pump
 
 
 
-  # prepare next function inputs
+  # prepare Bellman values for the end of the year (week 53)
   {
   if (length(week_53) == 1) week_53 <- rep_len(week_53, length(states))
   next_week_values <- (week_53 * niveau_max)/2   # approximation to get initial bellman values from initial water values
-  niveau_max = niveau_max
-  E_max <-max_hydro$turb
-  P_max <- max_hydro$pump
-  max_mcyear <- length(mcyears)
   counter <- 0
-  if(!pumping)P_max <- 0
 
   }
+
+  # at this state, everything is ready to apply dynamic programming equation
 
   ####
 
   if (only_input) return(watervalues)
 
-  if(!until_convergence){
-    next_week_values <- rep_len(next_week_values, nrow(watervalues[weeks==52]))
+  if(!until_convergence){ # with a predefined number of cycles
+    next_week_values <- rep_len(next_week_values, nrow(watervalues[watervalues$weeks==52]))
 
     for (n_cycl in seq_len(nb_cycle)) {
 
       cat("Calculating value nodes, cycle number:", n_cycl, "\n")
 
-      pb <- txtProgressBar(min = 0, max = 51, style = 3)
+      pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
 
-        temp <- watervalues[weeks==i]
-        if(i==52){
-        next_level_high <- watervalues$level_high[1]
-        next_level_low <- watervalues$level_low[1]
-        }else{
-          next_level_high <- watervalues$level_high[i+1]
-          next_level_low <- watervalues$level_low[i+1]
-        }
+        temp <- watervalues[watervalues$weeks==i]
 
         if(debug_week==i)browser()
 
+        # Bellman equation for week i
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=decision_space,
-                        E_max=E_max,
-                        P_max=P_max,
-                        niveau_max=niveau_max,
+                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        E_max=E_max[i],
+                        P_max=P_max[i],
+                        states_steps=states_steps,
                         method=method,
-                        max_mcyear = max_mcyear,
+                        mcyears = mcyears,
                         q_ratio= q_ratio,
-                        correct_outliers = correct_outliers,
-                        test_week = test_week,
                         counter = i,
-                        inaccessible_states=inaccessible_states,
-                        next_level_high=next_level_high,
-                        next_level_low=next_level_low,
-                        stop_rate=stop_rate)
+                        niveau_max=niveau_max,
+                        stop_rate=stop_rate,
+                        penalty_level_low=penalty_low,
+                        penalty_level_high=penalty_high)
 
 
 
         if(shiny&n_cycl==1&i==52){
+          for (p in c("shinybusy")){
+            if (!requireNamespace(p, quietly = TRUE)) {
+              stop(
+                paste0("Packageb", p, " must be installed to use this function."),
+                call. = FALSE
+              )
+            }
+          }
           shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
 
+        # Correct concacity of Bellman values if needed
+        if(correct_concavity){
+          temp$value_node <- correct_concavity(temp,i:i)
+        }
+
+        # Write results for week i
+        watervalues[watervalues$weeks==i,"value_node" :=temp$value_node]
+        watervalues[watervalues$weeks==i,"transition" :=temp$transition]
+        watervalues[watervalues$weeks==i,"transition_reward" :=temp$transition_reward]
+        watervalues[watervalues$weeks==i,"next_bellman_value" :=temp$next_bellman_value]
+
+        # Get Bellman values for week i that correspond to future Bellman values for week i-1
+        next_week_values <- temp$value_node
+
+        utils::setTxtProgressBar(pb = pb, value = 52 - i)
+
+      }
+      close(pb)
+      next_week_values <- dplyr::filter(temp,.data$weeks==1)$value_node
+      if(nrow(watervalues[is.na(watervalues$value_node)&(watervalues$weeks<=52)])>=1){
+        message("Error in the calculation of Bellman values")
+      }
+      # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
+
+    }
+
+  }else{ # calculating Bellman values until convergence
+    next_week_values <- rep_len(next_week_values, nrow(watervalues[watervalues$weeks==52]))
+
+    for (n_cycl in seq_len(cycle_limit)) {
+
+      cat("Calculating value nodes, cycle number:", n_cycl, "\n")
+
+      pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
+
+      for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
 
+        temp <- watervalues[watervalues$weeks==i]
 
+        temp <- Bellman(Data_week=temp,
+                        next_week_values_l = next_week_values,
+                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        E_max=E_max[i],
+                        P_max=P_max[i],
+                        states_steps=states_steps,
+                        method=method,
+                        mcyears = mcyears,
+                        q_ratio= q_ratio,
+                        counter = i,
+                        niveau_max=niveau_max,
+                        stop_rate=stop_rate,
+                        penalty_level_low=penalty_low,
+                        penalty_level_high=penalty_high)
 
-
-
-        # monotonic Bellman
-        {
-
-          if(monotonic_bellman){
-            for (k in 1:max_mcyear){
-              temp1 <- temp[weeks==i&years==k]
-              m <- 0
-              M <- 0
-
-              for (j in 1:nrow(temp1)){
-
-                if (is.na(temp1$value_node[j])|!is.finite(temp1$value_node[j])) next
-
-                if(m==0)m <- j
-
-                M <- j
-
-              }
-
-
-              temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
-              temp[(weeks==i&years==k),value_node :=temp1$value_node]
-            }}
-
-
-
+        if(shiny&n_cycl==1&i==52){
+          for (p in c("shinybusy")){
+            if (!requireNamespace(p, quietly = TRUE)) {
+              stop(
+                paste0("Packageb", p, " must be installed to use this function."),
+                call. = FALSE
+              )
+            }
+          }
+          shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
         }
 
         if(correct_concavity){
           temp$value_node <- correct_concavity(temp,i:i)
         }
 
-        watervalues[weeks==i,value_node :=temp$value_node]
-        watervalues[weeks==i,transition :=temp$transition]
-        watervalues[weeks==i,transition_reward :=temp$transition_reward]
-        watervalues[weeks==i,next_bellman_value :=temp$next_bellman_value]
-        watervalues[weeks==i,accessibility :=temp$accessibility]
-        watervalues[weeks==i,max_acc :=temp$max_acc]
-
-
-        if (correct_outliers) {
-          watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
-          watervalues[weeks==i&value_node<0&is.finite(value_node),value_node:=NaN]
-        }
+        watervalues[watervalues$weeks==i,"value_node" :=temp$value_node]
+        watervalues[watervalues$weeks==i,"transition" :=temp$transition]
+        watervalues[watervalues$weeks==i,"transition_reward" :=temp$transition_reward]
+        watervalues[watervalues$weeks==i,"next_bellman_value" :=temp$next_bellman_value]
 
 
 
-        # next_week_values <- correct_outliers(temp$value_node)
         next_week_values <- temp$value_node
-        setTxtProgressBar(pb = pb, value = 52 - i)
+
+        utils::setTxtProgressBar(pb = pb, value = 52 - i)
 
       }
       close(pb)
-      next_week_values <- temp[weeks==1]$value_node
-      watervalues[!is.finite(value_node),value_node:=NaN]
-      value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
-
-    }
-
-  }else{
-
-    for (n_cycl in seq_len(cycle_limit)) {
-
-      cat("Calculating value nodes, cycle number:", n_cycl, "\n")
-
-      pb <- txtProgressBar(min = 0, max = 51, style = 3)
-
-      for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
-
-
-        temp <- watervalues[weeks==i]
-
-          temp <- Bellman(Data_week=temp,
-                          next_week_values_l = next_week_values,
-                          decision_space=decision_space,
-                          E_max=E_max,
-                          P_max=P_max,
-                          niveau_max=niveau_max,
-                          method=method,
-                          max_mcyear = max_mcyear,
-                          q_ratio= q_ratio,
-                          correct_outliers = correct_outliers,
-                          test_week = test_week,
-                          counter = i,
-                          inaccessible_states=inaccessible_states)
-
-
-
-        if(shiny&n_cycl==1&i==52){
-          shinybusy::show_modal_spinner(spin = "atom",color = "#0039f5")
-        }
-
-
-
-
-
-
-
-        # monotonic Bellman
-        {
-
-          if(monotonic_bellman){
-            for (k in 1:max_mcyear){
-              temp1 <- temp[weeks==i&years==k]
-              m <- 0
-              M <- 0
-
-              for (j in 1:nrow(temp1)){
-
-                if (is.na(temp1$value_node[j])|!is.finite(temp1$value_node[j])) next
-
-                if(m==0)m <- j
-
-                M <- j
-
-              }
-
-
-              temp1$value_node[m:M]<- temp1$value_node[m:M][order(temp1$value_node[m:M],decreasing = FALSE)]
-              temp[(weeks==i&years==k),value_node :=temp1$value_node]
-            }}
-
-
-
-        }
-
-
-        watervalues[weeks==i,value_node :=temp$value_node]
-        watervalues[weeks==i,transition :=temp$transition]
-        watervalues[weeks==i,accessibility :=temp$accessibility]
-        watervalues[weeks==i,max_acc :=temp$max_acc]
-
-
-
-        if (correct_outliers) {
-          watervalues[weeks == i, value_node := correct_outliers(value_node), by = years]
-          watervalues[weeks==i&value_node<0&is.finite(value_node),value_node:=NaN]
-        }
-
-
-
-        # next_week_values <- correct_outliers(temp$value_node)
-        next_week_values <- temp$value_node
-        setTxtProgressBar(pb = pb, value = 52 - i)
-
+      next_week_values <- temp[temp$weeks==1]$value_node
+      if(nrow(watervalues[is.na(watervalues$value_node)&(watervalues$weeks<=52)])>=1){
+        message("Error in the calculation of Bellman values")
       }
-      close(pb)
-      next_week_values <- temp[weeks==1]$value_node
-      watervalues[!is.finite(value_node),value_node:=NaN]
-      value_nodes_dt <- build_data_watervalues(watervalues,inaccessible_states,statesdt,reservoir)
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
 
 
       if(n_cycl>1){
-        diff_vect <- last_wv -value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
+        diff_vect <- last_wv -value_node_gen(watervalues,statesdt,reservoir)$vu
         convergence_value <- converged(diff_vect,conv=convergence_criteria)
         convergence_percent <- sprintf((convergence_value*100), fmt = '%#.2f')
 
@@ -499,34 +497,26 @@
 
       }
 
-      last_wv <- value_node_gen(watervalues,inaccessible_states,statesdt,reservoir)$vu
+      last_wv <- value_node_gen(watervalues,statesdt,reservoir)$vu
 
       }
     }# end else
 
-  #scenario elimination criteria Info
-  elim_ratio <- 1-(min(watervalues$max_acc,na.rm = T)/max_mcyear)
-  if(elim_ratio>0){
-    message <- sprintf("Please select an elimnation criterea greater then %0.f%% to avoid infesable week.",elim_ratio*100)
-    message(message)
-  }
-
-
-  if(min(value_nodes_dt,na.rm = T)<0.5)
-  {
-    value_nodes_dt[is.finite(vu)&vu<0.5,vu:=0.5]
-    message("Minimal water value is 0.5 lesser valuers are changed automatically to 0.5.
-            This change is done to assure the well functioning with Antares hydro model")
-  }
-
 
   if(shiny){
-
+    for (p in c("shinybusy")){
+      if (!requireNamespace(p, quietly = TRUE)) {
+        stop(
+          paste0("Packageb", p, " must be installed to use this function."),
+          call. = FALSE
+        )
+      }
+    }
     shinybusy::remove_modal_spinner()
 
   }
 
-
+  # Prepare output
   result <- list()
   result$watervalues <- watervalues
   result$aggregated_results <- value_nodes_dt

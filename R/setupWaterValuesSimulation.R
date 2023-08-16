@@ -1,4 +1,5 @@
-#' Setup a simulation before running it for calculating Water Values
+#' Setup a simulation before running it for calculating Water Values,
+#' used in \code{runWaterValuesSimulation}
 #'
 #' @param area The area concerned by the simulation.
 #' @param fictive_area_name Name of the fictive area to create.
@@ -15,16 +16,7 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param ... further arguments passed to or from other methods.
 #' @return The result of antaresRead::simOptions
-#' @export
 #'
-#' @importFrom assertthat assert_that
-#' @importFrom antaresRead simOptions readInputTS
-#' @importFrom antaresEditObject createArea createCluster createDistrict createLink propertiesLinkOptions updateGeneralSettings
-#' @import data.table
-#' @importFrom utils tail hasName
-#'
-#'
-# @examples
 setupWaterValuesSimulation <- function(area,
                                        fictive_area_name = paste0("watervalue_", area),
                                        thermal_cluster = "WaterValueCluster",
@@ -36,6 +28,8 @@ setupWaterValuesSimulation <- function(area,
 
   assertthat::assert_that(class(opts) == "simOptions")
 
+  changeHydroManagement(opts=opts,watervalues = F, heuristic = T, area=area)
+
   # Reset hydro storage
   if(reset_hydro){
     suppressWarnings(resetHydroStorage(area = area, opts = opts))
@@ -44,31 +38,30 @@ setupWaterValuesSimulation <- function(area,
   # Get hydro max power
   hydro_storage_max <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   hydro_storage_max <- rbind(
-    hydro_storage_max, tail(hydro_storage_max, 24)
+    hydro_storage_max, utils::tail(hydro_storage_max, 24)
   )
 
   # Reset Pumping power
   suppressWarnings(resetPumpPower(area = area, opts = opts))
-
   # Prepare thermal Cluster parameters
   if (utils::hasName(hydro_storage_max, "hstorPMaxHigh")) {
     prepro_modulation <- matrix(
       data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max[, c(hstorPMaxHigh)]/hydro_storage_max[, max(hstorPMaxHigh)],
+               hydro_storage_max$hstorPMaxHigh/hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)],
                rep(0, times = 365 * 24 * 1)),
       ncol = 4
     )
-    time_series <- hydro_storage_max[, list(hstorPMaxHigh)]
-    nominalcapacity <- hydro_storage_max[, max(hstorPMaxHigh)]
+    time_series <- hydro_storage_max$hstorPMaxHigh
+    nominalcapacity <- hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)]
   } else {
     prepro_modulation <- matrix(
       data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max[, c(generatingMaxPower)]/hydro_storage_max[, max(generatingMaxPower)],
+               hydro_storage_max$generatingMaxPower/hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)],
                rep(0, times = 365 * 24 * 1)),
       ncol = 4
     )
-    time_series <- hydro_storage_max[, list(generatingMaxPower)]
-    nominalcapacity <- hydro_storage_max[, max(generatingMaxPower)]
+    time_series <- hydro_storage_max$generatingMaxPower
+    nominalcapacity <- hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)]
   }
 
   # Chose the area to link
@@ -112,7 +105,7 @@ setupWaterValuesSimulation <- function(area,
 
     if(grepl("_pump$", fictive_area)){
       #add load
-      max_pump <- hydro_storage_max[, list(pumpingMaxPower)]
+      max_pump <- hydro_storage_max$pumpingMaxPower
       antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump)
     }
 
@@ -145,13 +138,26 @@ setupWaterValuesSimulation <- function(area,
       caption = "water values district",
       comments = "Used for calculate water values",
       apply_filter = "add-all",
-      remove_area = append(remove_areas,fictive_areas),
+      remove_area = fictive_areas,
       output = TRUE,
       overwrite = TRUE,
       opts = opts
     )
   })
 
+  # Adjust thematic trimming
+  settings_ini <- antaresEditObject::readIniFile(file.path(opts$studyPath, "settings", "generaldata.ini"))
+  if (settings_ini$general$`thematic-trimming`){
+    for (p in list("OV. COST","MRG. PRICE","BALANCE")){
+      if (p %in% settings_ini$`variables selection`){
+        idx <- which(settings_ini$`variables selection`== p)
+        settings_ini$`variables selection`[[idx]] <- NULL
+      }
+      settings_ini$`variables selection` <- append(settings_ini$`variables selection`,
+                                                       list(`select_var +`=p))
+    }
+    antaresEditObject::writeIni(settings_ini, file.path(opts$studyPath, "settings", "generaldata.ini"),overwrite=T)
+  }
 
   return(opts)
 }

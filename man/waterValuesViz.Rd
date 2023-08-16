@@ -4,16 +4,12 @@
 \alias{waterValuesViz}
 \title{Visualize mean grid layer}
 \usage{
-waterValuesViz(Data, filtre_ratio = 1, show_negative = TRUE)
+waterValuesViz(Data, filter_penalties = FALSE)
 }
 \arguments{
 \item{Data}{Output from \code{Grid_Matrix}.}
 
-\item{filtre_ratio}{in [1,0]. Define the percent to keep from water values
-eliminating the rest (extreme negatives and positives).}
-
-\item{show_negative}{Boolean. true to show negative water values and
-False to delete them from the graph.}
+\item{filter_penalties}{Binary paramater. If T, show only watervalues inside rule curves}
 }
 \value{
 a \code{ggplot} object

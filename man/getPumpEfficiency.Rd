@@ -20,10 +20,3 @@ the reservoir capacity (in MWh), or \code{NULL} if none.
 \description{
 Get the Pumping efficiency ratio for an area reservoir
 }
-\examples{
-\dontrun{
-
-getReservoirCapacity("fr")
-
-}
-}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{get_reservoir_capacity}
 \alias{get_reservoir_capacity}
-\title{Get reservoir capacity for concerned area}
+\title{Get reservoir capacity for concerned area, used in different functions}
 \usage{
 get_reservoir_capacity(area, opts = antaresRead::simOptions())
 }
@@ -13,5 +13,5 @@ get_reservoir_capacity(area, opts = antaresRead::simOptions())
 \code{antaresRead::setSimulationPath}}
 }
 \description{
-Get reservoir capacity for concerned area
+Get reservoir capacity for concerned area, used in different functions
 }

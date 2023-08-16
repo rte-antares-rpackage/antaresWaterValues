@@ -4,12 +4,7 @@
 \alias{plot_reward_variation_mc}
 \title{Plot the reward and return the results in table}
 \usage{
-plot_reward_variation_mc(
-  reward_base,
-  week_id,
-  Mc_year,
-  constraints_values = NULL
-)
+plot_reward_variation_mc(reward_base, week_id, Mc_year)
 }
 \arguments{
 \item{reward_base}{A data.table contains the rewards.
@@ -18,8 +13,6 @@ Obtained using the function get_Reward()}
 \item{week_id}{Numeric of length 1. number of the week to plot.}
 
 \item{Mc_year}{Numeric of length 1. number of thr MC year to plot}
-
-\item{constraints_values}{the value of the constraint}
 }
 \value{
 a \code{ggplot} object

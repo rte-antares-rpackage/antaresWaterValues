@@ -1,10 +1,8 @@
 # launch this scripts to install all dependencies of watervalues package ----
-to_install <- c("antaresEditObject", "assertthat", "bsplus", "cowplot",
-                "data.table", "doParallel", "dplyr", "DT", "foreach",
-                "ggplot2", "mice", "parallelly", "periscope", "shiny",
-                "shinyBS", "shinybusy", "shinycustomloader", "shinyjs",
-                "shinythemes", "shinyWidgets", "spsComps", "stringr",
-                "tibble", "tidyr", "usethis", "viridis", "zoo")
+to_install <- c("antaresEditObject", "assertthat",
+                "data.table", "dplyr",
+                "ggplot2", "stringr",
+                 "tidyr", "viridis","shiny","shinyBS")
 
 
 for (i in to_install) {

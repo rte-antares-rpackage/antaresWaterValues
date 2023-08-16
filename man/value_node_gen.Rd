@@ -2,20 +2,19 @@
 % Please edit documentation in R/math_functions.R
 \name{value_node_gen}
 \alias{value_node_gen}
-\title{Calculate water values from Bellman values}
+\title{Calculate water values from Bellman values, used in \code{Grid_Matrix} and
+\code{build_data_watervalues}}
 \usage{
-value_node_gen(watervalues, inaccessible_states = 1, statesdt, reservoir)
+value_node_gen(watervalues, statesdt, reservoir)
 }
 \arguments{
 \item{watervalues}{an intermediate result in Grid_Matrix contains the bellman values}
-
-\item{inaccessible_states}{Numeric in [0,1]. Tolerance of inaccessible states.
-For example if equal to 0.9 we delete the state if this states is inaccessible by 90\% of scenarios.}
 
 \item{statesdt}{an intermediate result in Grid_Matrix contains the states dicretization}
 
 \item{reservoir}{an intermediate result in Grid_Matrix contains the reservoir levels}
 }
 \description{
-Calculate water values from Bellman values
+Calculate water values from Bellman values, used in \code{Grid_Matrix} and
+\code{build_data_watervalues}
 }

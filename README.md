@@ -1,7 +1,7 @@
 
 # <img src="inst/images/antares_simulator.png" width="250" />
 
-# Watervalues
+# antaresWaterValues
 
 The R package watervalues allows to :
 
@@ -19,7 +19,7 @@ You can install the package from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("rte-antares-rpackage/antaresWaterValues@light_version", build_vignettes = TRUE)
+devtools::install_github("rte-antares-rpackage/antaresWaterValues", build_vignettes = TRUE)
 ```
 
 To install all the package dependencies you can run the script
@@ -28,7 +28,7 @@ To install all the package dependencies you can run the script
 ## Using the Shiny app
 
 ``` r
-library(watervalues)
+library(antaresWaterValues)
 #> Le chargement a nécessité le package : data.table
 #> Le chargement a nécessité le package : shiny
 #> Le chargement a nécessité le package : shinyBS

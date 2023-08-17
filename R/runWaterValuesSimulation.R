@@ -118,9 +118,8 @@ runWaterValuesSimulation <- function(area,
                                               pumping=pumping,
                                               pumping_efficiency = efficiency,
                                               opts=opts)
-  } else {
-    nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
   }
+  nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 
   # Get efficiency
 
@@ -164,7 +163,7 @@ runWaterValuesSimulation <- function(area,
 
   # Start the simulations
 
-  simulation_names <- vector(mode = "character", length = length(constraint_values)/nb_disc_stock)
+  simulation_names <- vector(mode = "character", length = nb_disc_stock)
 
 
 

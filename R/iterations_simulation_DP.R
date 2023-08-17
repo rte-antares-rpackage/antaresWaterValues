@@ -33,7 +33,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      path_solver,study_path,
                                                      hours=round(seq(0,168,length.out=10)),
                                                      states_step_ratio=1/50,
-                                                     method_dp = "mean-grid",
+                                                     method_dp = "grid-mean",
                                                      q_ratio = 0.5){
 
 
@@ -153,7 +153,11 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   }
 
-  return(results)
+  output <- list()
+  output$df_rewards <- df_rewards
+  output$df_levels <- df_levels
+  output$df_watervalues <- df_watervalues
+  return(output)
 
 }
 
@@ -199,7 +203,7 @@ getInitialTrend <- function(level_init,controls,inflow,mcyears,niveau_max,
       dplyr::slice(which.min(abs(.data$control)))
 
     levels <- dplyr::bind_rows(levels,data.frame(week=w,
-                                      lev=level_i-control$control+control$inflow,
+                                      lev=min(level_i-control$control+control$inflow,niveau_max),
                                       opt=control$control,constraint=control$control))
   }
   return(levels)
@@ -326,7 +330,7 @@ getCalculatedReward <- function(reward,levels,expected_reward){
 updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
                               states_step_ratio,pumping,pump_eff,
                               penalty_low,penalty_high,inflow,niveau_max,
-                              max_hydro,max_hydro_weekly, method_dp="mean-grid",
+                              max_hydro,max_hydro_weekly, method_dp="grid-mean",
                               q_ratio = 0.5){
 
   reward <- dplyr::filter(reward,.data$u==0) %>%
@@ -398,43 +402,64 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 #' @return Data frame with level (lev), optimal transition (opt) and transition
 #' to evaluate (constraint) for each week (w)
 getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
-                            niveau_max,df_levels,penalty_low,penalty_high){
+                            niveau_max,df_levels,penalty_low,penalty_high,
+                            method_fast=F){
   levels <- data.frame(week=0,lev=level_init,opt=0)
 
+  states <- watervalues %>%
+    dplyr::distinct(.data$states)
   for (w in 1:52){
     level_i <- levels %>%
       dplyr::filter(.data$week==w-1) %>%
       dplyr::pull("lev")
 
-    transition <- watervalues %>%
-      dplyr::filter(.data$weeks==dplyr::if_else(w<52,w+1,1))
+    if (method_fast){
+      state_i <- states %>%
+        dplyr::mutate(diff=abs(states-level_i)) %>%
+        dplyr::slice(which.min(diff))
 
-    f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
+      control <- dplyr::filter(watervalues,.data$weeks==w,
+                               .data$states==state_i$states) %>%
+        dplyr::summarise(control=mean(.data$transition),weeks=max(.data$weeks),
+                         inflow=mean(.data$hydroStorage)) %>%
+        dplyr::left_join(controls,by=c("weeks"="week")) %>%
+        dplyr::mutate(diff=abs(control-u)) %>%
+        dplyr::slice(which.min(diff))
 
-    control <- dplyr::filter(watervalues,.data$weeks==w) %>%
-      dplyr::mutate(states=level_i) %>%
-      dplyr::distinct(.data$years,.data$states,.keep_all = T) %>%
-      dplyr::mutate(control=list(dplyr::filter(controls,.data$week==w)$u)) %>%
-      tidyr::unnest_longer("control") %>%
-      dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,
-                                       niveau_max,
-                                       .data$states+.data$hydroStorage-.data$control)) %>%
-      dplyr::filter(.data$next_state>=0) %>%
-      dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), .data$years, .data$next_state)) %>%
-      dplyr::left_join(dplyr::filter(reward,.data$week==w),by=c("years"="mcYear","control"="u")) %>%
-      dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=.data$level_low,
-                                          penalty_low*(.data$next_state-.data$level_low),0),
-                    penalty_high = dplyr::if_else(.data$next_state>=.data$level_high,
-                                           penalty_high*(.data$level_high-.data$next_state),0),
-                    sum=.data$reward+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
-      dplyr::group_by(.data$control) %>%
-      dplyr::summarise(obj=mean(.data$sum),inflow=mean(.data$hydroStorage),.groups = "drop") %>%
-      dplyr::slice(which.max(.data$obj))
+      levels <- dplyr::bind_rows(levels,data.frame(week=w,
+                                                   lev=min(niveau_max,level_i-control$u+control$inflow),
+                                                   opt=control$u))
+    } else {
+      transition <- watervalues %>%
+        dplyr::filter(.data$weeks==dplyr::if_else(w<52,w+1,1))
+
+      f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
+
+      control <- dplyr::filter(watervalues,.data$weeks==w) %>%
+        dplyr::mutate(states=level_i) %>%
+        dplyr::distinct(.data$years,.data$states,.keep_all = T) %>%
+        dplyr::mutate(control=list(dplyr::filter(controls,.data$week==w)$u)) %>%
+        tidyr::unnest_longer("control") %>%
+        dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,
+                                                niveau_max,
+                                                .data$states+.data$hydroStorage-.data$control)) %>%
+        dplyr::filter(.data$next_state>=0) %>%
+        dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), .data$years, .data$next_state)) %>%
+        dplyr::left_join(dplyr::filter(reward,.data$week==w),by=c("years"="mcYear","control"="u")) %>%
+        dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=.data$level_low,
+                                                   penalty_low*(.data$next_state-.data$level_low),0),
+                      penalty_high = dplyr::if_else(.data$next_state>=.data$level_high,
+                                                    penalty_high*(.data$level_high-.data$next_state),0),
+                      sum=.data$reward+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
+        dplyr::group_by(.data$control) %>%
+        dplyr::summarise(obj=mean(.data$sum),inflow=mean(.data$hydroStorage),.groups = "drop") %>%
+        dplyr::slice(which.max(.data$obj))
 
 
-    levels <- dplyr::bind_rows(levels,data.frame(week=w,
-                                      lev=level_i-control$control+control$inflow,
-                                      opt=control$control))
+      levels <- dplyr::bind_rows(levels,data.frame(week=w,
+                                                   lev=min(niveau_max,level_i-control$control+control$inflow),
+                                                   opt=control$control))
+    }
 
   }
 

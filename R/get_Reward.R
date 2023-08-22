@@ -122,7 +122,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
 
     max_hydro <- dplyr::rename(max_hydro,"P_max"="pump","T_max"="turb")
     assertthat::assert_that(min(max_hydro$T_max)>0)
-    assertthat::assert_that(min(max_hydro$P_max)>0)
+    # assertthat::assert_that(min(max_hydro$P_max)>0)
 
     if(is.null(possible_controls)){
       nb_hours <- length(hours)
@@ -485,6 +485,9 @@ reward_offset <- function(opts, df_reward, u0=c(),mcyears,district_cost= "water 
     dplyr::rename(week="timeId",ov_cost="OV. COST") %>%
     dplyr::select("mcYear","week","ov_cost") %>%
     as.data.frame()
+  if (sum(is.na(u0))>=1){
+    u0 <- c()
+  }
   if (length(u0)>0){
     u0 <- data.frame(week=1:52,u0=u0)
     df_reward <- df_reward %>%

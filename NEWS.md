@@ -1,4 +1,4 @@
-# watervalues v2 [august 2023]
+# antaresWaterValues v2 [august 2023]
 
 ## Major changes
 
@@ -13,6 +13,6 @@
 
 
 
-# watervalues v1 [april 2023]
+# antaresWaterValues v1 [april 2023]
 
 * Initial version of the package

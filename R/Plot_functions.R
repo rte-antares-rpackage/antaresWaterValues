@@ -197,7 +197,8 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
                                  states_round_percent=.data$states/max(temp$states)*100) %>%
     dplyr::group_by(.data$weeks) %>%
     dplyr::arrange(.data$weeks,.data$states) %>%
-    dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node)) %>%
+    dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),
+                  weeks=as.character(.data$weeks)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(is.finite(.data$vu),!is.nan(.data$vu))
 
@@ -209,7 +210,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
   setnames(temp,"weeks","Week")
 
 
-  temp <- tidyr::pivot_longer(temp,cols=c("Bellman_Value","Gradient_Bellman","Watervalues"),
+  temp <- tidyr::pivot_longer(temp,cols=c("Bellman_Value","Watervalues"),#,"Gradient_Bellman"
                               names_to = "Type of value",
                               values_to = "Value")
 
@@ -219,8 +220,10 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
                                                   group=.data$`Week`)) +
     ggplot2::geom_line() +
     ggplot2::facet_wrap(dplyr::vars(.data$`Type of value`),scales="free") +
-    ggplot2::scale_color_viridis_c(option = "viridis", direction = 1) +
     ggplot2::theme_bw()
+  if(length(unique(temp$Week))>10){
+    p1 <- p1+ggplot2::theme(legend.position="none")
+  }
 
   return(p1)
 }

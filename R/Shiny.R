@@ -118,7 +118,7 @@ ui <- shiny::fluidPage(
              ), #end sidebarPanel
 
            shiny::mainPanel(
-             shiny::h2("Controls (u) evaluated for each week and for each simulation (sim)"),
+             shiny::h2("Controls (u) in MWh per week evaluated for each week and for each simulation (sim)"),
              DT::dataTableOutput("simulation_constraint")
            )
 

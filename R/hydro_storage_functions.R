@@ -112,7 +112,9 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
 
     # read hydro storage series and initialize at 0
     hydro_storage <- NULL
-    try (hydro_storage <- utils::read.table(file = path_hydro_storage),silent = T)
+    try (hydro_storage <- antaresRead:::fread_antares(file = path_hydro_storage,
+                                                      opts = opts),
+         silent = T)
     if (!is.null(hydro_storage)){
       hydro_storage[] <- 0
       antaresEditObject::writeInputTS(hydro_storage[,, drop = FALSE],

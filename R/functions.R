@@ -105,7 +105,8 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
       stop("Impossible to backup pumping power file")
 
     # read pump power and initialize at 0
-    pump_power <- utils::read.table(file = path_pump_power)
+    pump_power <- antaresRead:::fread_antares(file = path_pump_power,
+                                              opts = opts)
     pump_power[,3] <- 0
     antaresEditObject::writeHydroValues(pump_power[, , drop = FALSE],
                                         area = area,

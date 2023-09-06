@@ -59,7 +59,9 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
   if (!file.exists(path) || file.size(path) == 0) {
     reservoir <- data.table::data.table(matrix(rep(0, 3*12), ncol = 3, dimnames = list(NULL, vars)))
   } else {
-    reservoir <- data.table::fread(input = path, col.names = vars)
+    reservoir <- antaresRead:::fread_antares(file = path,
+                                             opts = opts,
+                                             col.names = vars)
   }
   full_year <- data.table(
     date = seq.Date(from = as.Date(opts$start), by = "day", length.out = 365)
@@ -109,7 +111,9 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
   if (!file.exists(path) || file.size(path) == 0) {
     reservoir <- data.table::data.table(matrix(rep(0, 3*365), ncol = 3, dimnames = list(NULL, vars)))
   } else {
-    reservoir <- data.table::fread(input = path, col.names = vars)
+    reservoir <- antaresRead:::fread_antares(file = path,
+                                             opts = opts,
+                                             col.names = vars)
   }
   full_year <- data.table(
     date = seq.Date(from = as.Date(opts$start), by = "day", length.out = nrow(reservoir))

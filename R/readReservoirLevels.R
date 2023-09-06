@@ -52,8 +52,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
     )
   }
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly"))
-  if (!area %in% antaresRead::getAreas(opts = opts))
-    stop("Not a valid area!")
+  antaresEditObject:::check_area_name(area = area, opts = opts)
   path <- file.path(opts$inputPath , sprintf("hydro/common/capacity/reservoir_%s.txt", area))
   vars <- c("level_low", "level_avg", "level_high")
   if (!file.exists(path) || file.size(path) == 0) {
@@ -104,8 +103,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
 #' @return a data.table
 readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly", "daily"))
-  if (!area %in% antaresRead::getAreas(opts = opts))
-    stop("Not a valid area!")
+  antaresEditObject:::check_area_name(area = area, opts = opts)
   path <- file.path(opts$inputPath , sprintf("hydro/common/capacity/reservoir_%s.txt", area))
   vars <- c("level_low", "level_avg", "level_high")
   if (!file.exists(path) || file.size(path) == 0) {

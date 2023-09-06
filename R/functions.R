@@ -9,8 +9,7 @@
 #' @return An updated list containing various information about the simulation
 restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
+  antaresEditObject:::check_area_name(area = area, opts = opts)
 
   # Input path
   inputPath <- opts$inputPath
@@ -62,8 +61,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
 resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
+  antaresEditObject:::check_area_name(area = area, opts = opts)
 
   # Input path
   inputPath <- opts$inputPath

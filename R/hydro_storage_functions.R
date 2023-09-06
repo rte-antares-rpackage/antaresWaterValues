@@ -115,26 +115,18 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
     try (hydro_storage <- utils::read.table(file = path_hydro_storage),silent = T)
     if (!is.null(hydro_storage)){
       hydro_storage[] <- 0
-      utils::write.table(
-        x = hydro_storage[,, drop = FALSE],
-        file = path_hydro_storage,
-        row.names = FALSE,
-        col.names = FALSE,
-        sep = "\t"
-      )
+      antaresEditObject::writeInputTS(hydro_storage[,, drop = FALSE],
+                                      area=area,
+                                      type="hydroSTOR")
     }
 
   } else {
 
     message("No hydro storage series for this area, creating one")
 
-    utils::write.table(
-      x = data.frame(x = rep(0, 12)),
-      file = path_hydro_storage,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
+    antaresEditObject::writeInputTS(data.frame(x = rep(0, 12)),
+                                    area=area,
+                                    type="hydroSTOR")
 
   }
 

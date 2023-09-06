@@ -107,27 +107,18 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
     # read pump power and initialize at 0
     pump_power <- utils::read.table(file = path_pump_power)
     pump_power[,3] <- 0
-    utils::write.table(
-      x = pump_power[, , drop = FALSE],
-      file = path_pump_power,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
+    antaresEditObject::writeHydroValues(pump_power[, , drop = FALSE],
+                                        area = area,
+                                        type = "maxpower")
 
   } else {
 
     message("No pumping power for this area, creating one")
     v <- rep(0, 365)
     h <- rep(24,365)
-    utils::write.table(
-      x = data.frame(v,h,v,h),
-      file = path_pump_power,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
-
+    antaresEditObject::writeHydroValues(data.frame(v,h,v,h),
+                                        area = area,
+                                        type = "maxpower")
   }
 
   # Maj simulation

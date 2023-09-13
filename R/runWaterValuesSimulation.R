@@ -198,18 +198,16 @@ runWaterValuesSimulation <- function(area,
 
     disable_constraint(name_bc,opts,pumping,area = area)
 
-    #Simulation Control
-    sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
-    sim_check <- paste0(opts$studyPath,"/output")
-    sim_check <- paste(sim_check,sim_name,sep="/")
-
     if(launch_simulations){
-      if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
+      #Simulation Control
+      sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
+      sim_check <- file.path(opts$studyPath,"output",sim_name)
+
+      if(!dir.exists(file.path(sim_check,"economy","mc-all"))){
         # remove the fictive area
-        if(launch_simulations){
-          for (fictive_area in fictive_areas){
-            antaresEditObject::removeArea(fictive_area,opts = opts)
-          }        }
+        for (fictive_area in fictive_areas){
+          antaresEditObject::removeArea(fictive_area,opts = opts)
+        }
 
         # restore hydrostorage
         restoreHydroStorage(area = area, opts = opts)

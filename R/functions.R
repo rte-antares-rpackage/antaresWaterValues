@@ -1,13 +1,13 @@
 #' Restore the Pumping power series, used in \code{runWaterValuesSimulation}
 #'
 #' @param area A valid Antares area.
-#' @param path Path to a manual backup.
+#' @param path_manual_backup Path to a manual backup.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param silent Boolean. True to run without messages.
 #' @return An updated list containing various information about the simulation
-restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
+restorePumpPower <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
     stop(paste(area, "is not a valid area"))
@@ -15,7 +15,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
   # Input path
   inputPath <- opts$inputPath
 
-  if (is.null(path)) {
+  if (is.null(path_manual_backup)) {
     # Pump power ----
     path_pump_power_backup <- file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt"))
 
@@ -31,7 +31,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
     }
   } else {
     file.copy(
-      from = path,
+      from = path_manual_backup,
       to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
       overwrite = TRUE
     )
@@ -47,7 +47,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
 #'
 #'
 #' @param area A valid Antares area.
-#' @param path Optional, a path where to save the hydro storage file.
+#' @param path_manual_storage Optional, a path where to save the hydro storage file.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -58,7 +58,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
 #' @seealso \link{restoreHydroStorage}
 #'
 #' @return An updated list containing various information about the simulation.
-resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) {
+resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
@@ -68,11 +68,11 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
   inputPath <- opts$inputPath
 
   # Pump power ----
-  if (is.null(path)) {
+  if (is.null(path_manual_storage)) {
     restorePumpPower(area,silent=T)
     path_pump_power <- file.path(inputPath, "hydro", "common","capacity",  paste0("maxpower_",area,".txt"))
   } else {
-    path_pump_power <- path
+    path_pump_power <- path_manual_storage
   }
 
   if (file.exists(path_pump_power)) {

@@ -1,9 +1,11 @@
 #' Open watervalues Calculator in APP Web
 #'
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
 #' @param simulation_res
 #'   List of simulation results returned by the function
 #'   \code{watervalues::runWaterValuesSimulation}
-#' @param study_path the path of the Antares study
 #' @param silent Boolean. TRUE to suppress warnings.
 #' @param ... further arguments passed to or from other methods.
 #' @importFrom bsplus `%>%`
@@ -12,9 +14,9 @@
 #' @import shiny
 #' @export
 
-shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
+shiny_water_values <- function(opts=NULL,simulation_res=NULL,silent=F,...){
 
-{
+
   for (p in c("bsplus","DT","grDevices","shinyBS","shinybusy","shinycustomloader",
               "shinyjs","shinythemes","spsComps","spsUtil","tools","shinyWidgets",
               "shiny")){
@@ -30,7 +32,7 @@ shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
 
 
 `%>%` <- bsplus::`%>%`
-opts <- antaresRead::setSimulationPath(simulation = "input")
+if(is.null(opts)){ opts <- antaresRead::setSimulationPath(simulation = "input") }
 options("antares" = opts)
 
 

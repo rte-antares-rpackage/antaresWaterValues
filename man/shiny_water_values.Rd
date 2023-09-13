@@ -4,13 +4,14 @@
 \alias{shiny_water_values}
 \title{Open watervalues Calculator in APP Web}
 \usage{
-shiny_water_values(simulation_res = NULL, study_path, silent = F, ...)
+shiny_water_values(opts = NULL, simulation_res = NULL, silent = F, ...)
 }
 \arguments{
+\item{opts}{List of simulation parameters returned by the function
+\code{antaresRead::setSimulationPath}}
+
 \item{simulation_res}{List of simulation results returned by the function
 \code{watervalues::runWaterValuesSimulation}}
-
-\item{study_path}{the path of the Antares study}
 
 \item{silent}{Boolean. TRUE to suppress warnings.}
 

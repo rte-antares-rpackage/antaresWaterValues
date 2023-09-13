@@ -11,20 +11,22 @@
 
 disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL){
 
+  turb_name_bc <- paste0("Turb",area)
+  pump_name_bc <- paste0("Pump",area)
+  if(antaresEditObject:::is_api_study(opts)){
+    # When using antares API : name_bc parameters refer to id, not name
+    name_bc <- tolower(name_bc)
+    turb_name_bc <- tolower(turb_name_bc)
+    pump_name_bc <- tolower(pump_name_bc)
+  }
+
   opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
-  opts <- antaresEditObject::removeBindingConstraint(name = paste0("Turb",area), opts = opts)
+  opts <- antaresEditObject::removeBindingConstraint(name = turb_name_bc, opts = opts)
   if(pumping){
-    opts <- antaresEditObject::removeBindingConstraint(name = paste0("Pump",area), opts = opts)
+    opts <- antaresEditObject::removeBindingConstraint(name = pump_name_bc, opts = opts)
   }
   return(opts)
 }
-
-
-
-
-
-
-
 
 #' This function generate binding constraints for \code{runWaterValuesSimulation}
 #'

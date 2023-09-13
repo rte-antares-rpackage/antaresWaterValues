@@ -6,7 +6,7 @@
 \usage{
 restoreHydroStorage(
   area,
-  path = NULL,
+  path_manual_backup = NULL,
   opts = antaresRead::simOptions(),
   silent = F
 )
@@ -14,7 +14,7 @@ restoreHydroStorage(
 \arguments{
 \item{area}{A valid Antares area.}
 
-\item{path}{Path to a manual backup.}
+\item{path_manual_backup}{Path to a manual backup.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

@@ -55,7 +55,10 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(less = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
+      values = as.matrix(data.frame(less = c(rep(constraint_value, each=7),
+                                             rep(constraint_value[1],2)),
+                                    greater = rep(0,366),
+                                    equal = rep(0,366))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "less",
@@ -94,7 +97,10 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(equal = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
+      values = as.matrix(data.frame(less = rep(0,366),
+                                    greater = rep(0,366),
+                                    equal = c(rep(constraint_value, each=7),
+                                              rep(constraint_value[1],2)))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",

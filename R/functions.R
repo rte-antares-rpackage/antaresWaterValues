@@ -43,7 +43,6 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
   invisible(res)
 }
 
-
 #' Reset to 0 the pumping power, used in \code{setupWaterValuesSimulation}
 #'
 #'
@@ -68,26 +67,9 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
   # Input path
   inputPath <- opts$inputPath
 
-
-
-
-
-
   # Pump power ----
   if (is.null(path)) {
-    path_test <-  file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt"))
-
-    #In case there is mod_backup from an interrupted simulation
-    if (file.exists(path_test)) {
-      file.copy(
-        from = path_test,
-        to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
-        overwrite = TRUE
-      )
-      unlink(x=path_test)
-    }
-
-
+    restorePumpPower(area,silent=T)
     path_pump_power <- file.path(inputPath, "hydro", "common","capacity",  paste0("maxpower_",area,".txt"))
   } else {
     path_pump_power <- path
@@ -137,7 +119,6 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
 
   invisible(res)
 }
-
 
 #' Get reservoir capacity for concerned area, used in different functions
 #'

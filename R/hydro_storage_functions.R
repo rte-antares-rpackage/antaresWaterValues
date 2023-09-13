@@ -44,10 +44,6 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
   invisible(res)
 }
 
-
-
-
-
 #' Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}
 #'
 #'
@@ -74,26 +70,9 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
   # Input path
   inputPath <- opts$inputPath
 
-
-
-
-
-
   # Hydro storage ----
   if (is.null(path)) {
-    path_test <-  file.path(inputPath, "hydro", "series", area, "mod_backup.txt")
-
-      #In case there is mod_backup from an interrupted simulation
-    if (file.exists(path_test)) {
-      file.copy(
-        from = path_test,
-        to = file.path(inputPath, "hydro", "series", area, "mod.txt"),
-        overwrite = TRUE
-      )
-      unlink(x=path_test)
-    }
-
-
+    restoreHydroStorage(area,silent=T)
     path_hydro_storage <- file.path(inputPath, "hydro", "series", area, "mod.txt")
   } else {
     path_hydro_storage <- path
@@ -145,8 +124,6 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
 
   invisible(res)
 }
-
-
 
 #' Get the Pumping efficiency ratio for an area reservoir
 #'

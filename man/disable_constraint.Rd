@@ -4,17 +4,15 @@
 \alias{disable_constraint}
 \title{This function disable binding constraints for \code{runWaterValuesSimulation}}
 \usage{
-disable_constraint(constraint_value, name_bc, pumping = F, opts, area = NULL)
+disable_constraint(name_bc, opts, pumping = F, area = NULL)
 }
 \arguments{
-\item{constraint_value}{the value of the constraint}
-
 \item{name_bc}{the name of the constraint.}
-
-\item{pumping}{Boolean. True to take into account the pumping.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{pumping}{Boolean. True to take into account the pumping.}
 
 \item{area}{Area used to calculate watervalues}
 }

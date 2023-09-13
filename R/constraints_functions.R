@@ -1,15 +1,14 @@
 #' This function disable binding constraints for \code{runWaterValuesSimulation}
 #'
-#' @param constraint_value the value of the constraint
 #' @param name_bc the name of the constraint.
-#' @param pumping Boolean. True to take into account the pumping.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param pumping Boolean. True to take into account the pumping.
 #' @param area Area used to calculate watervalues
 #'
 
-disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL){
+disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 
   turb_name_bc <- paste0("Turb",area)
   pump_name_bc <- paste0("Pump",area)

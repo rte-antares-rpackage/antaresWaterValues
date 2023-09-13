@@ -140,7 +140,7 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
 get_reservoir_capacity <- function(area, opts=antaresRead::simOptions())
 
 {
-  hydro_ini <- antaresEditObject::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
+  hydro_ini <- antaresEditObject::readIni(file.path("input","hydro","hydro"),opts=opts)
 if (isTRUE(hydro_ini$reservoir[[area]])) {
   reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
   if (is.null(reservoir_capacity))

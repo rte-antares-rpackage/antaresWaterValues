@@ -198,7 +198,7 @@ runWaterValuesSimulation <- function(area,
 
     disable_constraint(name_bc,opts,pumping,area = area)
 
-    if(launch_simulations){
+    if(launch_simulations & !antaresEditObject:::is_api_study(opts)){
       #Simulation Control
       sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
       sim_check <- file.path(opts$studyPath,"output",sim_name)
@@ -232,7 +232,7 @@ runWaterValuesSimulation <- function(area,
     simulation_values = constraint_values
   )
 
-  if(!is.null(otp_dest))
+  if(!is.null(otp_dest) & !antaresEditObject:::is_api_study(opts))
   { main_path <- getwd()
 
   setwd(otp_dest)

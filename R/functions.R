@@ -8,6 +8,12 @@
 #' @param silent Boolean. True to run without messages.
 #' @return An updated list containing various information about the simulation
 restorePumpPower <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
+
+  if(antaresEditObject:::is_api_study(opts)){
+    message("API study : Restoration is deactivated")
+    return(NULL)
+  }
+
   assertthat::assert_that(class(opts) == "simOptions")
   antaresEditObject:::check_area_name(area = area, opts = opts)
 

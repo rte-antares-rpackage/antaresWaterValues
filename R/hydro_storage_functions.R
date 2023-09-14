@@ -9,6 +9,12 @@
 #' @return An updated list containing various information about the simulation.
 #'
 restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
+
+  if(antaresEditObject:::is_api_study(opts)){
+    message("API study : Restoration is deactivated")
+    return(NULL)
+  }
+
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
     stop(paste(area, "is not a valid area"))

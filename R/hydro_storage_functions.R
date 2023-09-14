@@ -84,9 +84,9 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
     path_hydro_storage <- path_manual_storage
   }
 
-  if (file.exists(path_hydro_storage)) {
+  # Create backup ----
+  if (!antaresEditObject:::is_api_study(opts) && file.exists(path_hydro_storage)) {
 
-    # file's copy
     res_copy <- file.copy(
       from = path_hydro_storage,
       to = file.path(inputPath, "hydro", "series", area, "mod_backup.txt"),
@@ -94,35 +94,19 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
     )
     if (!res_copy)
       stop("Impossible to backup hydro storage file")
-
-    # read hydro storage series and initialize at 0
-    hydro_storage <- NULL
-    try (hydro_storage <- antaresRead:::fread_antares(file = path_hydro_storage,
-                                                      opts = opts),
-         silent = T)
-    if (!is.null(hydro_storage)){
-      hydro_storage[] <- 0
-      antaresEditObject::writeInputTS(hydro_storage[,, drop = FALSE],
-                                      area=area,
-                                      type="hydroSTOR")
-    }
-
-  } else {
-
-    message("No hydro storage series for this area, creating one")
-
-    antaresEditObject::writeInputTS(data.frame(x = rep(0, 12)),
-                                    area=area,
-                                    type="hydroSTOR")
-
   }
 
-  # Maj simulation
-  suppressWarnings({
-    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+  # Read hydro storage series and initialize at 0 ----
+  tryCatch({
+    hydro_storage <- antaresRead:::fread_antares(file = path_hydro_storage,opts = opts)
+  },error=function(e){
+    stop("No hydro storage series for this area")
   })
-
-  invisible(res)
+  hydro_storage[] <- 0
+  hydro_storage <- hydro_storage[,, drop = FALSE]
+  antaresEditObject::writeInputTS(hydro_storage,
+                                  area=area,
+                                  type="hydroSTOR")
 }
 
 #' Get the Pumping efficiency ratio for an area reservoir

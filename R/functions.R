@@ -79,9 +79,9 @@ resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead:
     path_pump_power <- path_manual_storage
   }
 
-  if (file.exists(path_pump_power)) {
+  # Create backup ----
+  if (!antaresEditObject:::is_api_study(opts) && file.exists(path_pump_power)) {
 
-    # file's copy
     res_copy <- file.copy(
       from = path_pump_power,
       to = file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt")),
@@ -89,31 +89,20 @@ resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead:
     )
     if (!res_copy)
       stop("Impossible to backup pumping power file")
-
-    # read pump power and initialize at 0
-    pump_power <- antaresRead:::fread_antares(file = path_pump_power,
-                                              opts = opts)
-    pump_power[,3] <- 0
-    antaresEditObject::writeHydroValues(pump_power[, , drop = FALSE],
-                                        area = area,
-                                        type = "maxpower")
-
-  } else {
-
-    message("No pumping power for this area, creating one")
-    v <- rep(0, 365)
-    h <- rep(24,365)
-    antaresEditObject::writeHydroValues(data.frame(v,h,v,h),
-                                        area = area,
-                                        type = "maxpower")
   }
 
-  # Maj simulation
-  suppressWarnings({
-    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+  # Read pump power and initialize at 0 ----
+  pump_power <- NULL
+  tryCatch({
+    pump_power <- antaresRead:::fread_antares(file = path_pump_power,opts = opts)
+  },error=function(e){
+    stop("No pumping power for this area")
   })
-
-  invisible(res)
+  pump_power[,3] <- 0
+  pump_power <- pump_power[, , drop = FALSE]
+  antaresEditObject::writeHydroValues(as.matrix(pump_power),
+                                      area = area,
+                                      type = "maxpower")
 }
 
 #' Get reservoir capacity for concerned area, used in different functions

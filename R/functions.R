@@ -128,20 +128,18 @@ resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead:
 #'   \code{antaresRead::setSimulationPath}
 #' @export
 
-get_reservoir_capacity <- function(area, opts=antaresRead::simOptions())
-
-{
+get_reservoir_capacity <- function(area, opts=antaresRead::simOptions()){
   hydro_ini <- antaresEditObject::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
-if (isTRUE(hydro_ini$reservoir[[area]])) {
-  reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
-  if (is.null(reservoir_capacity))
-    reservoir_capacity <- getOption("watervalues.reservoir_capacity", default = 1e7)
-  reservoir_capacity <- reservoir_capacity
-} else {
-  reservoir_capacity <- 1
-}
-return(reservoir_capacity)
+  if (isTRUE(hydro_ini$reservoir[[area]])) {
+    reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
+    if (is.null(reservoir_capacity))
+      reservoir_capacity <- getOption("watervalues.reservoir_capacity", default = 1e7)
+    reservoir_capacity <- reservoir_capacity
+  } else {
+    reservoir_capacity <- 1
   }
+  return(reservoir_capacity)
+}
 
 
 #' Get max hydro power that can be generated in a week, used in different functions
@@ -153,35 +151,35 @@ return(reservoir_capacity)
 #' @param timeStep among "hourly", "daily" and "weekly"
 #' @export
 
-get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly")
-{
-#import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
-max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
-if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
-  max_turb <- max_hydro[, max(max_hydro$hstorPMaxHigh)] * 168
-} else {
-  if (timeStep=="hourly"){
-    max_turb <- max_hydro$generatingMaxPower
-    max_pump <- max_hydro$pumpingMaxPower
-  } else if (timeStep=="daily"){
-    max_hydro$day <- (max_hydro$timeId-1)%/%24+1
-    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$day),turb=sum(.data$generatingMaxPower),
-                           pump=sum(.data$pumpingMaxPower))
-    max_turb <- max_hydro$turb
-    max_pump <- max_hydro$pump
-  } else if (timeStep=="weekly"){
-    max_hydro$week <- (max_hydro$timeId-1)%/%168+1
-    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$week),turb=sum(.data$generatingMaxPower),
-                           pump=sum(.data$pumpingMaxPower))
-    max_turb <- max_hydro$turb
-    max_pump <- max_hydro$pump
-  } else {message("timeStep not supported, change to hourly, weekly or daily")}
+get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"){
 
-}
-max_hydro <- data.frame(timeId=seq(nrow(max_hydro)))
-max_hydro$pump <- max_pump
-max_hydro$turb <- max_turb
-return(max_hydro)
+  #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
+  max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
+  if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
+    max_turb <- max_hydro[, max(max_hydro$hstorPMaxHigh)] * 168
+  } else {
+    if (timeStep=="hourly"){
+      max_turb <- max_hydro$generatingMaxPower
+      max_pump <- max_hydro$pumpingMaxPower
+    } else if (timeStep=="daily"){
+      max_hydro$day <- (max_hydro$timeId-1)%/%24+1
+      max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$day),turb=sum(.data$generatingMaxPower),
+                             pump=sum(.data$pumpingMaxPower))
+      max_turb <- max_hydro$turb
+      max_pump <- max_hydro$pump
+    } else if (timeStep=="weekly"){
+      max_hydro$week <- (max_hydro$timeId-1)%/%168+1
+      max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$week),turb=sum(.data$generatingMaxPower),
+                             pump=sum(.data$pumpingMaxPower))
+      max_turb <- max_hydro$turb
+      max_pump <- max_hydro$pump
+    } else {message("timeStep not supported, change to hourly, weekly or daily")}
+
+  }
+  max_hydro <- data.frame(timeId=seq(nrow(max_hydro)))
+  max_hydro$pump <- max_pump
+  max_hydro$turb <- max_turb
+  return(max_hydro)
 }
 
 

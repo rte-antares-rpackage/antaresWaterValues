@@ -114,14 +114,13 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 #'
 #' @export
 constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts,max_hydro=NULL,
-                                 inflow=NULL)
-{
+                                 inflow=NULL){
 
 
 
-  if(is.null(pumping_efficiency))
-  { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
-
+  if(is.null(pumping_efficiency)){
+    pumping_efficiency <- getPumpEfficiency(area,opts=opts)
+  }
 
   if(is.null(max_hydro)){
     max_hydro <- get_max_hydro(area,opts,timeStep = "weekly")
@@ -227,8 +226,8 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
     } else {
       coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
     }
-  } #Otherwise, the constraint will be applied on the generation from the thermal cluster
-  else{
+    #Otherwise, the constraint will be applied on the generation from the thermal cluster
+  }else{
     cluster_desc <- antaresRead::readClusterDesc(opts)
     fictive_cluster <- cluster_desc[cluster_desc$area == fictive_area, ]$cluster
     coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))

@@ -191,7 +191,8 @@ runWaterValuesSimulation <- function(area,
         path_solver = path_solver,
         show_output_on_console = show_output_on_console,
         opts = opts
-      )}
+      )
+    }
     simulation_names[i] <- sim_name
 
     #remove the Binding Constraints
@@ -220,8 +221,9 @@ runWaterValuesSimulation <- function(area,
   # remove the fictive area
   if(launch_simulations){
     for (fictive_area in fictive_areas){
-    antaresEditObject::removeArea(fictive_area,opts = opts)
-  }}
+      antaresEditObject::removeArea(fictive_area,opts = opts)
+    }
+  }
 
   # restore hydrostorage
   restoreHydroStorage(area = area, opts = opts)
@@ -232,18 +234,18 @@ runWaterValuesSimulation <- function(area,
     simulation_values = constraint_values
   )
 
-  if(!is.null(otp_dest) & !antaresEditObject:::is_api_study(opts))
-  { main_path <- getwd()
+  if(!is.null(otp_dest) & !antaresEditObject:::is_api_study(opts)){
 
-  setwd(otp_dest)
+    main_path <- getwd()
 
-  save(simulation_res,file=paste0(file_name,".RData"))
+    setwd(otp_dest)
 
+    save(simulation_res,file=paste0(file_name,".RData"))
 
-  setwd(main_path)}
+    setwd(main_path)
+  }
 
   return(simulation_res)
-
 }
 
 #' Reset an Antares study. In case, there is a problem when executing \code{runWaterValuesSimulation},

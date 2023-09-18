@@ -234,7 +234,7 @@ runWaterValuesSimulation <- function(area,
     simulation_values = constraint_values
   )
 
-  if(!is.null(otp_dest) & !antaresEditObject:::is_api_study(opts)){
+  if(!is.null(otp_dest)){
 
     main_path <- getwd()
 

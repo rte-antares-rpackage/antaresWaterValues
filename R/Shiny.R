@@ -518,8 +518,12 @@ server <- function(input, output, session) {
   rv <- shiny::reactiveValues()
 
   output$dir <- shiny::renderUI({
-    shiny::textInput("sim_output_dir","Saving directory",value=paste0(opts$studyPath,"/user"))
-
+    if(antaresEditObject:::is_api_study(opts)){
+      default_saving_directory <- getwd()
+    } else {
+      default_saving_directory <- file.path(opts$studyPath,"user")
+    }
+    shiny::textInput("sim_output_dir","Saving directory",value=default_saving_directory)
   })
 
   simulation_constraint <- shiny::reactive({

@@ -102,7 +102,8 @@ resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead:
   pump_power <- pump_power[, , drop = FALSE]
   antaresEditObject::writeHydroValues(as.matrix(pump_power),
                                       area = area,
-                                      type = "maxpower")
+                                      type = "maxpower",
+                                      opts = opts)
 }
 
 #' Get reservoir capacity for concerned area, used in different functions

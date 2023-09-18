@@ -107,7 +107,7 @@ setupWaterValuesSimulation <- function(area,
     if(grepl("_pump$", fictive_area)){
       #add load
       max_pump <- hydro_storage_max$pumpingMaxPower
-      antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump)
+      antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump, opts = opts)
     }
 
 

@@ -104,7 +104,8 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
   hydro_storage <- hydro_storage[,, drop = FALSE]
   antaresEditObject::writeInputTS(hydro_storage,
                                   area=area,
-                                  type="hydroSTOR")
+                                  type="hydroSTOR",
+                                  opts=opts)
 }
 
 #' Get the Pumping efficiency ratio for an area reservoir

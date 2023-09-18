@@ -16,8 +16,7 @@ restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresR
   }
 
   assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
+  antaresEditObject:::check_area_name(area = area, opts = opts)
 
   # Input path
   inputPath <- opts$inputPath
@@ -70,8 +69,7 @@ restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresR
 resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
+  antaresEditObject:::check_area_name(area = area, opts = opts)
 
   # Input path
   inputPath <- opts$inputPath
@@ -121,9 +119,10 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
 #' @export
 #'
 getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
+
   assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% antaresRead::getAreas(opts = opts))
-    stop("Not a valid area!")
+  antaresEditObject:::check_area_name(area = area, opts = opts)
+
   hydro_ini <- antaresEditObject::readIni(file.path("input","hydro","hydro"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]]) | force) {
     Pump_Efficiency <- hydro_ini[["pumping efficiency"]][[area]]

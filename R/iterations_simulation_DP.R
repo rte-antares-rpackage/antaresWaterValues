@@ -34,7 +34,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      hours=round(seq(0,168,length.out=10)),
                                                      states_step_ratio=1/50,
                                                      method_dp = "grid-mean",
-                                                     q_ratio = 0.5){
+                                                     q_ratio = 0.5,
+                                                     method_fast = F){
 
 
   # Initialization
@@ -145,7 +146,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
                               mcyears=mcyears,reward=reward,controls=controls,
                               niveau_max = niveau_max,df_levels = df_levels,
-                              penalty_low = penalty_low, penalty_high = penalty_high)
+                              penalty_low = penalty_low, penalty_high = penalty_high,
+                              method_fast = method_fast)
 
     expected_reward <- getExpectedReward(reward=reward,levels=levels)
 

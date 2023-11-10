@@ -1,13 +1,13 @@
 #' Restore the Pumping power series, used in \code{runWaterValuesSimulation}
 #'
 #' @param area A valid Antares area.
-#' @param path Path to a manual backup.
+#' @param path_manual_backup Path to a manual backup.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param silent Boolean. True to run without messages.
 #' @return An updated list containing various information about the simulation
-restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
+restorePumpPower <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
     stop(paste(area, "is not a valid area"))
@@ -15,7 +15,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
   # Input path
   inputPath <- opts$inputPath
 
-  if (is.null(path)) {
+  if (is.null(path_manual_backup)) {
     # Pump power ----
     path_pump_power_backup <- file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt"))
 
@@ -31,7 +31,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
     }
   } else {
     file.copy(
-      from = path,
+      from = path_manual_backup,
       to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
       overwrite = TRUE
     )
@@ -43,12 +43,11 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
   invisible(res)
 }
 
-
 #' Reset to 0 the pumping power, used in \code{setupWaterValuesSimulation}
 #'
 #'
 #' @param area A valid Antares area.
-#' @param path Optional, a path where to save the hydro storage file.
+#' @param path_manual_storage Optional, a path where to save the hydro storage file.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -59,7 +58,7 @@ restorePumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()
 #' @seealso \link{restoreHydroStorage}
 #'
 #' @return An updated list containing various information about the simulation.
-resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) {
+resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
@@ -68,29 +67,12 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
   # Input path
   inputPath <- opts$inputPath
 
-
-
-
-
-
   # Pump power ----
-  if (is.null(path)) {
-    path_test <-  file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt"))
-
-    #In case there is mod_backup from an interrupted simulation
-    if (file.exists(path_test)) {
-      file.copy(
-        from = path_test,
-        to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
-        overwrite = TRUE
-      )
-      unlink(x=path_test)
-    }
-
-
+  if (is.null(path_manual_storage)) {
+    restorePumpPower(area,silent=T)
     path_pump_power <- file.path(inputPath, "hydro", "common","capacity",  paste0("maxpower_",area,".txt"))
   } else {
-    path_pump_power <- path
+    path_pump_power <- path_manual_storage
   }
 
   if (file.exists(path_pump_power)) {
@@ -138,7 +120,6 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
   invisible(res)
 }
 
-
 #' Get reservoir capacity for concerned area, used in different functions
 #'
 #' @param area The area concerned by the simulation.
@@ -147,20 +128,18 @@ resetPumpPower <- function(area, path = NULL, opts = antaresRead::simOptions()) 
 #'   \code{antaresRead::setSimulationPath}
 #' @export
 
-get_reservoir_capacity <- function(area, opts=antaresRead::simOptions())
-
-{
+get_reservoir_capacity <- function(area, opts=antaresRead::simOptions()){
   hydro_ini <- antaresEditObject::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
-if (isTRUE(hydro_ini$reservoir[[area]])) {
-  reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
-  if (is.null(reservoir_capacity))
-    reservoir_capacity <- getOption("watervalues.reservoir_capacity", default = 1e7)
-  reservoir_capacity <- reservoir_capacity
-} else {
-  reservoir_capacity <- 1
-}
-return(reservoir_capacity)
+  if (isTRUE(hydro_ini$reservoir[[area]])) {
+    reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
+    if (is.null(reservoir_capacity))
+      reservoir_capacity <- getOption("watervalues.reservoir_capacity", default = 1e7)
+    reservoir_capacity <- reservoir_capacity
+  } else {
+    reservoir_capacity <- 1
   }
+  return(reservoir_capacity)
+}
 
 
 #' Get max hydro power that can be generated in a week, used in different functions
@@ -172,35 +151,35 @@ return(reservoir_capacity)
 #' @param timeStep among "hourly", "daily" and "weekly"
 #' @export
 
-get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly")
-{
-#import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
-max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
-if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
-  max_turb <- max_hydro[, max(max_hydro$hstorPMaxHigh)] * 168
-} else {
-  if (timeStep=="hourly"){
-    max_turb <- max_hydro$generatingMaxPower
-    max_pump <- max_hydro$pumpingMaxPower
-  } else if (timeStep=="daily"){
-    max_hydro$day <- (max_hydro$timeId-1)%/%24+1
-    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$day),turb=sum(.data$generatingMaxPower),
-                           pump=sum(.data$pumpingMaxPower))
-    max_turb <- max_hydro$turb
-    max_pump <- max_hydro$pump
-  } else if (timeStep=="weekly"){
-    max_hydro$week <- (max_hydro$timeId-1)%/%168+1
-    max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$week),turb=sum(.data$generatingMaxPower),
-                           pump=sum(.data$pumpingMaxPower))
-    max_turb <- max_hydro$turb
-    max_pump <- max_hydro$pump
-  } else {message("timeStep not supported, change to hourly, weekly or daily")}
+get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"){
 
-}
-max_hydro <- data.frame(timeId=seq(nrow(max_hydro)))
-max_hydro$pump <- max_pump
-max_hydro$turb <- max_turb
-return(max_hydro)
+  #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
+  max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
+  if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
+    max_turb <- max_hydro[, max(max_hydro$hstorPMaxHigh)] * 168
+  } else {
+    if (timeStep=="hourly"){
+      max_turb <- max_hydro$generatingMaxPower
+      max_pump <- max_hydro$pumpingMaxPower
+    } else if (timeStep=="daily"){
+      max_hydro$day <- (max_hydro$timeId-1)%/%24+1
+      max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$day),turb=sum(.data$generatingMaxPower),
+                             pump=sum(.data$pumpingMaxPower))
+      max_turb <- max_hydro$turb
+      max_pump <- max_hydro$pump
+    } else if (timeStep=="weekly"){
+      max_hydro$week <- (max_hydro$timeId-1)%/%168+1
+      max_hydro <- dplyr::summarise(dplyr::group_by(max_hydro,.data$week),turb=sum(.data$generatingMaxPower),
+                             pump=sum(.data$pumpingMaxPower))
+      max_turb <- max_hydro$turb
+      max_pump <- max_hydro$pump
+    } else {message("timeStep not supported, change to hourly, weekly or daily")}
+
+  }
+  max_hydro <- data.frame(timeId=seq(nrow(max_hydro)))
+  max_hydro$pump <- max_pump
+  max_hydro$turb <- max_turb
+  return(max_hydro)
 }
 
 

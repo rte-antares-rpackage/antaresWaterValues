@@ -1,15 +1,14 @@
 #' This function disable binding constraints for \code{runWaterValuesSimulation}
 #'
-#' @param constraint_value the value of the constraint
 #' @param name_bc the name of the constraint.
-#' @param pumping Boolean. True to take into account the pumping.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param pumping Boolean. True to take into account the pumping.
 #' @param area Area used to calculate watervalues
 #'
 
-disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL){
+disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 
   opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
   opts <- antaresEditObject::removeBindingConstraint(name = paste0("Turb",area), opts = opts)
@@ -18,13 +17,6 @@ disable_constraint <- function(constraint_value,name_bc,pumping=F,opts,area=NULL
   }
   return(opts)
 }
-
-
-
-
-
-
-
 
 #' This function generate binding constraints for \code{runWaterValuesSimulation}
 #'
@@ -122,14 +114,13 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 #'
 #' @export
 constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts,max_hydro=NULL,
-                                 inflow=NULL)
-{
+                                 inflow=NULL){
 
 
 
-  if(is.null(pumping_efficiency))
-  { pumping_efficiency <- getPumpEfficiency(area,opts=opts)}
-
+  if(is.null(pumping_efficiency)){
+    pumping_efficiency <- getPumpEfficiency(area,opts=opts)
+  }
 
   if(is.null(max_hydro)){
     max_hydro <- get_max_hydro(area,opts,timeStep = "weekly")
@@ -235,8 +226,8 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
     } else {
       coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
     }
-  } #Otherwise, the constraint will be applied on the generation from the thermal cluster
-  else{
+    #Otherwise, the constraint will be applied on the generation from the thermal cluster
+  }else{
     cluster_desc <- antaresRead::readClusterDesc(opts)
     fictive_cluster <- cluster_desc[cluster_desc$area == fictive_area, ]$cluster
     coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))

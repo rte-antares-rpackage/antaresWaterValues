@@ -2,7 +2,7 @@
 % Please edit documentation in R/Bellman_subfunctions.R
 \name{get_bellman_values_interpolation}
 \alias{get_bellman_values_interpolation}
-\title{Create approximation of Bellman function for each scenario, used in \code{Bellman} and
+\title{Create approximation of Bellman function for next week for each scenario, used in \code{Bellman} and
 in \code{getOptimalTrend}}
 \usage{
 get_bellman_values_interpolation(Data_week, next_week_values, mcyears)
@@ -19,6 +19,6 @@ list of states and years evaluated (we suppose there is only one week at a time)
 List of \code{stats::approxfun} for each scenario
 }
 \description{
-Create approximation of Bellman function for each scenario, used in \code{Bellman} and
+Create approximation of Bellman function for next week for each scenario, used in \code{Bellman} and
 in \code{getOptimalTrend}
 }

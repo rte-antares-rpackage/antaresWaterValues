@@ -21,7 +21,7 @@ updateWatervalues(
   niveau_max,
   max_hydro,
   max_hydro_weekly,
-  method_dp = "mean-grid",
+  method_dp = "grid-mean",
   q_ratio = 0.5
 )
 }

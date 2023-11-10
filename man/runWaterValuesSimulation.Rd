@@ -6,7 +6,7 @@
 \usage{
 runWaterValuesSimulation(
   area,
-  simulation_name = "weekly_water_amount_\%s",
+  simulation_name = "wv_sim_\%s",
   nb_disc_stock = 10,
   nb_mcyears = NULL,
   binding_constraint = "WeeklyWaterAmount",

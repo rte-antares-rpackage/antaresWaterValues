@@ -4,12 +4,16 @@
 \alias{resetPumpPower}
 \title{Reset to 0 the pumping power, used in \code{setupWaterValuesSimulation}}
 \usage{
-resetPumpPower(area, path = NULL, opts = antaresRead::simOptions())
+resetPumpPower(
+  area,
+  path_manual_storage = NULL,
+  opts = antaresRead::simOptions()
+)
 }
 \arguments{
 \item{area}{A valid Antares area.}
 
-\item{path}{Optional, a path where to save the hydro storage file.}
+\item{path_manual_storage}{Optional, a path where to save the hydro storage file.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

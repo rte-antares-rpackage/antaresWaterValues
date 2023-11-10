@@ -128,7 +128,6 @@ runWaterValuesSimulation <- function(area,
 
   }
 
-
   #create the fictive areas
 
   opts <- setupWaterValuesSimulation(
@@ -169,7 +168,9 @@ runWaterValuesSimulation <- function(area,
 
   for (i in 1:nb_disc_stock) {
     # Prepare simulation parameters
-    name_bc <- paste0(binding_constraint, format(i, decimal.mark = ","))
+    name_sim <- constraint_values$sim[[i]]
+    name_sim <- stringr::str_extract(name_sim, "\\d+$")
+    name_bc <- paste0(binding_constraint, format(name_sim, decimal.mark = ","))
     constraint_value <- constraint_values$u[seq.int(i,nrow(constraint_values),nb_disc_stock)]/7
 
 
@@ -190,25 +191,23 @@ runWaterValuesSimulation <- function(area,
         path_solver = path_solver,
         show_output_on_console = show_output_on_console,
         opts = opts
-      )}
+      )
+    }
     simulation_names[i] <- sim_name
 
     #remove the Binding Constraints
-
-    disable_constraint(constraint_value,name_bc,pumping,opts,area = area)
-
-    #Simulation Control
-    sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
-    sim_check <- paste0(opts$studyPath,"/output")
-    sim_check <- paste(sim_check,sim_name,sep="/")
+    disable_constraint(name_bc,opts,pumping,area = area)
 
     if(launch_simulations){
-      if(!dir.exists(paste0(sim_check,"/economy/mc-all"))) {
+      #Simulation Control
+      sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
+      sim_check <- file.path(opts$studyPath,"output",sim_name)
+
+      if(!dir.exists(file.path(sim_check,"economy","mc-all"))){
         # remove the fictive area
-        if(launch_simulations){
-          for (fictive_area in fictive_areas){
-            antaresEditObject::removeArea(fictive_area,opts = opts)
-          }        }
+        for (fictive_area in fictive_areas){
+          antaresEditObject::removeArea(fictive_area,opts = opts)
+        }
 
         # restore hydrostorage
         restoreHydroStorage(area = area, opts = opts)
@@ -221,8 +220,9 @@ runWaterValuesSimulation <- function(area,
   # remove the fictive area
   if(launch_simulations){
     for (fictive_area in fictive_areas){
-    antaresEditObject::removeArea(fictive_area,opts = opts)
-  }}
+      antaresEditObject::removeArea(fictive_area,opts = opts)
+    }
+  }
 
   # restore hydrostorage
   restoreHydroStorage(area = area, opts = opts)
@@ -233,15 +233,16 @@ runWaterValuesSimulation <- function(area,
     simulation_values = constraint_values
   )
 
-  if(!is.null(otp_dest))
-  { main_path <- getwd()
+  if(!is.null(otp_dest)){
 
-  setwd(otp_dest)
+    main_path <- getwd()
 
-  save(simulation_res,file=paste0(file_name,".RData"))
+    setwd(otp_dest)
 
+    save(simulation_res,file=paste0(file_name,".RData"))
 
-  setwd(main_path)}
+    setwd(main_path)
+  }
 
   return(simulation_res)
 

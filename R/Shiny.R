@@ -1,9 +1,11 @@
 #' Open watervalues Calculator in APP Web
 #'
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
 #' @param simulation_res
 #'   List of simulation results returned by the function
 #'   \code{watervalues::runWaterValuesSimulation}
-#' @param study_path the path of the Antares study
 #' @param silent Boolean. TRUE to suppress warnings.
 #' @param ... further arguments passed to or from other methods.
 #' @importFrom bsplus `%>%`
@@ -12,9 +14,9 @@
 #' @import shiny
 #' @export
 
-shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
+shiny_water_values <- function(opts=NULL,simulation_res=NULL,silent=F,...){
 
-{
+
   for (p in c("bsplus","DT","grDevices","shinyBS","shinybusy","shinycustomloader",
               "shinyjs","shinythemes","spsComps","spsUtil","tools","shinyWidgets",
               "shiny")){
@@ -30,7 +32,7 @@ shiny_water_values <- function(simulation_res=NULL,study_path,silent=F,...)
 
 
 `%>%` <- bsplus::`%>%`
-opts <- antaresRead::setSimulationPath(simulation = "input")
+if(is.null(opts)){ opts <- antaresRead::setSimulationPath(simulation = "input") }
 options("antares" = opts)
 
 
@@ -118,7 +120,7 @@ ui <- shiny::fluidPage(
              ), #end sidebarPanel
 
            shiny::mainPanel(
-             shiny::h2("Controls (u) evaluated for each week and for each simulation (sim)"),
+             shiny::h2("Controls (u) in MWh per week evaluated for each week and for each simulation (sim)"),
              DT::dataTableOutput("simulation_constraint")
            )
 
@@ -505,119 +507,6 @@ ui <- shiny::fluidPage(
 
    ), #end navbarMenu
 
-# InterativeCalculation ---------------------------------------------------
-
-shiny::tabPanel("Iterative calculation of Bellman values",
-
-         shiny::sidebarLayout(
-
-
-           shiny::sidebarPanel(
-             shiny::h2("Study parameters"),
-             shinyWidgets::pickerInput("itr_sim_area",
-                         "Choose the area",
-                         opts$areaList,
-                         options = list(
-                           `live-search` = TRUE)) %>%
-               bsplus::shinyInput_label_embed(
-                 bsplus::shiny_iconlink() %>%
-                   bsplus::bs_embed_popover(title = "The area concerned by the simulation.")),
-
-
-             shiny::textInput("itr_solver_path","Solver path "
-                       ,value="xxxxxxx/bin/antares-8.0-solver.exe"),
-
-             shinyBS::bsTooltip("itr_solver_path", "The path of the Antares solver you found in your Antares installation directory.",
-                                "bottom"),
-
-             shiny::h2("Simulation parameters"),
-             shinyWidgets::materialSwitch("itr_pumping","Pumping",
-                            value=F,status = "success")%>%
-               bsplus::shinyInput_label_embed(
-                 bsplus::shiny_iconlink() %>%
-                   bsplus::bs_embed_popover(title ="Take pumping into account. Use it when your simulations have aggregated pumping.")),
-
-             shiny::conditionalPanel(condition = "input.itr_pumping",
-                              shiny::uiOutput("itr_eff") ),
-
-             shiny::sliderInput("itr_sim_mcyears",label="Choose the number of MC years to simulate",min=1,
-                         max=opts$parameters$general$nbyears,
-                         value=c(1,opts$parameters$general$nbyears),step=1),
-
-             shinyBS::bsTooltip("itr_sim_mcyears", " Number of Monte Carlo years to simulate.",
-                                "bottom"),
-
-             shiny::numericInput("itr_max","Maximum number of simulations",min=1, value=3),
-
-             shiny::h2("Bellman values calculation parameters"),
-
-             shiny::sliderInput("itr_hours","Number of hours to use to calculate rewards",max=168,min=1,value=10),
-             shiny::numericInput("itr_controls","Number of controls to calculate",min=0, value=3),
-
-             #number of states:
-             shiny::sliderInput("itr_nb_states",label="Choose the number of states",min=5,
-                         max=100,value=40,step=1),
-             shinyBS::bsTooltip("itr_nb_states", " Discretization ratio to generate steps levels between the reservoir capacity and zero.",
-                                "bottom"),
-
-             shinyWidgets::radioGroupButtons(
-               inputId = "method_dp",
-               label = "Select algorithm to use",
-               choices = c("grid-mean","mean-grid","quantile"),
-               individual = TRUE,
-               justified = TRUE,
-               checkIcon = list(
-                 yes = shiny::icon("ok",
-                                   lib = "glyphicon"))
-             ),
-             shinyBS::bsTooltip("method_dp", " Select the algorithm to use in calculation for more information check documentation.",
-                                "bottom"),
-
-             shiny::conditionalPanel(
-               condition = "input.method_dp=='quantile'",
-               shiny::sliderInput("q_ratio_dp",label=NULL,min=0,max=100,value=50,post  = " %"),
-             ),
-             shinyBS::bsTooltip("q_ratio_dp", "The bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
-                                "bottom"),
-
-             # penalty for violation of the bottom rule curve
-             shiny::numericInput("itr_penalty_low","Penalty for the violation of the bottom rule curve",value=3001),
-             shinyBS::bsTooltip("itr_penalty_low", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of unsupplied energy.",
-                                "bottom"),
-
-             # penalty for violation of the top rule curve
-             shiny::numericInput("itr_penalty_high","Penalty for the violation of the top rule curve",value=0),
-             shinyBS::bsTooltip("itr_penalty_high", "Penalty will be added proportionally to the distance from the rule curve, it is directly comparable with the cost of spilled energy.",
-                                "bottom"),
-
-             shiny::actionButton("itr_calculate","Launch calculation", icon = shiny::icon("check-circle"),
-                          align = "center"),
-             shinyBS::bsTooltip("itr_calculate", "Click to start the calculation of te water values using the selected parameters",
-                                "bottom"),
-
-             shiny::h2("Results"),
-
-             shinyWidgets::materialSwitch("itr_filter","Filter water values",value=F,status = "success")%>%
-               bsplus::shinyInput_label_embed(
-                 bsplus::shiny_iconlink() %>%
-                   bsplus::bs_embed_popover(title ="Visualize only watervalues inside rule curves")),
-
-
-             shiny::actionButton("itr_plot","Show"),
-             shinyBS::bsTooltip("itr_plot", " Show the Graph",
-                                "bottom"),
-
-             shiny::actionButton("itr_to_antares","Write water values to Antares"),
-
-
-           ), #end sidebarPanel
-
-           shiny::mainPanel(shinycustomloader::withLoader(shiny::plotOutput("itr_watervalues"), type="html", loader="dnaspin"))
-
-         )# end sidebar layout
-
-),
-
 ) #navbar
 
 ) #UI
@@ -665,7 +554,7 @@ server <- function(input, output, session) {
                   spsComps::shinyCatch({
                      simulation_res <-    runWaterValuesSimulation(
                      area=input$sim_area,
-                     simulation_name = paste0("weekly_water_amount_", input$sim_area, "_%s"),
+                     simulation_name = paste0(input$sim_area, "_wv_sim_%s"),
                      nb_disc_stock = input$sim_nb_disc_stock,
                      nb_mcyears = seq(from = input$sim_mcyears[1], to = input$sim_mcyears[2]),
                      path_solver =input$solver_path,
@@ -1053,62 +942,8 @@ server <- function(input, output, session) {
 
     )
 
-    # iterative calculation ---------------------------------------------------
 
-    shiny::observeEvent(input$itr_calculate,
-                 spsUtil::quiet({
-                   spsComps::shinyCatch({
-                     results <-  calculateBellmanWithIterativeSimulations(
-                       area=input$itr_sim_area,
-                       pumping=input$itr_pumping,
-                       pump_eff=input$itr_efficiency,
-                       opts=opts,
-                       nb_control=input$itr_controls,
-                       nb_itr=input$itr_max,
-                       mcyears=input$itr_sim_mcyears[1]:input$itr_sim_mcyears[2],
-                       penalty_low=input$itr_penalty_low,
-                       penalty_high=input$itr_penalty_high,
-                       path_solver=input$itr_solver_path,
-                       study_path=opts$studyPath,
-                       hours=round(seq(0,168,length.out=input$itr_hours)),
-                       states_step_ratio=1/input$itr_nb_states,
-                       method_dp = input$method_dp,
-                       q_ratio = input$q_ratio_dp/100)$aggregated_results
 
-                     shiny::isolate(rv$results <- results)
-                     shinyWidgets::show_alert(
-                       title = "Water Values",
-                       text = "Calculation Done !!",
-                       type = "success"
-                     )
-
-                     pp_results <- data.table::copy(results)
-                     rv$pp_results <- pp_results
-                   },
-                   blocking_level="error",position = "top-center", shiny = TRUE,prefix = "" )
-
-                 },
-                 print_cat = F, message = F, warning = silent)
-    )
-
-    itr_watervalues <- shiny::eventReactive(input$itr_plot,
-                                 {waterValuesViz(rv$results,input$itr_filter)})
-
-    output$itr_watervalues <- shiny::renderPlot(itr_watervalues())
-
-    shiny::observeEvent(input$itr_to_antares,
-                 {reshaped_values <- rv$results[rv$results$weeks!=53,] %>% to_Antares_Format(input$itr_penalty_low,input$itr_penalty_high)
-                 antaresEditObject::writeWaterValues(
-                   area = input$itr_sim_area,
-                   data = reshaped_values
-                 )
-                 shinyWidgets::show_alert(
-                   title = "To antares",
-                   text = "Done !",
-                   type = "success"
-                 )
-                 }
-    )
 
 }
 

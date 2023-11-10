@@ -15,7 +15,8 @@ getOptimalTrend(
   niveau_max,
   df_levels,
   penalty_low,
-  penalty_high
+  penalty_high,
+  method_fast = F
 )
 }
 \arguments{

@@ -38,27 +38,32 @@
                       stop_rate=5,debugger_feas=F,niveau_max,
                       states_steps,penalty_level_low,penalty_level_high){
 
-
+    # Getting all possible transitions between a state for the current week and a state for the next week
     decision_space <- unlist(decision_space, use.names = FALSE)
     decision_space <- round(decision_space)
-    alpha <- getOption(x = "watervalues.alpha", default = 0.0001)
-    decimals <- getOption(x = "watervalues.decimals", default = 3)
 
+    # Rule curves at the end of the current week (and beginning of the next one)
     level_high <- Data_week$level_high[1]
     level_low <- Data_week$level_low[1]
 
+    # Possible next states
     states_next <- Data_week$states_next[[1]]
     states_next <- unlist(states_next, use.names = FALSE)
 
+    # Get interpolation function of rewards for each possible transition for each MC year
     f_reward_year <- get_reward_interpolation(Data_week)
 
+    #Get interpolation function of next Bellman values
     f_next_value <- get_bellman_values_interpolation(Data_week,next_week_values_l,mcyears)
 
+    # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
                                            mcyears,level_high,level_low,E_max,P_max,
                                            next_week_values_l,niveau_max)
 
-    # find maximum for each year and each state of reward plus next bellman value
+    # For each transition (control), find the associated reward and for each next state,
+    # calculate penalties for violating rule curves. Then, find for each MC year and each state,
+    # the maximum sum of reward, next bellman value and penalties
     df_SDP <- df_SDP %>%
       dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
              penalty_low = dplyr::if_else(.data$next_state<=level_low,penalty_level_low*(.data$next_state-level_low),0),
@@ -71,7 +76,7 @@
       dplyr::rename("value_node"="sum","transition"="control","transition_reward"="gain",
              "next_bellman_value"="next_value")
 
-    # reorder df_SDP as Data_week
+    # reorder df_SDP as Data_week and then replacing values for the week
     Data_week <- dplyr::left_join(Data_week[,-c("value_node","transition","transition_reward",
                                          "next_bellman_value")],df_SDP[,c("years","states","value_node","transition",
                                                                           "transition_reward","next_bellman_value")],
@@ -87,6 +92,7 @@
     #------ grid-mean method---------
 
     if(method=="grid-mean"){
+      # mean all values
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=function(x) mean_finite(x))
 
       return(Data_week)

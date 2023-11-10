@@ -156,6 +156,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   }
 
   output <- list()
+  output$results <- results$aggregated_results
   output$df_rewards <- df_rewards
   output$df_levels <- df_levels
   output$df_watervalues <- df_watervalues

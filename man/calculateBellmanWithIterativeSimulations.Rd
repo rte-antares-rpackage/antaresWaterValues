@@ -21,8 +21,9 @@ calculateBellmanWithIterativeSimulations(
   study_path,
   hours = round(seq(0, 168, length.out = 10)),
   states_step_ratio = 1/50,
-  method_dp = "mean-grid",
-  q_ratio = 0.5
+  method_dp = "grid-mean",
+  q_ratio = 0.5,
+  method_fast = F
 )
 }
 \arguments{

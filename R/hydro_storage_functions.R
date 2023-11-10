@@ -1,14 +1,14 @@
 #' Restore the hydro storage time series, used in \code{runWaterValuesSimulation}
 #'
 #' @param area A valid Antares area.
-#' @param path Path to a manual backup.
+#' @param path_manual_backup Path to a manual backup.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param silent Boolean. True to run without messages.
 #' @return An updated list containing various information about the simulation.
 #'
-restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(),silent=F) {
+restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
     stop(paste(area, "is not a valid area"))
@@ -16,7 +16,7 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
   # Input path
   inputPath <- opts$inputPath
 
-  if (is.null(path)) {
+  if (is.null(path_manual_backup)) {
     # Hydro storage ----
     path_hydro_storage_backup <- file.path(inputPath, "hydro", "series", area, "mod_backup.txt")
 
@@ -32,7 +32,7 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
     }
   } else {
     file.copy(
-      from = path,
+      from = path_manual_backup,
       to = file.path(inputPath, "hydro", "series", area, "mod.txt"),
       overwrite = TRUE
     )
@@ -44,15 +44,11 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
   invisible(res)
 }
 
-
-
-
-
 #' Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}
 #'
 #'
 #' @param area A valid Antares area.
-#' @param path Optional, a path where to save the hydro storage file.
+#' @param path_manual_storage Optional, a path where to save the hydro storage file.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -65,7 +61,7 @@ restoreHydroStorage <- function(area, path = NULL, opts = antaresRead::simOption
 #'
 #' @return An updated list containing various information about the simulation.
 #'
-resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions()) {
+resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
@@ -74,29 +70,12 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
   # Input path
   inputPath <- opts$inputPath
 
-
-
-
-
-
   # Hydro storage ----
-  if (is.null(path)) {
-    path_test <-  file.path(inputPath, "hydro", "series", area, "mod_backup.txt")
-
-      #In case there is mod_backup from an interrupted simulation
-    if (file.exists(path_test)) {
-      file.copy(
-        from = path_test,
-        to = file.path(inputPath, "hydro", "series", area, "mod.txt"),
-        overwrite = TRUE
-      )
-      unlink(x=path_test)
-    }
-
-
+  if (is.null(path_manual_storage)) {
+    restoreHydroStorage(area,silent=T)
     path_hydro_storage <- file.path(inputPath, "hydro", "series", area, "mod.txt")
   } else {
-    path_hydro_storage <- path
+    path_hydro_storage <- path_manual_storage
   }
 
   if (file.exists(path_hydro_storage)) {
@@ -145,8 +124,6 @@ resetHydroStorage <- function(area, path = NULL, opts = antaresRead::simOptions(
 
   invisible(res)
 }
-
-
 
 #' Get the Pumping efficiency ratio for an area reservoir
 #'

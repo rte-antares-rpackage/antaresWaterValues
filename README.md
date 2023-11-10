@@ -107,18 +107,19 @@ results <- Grid_Matrix(
                                                      pumping_efficiency = pump_eff,
                                                      opts=opts)# used for marginal prices interpolation
 )
+aggregated_results <- results$aggregated_results
 ```
 
 You can plot the results
 
 ``` r
-waterValuesViz(Data=results$aggregated_results,filter_penalties = F)
+waterValuesViz(Data=aggregated_results,filter_penalties = F)
 ```
 
 <img src="man/figures/README-watervalues-1.png" width="100%" />
 
 ``` r
-plot_Bellman(value_nodes_dt = results$aggregated_results, 
+plot_Bellman(value_nodes_dt = aggregated_results, 
              week_number = c(1,3),
              penalty_high = 0,
              penalty_low = 3)
@@ -144,17 +145,18 @@ reward <- get_Reward(
                                            pumping_efficiency = pump_eff,
                                            opts=opts)# used for marginal prices interpolation
 )
+reward <- reward$reward
 ```
 
 ``` r
-plot_1 <- plot_reward(reward_base = reward$reward,
+plot_1 <- plot_reward(reward_base = reward,
                       week_id = c(1,3))
 ```
 
 <img src="man/figures/README-reward-1.png" width="100%" />
 
 ``` r
-plot_2 <- plot_reward_mc(reward_base = reward$reward,
+plot_2 <- plot_reward_mc(reward_base = reward,
                          week_id = c(1,3),
                          Mc_year = c(1,2))
 ```
@@ -162,14 +164,14 @@ plot_2 <- plot_reward_mc(reward_base = reward$reward,
 <img src="man/figures/README-reward-2.png" width="100%" />
 
 ``` r
-plot_3 <- plot_reward_variation(reward_base = reward$reward,
+plot_3 <- plot_reward_variation(reward_base = reward,
                                 week_id = c(1,3))
 ```
 
 <img src="man/figures/README-reward-3.png" width="100%" />
 
 ``` r
-plot_4 <- plot_reward_variation_mc(reward_base = reward$reward,
+plot_4 <- plot_reward_variation_mc(reward_base = reward,
                                    week_id = c(1,3),
                                    Mc_year = c(1,2))
 ```

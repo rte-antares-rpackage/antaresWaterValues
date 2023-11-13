@@ -11,7 +11,8 @@
 #' @return a \code{data.table}
 #' @export
 
-remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_method){
+remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_method,
+                       penalty_level_high, penalty_level_low){
 
   results <- copy(results_dt)
 
@@ -42,5 +43,10 @@ remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_met
         as.data.table()
     }
   }
+
+  results <- results %>%
+    dplyr::mutate(vu_pen=dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_level_high,
+                                          .data$states<.data$level_low ~ .data$vu - penalty_level_low,
+                                          TRUE ~ .data$vu))
   return(results)
 }

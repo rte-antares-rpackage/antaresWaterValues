@@ -12,28 +12,30 @@ calculateUI <- function(id, opts) {
       ),
 
       #area
-      shinyWidgets::pickerInput(
+      shiny::textOutput(
+        NS(id,"Area")),
+      shinyBS::bsTooltip(
         NS(id,"Area"),
-        "Choose the area",
-        opts$areaList,
-        options = list(`live-search` = TRUE)
-      ) %>%
-        bsplus::shinyInput_label_embed(
-          bsplus::shiny_iconlink() %>%
-            bsplus::bs_embed_popover(title = "the area which you will calculate the water values in it.")
-        ),
+        "The area for which you will calculate the water values.",
+        "bottom"
+      ),
 
-
-      shinyWidgets::materialSwitch(
+      shiny::textOutput(
+        NS(id,"pumping_cal")),
+      shinyBS::bsTooltip(
         NS(id,"pumping_cal"),
-        "Pumping",
-        value = F,
-        status = "success"
-      ) %>%
-        bsplus::shinyInput_label_embed(
-          bsplus::shiny_iconlink() %>%
-            bsplus::bs_embed_popover(title = "Take pumping into account. Use it when your simulations have aggregated pumping.")
-        ),
+        "Whether pumping is possible."
+      ),
+
+      #MC years:
+      shiny::textOutput(
+        NS(id,"mcyears")),
+
+      shinyBS::bsTooltip(
+        NS(id,"mcyears"),
+        " Monte-Carlo years considered in water values calculation.",
+        "bottom"
+      ),
 
       shiny::h2("Reward calculation"),
       # Reward calculation
@@ -228,22 +230,6 @@ calculateUI <- function(id, opts) {
         "bottom"
       ),
 
-      #MC years:
-      shiny::sliderInput(
-        NS(id,"mcyears"),
-        label = "Choose the number of MC years to use",
-        min = 1,
-        max = opts$parameters$general$nbyears,
-        value = c(1, opts$parameters$general$nbyears),
-        step = 1
-      ),
-
-      shinyBS::bsTooltip(
-        NS(id,"mcyears"),
-        " Monte-Carlo years to consider in water values calculation.",
-        "bottom"
-      ),
-
 
       # correct concavity option for Bellman values
       shinyWidgets::materialSwitch(
@@ -300,9 +286,8 @@ calculateUI <- function(id, opts) {
         color = "primary",
         block = T
       ),
-      shiny::conditionalPanel(ns = NS(id),
-                              condition = "input.smart_interpolation_reward",
-                              DT::dataTableOutput(NS(id,"calculated_controls")))
+
+      DT::dataTableOutput(NS(id,"calculated_controls"))
 
     )
   )
@@ -314,7 +299,7 @@ calculateServer <- function(id, opts, silent) {
 
     simulation_res <- shiny::reactive({
       if (is.null(input$ini_file)) {
-        simulation_res
+        NULL
       } else{
         inFile <- input$ini_file
         file <- inFile$datapath
@@ -326,16 +311,42 @@ calculateServer <- function(id, opts, silent) {
       }
     })
 
+    output$Area <- shiny::renderText({
+      if(is.null(simulation_res())){"Area :"}
+      else paste0("Area : ",simulation_res()$area)})
+
+    output$pumping_cal <- shiny::renderText({
+      if(is.null(simulation_res())){"Pumping :"}
+      else {
+        if(simulation_res()$pumping) {
+          paste0("Pumping : yes with efficiency ",simulation_res()$eff)}
+        else {
+          "Pumping : no"
+        }
+      }
+    })
+
+    output$mcyears <- shiny::renderText({
+      if(is.null(simulation_res())){"Monte Carlo years :"}
+      else {
+        paste0("Monte Carlo years : from ",simulation_res()$mc_years[1], " to ",
+               tail(simulation_res()$mc_years,n=1))}
+    })
+
+    constraints <- shiny::reactive({
+      constraint_generator(
+        area = simulation_res()$area,
+        opts = opts,
+        pumping = simulation_res()$pumping,
+        nb_disc_stock = input$controls,
+        pumping_efficiency = simulation_res()$eff
+      )
+    })
+
     calculated_controls <- shiny::reactive({
       rbind(
         dplyr::mutate(simulation_res()$simulation_values, From = "Simulation"),
-        dplyr::mutate(
-          constraint_generator(
-            area = input$Area,
-            opts = opts,
-            pumping = input$pumping_cal,
-            nb_disc_stock = input$controls
-          ),
+        dplyr::mutate(constraints(),
           From = "Calculated controls"
         )
       ) %>%
@@ -357,20 +368,20 @@ calculateServer <- function(id, opts, silent) {
     })
 
     output$calculated_controls <- DT::renderDataTable({
-      calculated_controls()
+      if (is.null(simulation_res())){data.frame()}
+      else {
+        if (input$smart_interpolation_reward)  calculated_controls()
+        else {
+          dplyr::filter(calculated_controls(),.data$From=="Simulation")
+        }
+      }
     })
 
     possible_controls <- shiny::reactive({
       possible_controls <- if (input$smart_interpolation_reward) {
         rbind(
           simulation_res()$simulation_values,
-          constraint_generator(
-            area = input$Area,
-            opts = opts,
-            pumping = input$pumping_cal,
-            nb_disc_stock = input$controls,
-            pumping_efficiency = input$efficiency
-          )
+          constraints()
         ) %>%
           dplyr::select("week", "u") %>%
           dplyr::distinct() %>%
@@ -397,15 +408,15 @@ calculateServer <- function(id, opts, silent) {
                                 },
                                 possible_controls = possible_controls(),
                                 max_hydro = if (input$smart_interpolation_reward) {
-                                  get_max_hydro(input$Area, opts)
+                                  get_max_hydro(simulation_res()$area, opts)
                                 },
-                                mcyears = input$mcyears[1]:input$mcyears[2],
-                                area = input$Area,
+                                mcyears = simulation_res()$mc_years,
+                                area = simulation_res()$area,
                                 district_balance = "water values district"
                               )
 
                             results <-     Grid_Matrix(
-                              area = input$Area,
+                              area = simulation_res()$area,
                               reward_db = reward_db,
                               simulation_names = simulation_res()$simulation_names,
                               simulation_values = simulation_res()$simulation_values,
@@ -415,14 +426,15 @@ calculateServer <- function(id, opts, silent) {
                               district_name = "water values district" ,
                               method = input$method,
                               states_step_ratio = (1 / input$nb_states),
-                              mcyears = input$mcyears[1]:input$mcyears[2],
+                              mcyears = simulation_res()$mc_years,
                               q_ratio = input$q_ratio / 100,
                               shiny = T,
                               until_convergence = input$until_convergence,
                               convergence_rate = input$convergence_rate / 100,
                               convergence_criteria = input$convergence_criteria,
                               cycle_limit = input$cycle_limit,
-                              pumping = input$pumping_cal,
+                              pumping = simulation_res()$pumping,
+                              efficiency = simulation_res()$eff,
                               correct_concavity = input$correct_concavity,
                               correct_monotony_gain = input$correct_monotony_gain,
                               penalty_low = input$penalty_low,
@@ -432,14 +444,7 @@ calculateServer <- function(id, opts, silent) {
                                 round(seq(0, 168, length.out = input$hours))
                               },
                               controls_reward_calculation = if (input$smart_interpolation_reward) {
-                                constraint_generator(
-                                  area = input$Area,
-                                  opts =
-                                    opts,
-                                  pumping =
-                                    input$pumping_cal,
-                                  nb_disc_stock = input$controls
-                                )
+                                constraints()
                               }
                             )$aggregated_results
 
@@ -487,7 +492,7 @@ calculateServer <- function(id, opts, silent) {
       penalty_high = reactive(input$penalty_high),
       penalty_low = reactive(input$penalty_low),
       reward_db = reactive(res$reward_db),
-      area = reactive(input$Area)
+      area = reactive(simulation_res()$area)
     )
   })
 }

@@ -35,6 +35,8 @@ simulationUI <- function(id,opts) {
             bsplus::bs_embed_popover(title = "Take into account the pumping in the area.")
         ),
 
+      shiny::textOutput(
+        NS(id,"pumping_eff")),
 
       shiny::numericInput(
         NS(id,"sim_nb_disc_stock"),
@@ -115,6 +117,20 @@ simulationUI <- function(id,opts) {
 
 simulationServer <- function(id,opts,silent) {
   moduleServer(id, function(input, output, session) {
+
+    eff <- shiny::reactive({
+      if (input$pumping){
+        if (!is.null(input$sim_area))getPumpEfficiency(area = input$sim_area, opts = opts)
+        else 1
+      } else {1}
+
+    })
+
+    output$pumping_eff <- shiny::renderText({
+      if(input$pumping) {
+        paste0("Efficiency : ", eff())}
+    })
+
     output$dir <- shiny::renderUI({
       shiny::textInput(NS(id,"sim_output_dir"),
                        "Saving directory",
@@ -127,7 +143,8 @@ simulationServer <- function(id,opts,silent) {
         area = input$sim_area,
         opts = opts,
         pumping = input$pumping,
-        nb_disc_stock = input$sim_nb_disc_stock
+        nb_disc_stock = input$sim_nb_disc_stock,
+        pumping_efficiency = eff()
       )
     })
 
@@ -144,17 +161,6 @@ simulationServer <- function(id,opts,silent) {
         selected = unique(simulation_constraint()$sim)
       )
     })
-
-    output$eff <-
-      shiny::renderUI({
-        shiny::numericInput(
-          NS(id,"efficiency"),
-          "Efficiency pumping ratio",
-          min = 0,
-          max = 1,
-          value = getPumpEfficiency(area = input$Area, opts = opts)
-        )
-      })
 
     shiny::observeEvent(input$simulate,
 
@@ -179,6 +185,7 @@ simulationServer <- function(id,opts,silent) {
                               otp_dest = input$sim_output_dir,
                               file_name = input$file_name,
                               pumping = input$pumping,
+                              efficiency = eff(),
                               constraint_values = dplyr::filter(
                                 simulation_constraint(),
                                 .data$sim %in% input$subset_simulation

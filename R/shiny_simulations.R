@@ -116,7 +116,7 @@ simulationUI <- function(id,opts) {
 simulationServer <- function(id,opts,silent) {
   moduleServer(id, function(input, output, session) {
     output$dir <- shiny::renderUI({
-      shiny::textInput("sim_output_dir",
+      shiny::textInput(NS(id,"sim_output_dir"),
                        "Saving directory",
                        value = paste0(opts$studyPath, "/user"))
 
@@ -148,7 +148,7 @@ simulationServer <- function(id,opts,silent) {
     output$eff <-
       shiny::renderUI({
         shiny::numericInput(
-          "efficiency",
+          NS(id,"efficiency"),
           "Efficiency pumping ratio",
           min = 0,
           max = 1,

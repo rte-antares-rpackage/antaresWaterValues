@@ -34,7 +34,7 @@ bellmanUI <- function(id,opts) {
 
 }
 
-bellmanServer <- function(id, opts, silent, watervalues, pen_high, pen_low) {
+bellmanServer <- function(id, opts, watervalues, pen_high, pen_low) {
   moduleServer(id, function(input, output, session) {
     plot <- reactive(plot_Bellman(
       watervalues(),

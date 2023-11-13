@@ -360,12 +360,53 @@ calculateServer <- function(id, opts, silent) {
       calculated_controls()
     })
 
+    possible_controls <- shiny::reactive({
+      possible_controls <- if (input$smart_interpolation_reward) {
+        rbind(
+          simulation_res()$simulation_values,
+          constraint_generator(
+            area = input$Area,
+            opts = opts,
+            pumping = input$pumping_cal,
+            nb_disc_stock = input$controls,
+            pumping_efficiency = input$efficiency
+          )
+        ) %>%
+          dplyr::select("week", "u") %>%
+          dplyr::distinct() %>%
+          dplyr::arrange(week, .data$u)
+      } else {
+        simulation_res()$simulation_values %>% dplyr::select("week", "u")
+      }
+      possible_controls
+    })
+
     shiny::observeEvent(input$Calculate,
 
                         spsUtil::quiet({
                           spsComps::shinyCatch({
+                            reward_db <-
+                              get_Reward(
+                                simulation_names = simulation_res()$simulation_names,
+                                simulation_values = simulation_res()$simulation_values,
+                                district_name = "water values district",
+                                opts = opts,
+                                method_old = !input$smart_interpolation_reward,
+                                hours = if (input$smart_interpolation_reward) {
+                                  round(seq(0, 168, length.out = input$hours))
+                                },
+                                possible_controls = possible_controls(),
+                                max_hydro = if (input$smart_interpolation_reward) {
+                                  get_max_hydro(input$Area, opts)
+                                },
+                                mcyears = input$mcyears[1]:input$mcyears[2],
+                                area = input$Area,
+                                district_balance = "water values district"
+                              )
+
                             results <-     Grid_Matrix(
                               area = input$Area,
+                              reward_db = reward_db,
                               simulation_names = simulation_res()$simulation_names,
                               simulation_values = simulation_res()$simulation_values,
                               nb_cycle = input$nb_cycle,
@@ -403,6 +444,7 @@ calculateServer <- function(id, opts, silent) {
                             )$aggregated_results
 
                             shiny::isolate(res$results <- results)
+                            shiny::isolate(res$reward_db <- reward_db)
                             shinyWidgets::show_alert(title = "Water Values",
                                                      text = "Calculation Done !!",
                                                      type = "success")
@@ -443,7 +485,8 @@ calculateServer <- function(id, opts, silent) {
     list(
       watervalues = reactive(res$results),
       penalty_high = reactive(input$penalty_high),
-      penalty_low = reactive(input$penalty_low)
+      penalty_low = reactive(input$penalty_low),
+      reward_db = reactive(res$reward_db)
     )
   })
 }

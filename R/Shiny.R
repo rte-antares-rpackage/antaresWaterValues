@@ -69,89 +69,17 @@ shiny_water_values <-
           "Water values calculation",
           shiny::tabPanel("Calculate Water Values",
                           calculateUI("calculate", opts)),
-          #--------- Bellman graphs UI -----
+
           shiny::tabPanel(
             "Bellman plot",
             bellmanUI("bellman",opts)
           ),
 
-          #------ Reward Plot ------------
+
           shiny::tabPanel(
             "Rewards Plot",
-
-            shiny::sidebarLayout(
-              shiny::sidebarPanel(
-                shiny::h1("Rewards plot"),
-
-                shiny::actionButton("import_reward", "Import reward"),
-
-                shiny::sliderInput(
-                  "week_id_rew",
-                  "Week to show",
-                  value = c(2, 2),
-                  min = 1,
-                  max = 52
-                ),
-
-                shinyBS::bsTooltip("week_id_rew", "The weeks you want to plot",
-                                   "bottom"),
-
-                shiny::selectInput(
-                  "param_rew",
-                  "Type",
-                  c(
-                    "Reward" = "r",
-                    "Reward 1 MC" = "r1",
-                    "Reward variation" = "rv",
-                    "reward variation 1Mc" =
-                      "rv1"
-                  )
-                ),
-
-                shiny::conditionalPanel(
-                  condition = "['rv1','r1'].includes(input.param_rew)",
-                  shiny::sliderInput(
-                    "Mc_year",
-                    label = "Monte-Carlo year",
-                    min = 1,
-                    max = opts$parameters$general$nbyears,
-                    value = c(1, 1)
-                    ,
-                    step = 1
-                  )
-                ),
-
-
-                shinyBS::bsTooltip("Mc_year", "The scenarios that you want to plot",
-                                   "bottom"),
-
-                shinyWidgets::downloadBttn(
-                  outputId = "download_reward_base",
-                  style = "unite",
-                  color = "primary",
-                  block = T
-                )
-              ),
-
-              shiny::mainPanel(
-                shiny::plotOutput("rewardplot"),
-                shinyWidgets::downloadBttn(
-                  outputId = "download_reward_plot",
-                  style = "unite",
-                  color = "primary",
-                  block = T
-                ),
-                # shiny::plotOutput("reward_second_plot"),
-
-                DT::dataTableOutput("reward_table")
-              )
-
-
-            )
-
-
+            rewardUI("reward",opts)
           ),
-          #end tabpanel 3
 
 
           #----------Post process -----
@@ -286,7 +214,6 @@ shiny_water_values <-
 
     ) #UI
 
-    #------Server functions ------
     server <- function(input, output, session) {
       global <- shiny::reactiveValues(datapath = getwd())
 
@@ -294,141 +221,12 @@ shiny_water_values <-
 
       res <- calculateServer("calculate",opts,silent)
 
-      bellmanServer("bellman",opts,silent, res$watervalues, res$penalty_high,
+      bellmanServer("bellman",opts, res$watervalues, res$penalty_high,
                     res$penalty_low)
 
-      #--------plot reward page------
+      rewardServer("reward", opts, res$reward_db)
 
-      # possible_controls <- shiny::reactive({
-      #   possible_controls <- if (input$smart_interpolation_reward) {
-      #     rbind(
-      #       simulation_res()$simulation_values,
-      #       constraint_generator(
-      #         area = input$Area,
-      #         opts = opts,
-      #         pumping = input$pumping_cal,
-      #         nb_disc_stock = input$controls,
-      #         pumping_efficiency = input$efficiency
-      #       )
-      #     ) %>%
-      #       dplyr::select("week", "u") %>%
-      #       dplyr::distinct() %>%
-      #       dplyr::arrange(week, .data$u)
-      #   } else {
-      #     simulation_res()$simulation_values %>% dplyr::select("week", "u")
-      #   }
-      #   possible_controls
-      # })
-      #
-      # shiny::observeEvent(input$import_reward,
-      #                     {
-      #                       spsComps::shinyCatch({
-      #                         reward_dt <-
-      #                           get_Reward(
-      #                             simulation_names = simulation_res()$simulation_names,
-      #                             simulation_values = simulation_res()$simulation_values,
-      #                             district_name = "water values district",
-      #                             opts = opts,
-      #                             method_old = !input$smart_interpolation_reward,
-      #                             hours = if (input$smart_interpolation_reward) {
-      #                               round(seq(0, 168, length.out = input$hours))
-      #                             },
-      #                             possible_controls = possible_controls(),
-      #                             max_hydro = if (input$smart_interpolation_reward) {
-      #                               get_max_hydro(input$Area, opts)
-      #                             },
-      #                             mcyears = input$mcyears[1]:input$mcyears[2],
-      #                             area = input$Area,
-      #                             district_balance = "water values district"
-      #                           )
-      #                         rv$reward_dt <- reward_dt
-      #                         shinybusy::remove_modal_spinner()
-      #                         shinyWidgets::show_alert(title = "Rewards",
-      #                                                  text = "Importation Done !!",
-      #                                                  type = "success")
-      #                       })
-      #                     })
-      #
-      #
-      # rewardplot <- shiny::reactive({
-      #   if (is.null(rv$reward))
-      #     rv$reward <- reward_db()
-      #
-      #   week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
-      #   Mc_year <- input$Mc_year[1]:input$Mc_year[2]
-      #   if (input$param_rew == "r")
-      #   {
-      #     plot_reward(rv$reward_dt$reward, week_id_rew)
-      #   } else{
-      #     if (input$param_rew == "rv")
-      #     {
-      #       plot_reward_variation(rv$reward_dt$reward, week_id_rew)
-      #     } else{
-      #       if (input$param_rew == "r1")
-      #       {
-      #         plot_reward_mc(rv$reward_dt$reward, week_id_rew,
-      #                        Mc_year)
-      #       } else{
-      #         if (input$param_rew == "rv1")
-      #         {
-      #           plot_reward_variation_mc(rv$reward_dt$reward, week_id_rew,
-      #                                    Mc_year)
-      #         }
-      #       }
-      #     }
-      #   }
-      # })
-      #
-      # reward_var_plot <- shiny::reactive({
-      #   week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
-      #   Mc_year <- input$Mc_year[1]:input$Mc_year[2]
-      #
-      #   if (input$param_rew == "r1")
-      #   {
-      #     plot_reward_variation_mc(rv$reward_dt$reward, week_id_rew,
-      #                              Mc_year)
-      #   } else{
-      #     plot_reward_variation(rv$reward_dt$reward, week_id_rew)
-      #   }
-      #
-      #
-      # })
-      #
-      #
-      #
-      #
-      # output$rewardplot <- shiny::renderPlot(rewardplot()$graph)
-      # # output$reward_second_plot <- shiny::renderPlot(reward_var_plot()$graph)
-      # output$reward_table <- DT::renderDataTable(rewardplot()$table)
-      # output$download_reward_plot <- shiny::downloadHandler(
-      #   filename = function() {
-      #     paste('Reward-', Sys.Date(), '.png', sep = '')
-      #   },
-      #   content = function(con) {
-      #     grDevices::png(con , width = 1200, height = 766)
-      #     print(rewardplot()$graph)
-      #     grDevices::dev.off()
-      #   }
-      # )
-      #
-      #
-      # shiny::observe({
-      #   if (!is.null(rv$reward_dt))
-      #     shiny::isolate(reward_base <- rv$reward_dt)
-      # })
-      #
-      # output$download_reward_base <- shiny::downloadHandler(
-      #   filename <- function() {
-      #     paste('Reward-Base-', Sys.Date(), '.Rdata', sep = '')
-      #   },
-      #
-      #   content = function(file) {
-      #     save(reward_base, file = file)
-      #   }
-      # )
-      # # end reward Plot
-      #
-      #
+
       # #--------post process----------
       # final_result <- shiny::reactive({
       #   if (input$Run_remove_out) {

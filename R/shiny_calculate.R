@@ -486,7 +486,8 @@ calculateServer <- function(id, opts, silent) {
       watervalues = reactive(res$results),
       penalty_high = reactive(input$penalty_high),
       penalty_low = reactive(input$penalty_low),
-      reward_db = reactive(res$reward_db)
+      reward_db = reactive(res$reward_db),
+      area = reactive(input$Area)
     )
   })
 }

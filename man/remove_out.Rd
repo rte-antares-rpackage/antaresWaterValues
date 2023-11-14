@@ -10,7 +10,9 @@ remove_out(
   max = NULL,
   max_vu,
   min_vu,
-  replace_na_method
+  replace_na_method,
+  penalty_level_high,
+  penalty_level_low
 )
 }
 \arguments{
@@ -26,6 +28,10 @@ remove_out(
 
 \item{replace_na_method}{Method to replace extreme values, either "constant values" to replace
 by max_vu and min_vu or "extreme values" to replace by the extreme values of the current week}
+
+\item{penalty_level_high}{Penalty for violating top rule curve}
+
+\item{penalty_level_low}{Penalty for violating bottom rule curve}
 }
 \value{
 a \code{data.table}

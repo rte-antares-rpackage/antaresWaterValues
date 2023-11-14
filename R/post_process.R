@@ -7,6 +7,8 @@
 #' @param replace_na_method Method to replace extreme values, either "constant values" to replace
 #' by max_vu and min_vu or "extreme values" to replace by the extreme values of the current week
 #' @param max maximal accepted water value
+#' @param penalty_level_high Penalty for violating top rule curve
+#' @param penalty_level_low Penalty for violating bottom rule curve
 #'
 #' @return a \code{data.table}
 #' @export

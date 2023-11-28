@@ -1,3 +1,10 @@
+# antaresWaterValues 0.3.2
+
+## Minor changes
+
+* Adding new data saved at the end of the simulation in order to simplify Shiny interface
+* Separate Shiny code in modules
+
 # antaresWaterValues v0.3.1
 
 ## Minor changes

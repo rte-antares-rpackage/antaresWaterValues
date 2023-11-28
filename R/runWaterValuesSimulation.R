@@ -231,7 +231,11 @@ runWaterValuesSimulation <- function(area,
 
   simulation_res <- list(
     simulation_names = simulation_names,
-    simulation_values = constraint_values
+    simulation_values = constraint_values,
+    area = area,
+    mc_years = nb_mcyears,
+    pumping = pumping,
+    eff = efficiency
   )
 
   if(!is.null(otp_dest)){

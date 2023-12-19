@@ -481,8 +481,14 @@ get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mc
   #   dplyr::select(-c(hour_turb_inf,hour_turb_sup,reward_turb_inf,reward_turb_sup))
 
 
+  # Maximum generating and pumping powers per hour
+  max_hydro <- max_hydro %>%
+    dplyr::mutate(week=(.data$timeId-1)%/%168+1) %>%
+    dplyr::group_by(week) %>%
+    dplyr::summarise(P_max=mean(.data$P_max),T_max=mean(.data$T_max),.groups = "drop")
+
   df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,possible_controls)) %>%
-    dplyr::left_join(max_hydro,by=c("week"="timeId")) %>%
+    dplyr::left_join(max_hydro,by=c("week")) %>%
     dplyr::left_join(hour_turb_0,by=c("mcYear","week"))
 
   df_reward <- df_reward %>%

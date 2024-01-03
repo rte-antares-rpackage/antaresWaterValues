@@ -1,7 +1,7 @@
 Type: Package
 Package: antaresWaterValues
 Title: Generating water values for Antares
-Version: 0.3.2
+Version: 0.3.3
 Author: Dhia Gharsallaoui
 Maintainer: The package maintainer <safedhia@gmail.com>
 Description: This package aims at generating water values for Antares.

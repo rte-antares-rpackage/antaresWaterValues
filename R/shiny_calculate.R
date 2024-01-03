@@ -230,6 +230,58 @@ calculateUI <- function(id, opts) {
         "bottom"
       ),
 
+      shinyWidgets::materialSwitch(
+        NS(id,"force_final_level"),
+        "Force final level",
+        value = F,
+        status = "success"
+      ) %>%
+        bsplus::shinyInput_label_embed(
+          bsplus::shiny_iconlink() %>%
+            bsplus::bs_embed_popover(title = "This option modifies rule curves in the calculation to force the final level to be egal to the initial level. There is no hard constraint in simulation, only penalties as defined below.")
+        ),
+
+      shiny::conditionalPanel(
+        ns = NS(id),
+        condition = "input.force_final_level",
+        shinyWidgets::materialSwitch(
+          NS(id,"final_level_egal_initial"),
+          "Final level should be equal to initial level",
+          value = T,
+          status = "success"
+        ) %>%
+          bsplus::shinyInput_label_embed(
+            bsplus::shiny_iconlink() %>%
+              bsplus::bs_embed_popover(title ="If the final level should be equal to the initial level. There could be a deviation of the final level to the closest integer due to the implementation of penalties through water values.")),
+        shiny::numericInput(
+          NS(id,"penalty_final_level"),
+          "Penalty for final level",
+          value = 3001
+        ),
+      ),
+
+      shinyBS::bsTooltip(
+        NS(id,"penalty_final_level"),
+        "Penalty will be added proportionally to the distance from the expected final level.",
+        "bottom"
+      ),
+
+      shiny::conditionalPanel(
+        ns = NS(id),
+        condition = "!input.final_level_egal_initial",
+        shiny::numericInput(
+          NS(id,"final_level"),
+          "Final level (%)",
+          value = 0
+        ),
+      ),
+
+      shinyBS::bsTooltip(
+        NS(id,"final_level"),
+        "There could be a deviation of the final level to the closest integer.",
+        "bottom"
+      ),
+
 
       # correct concavity option for Bellman values
       shinyWidgets::materialSwitch(
@@ -445,7 +497,11 @@ calculateServer <- function(id, opts, silent) {
                               },
                               controls_reward_calculation = if (input$smart_interpolation_reward) {
                                 constraints()
-                              }
+                              },
+                              force_final_level = input$force_final_level,
+                              final_level_egal_initial = input$final_level_egal_initial,
+                              final_level = input$final_level,
+                              penalty_final_level = input$penalty_final_level
                             )$aggregated_results
 
                             shiny::isolate(res$results <- results)
@@ -492,7 +548,9 @@ calculateServer <- function(id, opts, silent) {
       penalty_high = reactive(input$penalty_high),
       penalty_low = reactive(input$penalty_low),
       reward_db = reactive(res$reward_db),
-      area = reactive(simulation_res()$area)
+      area = reactive(simulation_res()$area),
+      force_final_level = reactive(input$force_final_level),
+      penalty_final_level = reactive(input$penalty_final_level)
     )
   })
 }

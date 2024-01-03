@@ -34,13 +34,16 @@ bellmanUI <- function(id,opts) {
 
 }
 
-bellmanServer <- function(id, opts, watervalues, pen_high, pen_low) {
+bellmanServer <- function(id, opts, watervalues, pen_high, pen_low,
+                          force_final_level,penalty_final_level) {
   moduleServer(id, function(input, output, session) {
     plot <- reactive(plot_Bellman(
       watervalues(),
       input$week_id[1]:input$week_id[2],
       pen_low(),
-      pen_high()
+      pen_high(),
+      force_final_level(),
+      penalty_final_level()
     ))
 
     output$plot_Bellman <-

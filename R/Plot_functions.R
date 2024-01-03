@@ -187,14 +187,28 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 #' @export
 
 
-plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_high=10000){
+plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_high=10000,
+                         force_final_level=F,penalty_final_level=0){
 
   temp <- value_nodes_dt[value_nodes_dt$weeks %in%week_number]
 
-  temp <- temp %>% dplyr::mutate(value_node=dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_high*(.data$states-.data$level_high),
-                                                             .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
-                                                             TRUE ~ .data$value_node ),
-                                 states_round_percent=.data$states/max(temp$states)*100) %>%
+  if (!force_final_level){
+    temp <- temp %>%
+      dplyr::mutate(value_node=dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_high*(.data$states-.data$level_high),
+                                              .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
+                                              TRUE ~ .data$value_node ))
+  } else {
+    temp <- temp %>%
+      dplyr::mutate(value_node=dplyr::if_else(.data$weeks!=1,
+                                              dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_high*(.data$states-.data$level_high),
+                                                               .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
+                                                               TRUE ~ .data$value_node ),
+                                              dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_final_level*(.data$states-.data$level_high),
+                                                               .data$states<.data$level_low ~ .data$value_node  - penalty_final_level*(.data$level_low-.data$states),
+                                                               TRUE ~ .data$value_node )))
+  }
+  temp <- temp %>%
+    dplyr::mutate(states_round_percent=.data$states/max(temp$states)*100) %>%
     dplyr::group_by(.data$weeks) %>%
     dplyr::arrange(.data$weeks,.data$states) %>%
     dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),

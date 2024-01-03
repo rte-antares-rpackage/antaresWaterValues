@@ -14,7 +14,8 @@
 #' @export
 
 remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_method,
-                       penalty_level_high, penalty_level_low){
+                       penalty_level_high, penalty_level_low, force_final_level=F,
+                       penalty_final_level = 0){
 
   results <- copy(results_dt)
 
@@ -46,9 +47,21 @@ remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_met
     }
   }
 
-  results <- results %>%
-    dplyr::mutate(vu_pen=dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_level_high,
-                                          .data$states<.data$level_low ~ .data$vu - penalty_level_low,
-                                          TRUE ~ .data$vu))
+  if (!force_final_level){
+    results <- results %>%
+      dplyr::mutate(vu_pen=dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_level_high,
+                                            .data$states<.data$level_low ~ .data$vu - penalty_level_low,
+                                            TRUE ~ .data$vu))
+  } else {
+    results <- results %>%
+      dplyr::mutate(vu_pen=dplyr::if_else(.data$weeks!=1,
+                                          dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_level_high,
+                                                           .data$states<.data$level_low ~ .data$vu - penalty_level_low,
+                                                           TRUE ~ .data$vu),
+                                          dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_final_level,
+                                                            .data$states<.data$level_low ~ .data$vu - penalty_final_level,
+                                                            TRUE ~ .data$vu)))
+  }
+
   return(results)
 }

@@ -11,7 +11,8 @@
 #' @return Data frame with water value (vu) for each week (weeks) and each state (states).
 #' vu_pen corresponds to water value without penalties
 build_data_watervalues <- function(watervalues,statesdt,reservoir,
-                                   penalty_level_high,penalty_level_low){
+                                   penalty_level_high,penalty_level_low,
+                                   force_final_level,penalty_final_level){
   # calculate derivative of Bellman values (ie watervalues not yet penalized)
   value_nodes_dt <- value_node_gen(watervalues,statesdt,reservoir)
 
@@ -19,12 +20,25 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
   value_nodes_dt <- value_nodes_dt[value_nodes_dt$weeks!=53,]
 
   #add penalties
-  value_nodes_dt <- value_nodes_dt %>%
-    dplyr::mutate(value_nodes_dt,
-           vu_pen=dplyr::case_when(states>level_high ~ vu - penalty_level_high,
-                            states<level_low ~ vu + penalty_level_low,
-                            TRUE ~ vu)) %>%
-    dplyr::rename(vu="vu_pen",vu_pen="vu")
+  if (!force_final_level){
+    value_nodes_dt <- value_nodes_dt %>%
+      dplyr::mutate(value_nodes_dt,
+                    vu_pen=dplyr::case_when(states>level_high ~ vu - penalty_level_high,
+                                            states<level_low ~ vu + penalty_level_low,
+                                            TRUE ~ vu)) %>%
+      dplyr::rename(vu="vu_pen",vu_pen="vu")
+  } else {
+    value_nodes_dt <- value_nodes_dt %>%
+      dplyr::mutate(vu_pen=dplyr::if_else(.data$weeks!=1,
+                                          dplyr::case_when(states>level_high ~ vu - penalty_level_high,
+                                            states<level_low ~ vu + penalty_level_low,
+                                            TRUE ~ vu),
+                                          dplyr::case_when(states>level_high ~ vu - penalty_final_level,
+                                                           states<level_low ~ vu + penalty_final_level,
+                                                           TRUE ~ vu))) %>%
+      dplyr::rename(vu="vu_pen",vu_pen="vu")
+  }
+
 
   # plotting
   print(waterValuesViz(value_nodes_dt))

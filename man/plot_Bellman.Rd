@@ -8,7 +8,9 @@ plot_Bellman(
   value_nodes_dt,
   week_number,
   penalty_low = 10000,
-  penalty_high = 10000
+  penalty_high = 10000,
+  force_final_level = F,
+  penalty_final_level = 0
 )
 }
 \arguments{
@@ -20,6 +22,10 @@ Obtained using the function Grid_Matrix()}
 \item{penalty_low}{Penalty for the lower rule curve}
 
 \item{penalty_high}{Penalty for the higher rule curve}
+
+\item{force_final_level}{Binary. Whether final level should be constrained}
+
+\item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 }
 \value{
 a \code{ggplot} object

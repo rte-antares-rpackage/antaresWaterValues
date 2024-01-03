@@ -227,6 +227,8 @@ getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::si
 #' @param penalty_level_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
 #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy cost
 #' @param constant Boolean. Generate daily constant values by week. FALSE to do interpolation.
+#' @param force_final_level Boolean. Whether final level should be constrained
+#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return A 365*101 numeric matrix
 #' @export

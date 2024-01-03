@@ -382,7 +382,7 @@ calculateServer <- function(id, opts, silent) {
       if(is.null(simulation_res())){"Monte Carlo years :"}
       else {
         paste0("Monte Carlo years : from ",simulation_res()$mc_years[1], " to ",
-               tail(simulation_res()$mc_years,n=1))}
+               utils::tail(simulation_res()$mc_years,n=1))}
     })
 
     constraints <- shiny::reactive({

@@ -52,6 +52,10 @@
 #' @param controls_reward_calculation If method_old_gain=F, vector of controls evaluated
 #' @param max_hydro_hourly Hourly maximum pumping and turbining powers
 #' @param max_hydro_weekly Weekly maximum pumping and turbining powers
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
+#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
+#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return List of a data.frame with aggregated water values and
 #' a data.frame of more detailed water values

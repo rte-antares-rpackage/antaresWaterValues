@@ -100,9 +100,24 @@ results <- Grid_Matrix(
                                                      nb_disc_stock = 20,
                                                      pumping = pumping,
                                                      pumping_efficiency = pump_eff,
-                                                     opts=opts)# used for marginal prices interpolation
+                                                     opts=opts),# used for marginal prices interpolation
+  force_final_level = F # T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)
 )
 aggregated_results <- results$aggregated_results
+```
+
+Water values are written to Antares thanks to the following instructions
+
+``` r
+reshaped_values <- aggregated_results[aggregated_results$weeks!=53,] %>%
+  to_Antares_Format(penalty_level_low=3,
+                    penalty_level_high=0,
+                    force_final_level=F,
+                    penalty_final_level=0)
+antaresEditObject::writeWaterValues(
+  area = area,
+  data = reshaped_values
+)
 ```
 
 You can plot the results
@@ -117,7 +132,10 @@ waterValuesViz(Data=aggregated_results,filter_penalties = F)
 plot_Bellman(value_nodes_dt = aggregated_results, 
              week_number = c(1,3),
              penalty_high = 0,
-             penalty_low = 3)
+             penalty_low = 3,
+             force_final_level = F, #T if final level is constrained
+             penalty_final_level = 0 # used if final level is constrained
+             )
 ```
 
 <img src="man/figures/README-bellman-1.png" width="100%" />

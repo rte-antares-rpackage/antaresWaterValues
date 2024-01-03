@@ -6,6 +6,9 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
+#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #'
 #' @return a data.table
 #' @export

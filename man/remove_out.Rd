@@ -12,7 +12,9 @@ remove_out(
   min_vu,
   replace_na_method,
   penalty_level_high,
-  penalty_level_low
+  penalty_level_low,
+  force_final_level = F,
+  penalty_final_level = 0
 )
 }
 \arguments{
@@ -32,6 +34,10 @@ by max_vu and min_vu or "extreme values" to replace by the extreme values of the
 \item{penalty_level_high}{Penalty for violating top rule curve}
 
 \item{penalty_level_low}{Penalty for violating bottom rule curve}
+
+\item{force_final_level}{Binary. Whether final level should be constrained}
+
+\item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 }
 \value{
 a \code{data.table}

@@ -9,6 +9,8 @@
 #' @param max maximal accepted water value
 #' @param penalty_level_high Penalty for violating top rule curve
 #' @param penalty_level_low Penalty for violating bottom rule curve
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return a \code{data.table}
 #' @export

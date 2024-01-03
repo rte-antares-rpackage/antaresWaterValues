@@ -182,6 +182,8 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 #' @param penalty_low Penalty for the lower rule curve
 #' @param penalty_high Penalty for the higher rule curve
 #' @param week_number Numeric of length 1. number of the week to plot.
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return a \code{ggplot} object
 #' @export

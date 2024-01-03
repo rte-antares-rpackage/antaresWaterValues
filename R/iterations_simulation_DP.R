@@ -36,7 +36,11 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      method_dp = "grid-mean",
                                                      q_ratio = 0.5,
                                                      method_fast = F,
-                                                     test_vu=F){
+                                                     test_vu=F,
+                                                     force_final_level = F,
+                                                     final_level_egal_initial = F,
+                                                     final_level = NULL,
+                                                     penalty_final_level = NULL){
 
 
   # Initialization
@@ -71,7 +75,10 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   level_init <- readReservoirLevels(area, timeStep = "daily", byReservoirCapacity = FALSE, opts = opts)[[1,1]]
   level_init <- level_init*niveau_max
 
-  reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
+  reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts,
+                                   force_final_level = force_final_level,
+                                   final_level_egal_initial = final_level_egal_initial,
+                                   final_level = final_level)
 
   levels <- getInitialTrend(level_init=level_init,controls=controls,inflow=inflow,mcyears=mcyears,
                   niveau_max=niveau_max,penalty_low=penalty_low,penalty_high=penalty_high,
@@ -149,7 +156,11 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                  inflow=inflow,max_hydro = max_hydro,
                                  max_hydro_weekly = max_hydro_weekly,
                                  niveau_max=niveau_max,
-                                 method_dp = method_dp, q_ratio = q_ratio)
+                                 method_dp = method_dp, q_ratio = q_ratio,
+                                 force_final_level = force_final_level,
+                                 final_level_egal_initial = final_level_egal_initial,
+                                 final_level = final_level,
+                                 penalty_final_level = penalty_final_level)
 
     df_watervalues <- dplyr::bind_rows(df_watervalues,
                                        dplyr::mutate(results$aggregated_results,n=as.character(i)))
@@ -168,7 +179,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     if (test_vu){
       wv <- results$aggregated_results
       reshaped_values <- wv[wv$weeks!=53,] %>%
-        to_Antares_Format(penalty_low,penalty_high)
+        to_Antares_Format(penalty_low,penalty_high,force_final_level,
+                          penalty_final_level)
       antaresEditObject::writeWaterValues(
         area = area,
         data = reshaped_values
@@ -377,7 +389,11 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
                               states_step_ratio,pumping,pump_eff,
                               penalty_low,penalty_high,inflow,niveau_max,
                               max_hydro,max_hydro_weekly, method_dp="grid-mean",
-                              q_ratio = 0.5){
+                              q_ratio = 0.5,
+                              force_final_level = F,
+                              final_level_egal_initial = F,
+                              final_level = NULL,
+                              penalty_final_level = NULL){
 
   reward <- dplyr::filter(reward,.data$u==0) %>%
     dplyr::select("mcYear","week","reward") %>%
@@ -422,7 +438,11 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
     inflow = inflow,
     reservoir_capacity = niveau_max,
     max_hydro_hourly = max_hydro,
-    max_hydro_weekly = max_hydro_weekly
+    max_hydro_weekly = max_hydro_weekly,
+    force_final_level = force_final_level,
+    final_level_egal_initial = final_level_egal_initial,
+    final_level = final_level,
+    penalty_final_level = penalty_final_level
   )
 
   return(results)

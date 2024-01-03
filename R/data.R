@@ -4,7 +4,7 @@
 #'
 #' @format
 #' @source Generated with a Antares toy study
-"example_results"
+"example_aggregated_results"
 
 #' Example of output of \code{get_Reward}
 #'

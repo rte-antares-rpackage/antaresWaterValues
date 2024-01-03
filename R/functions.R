@@ -227,11 +227,14 @@ getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::si
 #' @param penalty_level_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
 #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy cost
 #' @param constant Boolean. Generate daily constant values by week. FALSE to do interpolation.
+#' @param force_final_level Boolean. Whether final level should be constrained
+#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return A 365*101 numeric matrix
 #' @export
 
-to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant=T){
+to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant=T,
+                              force_final_level=F,penalty_final_level=0){
 
   data <- dplyr::group_by(data, .data$weeks) %>%
     dplyr::arrange(.data$states) %>%
@@ -262,10 +265,26 @@ to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant
   res <- res %>% dplyr::left_join(dplyr::select(data,"weeks","statesid","vu_pen","level_low","level_high"),
                            by = c("weeks", "statesid")) %>%
     dplyr::mutate(level_low=.data$level_low/max_state*100,
-                  level_high=.data$level_high/max_state*100,
-                  vu=dplyr::case_when(.data$states_round_percent>.data$level_high ~ .data$vu_pen - penalty_level_high,
-                               .data$states_round_percent<.data$level_low ~ .data$vu_pen + penalty_level_low,
-                               TRUE ~ .data$vu_pen)) %>%
+                  level_high=.data$level_high/max_state*100)
+
+  if (!force_final_level){
+    res <- res %>%
+      dplyr::mutate(vu=dplyr::case_when(.data$states_round_percent>.data$level_high ~ .data$vu_pen - penalty_level_high,
+                                        .data$states_round_percent<.data$level_low ~ .data$vu_pen + penalty_level_low,
+                                        TRUE ~ .data$vu_pen))
+  } else {
+    res <- res %>%
+      dplyr::mutate(vu=dplyr::if_else(.data$weeks!=1,
+                                      dplyr::case_when(.data$states_round_percent>.data$level_high ~ .data$vu_pen - penalty_level_high,
+                                                                        .data$states_round_percent<.data$level_low ~ .data$vu_pen + penalty_level_low,
+                                                                        TRUE ~ .data$vu_pen),
+                                     dplyr::case_when(.data$states_round_percent>.data$level_high ~ .data$vu_pen - penalty_final_level,
+                                                                      .data$states_round_percent<.data$level_low ~ .data$vu_pen + penalty_final_level,
+                                                                        TRUE ~ .data$vu_pen)))
+  }
+
+
+  res <- res %>%
     dplyr::mutate(weeks=dplyr::if_else(.data$weeks>=2,.data$weeks-1,52))
 
 

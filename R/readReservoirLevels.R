@@ -6,6 +6,9 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
+#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #'
 #' @return a data.table
 #' @export
@@ -13,23 +16,40 @@
 readReservoirLevels <- function(area,
                                 timeStep = "weekly",
                                 byReservoirCapacity = TRUE,
-                                opts = antaresRead::simOptions()) {
+                                opts = antaresRead::simOptions(),
+                                force_final_level = F,
+                                final_level_egal_initial = F,
+                                final_level = NULL) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (antaresEditObject::is_antares_v7(opts = opts)) {
-    readReservoirLevelsV7(
+    res <- readReservoirLevelsV7(
       area = area,
       timeStep = timeStep,
       byReservoirCapacity = byReservoirCapacity,
       opts = opts
     )
   } else {
-    readReservoirLevelsV6(
+    res <- readReservoirLevelsV6(
       area = area,
       timeStep = timeStep,
       byReservoirCapacity = byReservoirCapacity,
       opts = opts
     )
   }
+  if (force_final_level){
+    if (final_level_egal_initial|is.null(final_level)){
+      final_level <- readReservoirLevels(area, timeStep = "daily",
+                                        byReservoirCapacity = FALSE,
+                                        opts = opts)[[1,1]]*100
+    }
+
+    last_timeId <- res[nrow(res)]$timeId
+    res <- res %>%
+      dplyr::mutate(level_low = dplyr::if_else(.data$timeId==last_timeId,final_level/100,.data$level_low),
+                    level_avg = dplyr::if_else(.data$timeId==last_timeId,final_level/100,.data$level_avg),
+                    level_high = dplyr::if_else(.data$timeId==last_timeId,final_level/100,.data$level_high))
+  }
+  return(res)
 }
 
 

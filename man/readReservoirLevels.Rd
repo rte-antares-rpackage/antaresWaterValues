@@ -8,7 +8,10 @@ readReservoirLevels(
   area,
   timeStep = "weekly",
   byReservoirCapacity = TRUE,
-  opts = antaresRead::simOptions()
+  opts = antaresRead::simOptions(),
+  force_final_level = F,
+  final_level_egal_initial = F,
+  final_level = NULL
 )
 }
 \arguments{
@@ -20,6 +23,12 @@ readReservoirLevels(
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
+
+\item{force_final_level}{Binary. Whether final level should be constrained}
+
+\item{final_level_egal_initial}{Binary. Whether final level, if constrained, should be equal to initial level}
+
+\item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 }
 \value{
 a data.table

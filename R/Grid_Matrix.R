@@ -52,6 +52,10 @@
 #' @param controls_reward_calculation If method_old_gain=F, vector of controls evaluated
 #' @param max_hydro_hourly Hourly maximum pumping and turbining powers
 #' @param max_hydro_weekly Weekly maximum pumping and turbining powers
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
+#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
+#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return List of a data.frame with aggregated water values and
 #' a data.frame of more detailed water values
@@ -87,6 +91,10 @@
                              controls_reward_calculation = NULL,
                           max_hydro_hourly=NULL,
                           max_hydro_weekly=NULL,
+                          force_final_level = F,
+                          final_level_egal_initial = F,
+                          final_level = NULL,
+                          penalty_final_level = NULL,
                         ...) {
 
 
@@ -251,7 +259,11 @@
 
   # Reservoir (rule curves)
   {
-    reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
+    reservoir <- readReservoirLevels(area, timeStep = "weekly",
+                                     byReservoirCapacity = FALSE, opts = opts,
+                                     force_final_level = force_final_level,
+                                     final_level_egal_initial = final_level_egal_initial,
+                                     final_level = final_level)
     vars <- c("level_low", "level_avg", "level_high")
     reservoir[,
               (vars) := lapply(.SD, function(x) {round(x * max(states))}),
@@ -355,8 +367,9 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=penalty_low,
-                        penalty_level_high=penalty_high)
+                        penalty_level_low=if((i==52)&force_final_level){penalty_final_level}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level){penalty_final_level}else{penalty_high}
+                        )
 
 
 
@@ -395,7 +408,8 @@
         message("Error in the calculation of Bellman values")
       }
       # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
-      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
+                                               force_final_level,penalty_final_level)
 
     }
 
@@ -425,8 +439,9 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=penalty_low,
-                        penalty_level_high=penalty_high)
+                        penalty_level_low=if((i==52)&force_final_level){penalty_final_level}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level){penalty_final_level}else{penalty_high}
+        )
 
         if(shiny&n_cycl==1&i==52){
           for (p in c("shinybusy")){
@@ -461,7 +476,8 @@
       if(nrow(watervalues[is.na(watervalues$value_node)&(watervalues$weeks<=52)])>=1){
         message("Error in the calculation of Bellman values")
       }
-      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
+                                               force_final_level,penalty_final_level)
 
 
       if(n_cycl>1){

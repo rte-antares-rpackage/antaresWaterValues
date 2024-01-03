@@ -178,7 +178,7 @@ runWaterValuesSimulation <- function(area,
     generate_constraints(constraint_value=constraint_value,coeff=coeff,name_constraint=name_bc,
                          efficiency=efficiency,opts=opts,area = area)
 
-    sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(i, decimal.mark = ",")))
+    sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(name_sim, decimal.mark = ",")))
     message("#  ------------------------------------------------------------------------")
     message(paste0("Running simulation: ", i, " - ", sim_name))
     message("#  ------------------------------------------------------------------------")
@@ -230,7 +230,11 @@ runWaterValuesSimulation <- function(area,
 
   simulation_res <- list(
     simulation_names = simulation_names,
-    simulation_values = constraint_values
+    simulation_values = constraint_values,
+    area = area,
+    mc_years = nb_mcyears,
+    pumping = pumping,
+    eff = efficiency
   )
 
   if(!is.null(otp_dest)){

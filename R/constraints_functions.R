@@ -33,7 +33,7 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts,area=NULL){
 
 
-  if(length(coeff)==2){
+  if(length(coeff)==4){
 
     opts <-  antaresEditObject::createBindingConstraint(
       name =  paste0("Turb",area),
@@ -52,7 +52,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       timeStep = "weekly",
       operator = "less",
       overwrite = TRUE,
-      coefficients = coeff[1],
+      coefficients = c(coeff[1], coeff[3], coeff[4]),
       opts = opts)
   }else{
 
@@ -62,7 +62,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       name = paste0("Pump",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = -coeff[3],
+      coefficients = -coeff[5],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -86,14 +86,41 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(equal = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
       overwrite = TRUE,
-      coefficients = c(coeff[1],efficiency*coeff[3]),
+      coefficients = c(coeff[1],efficiency*coeff[5], coeff[3], coeff[4]),
       opts = opts)
+
+
   }
+
+  positive_cluster <- strsplit(names(coeff[3]),"\\.")[[1]]
+  positive_constraint <- -constraint_value/24
+  # Take the negative part as the positive cluster is in positive in left part
+  # of the binding constraint whereas the constraint is the right hand side of
+  # the constraint (ie what eff x pump - turb should be egal to)
+  positive_constraint[positive_constraint<0] <- 0
+  opts <- antaresEditObject::editCluster(
+    area = positive_cluster[1],
+    cluster_name = "positive",
+    time_series = c(rep(positive_constraint,times=24*7),
+                    rep(0,times=24))
+  )
+
+  negative_cluster <- strsplit(names(coeff[4]),"\\.")[[1]]
+  negative_constraint <- constraint_value/24
+  # Take the positive part as the negative cluster is in negative in left part
+  # of the binding constraint whereas the constraint is the right hand side of
+  # the constraint (ie what eff x pump - turb should be egal to)
+  negative_constraint[negative_constraint<0] <- 0
+  opts <- antaresEditObject::editCluster(
+    area = negative_cluster[1],
+    cluster_name = "negative",
+    time_series = c(rep(negative_constraint,times=24*7),
+                    rep(0,times=24))
+  )
 
 
   return(opts)
@@ -228,6 +255,7 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
     }
     #Otherwise, the constraint will be applied on the generation from the thermal cluster
   }else{
+    if (grepl("_turb$", fictive_area)){
     cluster_desc <- antaresRead::readClusterDesc(opts)
     fictive_cluster <- cluster_desc[cluster_desc$area == fictive_area, ]$cluster
     coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
@@ -238,6 +266,20 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
       coeff2 <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
     }
     coeff <- c(coeff1, coeff2)
+    } else {
+      cluster_desc <- antaresRead::readClusterDesc(opts)
+      fictive_cluster <- cluster_desc %>%
+        dplyr::filter(.data$area == fictive_area,
+                      stringr::str_detect(.data$cluster,"positive")) %>%
+        dplyr::pull("cluster")
+      coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
+      fictive_cluster <- cluster_desc %>%
+        dplyr::filter(.data$area == fictive_area,
+                      stringr::str_detect(.data$cluster,"negative")) %>%
+        dplyr::pull("cluster")
+      coeff2 <- stats::setNames(-1, paste(fictive_area, fictive_cluster, sep = "."))
+      coeff <- c(coeff1, coeff2)
+    }
   }
 
   return(coeff)

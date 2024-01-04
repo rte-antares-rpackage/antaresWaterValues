@@ -147,19 +147,16 @@ runWaterValuesSimulation <- function(area,
 
 
 
-
-
-
   #generate the flow sens
-  if(pumping){
-    fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_pump"))
-    coeff_turb <- generate_link_coeff(area,fictive_areas[1], pumping, opts)
-    coeff_pump <- generate_link_coeff(area,fictive_areas[2], pumping, opts)
-    coeff <- c(coeff_turb,coeff_pump)
+  fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_bc"))
+  coeff_turb <- generate_link_coeff(area,fictive_areas[1], pumping, opts)
+  coeff_bc <- generate_link_coeff(area,fictive_areas[2], pumping, opts)
+  coeff <- c(coeff_turb,coeff_bc)
 
-  }else{
-    fictive_areas <- fictive_area
-    coeff <- generate_link_coeff(area,fictive_area, pumping, opts)
+  if(pumping){
+    fictive_areas <- c(fictive_areas,paste0(fictive_area,"_pump"))
+    coeff_pump <- generate_link_coeff(area,fictive_areas[3], pumping, opts)
+    coeff <- c(coeff,coeff_pump)
   }
 
   # Start the simulations

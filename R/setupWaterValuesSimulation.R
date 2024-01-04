@@ -54,7 +54,7 @@ setupWaterValuesSimulation <- function(area,
       ncol = 4
     )
     time_series <- hydro_storage_max$hstorPMaxHigh
-    nominalcapacity <- hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)]
+    nominalcapacity_turb <- hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)]
   } else {
     prepro_modulation <- matrix(
       data = c(rep(1, times = 365 * 24 * 2),
@@ -63,8 +63,9 @@ setupWaterValuesSimulation <- function(area,
       ncol = 4
     )
     time_series <- hydro_storage_max$generatingMaxPower
-    nominalcapacity <- hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)]
+    nominalcapacity_turb <- hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)]
   }
+  nominalcapacity_pump <- hydro_storage_max[, max(hydro_storage_max$pumpingMaxPower)]
 
   # Chose the area to link
   from_area <- link_from
@@ -72,10 +73,9 @@ setupWaterValuesSimulation <- function(area,
     from_area <- area
   }
 
-
-  fictive_areas <- fictive_area_name
+  fictive_areas <- c(paste0(fictive_area_name,"_turb"),paste0(fictive_area_name,"_bc"))
   if(pumping){
-    fictive_areas <- c(paste0(fictive_area_name,"_turb"),paste0(fictive_area_name,"_pump"))
+    fictive_areas <- c(fictive_areas,paste0(fictive_area_name,"_pump"))
   }
 
 
@@ -87,14 +87,14 @@ setupWaterValuesSimulation <- function(area,
     })
 
     # Create thermal cluster
-    if(!grepl("_pump$", fictive_area)){
+    if(grepl("_turb$", fictive_area)){
       suppressWarnings({
         opts <- antaresEditObject::createCluster(
           area = fictive_area,
           cluster_name = thermal_cluster,
           group = "other", unitcount = "1",
           time_series = time_series,
-          nominalcapacity = nominalcapacity,
+          nominalcapacity = nominalcapacity_turb,
           prepro_modulation = prepro_modulation,
           `min-down-time` = "1",
           `marginal-cost` = 0.01,
@@ -111,18 +111,58 @@ setupWaterValuesSimulation <- function(area,
       antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump)
     }
 
-
-    # Create link
-    suppressWarnings({
-      opts <- antaresEditObject::createLink(
-        from = from_area,
-        to = fictive_area,
-        propertiesLink = antaresEditObject::propertiesLinkOptions(transmission_capacities = "infinite"), #
-        dataLink = NULL,
+    if(grepl("_bc$", fictive_area)){
+      #add load
+      max_pump <- hydro_storage_max$pumpingMaxPower
+      max_turb <- hydro_storage_max$generatingMaxPower
+      antaresEditObject::writeInputTS(fictive_area, type = "load",
+                                      data = max_pump+max_turb)
+      # add positive cluster
+      antaresEditObject::createCluster(
+        area = fictive_area,
+        cluster_name = "positive",
+        group = "other", unitcount = "1",
+        nominalcapacity = nominalcapacity_pump,
+        `min-down-time` = "1",
+        `marginal-cost` = 0.01,
+        `market-bid-cost` = 0.01,
         overwrite = overwrite,
         opts = opts
       )
-    })
+      # add negative cluster
+      antaresEditObject::createCluster(
+        area = fictive_area,
+        cluster_name = "negative",
+        group = "other", unitcount = "1",
+        nominalcapacity = nominalcapacity_turb,
+        `min-down-time` = "1",
+        `marginal-cost` = 0.01,
+        `market-bid-cost` = 0.01,
+        overwrite = overwrite,
+        opts = opts
+      )
+
+      unsp_cost <- max(opts$energyCosts$unserved)
+      antaresEditObject::writeEconomicOptions(data.frame(
+        area = c(fictive_area),
+        average_unsupplied_energy_cost = c(2*unsp_cost)
+      ))
+    }
+
+
+    # Create link
+    if(grepl("_turb$", fictive_area)|grepl("_pump$", fictive_area)){
+      suppressWarnings({
+        opts <- antaresEditObject::createLink(
+          from = from_area,
+          to = fictive_area,
+          propertiesLink = antaresEditObject::propertiesLinkOptions(transmission_capacities = "infinite"), #
+          dataLink = NULL,
+          overwrite = overwrite,
+          opts = opts
+        )
+      })
+    }
 
   }#end fictive areas loop
 

@@ -296,19 +296,19 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
     }
     #Otherwise, the constraint will be applied on the generation from the thermal cluster
   }else{
-    cluster_desc <- antaresRead::readClusterDesc(opts)
-    fictive_cluster <- cluster_desc %>%
-      dplyr::filter(.data$area == fictive_area,
-                    stringr::str_detect(.data$cluster,"positive")) %>%
-      dplyr::pull("cluster")
-    coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
-    fictive_cluster <- cluster_desc %>%
-      dplyr::filter(.data$area == fictive_area,
-                    stringr::str_detect(.data$cluster,"negative")) %>%
-      dplyr::pull("cluster")
-    coeff2 <- stats::setNames(-1, paste(fictive_area, fictive_cluster, sep = "."))
-    coeff <- c(coeff1, coeff2)
-  }
+      cluster_desc <- antaresRead::readClusterDesc(opts)
+      fictive_cluster <- cluster_desc %>%
+        dplyr::filter(.data$area == fictive_area,
+                      stringr::str_detect(.data$cluster,"positive")) %>%
+        dplyr::pull("cluster")
+      coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
+      fictive_cluster <- cluster_desc %>%
+        dplyr::filter(.data$area == fictive_area,
+                      stringr::str_detect(.data$cluster,"negative")) %>%
+        dplyr::pull("cluster")
+      coeff2 <- stats::setNames(-1, paste(fictive_area, fictive_cluster, sep = "."))
+      coeff <- c(coeff1, coeff2)
+    }
 
   return(coeff)
 }

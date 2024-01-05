@@ -107,16 +107,26 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
 
 generate_rhs_bc <- function(constraint_value,coeff,opts){
 
-  constraint_value <- dplyr::arrange(constraint_value,.data$week)
+  constraint_value <- dplyr::mutate(constraint_value,u=.data$u/168)
+
+  if ("mcYear" %in% names(constraint_value)){
+    constraint_value <- constraint_value %>%
+      dplyr::arrange(.data$mcYear) %>%
+      tidyr::pivot_wider(names_from = "mcYear",values_from = "u")
+  }
+  constraint_value <- constraint_value %>%
+    dplyr::arrange(.data$week) %>%
+    dplyr::select(-c("sim","week"))
+  constraint_value <- as.matrix(constraint_value)
 
   positive_cluster <- strsplit(names(coeff[3]),"\\.")[[1]]
-  positive_constraint <- -constraint_value$u/168
+  positive_constraint <- -constraint_value
   # Take the negative part as the positive cluster is in positive in left part
   # of the binding constraint whereas the constraint is the right hand side of
   # the constraint (ie what eff x pump - turb should be egal to)
   positive_constraint[positive_constraint<0] <- 0
-  positive_constraint <- c(rep(positive_constraint,times=24*7),
-                           rep(0,times=24))
+  positive_constraint <- rbind(as.matrix(positive_constraint[rep(1:nrow(positive_constraint), each = 24*7), ]),
+                               as.matrix(positive_constraint[rep(1,times=24),]))
   opts <- antaresEditObject::editCluster(
     area = positive_cluster[1],
     cluster_name = "positive",
@@ -124,13 +134,13 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   )
 
   negative_cluster <- strsplit(names(coeff[4]),"\\.")[[1]]
-  negative_constraint <- constraint_value$u/168
+  negative_constraint <- constraint_value
   # Take the positive part as the negative cluster is in negative in left part
   # of the binding constraint whereas the constraint is the right hand side of
   # the constraint (ie what eff x pump - turb should be egal to)
   negative_constraint[negative_constraint<0] <- 0
-  negative_constraint <- c(rep(negative_constraint,times=24*7),
-                           rep(0,times=24))
+  negative_constraint <- rbind(as.matrix(negative_constraint[rep(1:nrow(negative_constraint), each = 24*7), ]),
+                               as.matrix(negative_constraint[rep(1,times=24),]))
   opts <- antaresEditObject::editCluster(
     area = negative_cluster[1],
     cluster_name = "negative",

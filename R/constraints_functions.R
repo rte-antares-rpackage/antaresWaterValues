@@ -123,7 +123,6 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   constraint_value <- as.matrix(constraint_value)
 
   area_thermal_cluster <- strsplit(names(coeff[3]),"\\.")[[1]][[1]]
-
   positive_constraint <- -constraint_value
   # Take the negative part as the positive cluster is in positive in left part
   # of the binding constraint whereas the constraint is the right hand side of

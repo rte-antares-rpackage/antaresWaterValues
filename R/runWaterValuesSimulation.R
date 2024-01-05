@@ -163,21 +163,19 @@ runWaterValuesSimulation <- function(area,
 
   simulation_names <- vector(mode = "character", length = nb_disc_stock)
 
-
+  # Implement binding constraint
+  generate_constraints(coeff=coeff,name_constraint=binding_constraint,
+                       efficiency=efficiency,opts=opts,area = area)
 
   for (i in 1:nb_disc_stock) {
     # Prepare simulation parameters
-    name_sim <- constraint_values$sim[[i]]
-    name_sim <- stringr::str_extract(name_sim, "\\d+$")
-    name_bc <- paste0(binding_constraint, format(name_sim, decimal.mark = ","))
-    constraint_value <- constraint_values$u[seq.int(i,nrow(constraint_values),nb_disc_stock)]/7
+    name_sim <- dplyr::distinct(constraint_values,sim)$sim[[i]]
+    constraint_value <- dplyr::filter(constraint_values,.data$sim==name_sim)
 
+    generate_rhs_bc(constraint_value=constraint_value,coeff=coeff,opts=opts)
 
-    # Implement binding constraint
-    generate_constraints(constraint_value=constraint_value,coeff=coeff,name_constraint=name_bc,
-                         efficiency=efficiency,opts=opts,area = area)
-
-    sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(name_sim, decimal.mark = ",")))
+    sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
+      stringr::str_extract(name_sim, "\\d+$"), decimal.mark = ",")))
     message("#  ------------------------------------------------------------------------")
     message(paste0("Running simulation: ", i, " - ", sim_name))
     message("#  ------------------------------------------------------------------------")
@@ -194,20 +192,21 @@ runWaterValuesSimulation <- function(area,
     }
     simulation_names[i] <- sim_name
 
-    #remove the Binding Constraints
-
-    disable_constraint(name_bc,opts,pumping,area = area)
-
     if(launch_simulations){
       #Simulation Control
       sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
       sim_check <- file.path(opts$studyPath,"output",sim_name)
 
       if(!dir.exists(file.path(sim_check,"economy","mc-all"))){
+        #remove the Binding Constraints
+
+        disable_constraint(binding_constraint,opts,pumping,area = area)
         # remove the fictive area
-        for (fictive_area in fictive_areas){
-          antaresEditObject::removeArea(fictive_area,opts = opts)
-        }
+        suppressWarnings({
+          for (fictive_area in fictive_areas){
+            antaresEditObject::removeArea(fictive_area,opts = opts)
+          }
+        })
 
         # restore hydrostorage
         restoreHydroStorage(area = area, opts = opts)
@@ -218,11 +217,17 @@ runWaterValuesSimulation <- function(area,
     }
   }
 
+  #remove the Binding Constraints
+
+  disable_constraint(binding_constraint,opts,pumping,area = area)
+
   # remove the fictive area
   if(launch_simulations){
-    for (fictive_area in fictive_areas){
-      antaresEditObject::removeArea(fictive_area,opts = opts)
-    }
+    suppressWarnings({
+      for (fictive_area in fictive_areas){
+        antaresEditObject::removeArea(fictive_area,opts = opts)
+      }
+    })
   }
 
   # restore hydrostorage

@@ -39,7 +39,11 @@
                       states_steps,penalty_level_low,penalty_level_high){
 
     # Getting all possible transitions between a state for the current week and a state for the next week
-    decision_space <- unlist(decision_space, use.names = FALSE)
+    decision_space <- dplyr::select(decision_space,-c("week"))
+    if (!("mcYear") %in% names(decision_space)){
+      decision_space <- decision_space %>%
+        dplyr::cross_join(data.frame(mcYear=mcyears))
+    }
     decision_space <- round(decision_space)
 
     # Rule curves at the end of the current week (and beginning of the next one)

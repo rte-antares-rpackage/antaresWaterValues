@@ -20,7 +20,6 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 
 #' This function generate binding constraints for \code{runWaterValuesSimulation}
 #'
-#' @param constraint_value the value of the constraint
 #' @param coeff the sens of the constraint notation in Antares.
 #' @param name_constraint the name of the constraint.
 #' @param efficiency in [0,1]. efficient ratio of pumping.
@@ -30,7 +29,7 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 #' @param area Area used to calculate watervalues
 
 
-generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts,area=NULL){
+generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area=NULL){
 
 
   if(length(coeff)==4){
@@ -47,7 +46,6 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(less = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "less",
@@ -96,34 +94,51 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
   }
 
+  return(opts)
+}
+
+#' Modify time-series of clusters in fictive_area_bc to implement the constraint value
+#' for each week and each MC year
+#'
+#' @param constraint_value Data.frame {week,sim,u}
+#' @param coeff the sens and the name of constraints
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+
+generate_rhs_bc <- function(constraint_value,coeff,opts){
+
+  constraint_value <- dplyr::arrange(constraint_value,.data$week)
+
   positive_cluster <- strsplit(names(coeff[3]),"\\.")[[1]]
-  positive_constraint <- -constraint_value/24
+  positive_constraint <- -constraint_value$u/168
   # Take the negative part as the positive cluster is in positive in left part
   # of the binding constraint whereas the constraint is the right hand side of
   # the constraint (ie what eff x pump - turb should be egal to)
   positive_constraint[positive_constraint<0] <- 0
+  positive_constraint <- c(rep(positive_constraint,times=24*7),
+                           rep(0,times=24))
   opts <- antaresEditObject::editCluster(
     area = positive_cluster[1],
     cluster_name = "positive",
-    time_series = c(rep(positive_constraint,times=24*7),
-                    rep(0,times=24))
+    time_series = positive_constraint
   )
 
   negative_cluster <- strsplit(names(coeff[4]),"\\.")[[1]]
-  negative_constraint <- constraint_value/24
+  negative_constraint <- constraint_value$u/168
   # Take the positive part as the negative cluster is in negative in left part
   # of the binding constraint whereas the constraint is the right hand side of
   # the constraint (ie what eff x pump - turb should be egal to)
   negative_constraint[negative_constraint<0] <- 0
+  negative_constraint <- c(rep(negative_constraint,times=24*7),
+                           rep(0,times=24))
   opts <- antaresEditObject::editCluster(
     area = negative_cluster[1],
     cluster_name = "negative",
-    time_series = c(rep(negative_constraint,times=24*7),
-                    rep(0,times=24))
+    time_series = negative_constraint
   )
 
-
   return(opts)
+
 }
 
 #' Generate the list of constraint values of the link between the fictive area and the real one

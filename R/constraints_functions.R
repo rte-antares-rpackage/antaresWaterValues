@@ -110,7 +110,7 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   constraint_value <- dplyr::mutate(constraint_value,u=.data$u/168)
 
   if ("mcYear" %in% names(constraint_value)){
-    nb_scenarios <- length(unique(constraint_values$mcYear))
+    nb_scenarios <- length(unique(constraint_value$mcYear))
     constraint_value <- constraint_value %>%
       dplyr::arrange(.data$mcYear) %>%
       tidyr::pivot_wider(names_from = "mcYear",values_from = "u")

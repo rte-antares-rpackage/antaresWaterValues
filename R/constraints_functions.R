@@ -20,7 +20,6 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 
 #' This function generate binding constraints for \code{runWaterValuesSimulation}
 #'
-#' @param constraint_value the value of the constraint
 #' @param coeff the sens of the constraint notation in Antares.
 #' @param name_constraint the name of the constraint.
 #' @param efficiency in [0,1]. efficient ratio of pumping.
@@ -30,10 +29,10 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 #' @param area Area used to calculate watervalues
 
 
-generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts,area=NULL){
+generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area=NULL){
 
 
-  if(length(coeff)==2){
+  if(length(coeff)==4){
 
     opts <-  antaresEditObject::createBindingConstraint(
       name =  paste0("Turb",area),
@@ -47,12 +46,11 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(less = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "less",
       overwrite = TRUE,
-      coefficients = coeff[1],
+      coefficients = c(coeff[1], coeff[3], coeff[4]),
       opts = opts)
   }else{
 
@@ -62,7 +60,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       name = paste0("Pump",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = -coeff[3],
+      coefficients = -coeff[5],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -86,17 +84,89 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(equal = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
       overwrite = TRUE,
-      coefficients = c(coeff[1],efficiency*coeff[3]),
+      coefficients = c(coeff[1],efficiency*coeff[5], coeff[3], coeff[4]),
       opts = opts)
+
+
   }
 
+  return(opts)
+}
+
+#' Modify time-series of clusters in fictive_area_bc to implement the constraint value
+#' for each week and each MC year
+#'
+#' @param constraint_value Data.frame {week,sim,u}
+#' @param coeff the sens and the name of constraints
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+
+generate_rhs_bc <- function(constraint_value,coeff,opts){
+
+  constraint_value <- dplyr::mutate(constraint_value,u=.data$u/168)
+
+  if ("mcYear" %in% names(constraint_value)){
+    nb_scenarios <- length(unique(constraint_value$mcYear))
+    constraint_value <- constraint_value %>%
+      dplyr::arrange(.data$mcYear) %>%
+      tidyr::pivot_wider(names_from = "mcYear",values_from = "u")
+  } else {
+    nb_scenarios <- 1L
+  }
+  constraint_value <- constraint_value %>%
+    dplyr::arrange(.data$week) %>%
+    dplyr::select(-c("sim","week"))
+  constraint_value <- as.matrix(constraint_value)
+
+  area_thermal_cluster <- strsplit(names(coeff[3]),"\\.")[[1]][[1]]
+
+  positive_constraint <- -constraint_value
+  # Take the negative part as the positive cluster is in positive in left part
+  # of the binding constraint whereas the constraint is the right hand side of
+  # the constraint (ie what eff x pump - turb should be egal to)
+  positive_constraint[positive_constraint<0] <- 0
+  positive_constraint <- rbind(as.matrix(positive_constraint[rep(1:nrow(positive_constraint), each = 24*7), ]),
+                               as.matrix(positive_constraint[rep(1,times=24),]))
+  opts <- antaresEditObject::editCluster(
+    area = area_thermal_cluster,
+    cluster_name = "positive",
+    time_series = positive_constraint
+  )
+
+  negative_constraint <- constraint_value
+  # Take the positive part as the negative cluster is in negative in left part
+  # of the binding constraint whereas the constraint is the right hand side of
+  # the constraint (ie what eff x pump - turb should be egal to)
+  negative_constraint[negative_constraint<0] <- 0
+  negative_constraint <- rbind(as.matrix(negative_constraint[rep(1:nrow(negative_constraint), each = 24*7), ]),
+                               as.matrix(negative_constraint[rep(1,times=24),]))
+  opts <- antaresEditObject::editCluster(
+    area = area_thermal_cluster,
+    cluster_name = "negative",
+    time_series = negative_constraint
+  )
+
+
+  sbuilder <- antaresEditObject::scenarioBuilder(
+    areas = area_thermal_cluster,
+    n_scenario = nb_scenarios,
+    opts=opts)
+
+
+  fictive_clusters <- antaresRead::readClusterDesc(opts = opts) %>%
+    dplyr::filter(.data$area==area_thermal_cluster) %>%
+    dplyr::select(c("area","cluster"))
+
+  antaresEditObject::updateScenarioBuilder(ldata = list(t=sbuilder),
+                                           clusters_areas = fictive_clusters,
+                                           opts=opts)
 
   return(opts)
+
 }
 
 #' Generate the list of constraint values of the link between the fictive area and the real one
@@ -228,6 +298,7 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
     }
     #Otherwise, the constraint will be applied on the generation from the thermal cluster
   }else{
+    if (grepl("_turb$", fictive_area)){
     cluster_desc <- antaresRead::readClusterDesc(opts)
     fictive_cluster <- cluster_desc[cluster_desc$area == fictive_area, ]$cluster
     coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
@@ -238,6 +309,20 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
       coeff2 <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
     }
     coeff <- c(coeff1, coeff2)
+    } else {
+      cluster_desc <- antaresRead::readClusterDesc(opts)
+      fictive_cluster <- cluster_desc %>%
+        dplyr::filter(.data$area == fictive_area,
+                      stringr::str_detect(.data$cluster,"positive")) %>%
+        dplyr::pull("cluster")
+      coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
+      fictive_cluster <- cluster_desc %>%
+        dplyr::filter(.data$area == fictive_area,
+                      stringr::str_detect(.data$cluster,"negative")) %>%
+        dplyr::pull("cluster")
+      coeff2 <- stats::setNames(-1, paste(fictive_area, fictive_cluster, sep = "."))
+      coeff <- c(coeff1, coeff2)
+    }
   }
 
   return(coeff)

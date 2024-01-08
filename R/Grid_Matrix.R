@@ -201,8 +201,12 @@
       }
 
       # Addig controls used is the simulation to the controls used to interpolate reward
+      if (("mcYear" %in% names(simulation_values))&!("mcYear" %in% names(controls_reward_calculation))){
+        controls_reward_calculation <- dplyr::cross_join(controls_reward_calculation,
+                                                 data.frame(mcYear=mcyears))
+      }
       controls_reward_calculation <- rbind(simulation_values,controls_reward_calculation) %>%
-        dplyr::select("week","u") %>%
+        dplyr::select(-c("sim")) %>%
         dplyr::distinct() %>%
         dplyr::arrange(.data$week,.data$u)
 
@@ -212,8 +216,14 @@
           assertthat::assert_that(length(simulation_names)>=3,
                                   msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
         } else {
-          nb_distinct <- controls_reward_calculation %>%
-            dplyr::group_by(.data$week) %>%
+          if (!("mcYear" %in% names(controls_reward_calculation))){
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week)
+          } else {
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week,.data$mcYear)
+          }
+          nb_distinct <- n_distinct %>%
             dplyr::summarise(n=dplyr::n()) %>%
             dplyr::pull("n") %>%
             min()
@@ -225,8 +235,14 @@
           assertthat::assert_that(length(simulation_names)>=2,
                                   msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
         } else {
-          nb_distinct <- controls_reward_calculation %>%
-            dplyr::group_by(.data$week) %>%
+          if (!("mcYear" %in% names(controls_reward_calculation))){
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week)
+          } else {
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week,.data$mcYear)
+          }
+          nb_distinct <- n_distinct %>%
             dplyr::summarise(n=dplyr::n()) %>%
             dplyr::pull("n") %>%
             min()
@@ -242,16 +258,19 @@
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
                            simulation_values = simulation_values, mcyears=mcyears,area=area,
-                           district_balance=district_name)
+                           district_balance=district_name, pump_eff = efficiency)
 
       # Retriving controls (u) for each week
-      decision_space <- reward_db$simulation_values[,c("week","u")]
+      decision_space <- reward_db$simulation_values
+      if ("sim" %in% names(decision_space)){
+        decision_space <- dplyr::select(decision_space,-c("sim"))
+      }
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward
 
 
     } else {
-      decision_space <- simulation_values[,c("week","u")]
+      decision_space <- simulation_values %>% dplyr::select(-c("sim"))
       decision_space <- round(decision_space)
     }
 
@@ -357,7 +376,7 @@
         # Bellman equation for week i
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        decision_space=dplyr::filter(decision_space,week==i),
                         E_max=E_max[i],
                         P_max=P_max[i],
                         states_steps=states_steps,
@@ -429,7 +448,7 @@
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        decision_space=dplyr::filter(decision_space,week==i),
                         E_max=E_max[i],
                         P_max=P_max[i],
                         states_steps=states_steps,

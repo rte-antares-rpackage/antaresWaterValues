@@ -82,8 +82,15 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
 
     # Joining controls to rewards
     reward <- reward %>%
-      dplyr::mutate(sim=as.double(stringr::str_extract(.data$simulation, "\\d+$"))) %>%
-      dplyr::left_join(decisions,by=c("sim","timeId"="week")) %>%
+      dplyr::mutate(sim=as.double(stringr::str_extract(.data$simulation, "\\d+$")))
+    if ("mcYear" %in% names(decisions)){
+      reward <- reward %>%
+        dplyr::left_join(decisions,by=c("sim","timeId"="week","mcYear"))
+    } else {
+      reward <- reward %>%
+        dplyr::left_join(decisions,by=c("sim","timeId"="week"))
+    }
+    reward <- reward %>%
       dplyr::rename(reward="OV. COST",control="u")
 
     if (correct_monotony){
@@ -150,10 +157,9 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     # and for each simulation there is a column
     u <- simulation_values %>%
       dplyr::mutate(sim=as.double(stringr::str_extract(.data$sim,"\\d+$"))) %>%
-      dplyr::arrange(.data$sim) %>%
-      tidyr::pivot_wider(names_from=.data$sim,values_from=.data$u) %>%
-      dplyr::arrange(week) %>%
-      dplyr::select(-c(week))
+      dplyr::group_by(.data$sim) %>%
+      tidyr::nest() %>%
+      tidyr::pivot_wider(names_from=.data$sim,values_from=.data$data)
 
     # Interpolate reward for each simulation
     {reward <- mapply(
@@ -354,7 +360,13 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::summarise(P_max=mean(.data$P_max),T_max=mean(.data$T_max),.groups = "drop")
 
   # Initialize a data.frame with one line per MC year per control
-  df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,possible_controls)) %>%
+  if ("mcYear" %in% names(possible_controls)){
+    df_reward <- possible_controls
+    assertthat::assert_that(identical(unique(possible_controls$mcYear),mcyears))
+  } else {
+    df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,possible_controls))
+  }
+  df_reward <- df_reward %>%
     dplyr::left_join(max_hydro,by=c("week")) %>%
     dplyr::left_join(hour_turb_0,by=c("mcYear","week")) %>%
     dplyr::left_join(hour_pump_0,by=c("mcYear","week"))
@@ -487,7 +499,13 @@ get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mc
     dplyr::group_by(week) %>%
     dplyr::summarise(P_max=mean(.data$P_max),T_max=mean(.data$T_max),.groups = "drop")
 
-  df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,possible_controls)) %>%
+  if ("mcYear" %in% names(possible_controls)){
+    df_reward <- possible_controls
+    assertthat::assert_that(identical(unique(possible_controls$mcYear),mcyears))
+  } else {
+    df_reward <- data.frame(tidyr::expand_grid(mcYear=mcyears,possible_controls))
+  }
+  df_reward <- df_reward %>%
     dplyr::left_join(max_hydro,by=c("week")) %>%
     dplyr::left_join(hour_turb_0,by=c("mcYear","week"))
 
@@ -515,7 +533,7 @@ get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mc
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param df_reward data.table computed by the function \code{get_local_reward}
-#' @param u0 Constraint values per week used in the simulation, empty list if none
+#' @param u0 data.table {week,u} Constraint values per week used in the simulation, empty list if none
 #' @param mcyears Vector of years used to evaluate rewards
 #' @param district_cost Name of district used to evaluate overall cost
 #'
@@ -531,9 +549,15 @@ reward_offset <- function(opts, df_reward, u0=c(),mcyears,district_cost= "water 
     u0 <- c()
   }
   if (length(u0)>0){
-    u0 <- data.frame(week=1:52,u0=u0)
-    df_reward <- df_reward %>%
-      dplyr::left_join(u0,by=c("week"))
+    u0 <- u0[[1]] %>%
+      dplyr::rename("u0"="u")
+    if ("mcYear" %in% names(u0)){
+      df_reward <- df_reward %>%
+        dplyr::left_join(u0,by=c("week","mcYear"))
+    } else {
+      df_reward <- df_reward %>%
+        dplyr::left_join(u0,by=c("week"))
+    }
     df_reward <- df_reward %>%
       dplyr::left_join(dplyr::select(dplyr::filter(df_reward,.data$u==u0),
                        "mcYear","week","reward"),

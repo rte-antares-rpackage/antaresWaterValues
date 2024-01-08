@@ -110,16 +110,20 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   constraint_value <- dplyr::mutate(constraint_value,u=.data$u/168)
 
   if ("mcYear" %in% names(constraint_value)){
+    nb_scenarios <- length(unique(constraint_values$mcYear))
     constraint_value <- constraint_value %>%
       dplyr::arrange(.data$mcYear) %>%
       tidyr::pivot_wider(names_from = "mcYear",values_from = "u")
+  } else {
+    nb_scenarios <- 1L
   }
   constraint_value <- constraint_value %>%
     dplyr::arrange(.data$week) %>%
     dplyr::select(-c("sim","week"))
   constraint_value <- as.matrix(constraint_value)
 
-  positive_cluster <- strsplit(names(coeff[3]),"\\.")[[1]]
+  area_thermal_cluster <- strsplit(names(coeff[3]),"\\.")[[1]][[1]]
+
   positive_constraint <- -constraint_value
   # Take the negative part as the positive cluster is in positive in left part
   # of the binding constraint whereas the constraint is the right hand side of
@@ -128,12 +132,11 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   positive_constraint <- rbind(as.matrix(positive_constraint[rep(1:nrow(positive_constraint), each = 24*7), ]),
                                as.matrix(positive_constraint[rep(1,times=24),]))
   opts <- antaresEditObject::editCluster(
-    area = positive_cluster[1],
+    area = area_thermal_cluster,
     cluster_name = "positive",
     time_series = positive_constraint
   )
 
-  negative_cluster <- strsplit(names(coeff[4]),"\\.")[[1]]
   negative_constraint <- constraint_value
   # Take the positive part as the negative cluster is in negative in left part
   # of the binding constraint whereas the constraint is the right hand side of
@@ -142,10 +145,25 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   negative_constraint <- rbind(as.matrix(negative_constraint[rep(1:nrow(negative_constraint), each = 24*7), ]),
                                as.matrix(negative_constraint[rep(1,times=24),]))
   opts <- antaresEditObject::editCluster(
-    area = negative_cluster[1],
+    area = area_thermal_cluster,
     cluster_name = "negative",
     time_series = negative_constraint
   )
+
+
+  sbuilder <- antaresEditObject::scenarioBuilder(
+    areas = area_thermal_cluster,
+    n_scenario = nb_scenarios,
+    opts=opts)
+
+
+  fictive_clusters <- antaresRead::readClusterDesc(opts = opts) %>%
+    dplyr::filter(.data$area==area_thermal_cluster) %>%
+    dplyr::select(c("area","cluster"))
+
+  antaresEditObject::updateScenarioBuilder(ldata = list(t=sbuilder),
+                                           clusters_areas = fictive_clusters,
+                                           opts=opts)
 
   return(opts)
 

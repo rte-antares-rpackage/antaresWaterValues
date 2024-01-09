@@ -39,8 +39,11 @@ readReservoirLevels <- function(area,
   if (force_final_level){
     if (final_level_egal_initial|is.null(final_level)){
       final_level <- readReservoirLevels(area, timeStep = "daily",
-                                        byReservoirCapacity = FALSE,
-                                        opts = opts)[[1,1]]*100
+                                         byReservoirCapacity = FALSE,
+                                         opts = opts)[1,]
+      assertthat::assert_that(final_level$level_low==final_level$level_high,
+                              msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
+      final_level <- final_level$level_low*100
     }
 
     last_timeId <- res[nrow(res)]$timeId

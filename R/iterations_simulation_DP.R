@@ -84,8 +84,12 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   changeHydroManagement(watervalues = F,heuristic = T,opts = opts,area=area)
 
-  level_init <- readReservoirLevels(area, timeStep = "daily", byReservoirCapacity = FALSE, opts = opts)[[1,1]]
-  level_init <- level_init*niveau_max
+  level_init <- readReservoirLevels(area, timeStep = "daily",
+                                                   byReservoirCapacity = FALSE,
+                                                   opts = opts)[1,]
+  assertthat::assert_that(level_init$level_low==level_init$level_high,
+                          msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
+  level_init <- level_init$level_low*niveau_max
 
   states <- seq(from = niveau_max, to = 0, by = -niveau_max*states_step_ratio)
 

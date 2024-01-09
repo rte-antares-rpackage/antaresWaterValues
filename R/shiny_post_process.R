@@ -174,8 +174,8 @@ postProcessServer <- function(id, opts, watervalues, pen_high, pen_low, area,
       results <- final_result()
       results <- results[results$weeks != 53,]
       reshaped_values <- to_Antares_Format(results,
-                                           pen_low(),
-                                           pen_high(),
+                                           penalty_level_low=pen_low(),
+                                           penalty_level_high=pen_high(),
                                            force_final_level=force_final_level(),
                                            penalty_final_level=penalty_final_level())
       antaresEditObject::writeWaterValues(area = area(),

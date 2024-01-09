@@ -246,7 +246,9 @@ iterativeServer <- function(id, opts, silent) {
     shiny::observeEvent(input$itr_to_antares,
                         {
                           reshaped_values <-
-                            rv$itr_results[rv$itr_results$weeks != 53, ] %>% to_Antares_Format(input$itr_penalty_low, input$itr_penalty_high)
+                            rv$itr_results[rv$itr_results$weeks != 53, ] %>%
+                            to_Antares_Format(penalty_level_low=input$itr_penalty_low,
+                                              penalty_level_high=input$itr_penalty_high)
                           antaresEditObject::writeWaterValues(area = input$itr_sim_area,
                                                               data = reshaped_values)
                           shinyWidgets::show_alert(title = "To antares",

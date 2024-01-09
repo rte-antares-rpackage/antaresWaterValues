@@ -202,8 +202,10 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     if (test_vu){
       wv <- results$aggregated_results
       reshaped_values <- wv[wv$weeks!=53,] %>%
-        to_Antares_Format(penalty_low,penalty_high,force_final_level,
-                          penalty_final_level)
+        tto_Antares_Format(penalty_low=penalty_low,
+                           penalty_high=penalty_high,
+                           force_final_level=force_final_level,
+                           penalty_final_level=penalty_final_level)
       antaresEditObject::writeWaterValues(
         area = area,
         data = reshaped_values

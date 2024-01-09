@@ -100,6 +100,7 @@ runWaterValuesSimulation <- function(area,
 
   antaresEditObject::setPlaylist(playlist = play_years,opts = opts)
 
+  sbuilder <- antaresEditObject::readScenarioBuilder(opts=opts)
 
   #assert the weekly output of the area:
 
@@ -201,6 +202,8 @@ runWaterValuesSimulation <- function(area,
         #remove the Binding Constraints
 
         disable_constraint(binding_constraint,opts,pumping,area = area)
+        suppressWarnings({antaresEditObject::clearScenarioBuilder(opts=opts)})
+        antaresEditObject::updateScenarioBuilder(sbuilder)
         # remove the fictive area
         suppressWarnings({
           for (fictive_area in fictive_areas){
@@ -220,6 +223,8 @@ runWaterValuesSimulation <- function(area,
   #remove the Binding Constraints
 
   disable_constraint(binding_constraint,opts,pumping,area = area)
+  suppressWarnings({antaresEditObject::clearScenarioBuilder(opts=opts)})
+  antaresEditObject::updateScenarioBuilder(sbuilder,opts=opts)
 
   # remove the fictive area
   if(launch_simulations){

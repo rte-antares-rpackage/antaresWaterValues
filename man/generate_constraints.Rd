@@ -5,7 +5,6 @@
 \title{This function generate binding constraints for \code{runWaterValuesSimulation}}
 \usage{
 generate_constraints(
-  constraint_value,
   coeff,
   name_constraint,
   efficiency = 0.75,
@@ -14,8 +13,6 @@ generate_constraints(
 )
 }
 \arguments{
-\item{constraint_value}{the value of the constraint}
-
 \item{coeff}{the sens of the constraint notation in Antares.}
 
 \item{name_constraint}{the name of the constraint.}

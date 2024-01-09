@@ -18,7 +18,7 @@ reward_offset(
 
 \item{df_reward}{data.table computed by the function \code{get_local_reward}}
 
-\item{u0}{Constraint values per week used in the simulation, empty list if none}
+\item{u0}{data.table {week,u} Constraint values per week used in the simulation, empty list if none}
 
 \item{mcyears}{Vector of years used to evaluate rewards}
 

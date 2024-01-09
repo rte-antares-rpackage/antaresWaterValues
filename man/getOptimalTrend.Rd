@@ -16,7 +16,9 @@ getOptimalTrend(
   df_levels,
   penalty_low,
   penalty_high,
-  method_fast = F
+  method_fast = F,
+  max_hydro_weekly,
+  n = 0
 )
 }
 \arguments{
@@ -40,9 +42,15 @@ as \code{getOptimalTrend} and \code{getInitialTrend}}
 \item{penalty_low}{Penalty for violating the bottom rule curve}
 
 \item{penalty_high}{Penalty for violating the top rule curve}
+
+\item{method_fast}{Method to choose evaluated controls}
+
+\item{max_hydro_weekly}{Data frame with weekly maximum pumping and generating powers}
+
+\item{n}{Iteration}
 }
 \value{
-Data frame with level (lev), optimal transition (opt) and transition
+Data frame with level (lev) and transition
 to evaluate (constraint) for each week (w)
 }
 \description{

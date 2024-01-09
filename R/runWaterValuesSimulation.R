@@ -167,7 +167,7 @@ runWaterValuesSimulation <- function(area,
 
   for (i in 1:nb_disc_stock) {
     # Prepare simulation parameters
-    name_sim <- dplyr::distinct(constraint_values,sim)$sim[[i]]
+    name_sim <- dplyr::distinct(constraint_values,.data$sim)$sim[[i]]
     constraint_value <- dplyr::filter(constraint_values,.data$sim==name_sim)
 
     generate_rhs_bc(constraint_value=constraint_value,coeff=coeff,opts=opts)

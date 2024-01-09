@@ -22,7 +22,11 @@ updateWatervalues(
   max_hydro,
   max_hydro_weekly,
   method_dp = "grid-mean",
-  q_ratio = 0.5
+  q_ratio = 0.5,
+  force_final_level = F,
+  final_level_egal_initial = F,
+  final_level = NULL,
+  penalty_final_level = NULL
 )
 }
 \arguments{
@@ -68,6 +72,14 @@ powers for each week,returned by the function  \code{get_max_hydro}}
 \item{q_ratio}{from 0 to 1. the probability used in quantile method
 to determine a bellman value which q_ratio all bellman values are equal or
 less to it. (quantile(q_ratio))}
+
+\item{force_final_level}{Binary. Whether final level should be constrained}
+
+\item{final_level_egal_initial}{Binary. Whether final level, if constrained, should be equal to initial level}
+
+\item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
+
+\item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 }
 \value{
 List containing aggregated water values and the data table with all years

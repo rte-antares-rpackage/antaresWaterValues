@@ -68,12 +68,19 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                    pumping = pumping,opts = opts,
                                    pumping_efficiency = pump_eff,
                                    max_hydro = max_hydro_weekly,inflow = inflow)
-  controls <- tidyr::drop_na(controls)
+  controls <- tidyr::drop_na(controls) %>%
+    dplyr::cross_join(data.frame(mcYear=mcyears))
+
+  controls_ref <- controls %>%
+    dplyr::rename("u_ref"="u") %>%
+    dplyr::select(-c("sim"))
 
   changeHydroManagement(watervalues = F,heuristic = T,opts = opts,area=area)
 
   level_init <- readReservoirLevels(area, timeStep = "daily", byReservoirCapacity = FALSE, opts = opts)[[1,1]]
   level_init <- level_init*niveau_max
+
+  states <- seq(from = niveau_max, to = 0, by = -niveau_max*states_step_ratio)
 
   reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts,
                                    force_final_level = force_final_level,
@@ -82,7 +89,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   levels <- getInitialTrend(level_init=level_init,controls=controls,inflow=inflow,mcyears=mcyears,
                   niveau_max=niveau_max,penalty_low=penalty_low,penalty_high=penalty_high,
-                  reservoir = reservoir)
+                  reservoir = reservoir,max_hydro=max_hydro_weekly, states=states)
 
   i <- 1
   gap <- 1e9
@@ -91,7 +98,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   while(gap>1&i<=nb_itr){
 
     constraint_values <- levels %>%
-      dplyr::select(c("week", "constraint")) %>%
+      dplyr::select(c("week", "constraint","mcYear")) %>%
       dplyr::filter(.data$week>0) %>%
       dplyr::rename("u"="constraint") %>%
       dplyr::mutate(sim="u_1")
@@ -121,15 +128,15 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     )
 
     controls <- rbind(simulation_res$simulation_values,controls) %>%
-      dplyr::select("week","u") %>%
+      dplyr::select("week","u","mcYear") %>%
       dplyr::distinct() %>%
-      dplyr::arrange(.data$week,.data$u) %>%
+      dplyr::arrange(.data$week,.data$mcYear,.data$u) %>%
       dplyr::mutate(sim="u")
 
     df_rewards <- updateReward(study_path=study_path,pumping=pumping,hours=hours,
                                controls=controls,max_hydro=max_hydro,mcyears=mcyears,
                                area=area,pump_eff=pump_eff,df_rewards = df_rewards,
-                               u0=simulation_res$simulation_values$u,i=i)
+                               u0=simulation_res$simulation_values,i=i)
 
     reward <- df_rewards %>%
       dplyr::group_by(.data$mcYear,.data$week,.data$u) %>%
@@ -146,6 +153,11 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       message(paste0("Actual gap on reward function is : ",gap))
 
     }
+
+    reward <- reward %>%
+      dplyr::left_join(controls_ref,by=c("week","mcYear")) %>%
+      dplyr::filter(.data$u==.data$u_ref) %>%
+      dplyr::select(-c("u_ref"))
 
     results <- updateWatervalues(reward=reward,controls=controls,area=area,
                                  mcyears=mcyears,simulation_res=simulation_res,
@@ -229,32 +241,43 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 #' @return Data frame with level (lev) and transition
 #' to evaluate (constraint) for each week (w)
 getInitialTrend <- function(level_init,controls,inflow,mcyears,niveau_max,
-                            penalty_low,penalty_high,reservoir){
+                            penalty_low,penalty_high,reservoir,max_hydro,
+                            states){
 
-  levels <- data.frame(week=0,lev=level_init,constraint=0)
+  levels <- data.frame()
+  level_i <- level_init
   for (w in 1:52){
-    level_i <- levels %>% dplyr::filter(week==w-1) %>% dplyr::pull("lev")
 
-    control <- data.frame(states=level_i) %>%
-      dplyr::mutate(control=list(dplyr::filter(controls,.data$week==w)$u)) %>%
-      tidyr::unnest_longer(control) %>%
-      dplyr::cross_join(inflow %>% dplyr::filter(.data$timeId==w, .data$tsId %in% mcyears) %>%
-                          dplyr::select("tsId","hydroStorage")) %>%
-      dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,niveau_max,
-                                              .data$states+.data$hydroStorage-.data$control)) %>%
-      dplyr::filter(.data$next_state>=0) %>%
-      dplyr::cross_join(dplyr::filter(reservoir,.data$timeId==w)) %>%
-      dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=.data$level_low*niveau_max,penalty_low*(.data$next_state-.data$level_low*niveau_max),0),
-             penalty_high = dplyr::if_else(.data$next_state>=.data$level_high*niveau_max,penalty_high*(.data$level_high*niveau_max-.data$next_state),0),
-             sum=penalty_low+penalty_high) %>%
-      dplyr::group_by(control) %>%
-      dplyr::summarise(obj=mean(.data$sum),inflow=mean(.data$hydroStorage),.groups = "drop") %>%
-      dplyr::filter(.data$obj==max(.data$obj)) %>%
-      dplyr::slice(which.min(abs(.data$control)))
+    level_high <- reservoir$level_high[[w]]*niveau_max
+    level_low <- reservoir$level_low[[w]]*niveau_max
 
-    levels <- dplyr::bind_rows(levels,data.frame(week=w,
-                                      lev=min(level_i-control$control+control$inflow,niveau_max),
-                                      constraint=control$control))
+    possible_states <- data.frame(next_state=c(level_low,level_high,states))
+
+    control <- inflow %>%
+      dplyr::filter(.data$timeId==w, .data$tsId %in% mcyears) %>%
+      dplyr::rename("week"="timeId","mcYear"="tsId") %>%
+      dplyr::select(-c("area","time")) %>%
+      dplyr::cross_join(possible_states) %>%
+      dplyr::mutate(states=level_i,
+                    control=.data$states+.data$hydroStorage-.data$next_state) %>%
+      dplyr::filter((-max_hydro$pump[w]<=.data$control)&
+                    (.data$control<=max_hydro$turb[w])) %>%
+      dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=level_low,penalty_low*(.data$next_state-level_low),0),
+                    penalty_high = dplyr::if_else(.data$next_state>=level_high,penalty_high*(level_high-.data$next_state),0),
+                    sum=.data$penalty_low+.data$penalty_high) %>%
+      dplyr::group_by(.data$next_state) %>%
+      dplyr::mutate(sum = mean(.data$sum)) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(.data$sum==max(.data$sum)) %>%
+      dplyr::mutate(dif_state = abs(.data$next_state-.data$states)) %>%
+      dplyr::filter(.data$dif_state==min(dif_state))%>%
+      dplyr::rename("lev"="next_state","constraint"="control") %>%
+      dplyr::select(c("week","mcYear","lev","constraint")) %>%
+      dplyr::distinct(week,mcYear,.keep_all = T)
+
+    levels <- dplyr::bind_rows(levels,control)
+
+    level_i <- unique(control$lev)
   }
   return(levels)
 }
@@ -296,7 +319,7 @@ updateReward <- function(study_path,pumping,hours,controls,max_hydro,
 
 
   reward <- reward_offset(opts=opts_sim,df_reward = reward,
-                          u0=u0,mcyears=mcyears)
+                          u0=list(u0),mcyears=mcyears)
 
   df_rewards <- dplyr::bind_rows(df_rewards,
                                  dplyr::mutate(reward,n=as.character(i)))
@@ -343,7 +366,7 @@ getExpectedReward <- function(reward,levels){
 getCalculatedReward <- function(reward,levels,expected_reward){
   df <- reward %>%
     dplyr::rename("control"="u") %>%
-    dplyr::left_join(levels,by=c("week")) %>%
+    dplyr::left_join(levels,by=c("week","mcYear")) %>%
     dplyr::filter(.data$constraint==.data$control) %>%
     dplyr::select(c("mcYear","week","control","reward")) %>%
     dplyr::mutate(type="calculated") %>%
@@ -470,14 +493,12 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             niveau_max,df_levels,penalty_low,penalty_high,
                             method_fast=F,max_hydro_weekly, n=0){
-  levels <- data.frame(week=0,lev=level_init,opt=0)
+  level_i <- level_init
+  levels <- data.frame()
 
   states <- watervalues %>%
     dplyr::distinct(.data$states)
   for (w in 1:52){
-    level_i <- levels %>%
-      dplyr::filter(.data$week==w-1) %>%
-      dplyr::pull("lev")
 
     if (method_fast){
       state_i <- states %>%
@@ -486,62 +507,103 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 
       control <- dplyr::filter(watervalues,.data$weeks==w,
                                .data$states==state_i$states) %>%
-        dplyr::summarise(control=mean(.data$transition),weeks=max(.data$weeks),
-                         inflow=mean(.data$hydroStorage)) %>%
-        dplyr::left_join(controls,by=c("weeks"="week")) %>%
-        dplyr::mutate(diff=abs(control-u)) %>%
-        dplyr::slice(which.min(diff))
+        dplyr::mutate(lev = min(niveau_max,.data$states+.data$hydroStorage-.data$transition),
+                      lev=mean(.data$lev),
+                      constraint=level_i+.data$hydroStorage-.data$lev) %>%
+        dplyr::rename("week"="weeks","mcYear"="years") %>%
+        dplyr::select(c("week","mcYear","lev","constraint"))
 
-      levels <- dplyr::bind_rows(levels,data.frame(week=w,
-                                                   lev=min(niveau_max,level_i-control$u+control$inflow),
-                                                   opt=control$u))
+
+      levels <- dplyr::bind_rows(levels,control)
+
+      level_i <- unique(control$lev)
     } else {
+
       transition <- watervalues %>%
         dplyr::filter(.data$weeks==dplyr::if_else(w<52,w+1,1))
 
-      f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
+      # Rule curves at the end of the current week (and beginning of the next one)
+      Data_week <- watervalues %>%
+        dplyr::filter(.data$weeks==w)
+      Data_week$value_node <- NA_real_
+      Data_week$transition <- NA_real_
+      Data_week$transition_reward <- NA_real_
+      Data_week$next_bellman_value <- NA_real_
+      Data_week$states <- level_i
+      Data_week <- Data_week %>%
+        dplyr::distinct(.data$years,.keep_all =T)
+      level_high <- Data_week$level_high[1]
+      level_low <- Data_week$level_low[1]
 
-      control <- dplyr::filter(watervalues,.data$weeks==w) %>%
-        dplyr::mutate(states=level_i) %>%
-        dplyr::distinct(.data$years,.data$states,.keep_all = T) %>%
-        dplyr::mutate(control=list(dplyr::filter(controls,.data$week==w)$u)) %>%
-        tidyr::unnest_longer("control") %>%
-        dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,
-                                                niveau_max,
+      controls_evaluated <- df_levels %>%
+        dplyr::filter(.data$week==w) %>%
+        dplyr::left_join(Data_week,by=c("mcYear"="years")) %>%
+        dplyr::mutate(var=.data$constraint-.data$hydroStorage) %>%
+        dplyr::distinct(var) %>%
+        dplyr::pull(var)
+
+      # Get interpolation function of rewards for each possible transition for each MC year
+      f_reward_year <- get_reward_interpolation(Data_week)
+      idx_years <- dplyr::distinct(Data_week[,c('years')]) %>%
+        dplyr::pull("years")
+      #Get interpolation function of next Bellman values
+      df_next_week <- transition %>%
+        dplyr::distinct(.data$states,.data$value_node)
+      f_next_value <- stats::approxfun(df_next_week$states, df_next_week$value_node)
+
+      # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
+      df_next_week <- data.frame(years = transition$years,
+                                 next_state = transition$states,
+                                 next_value = transition$value_node)
+
+      future_states <- Data_week %>%
+        dplyr::inner_join(df_next_week,by="years", relationship="many-to-many") %>%
+        dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage)
+
+      control_min <- Data_week %>%
+        dplyr::mutate(next_state=level_high) %>%
+        dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage)
+
+      control_max <- Data_week %>%
+        dplyr::mutate(next_state=level_low) %>%
+        dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage)
+
+      df_SDP <- dplyr::bind_rows(future_states, control_min, control_max) %>%
+        dplyr::filter((-max_hydro_weekly$pump[w]<=.data$control)&
+                        (.data$control<=max_hydro_weekly$turb[w])&(.data$next_state>=0))
+
+      df_SDP <- df_SDP %>%
+        dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,niveau_max,
                                                 .data$states+.data$hydroStorage-.data$control)) %>%
-        dplyr::filter(.data$next_state>=0) %>%
-        dplyr::mutate(next_value=mapply(function(y,x)f_next_value[[which(y==mcyears)]](x), .data$years, .data$next_state)) %>%
-        dplyr::left_join(dplyr::filter(reward,.data$week==w),by=c("years"="mcYear","control"="u")) %>%
-        dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=.data$level_low,
-                                                   penalty_low*(.data$next_state-.data$level_low),0),
-                      penalty_high = dplyr::if_else(.data$next_state>=.data$level_high,
-                                                    penalty_high*(.data$level_high-.data$next_state),0),
-                      sum=.data$reward+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
-        dplyr::group_by(.data$control) %>%
-        dplyr::summarise(obj=mean(.data$sum),inflow=mean(.data$hydroStorage),.groups = "drop") %>%
-        dplyr::slice(which.max(.data$obj))
+        dplyr::mutate(next_value=mapply(function(x)f_next_value(x), .data$next_state)) %>%
+        dplyr::ungroup()
 
 
-      levels <- dplyr::bind_rows(levels,data.frame(week=w,
-                                                   lev=min(niveau_max,level_i-control$control+control$inflow),
-                                                   opt=control$control))
+      control <- df_SDP %>%
+        dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==idx_years)]](x), df_SDP$years, df_SDP$control),
+                      penalty_low = dplyr::if_else(.data$next_state<=level_low,penalty_low*(.data$next_state-level_low),0),
+                      penalty_high = dplyr::if_else(.data$next_state>=level_high,penalty_high*(level_high-.data$next_state),0),
+                      sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
+        dplyr::group_by(.data$next_state) %>%
+        dplyr::mutate(sum = mean(.data$sum)) %>%
+        dplyr::ungroup() %>%
+        dplyr::filter(.data$sum==max(.data$sum)) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(distance_evaluated = min(abs(.data$states-.data$next_state-controls_evaluated))) %>%
+        dplyr::ungroup() %>%
+        dplyr::filter(.data$distance_evaluated==max(.data$distance_evaluated)) %>%
+        dplyr::filter(.data$next_state==max(.data$next_state)) %>%
+        dplyr::mutate(constraint=level_i+.data$hydroStorage-.data$next_state) %>%
+        dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state") %>%
+        dplyr::select(c("week","mcYear","lev","constraint"))
+
+
+      levels <- dplyr::bind_rows(levels,control)
+
+      level_i <- unique(control$lev)
     }
 
   }
-
-  levels <- levels %>%
-    dplyr::filter(.data$week>0) %>%
-    dplyr::left_join(controls %>% dplyr::group_by(.data$week) %>% dplyr::summarise(controls = list(.data$u)),
-              by=c("week")) %>%
-    dplyr::left_join(df_levels %>% dplyr::group_by(.data$week) %>% dplyr::summarise(evaluated = list(.data$constraint)),
-              by=c("week")) %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(possible = list(setdiff(.data$controls,.data$evaluated))) %>%
-    dplyr::mutate(constraint = dplyr::if_else((.data$opt %in% .data$possible), .data$opt,
-                                .data$possible[which.min(abs(.data$possible - .data$opt))])) %>%
-    dplyr::select("week","constraint") %>%
-    dplyr::right_join(levels,by=c("week")) %>%
-    tidyr::replace_na(list(constraint=0))
 
   return(levels)
 }

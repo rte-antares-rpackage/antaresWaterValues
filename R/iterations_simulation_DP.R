@@ -613,7 +613,8 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
         dplyr::filter(.data$next_state==max(.data$next_state)) %>%
         dplyr::mutate(constraint=level_i+.data$hydroStorage-.data$next_state) %>%
         dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state") %>%
-        dplyr::select(c("week","mcYear","lev","constraint"))
+        dplyr::select(c("week","mcYear","lev","constraint")) %>%
+        dplyr::distinct(.data$week,.data$mcYear,.keep_all = T)
 
 
       levels <- dplyr::bind_rows(levels,control)

@@ -175,7 +175,7 @@ simulationServer <- function(id,opts,silent) {
                                 to = input$sim_mcyears[2]
                               ),
                               path_solver = input$solver_path,
-                              binding_constraint = "WeeklyWaterAmount_",
+                              binding_constraint = "WeeklyWaterAmount",
                               fictive_area = "fictive_watervalues",
                               thermal_cluster = "WaterValueCluster",
                               overwrite = T,
@@ -207,7 +207,8 @@ simulationServer <- function(id,opts,silent) {
                             opts = opts_temp,
                             area = input$sim_area,
                             pumping = input$pumping,
-                            fictive_area = "fictive_watervalues"
+                            fictive_area = "fictive_watervalues",
+                            binding_constraint = "WeeklyWaterAmount"
                           )
                         }, print_cat = F,
                         message = F, warning = silent))

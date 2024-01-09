@@ -263,20 +263,26 @@ runWaterValuesSimulation <- function(area,
 #' @param area The area concerned by the simulation
 #' @param pumping Boolean. True to take into account the pumping.
 #' @param fictive_area Name of the fictive area created
+#' @param binding_constraint character
 #'
 #' @export
-resetStudy <- function(opts, area, pumping,fictive_area = NULL){
+resetStudy <- function(opts, area, pumping,fictive_area = NULL,
+                       binding_constraint="WeeklyWaterAmount"){
 
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
 
+  disable_constraint(binding_constraint,opts,pumping,area = area)
+
+  fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_bc"))
+
   if(pumping){
-    fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_pump"))
-  }else{
-    fictive_areas <- fictive_area
+    fictive_areas <- c(fictive_areas,paste0(fictive_area,"_pump"))
   }
 
   for (fictive_area in fictive_areas){
-    antaresEditObject::removeArea(fictive_area,opts = opts)
+    if (fictive_area %in% opts$areaList){
+      antaresEditObject::removeArea(fictive_area,opts = opts)
+    }
   }
 
   # restore hydrostorage

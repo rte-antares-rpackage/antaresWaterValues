@@ -339,7 +339,7 @@
     max_hydro_weekly <- get_max_hydro(area,timeStep = "weekly")
   }
   E_max <-max_hydro_weekly$turb
-  P_max <- max_hydro_weekly$pump
+  P_max <- max_hydro_weekly$pump*efficiency
 
 
 

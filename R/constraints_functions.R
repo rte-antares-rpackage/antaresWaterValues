@@ -127,8 +127,9 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   }
   res_cap <- get_reservoir_capacity(area,opts)
   if (is.null(inflow)){
-    try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"),silent = T)
+    suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"))
     if (nrow(inflow)==0){
+      message("No inflow has been found, considering it as null")
       inflow <- dplyr::transmute(max_hydro,timeId=.data$timeId,hydroStorage=0)
     }
   }

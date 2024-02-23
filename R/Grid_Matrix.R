@@ -166,8 +166,9 @@
 
   # Getting inflow in the reservoir
   {
-    try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"),silent = T)
+    suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"))
     if (nrow(inflow)==0){
+      message("No inflow has been found, considering it as null")
       inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
     }
     inflow[with(inflow, order(inflow$tsId, inflow$timeId)),]

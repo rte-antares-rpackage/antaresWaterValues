@@ -244,8 +244,8 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(.data$price,dplyr::desc(.data$balance)) %>%
-    dplyr::mutate(reward_turb=cumsum(price*dplyr::if_else(.data$balance<0,.data$balance,0)),
-                  vol_turb=cumsum(dplyr::if_else(.data$balance<0,.data$balance,0)),
+    dplyr::mutate(reward_turb=cumsum(price*dplyr::if_else(.data$balance<0,.data$balance,0L)),
+                  vol_turb=cumsum(dplyr::if_else(.data$balance<0,.data$balance,0L)),
                   hour_turb=.data$vol_turb/.data$T_max) %>%
     dplyr::select("mcYear","week","hour_turb","reward_turb") %>% dplyr::ungroup()
 
@@ -305,8 +305,8 @@ get_local_reward <- function(opts,hours,possible_controls,max_hydro,area_price,m
     dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(dplyr::desc(.data$price),.data$balance) %>%
-    dplyr::mutate(cost_pump=cumsum(price*dplyr::if_else(.data$balance>0,-.data$balance,0)),
-                  vol_pump=cumsum(dplyr::if_else(.data$balance>0,-.data$balance,0)),
+    dplyr::mutate(cost_pump=cumsum(price*dplyr::if_else(.data$balance>0,-.data$balance,0L)),
+                  vol_pump=cumsum(dplyr::if_else(.data$balance>0,-.data$balance,0L)),
                   hour_pump=.data$vol_pump/.data$P_max) %>%
     dplyr::select("mcYear","week","hour_pump","cost_pump") %>% dplyr::ungroup()
   price_pump <- rbind(price_pump_less,price_pump_more) %>%
@@ -454,8 +454,8 @@ get_local_reward_turb <- function(opts,possible_controls,max_hydro,area_price,mc
     dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::left_join(max_hydro,by=c("timeId")) %>%
     dplyr::arrange(.data$price,dplyr::desc(.data$balance)) %>%
-    dplyr::mutate(reward_turb=cumsum(price*dplyr::if_else(.data$balance<0,.data$balance,0)),
-                  vol_turb=cumsum(dplyr::if_else(.data$balance<0,.data$balance,0)),
+    dplyr::mutate(reward_turb=cumsum(price*dplyr::if_else(.data$balance<0,.data$balance,0L)),
+                  vol_turb=cumsum(dplyr::if_else(.data$balance<0,.data$balance,0L)),
                   hour_turb=.data$vol_turb/.data$T_max) %>%
     dplyr::select("mcYear","week","hour_turb","reward_turb") %>% dplyr::ungroup()
   price_turb <- rbind(price_turb_less,price_turb_more) %>%

@@ -18,7 +18,8 @@ getOptimalTrend(
   penalty_high,
   method_fast = F,
   max_hydro_weekly,
-  n = 0
+  n = 0,
+  pump_eff
 )
 }
 \arguments{
@@ -48,6 +49,8 @@ as \code{getOptimalTrend} and \code{getInitialTrend}}
 \item{max_hydro_weekly}{Data frame with weekly maximum pumping and generating powers}
 
 \item{n}{Iteration}
+
+\item{pump_eff}{Pumping efficiency (1 if no pumping)}
 }
 \value{
 Data frame with level (lev) and transition

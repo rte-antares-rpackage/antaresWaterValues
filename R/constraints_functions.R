@@ -33,13 +33,13 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts,area=NULL){
 
 
-  if(length(coeff)==2){
+  if(length(coeff)==1){
 
     opts <-  antaresEditObject::createBindingConstraint(
       name =  paste0("Turb",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = coeff[2],
+      coefficients = coeff[1],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -47,10 +47,10 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = data.frame(less = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
+      values = data.frame(equal = c(rep(constraint_value, each=7),rep(constraint_value[1],2))),
       enabled = TRUE,
       timeStep = "weekly",
-      operator = "less",
+      operator = "equal",
       overwrite = TRUE,
       coefficients = coeff[1],
       opts = opts)
@@ -62,7 +62,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       name = paste0("Pump",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = -coeff[3],
+      coefficients = -coeff[2],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -74,7 +74,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       name = paste0("Turb",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = coeff[2],
+      coefficients = coeff[1],
       opts = opts,
       overwrite = TRUE,
       timeStep = "hourly"
@@ -91,7 +91,7 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
       timeStep = "weekly",
       operator = "equal",
       overwrite = TRUE,
-      coefficients = c(coeff[1],efficiency*coeff[3]),
+      coefficients = c(coeff[1],efficiency*coeff[2]),
       opts = opts)
   }
 
@@ -228,16 +228,11 @@ generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antar
     }
     #Otherwise, the constraint will be applied on the generation from the thermal cluster
   }else{
-    cluster_desc <- antaresRead::readClusterDesc(opts)
-    fictive_cluster <- cluster_desc[cluster_desc$area == fictive_area, ]$cluster
-    coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
-
     if (match(area, sort(c(area, fictive_area))) == 1) {
-      coeff2 <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+      coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
     } else {
-      coeff2 <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
+      coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
     }
-    coeff <- c(coeff1, coeff2)
   }
 
   return(coeff)

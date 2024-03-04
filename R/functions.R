@@ -182,7 +182,54 @@ get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"
   return(max_hydro)
 }
 
+#' Get inflow in a week, used in different functions
+#'
+#' @param area The area concerned by the simulation.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param mcyears Vector of years used to evaluate cost
+#' @export
 
+get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
+
+  suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="hourly"))
+  if (nrow(inflow)==0){
+    message("No inflow has been found, considering it as null")
+    inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
+  } else {
+    inflow$week <- (inflow$timeId-1)%/%168+1
+    inflow <- dplyr::summarise(dplyr::group_by(inflow,.data$week,.data$tsId),
+                               hydroStorage=sum(.data$hydroStorage)) %>%
+      dplyr::rename("timeId"="week") %>%
+      dplyr::mutate(area=area, time=NaN)
+  }
+
+
+  return(data.frame(inflow))
+}
+
+#' Get overall cost in a week, used in different functions
+#'
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param district The district concerned by the simulation.
+#' @param mcyears Vector of years used to evaluate cost
+#' @export
+
+get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears){
+
+  cost <- antaresRead::readAntares(districts = district, mcYears = mcyears,
+                           timeStep = "hourly", opts = opts, select=c("OV. COST"))
+
+  cost$week <- (cost$timeId-1)%/%168+1
+  cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
+                           ov_cost=sum(.data$`OV. COST`)) %>%
+      dplyr::rename("timeId"="week")
+
+  return(data.frame(cost))
+}
 
 
 #' Utility function to get simulation's name

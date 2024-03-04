@@ -391,7 +391,8 @@ calculateServer <- function(id, opts, silent) {
         opts = opts,
         pumping = simulation_res()$pumping,
         nb_disc_stock = input$controls,
-        pumping_efficiency = simulation_res()$eff
+        pumping_efficiency = simulation_res()$eff,
+        mcyears = simulation_res()$mc_years
       )
     })
 

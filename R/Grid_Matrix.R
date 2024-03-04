@@ -118,7 +118,7 @@
   if(is.null(reward_db)){
     if(!is.null(simulation_names)){
       if (is.null(simulation_values)) {
-        simulation_values <- constraint_generator(area,length(simulation_names),pumping,opts)
+        simulation_values <- constraint_generator(area,length(simulation_names),pumping,opts, mcyears=mcyears)
         message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))
       }}
     }else
@@ -166,11 +166,7 @@
 
   # Getting inflow in the reservoir
   {
-    suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"))
-    if (nrow(inflow)==0){
-      message("No inflow has been found, considering it as null")
-      inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
-    }
+    inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
     inflow[with(inflow, order(inflow$tsId, inflow$timeId)),]
     inflow <- inflow[, c("area", "tsId" , "timeId", "time", "hydroStorage")]
     # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
@@ -198,7 +194,7 @@
           controls_reward_calculation <- constraint_generator(area=area,nb_disc_stock=10,
                                                             pumping=pumping,
                                                             pumping_efficiency=efficiency,
-                                                            opts=opts)
+                                                            opts=opts, mcyears=mcyears)
       }
 
       # Addig controls used is the simulation to the controls used to interpolate reward

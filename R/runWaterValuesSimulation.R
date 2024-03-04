@@ -119,7 +119,7 @@ runWaterValuesSimulation <- function(area,
     constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
                                               pumping=pumping,
                                               pumping_efficiency = efficiency,
-                                              opts=opts)
+                                              opts=opts, mcyears=play_years)
   }
   nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 

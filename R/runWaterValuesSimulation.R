@@ -87,6 +87,8 @@ runWaterValuesSimulation <- function(area,
   # restore Pump power if there is a previous intercepted simulation.
   restorePumpPower(area = area, opts = opts,silent = T)
 
+  restore_fictive_fatal_prod_demand(area = area, opts = opts,silent = T)
+
   # MC years
   assertthat::assert_that(is.numeric(nb_mcyears)==TRUE)
 
@@ -213,6 +215,7 @@ runWaterValuesSimulation <- function(area,
         # restore hydrostorage
         restoreHydroStorage(area = area, opts = opts)
         restorePumpPower(area = area, opts = opts)
+        restore_fictive_fatal_prod_demand(area = area, opts = opts)
         stop("Simulation Error. Please check simulation log.")
       }
     }
@@ -228,6 +231,7 @@ runWaterValuesSimulation <- function(area,
   # restore hydrostorage
   restoreHydroStorage(area = area, opts = opts)
   restorePumpPower(area = area, opts = opts)
+  restore_fictive_fatal_prod_demand(area = area, opts = opts)
 
   simulation_res <- list(
     simulation_names = simulation_names,
@@ -286,6 +290,7 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
   # restore hydrostorage
   restoreHydroStorage(area = area, opts = opts)
   restorePumpPower(area = area, opts = opts)
+  restore_fictive_fatal_prod_demand(area = area, opts = opts)
 }
 
 

@@ -326,3 +326,184 @@ to_Antares_Format <- function(data,penalty_level_low,penalty_level_high,constant
 
 return(reshaped_matrix)
 }
+
+#' Add fictive production and fictive load to avoid infeasabilities with binding constraints
+#'
+#' @param area A valid Antares area.
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @return An updated list containing various information about the simulation.
+
+add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions()){
+
+  assertthat::assert_that(class(opts) == "simOptions")
+  if (!area %in% opts$areaList)
+    stop(paste(area, "is not a valid area"))
+
+  max_hydro <- get_max_hydro(area=area,opts=opts,timeStep="hourly") %>%
+    dplyr::select(-c("timeId")) %>% max()
+
+  # Input path
+  inputPath <- opts$inputPath
+
+  restore_fictive_fatal_prod_demand(area=area, opts = opts,silent=T)
+  path_load <- file.path(inputPath, "load", "series", paste0("load_",area,".txt"))
+
+
+  if (file.exists(path_load)) {
+
+    # file's copy
+    res_copy <- file.copy(
+      from = path_load,
+      to = file.path(inputPath, "load", "series", paste0("loadbackup_",area,".txt")),
+      overwrite = FALSE
+    )
+    if (!res_copy)
+      stop("Impossible to backup load file")
+
+    load <- NULL
+    try (load <- utils::read.table(file = path_load),silent = T)
+    if (!is.null(load)){
+      load <- load + max_hydro
+      utils::write.table(
+        x = load[,, drop = FALSE],
+        file = path_load,
+        row.names = FALSE,
+        col.names = FALSE,
+        sep = "\t"
+      )
+    } else {
+      utils::write.table(
+        x = data.frame(x = rep(max_hydro, 8760)),
+        file = path_load,
+        row.names = FALSE,
+        col.names = FALSE,
+        sep = "\t"
+      )
+    }
+
+  } else {
+
+    message("No load series for this area, creating one")
+
+    utils::write.table(
+      x = data.frame(x = rep(max_hydro, 8760)),
+      file = path_load,
+      row.names = FALSE,
+      col.names = FALSE,
+      sep = "\t"
+    )
+
+  }
+
+  path_misc <- file.path(inputPath, "misc-gen", paste0("miscgen-",area,".txt"))
+
+
+  if (file.exists(path_misc)) {
+
+    # file's copy
+    res_copy <- file.copy(
+      from = path_misc,
+      to = file.path(inputPath, "misc-gen", paste0("miscgen-backup-",area,".txt")),
+      overwrite = FALSE
+    )
+    if (!res_copy)
+      stop("Impossible to backup misc gen file")
+
+    misc <- NULL
+    try (misc <- utils::read.table(file = path_misc),silent = T)
+    if (!is.null(misc)){
+      misc[,6] <- misc[,6] + max_hydro
+      utils::write.table(
+        x = misc[,, drop = FALSE],
+        file = path_misc,
+        row.names = FALSE,
+        col.names = FALSE,
+        sep = "\t"
+      )
+    } else {
+      utils::write.table(
+        x = data.frame(x = matrix(c(rep(0, 8760*5),
+                                    rep(max_hydro, 8760),
+                                    rep(0, 8760*2)), ncol = 8)),
+        file = path_misc,
+        row.names = FALSE,
+        col.names = FALSE,
+        sep = "\t"
+      )
+    }
+
+  } else {
+
+    message("No misc series for this area, creating one")
+
+    utils::write.table(
+      x = data.frame(x = matrix(c(rep(0, 8760*5),
+                                  rep(max_hydro, 8760),
+                                  rep(0, 8760*2)), ncol = 8)),
+      file = path_misc,
+      row.names = FALSE,
+      col.names = FALSE,
+      sep = "\t"
+    )
+
+  }
+
+  # Maj simulation
+  suppressWarnings({
+    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+  })
+
+  invisible(res)
+
+}
+
+#' Restore load and misc gen time series
+#'
+#' @param area A valid Antares area.
+#' @param opts
+#'   List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param silent Boolean. True to run without messages.
+#' @return An updated list containing various information about the simulation.
+#'
+restore_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions(),silent=F) {
+  assertthat::assert_that(class(opts) == "simOptions")
+  if (!area %in% opts$areaList)
+    stop(paste(area, "is not a valid area"))
+
+  # Input path
+  inputPath <- opts$inputPath
+
+  path_load <- file.path(inputPath, "load", "series", paste0("loadbackup_",area,".txt"))
+
+  if (file.exists(path_load)) {
+    file.copy(
+      from = path_load,
+      to = file.path(inputPath, "load", "series", paste0("load_",area,".txt")),
+      overwrite = TRUE
+    )
+    unlink(x = path_load)
+  } else {
+    if(!silent) message("No load backup found")
+  }
+
+  path_misc <- file.path(inputPath, "misc-gen", paste0("miscgen-backup-",area,".txt"))
+
+  if (file.exists(path_misc)) {
+    file.copy(
+      from = path_misc,
+      to = file.path(inputPath, "misc-gen", paste0("miscgen-",area,".txt")),
+      overwrite = TRUE
+    )
+    unlink(x = path_misc)
+  } else {
+    if(!silent) message("No misc gen backup found")
+  }
+
+  # Maj simulation
+  res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
+
+  invisible(res)
+}

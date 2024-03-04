@@ -30,6 +30,8 @@ setupWaterValuesSimulation <- function(area,
 
   changeHydroManagement(opts=opts,watervalues = F, heuristic = T, area=area)
 
+  add_fictive_fatal_prod_demand(area = area, opts = opts)
+
   # Reset hydro storage
   if(reset_hydro){
     suppressWarnings(resetHydroStorage(area = area, opts = opts))

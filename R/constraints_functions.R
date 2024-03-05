@@ -218,20 +218,10 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
 #' @return Named vector of coefficients
 generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antaresRead::simOptions()){
 
-  # For the case of the pumping node, the constraint will be applied on the flow from the real area to the pumping node
-  if(pumping == TRUE & grepl("_pump$", fictive_area)){
-    if (match(area, sort(c(area, fictive_area))) == 1) {
-      coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
-    } else {
-      coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
-    }
-    #Otherwise, the constraint will be applied on the generation from the thermal cluster
-  }else{
-    if (match(area, sort(c(area, fictive_area))) == 1) {
-      coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
-    } else {
-      coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
-    }
+  if (match(area, sort(c(area, fictive_area))) == 1) {
+    coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+  } else {
+    coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
   }
 
   return(coeff)

@@ -206,7 +206,7 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
   }
 
 
-  return(data.frame(inflow))
+  return(data.table(inflow))
 }
 
 #' Get overall cost in a week, used in different functions
@@ -228,7 +228,7 @@ get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears){
                            ov_cost=sum(.data$`OV. COST`)) %>%
       dplyr::rename("timeId"="week")
 
-  return(data.frame(cost))
+  return(data.table(cost))
 }
 
 

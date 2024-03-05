@@ -100,8 +100,6 @@ runWaterValuesSimulation <- function(area,
 
   antaresEditObject::setPlaylist(playlist = play_years,opts = opts)
 
-  sbuilder <- antaresEditObject::readScenarioBuilder(opts=opts)
-
   #assert the weekly output of the area:
 
   antaresEditObject::editArea(name = area,
@@ -162,6 +160,8 @@ runWaterValuesSimulation <- function(area,
     coeff <- c(coeff,coeff_pump)
   }
 
+  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
+
   # Start the simulations
 
   simulation_names <- vector(mode = "character", length = nb_disc_stock)
@@ -204,8 +204,7 @@ runWaterValuesSimulation <- function(area,
         #remove the Binding Constraints
 
         disable_constraint(binding_constraint,opts,pumping,area = area)
-        suppressWarnings({antaresEditObject::clearScenarioBuilder(opts=opts)})
-        antaresEditObject::updateScenarioBuilder(sbuilder)
+        restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
         # remove the fictive area
         suppressWarnings({
           for (fictive_area in fictive_areas){
@@ -225,8 +224,7 @@ runWaterValuesSimulation <- function(area,
   #remove the Binding Constraints
 
   disable_constraint(binding_constraint,opts,pumping,area = area)
-  suppressWarnings({antaresEditObject::clearScenarioBuilder(opts=opts)})
-  antaresEditObject::updateScenarioBuilder(sbuilder,opts=opts)
+  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
   # remove the fictive area
   if(launch_simulations){
@@ -289,6 +287,8 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
   if(pumping){
     fictive_areas <- c(fictive_areas,paste0(fictive_area,"_pump"))
   }
+
+  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
   for (fictive_area in fictive_areas){
     if (fictive_area %in% opts$areaList){

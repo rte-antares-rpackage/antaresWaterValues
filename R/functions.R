@@ -554,3 +554,22 @@ restore_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptio
 
   invisible(res)
 }
+
+#' Restore initial scenario builder
+#'
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param fictive_area Area for which to delete all scenario builder
+restoreScenarioBuilder <- function(opts, fictive_area){
+
+  sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
+
+  assertthat::assert_that(names(sb_file)==c("Default Ruleset"),
+                          msg="There should be only Default Ruleset in scenario builder.")
+
+  sb_file$`Default Ruleset` <- sb_file$`Default Ruleset`[!grepl(fictive_area,names(sb_file$`Default Ruleset`))]
+
+  antaresEditObject::writeIni(listData = sb_file,
+                              pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
+                              overwrite = TRUE, default_ext = ".dat")
+}

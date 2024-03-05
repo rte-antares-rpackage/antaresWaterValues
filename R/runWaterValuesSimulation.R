@@ -122,6 +122,8 @@ runWaterValuesSimulation <- function(area,
                                               pumping_efficiency = efficiency,
                                               opts=opts, mcyears=play_years)
   }
+  constraint_values <- constraint_values %>%
+    dplyr::filter(.data$mcYear %in% play_years, .data$week %in% 1:52)
   nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 
   # Get efficiency

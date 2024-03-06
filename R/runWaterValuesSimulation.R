@@ -87,6 +87,8 @@ runWaterValuesSimulation <- function(area,
   # restore Pump power if there is a previous intercepted simulation.
   restorePumpPower(area = area, opts = opts,silent = T)
 
+  restore_fictive_fatal_prod_demand(area = area, opts = opts,silent = T)
+
   # MC years
   assertthat::assert_that(is.numeric(nb_mcyears)==TRUE)
 
@@ -97,7 +99,6 @@ runWaterValuesSimulation <- function(area,
   }
 
   antaresEditObject::setPlaylist(playlist = play_years,opts = opts)
-
 
   #assert the weekly output of the area:
 
@@ -117,8 +118,10 @@ runWaterValuesSimulation <- function(area,
     constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
                                               pumping=pumping,
                                               pumping_efficiency = efficiency,
-                                              opts=opts)
+                                              opts=opts, mcyears=play_years)
   }
+  constraint_values <- constraint_values %>%
+    dplyr::filter(.data$mcYear %in% play_years, .data$week %in% 1:52)
   nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 
   # Get efficiency
@@ -156,6 +159,8 @@ runWaterValuesSimulation <- function(area,
     coeff_pump <- generate_link_coeff(area,fictive_areas[3], pumping, opts)
     coeff <- c(coeff,coeff_pump)
   }
+
+  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
   # Start the simulations
 
@@ -199,6 +204,7 @@ runWaterValuesSimulation <- function(area,
         #remove the Binding Constraints
 
         disable_constraint(binding_constraint,opts,pumping,area = area)
+        restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
         # remove the fictive area
         suppressWarnings({
           for (fictive_area in fictive_areas){
@@ -209,6 +215,7 @@ runWaterValuesSimulation <- function(area,
         # restore hydrostorage
         restoreHydroStorage(area = area, opts = opts)
         restorePumpPower(area = area, opts = opts)
+        restore_fictive_fatal_prod_demand(area = area, opts = opts)
         stop("Simulation Error. Please check simulation log.")
       }
     }
@@ -217,6 +224,7 @@ runWaterValuesSimulation <- function(area,
   #remove the Binding Constraints
 
   disable_constraint(binding_constraint,opts,pumping,area = area)
+  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
   # remove the fictive area
   if(launch_simulations){
@@ -230,6 +238,7 @@ runWaterValuesSimulation <- function(area,
   # restore hydrostorage
   restoreHydroStorage(area = area, opts = opts)
   restorePumpPower(area = area, opts = opts)
+  restore_fictive_fatal_prod_demand(area = area, opts = opts)
 
   simulation_res <- list(
     simulation_names = simulation_names,
@@ -279,6 +288,8 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
     fictive_areas <- c(fictive_areas,paste0(fictive_area,"_pump"))
   }
 
+  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
+
   for (fictive_area in fictive_areas){
     if (fictive_area %in% opts$areaList){
       antaresEditObject::removeArea(fictive_area,opts = opts)
@@ -288,6 +299,7 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
   # restore hydrostorage
   restoreHydroStorage(area = area, opts = opts)
   restorePumpPower(area = area, opts = opts)
+  restore_fictive_fatal_prod_demand(area = area, opts = opts)
 }
 
 

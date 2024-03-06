@@ -1,3 +1,9 @@
+# antaresWaterValues 0.4.0
+
+## Major changes
+
+* Controls evaluated by Antares can differ by scenarios
+
 # antaresWaterValues 0.3.3
 
 ## Minor changes

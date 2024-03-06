@@ -144,7 +144,11 @@ simulationServer <- function(id,opts,silent) {
         opts = opts,
         pumping = input$pumping,
         nb_disc_stock = input$sim_nb_disc_stock,
-        pumping_efficiency = eff()
+        pumping_efficiency = eff(),
+        mcyears = seq(
+          from = input$sim_mcyears[1],
+          to = input$sim_mcyears[2]
+        )
       )
     })
 

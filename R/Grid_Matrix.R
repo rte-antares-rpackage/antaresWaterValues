@@ -267,7 +267,11 @@
 
 
     } else {
-      decision_space <- simulation_values %>% dplyr::select(-c("sim"))
+      if ("sim" %in% names(simulation_values)){
+        decision_space <- simulation_values %>% dplyr::select(-c("sim"))
+      } else {
+        decision_space <- simulation_values
+      }
       decision_space <- round(decision_space)
     }
 

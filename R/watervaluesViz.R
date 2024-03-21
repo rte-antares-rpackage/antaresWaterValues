@@ -16,6 +16,8 @@ waterValuesViz <- function(Data, filter_penalties=FALSE) {
                                             .data$vu,NaN))
   }
 
+  value_nodes <- value_nodes %>%
+    dplyr::mutate(weeks=dplyr::if_else(.data$weeks>=2, .data$weeks-1,52))
   value_nodes <- states_to_percent(value_nodes,states_step_ratio=0.025)
   setnames(value_nodes,"states_round_percent","states")
   p <- ggplot2::ggplot(data = value_nodes)

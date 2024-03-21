@@ -192,7 +192,9 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_high=10000,
                          force_final_level=F,penalty_final_level=0){
 
-  temp <- value_nodes_dt[value_nodes_dt$weeks %in%week_number]
+  value_nodes_dt <- value_nodes_dt %>%
+    dplyr::mutate(week_plot = dplyr::if_else(.data$weeks>=2,.data$weeks-1,52))
+  temp <- value_nodes_dt[value_nodes_dt$week_plot %in%week_number]
 
   if (!force_final_level){
     temp <- temp %>%
@@ -214,7 +216,7 @@ plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_hi
     dplyr::group_by(.data$weeks) %>%
     dplyr::arrange(.data$weeks,.data$states) %>%
     dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),
-                  weeks=as.character(.data$weeks)) %>%
+                  weeks=as.character(.data$week_plot)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(is.finite(.data$vu),!is.nan(.data$vu))
 

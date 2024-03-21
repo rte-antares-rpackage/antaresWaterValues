@@ -93,10 +93,6 @@ simulationUI <- function(id,opts) {
     #end sidebarPanel
 
     shiny::mainPanel(
-      shiny::h2(
-        "Controls (u) in MWh per week evaluated for each week and for each simulation (sim)"
-      ),
-      DT::dataTableOutput(NS(id,"simulation_constraint"))
     )
   ))# end sidebar layout
 

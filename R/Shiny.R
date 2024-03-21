@@ -59,14 +59,17 @@ shiny_water_values <-
       shiny::navbarPage(
         "Water Values !",
 
-        shiny::tabPanel("Simulations",
+        shiny::tabPanel("Launch Antares simulations",
                         simulationUI("simulation", opts)),
 
+        shiny::tabPanel("Calculate Water Values",
+                        calculateUI("calculate", opts)),
+
+        shiny::tabPanel("Export results to Antares",
+                        postProcessUI("post",opts)),
 
         shiny::navbarMenu(
-          "Water values calculation",
-          shiny::tabPanel("Calculate Water Values",
-                          calculateUI("calculate", opts)),
+          "Analyze results",
 
           shiny::tabPanel(
             "Bellman plot",
@@ -77,11 +80,6 @@ shiny_water_values <-
           shiny::tabPanel(
             "Rewards Plot",
             rewardUI("reward",opts)
-          ),
-
-          shiny::tabPanel(
-            "Post Process",
-            postProcessUI("post",opts)
           ),
         ),
         #end navbarMenu

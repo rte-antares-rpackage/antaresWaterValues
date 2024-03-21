@@ -39,30 +39,6 @@ calculateUI <- function(id, opts) {
 
       shiny::h2("Bellman values calculation"),
 
-      #number of cycles
-
-      shiny::numericInput(
-        NS(id,"nb_cycle"),
-        "Number of cycle to calculate",
-        value = 2,
-        min = 1
-      ),
-
-      shinyBS::bsTooltip(
-        NS(id,"nb_cycle"),
-        " Number of times to run the algorithm to reduce the initial values effects.",
-        "bottom"
-      ),
-
-      #week 53 value
-      shiny::numericInput(NS(id,"week_53"), "Water value initial condition", value =
-                            0),
-      shinyBS::bsTooltip(
-        NS(id,"week_53"),
-        " Water values for week 53, will be mutiplied by the half capacity of the reservoir to genrate an approximitive bellman values as initial condition",
-        "bottom"
-      ),
-
       #number of states:
       shiny::sliderInput(
         NS(id,"nb_states"),
@@ -287,9 +263,9 @@ calculateServer <- function(id, opts, silent) {
                               reward_db = reward_db,
                               simulation_names = simulation_res()$simulation_names,
                               simulation_values = simulation_res()$simulation_values,
-                              nb_cycle = input$nb_cycle,
+                              nb_cycle = 2,
                               opts = opts,
-                              week_53 = input$week_53,
+                              week_53 = 0,
                               district_name = "water values district" ,
                               method = "grid-mean",
                               states_step_ratio = (1 / input$nb_states),

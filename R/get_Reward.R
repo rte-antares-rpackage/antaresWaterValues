@@ -147,7 +147,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
       possible_controls <- data.frame(expand.grid(h=1:(2*nb_hours-1),week=1:52)) %>%
         dplyr::left_join(get_max_hydro(area,opts,"weekly"),by=c("week"="timeId")) %>%
         dplyr::mutate(i=dplyr::if_else(.data$h>nb_hours,2*nb_hours-.data$h,.data$h)) %>%
-        dplyr::mutate(u=dplyr::if_else(.data$h>nb_hours,.data$T_max/168*(168-hours[.data$i]),.data$P_max/168*(hours[.data$i]-168)*pump_eff)) %>%
+        dplyr::mutate(u=dplyr::if_else(.data$h>nb_hours,.data$turb/168*(168-hours[.data$i]),.data$pump/168*(hours[.data$i]-168)*pump_eff)) %>%
         dplyr::select("week","u")
     }
 

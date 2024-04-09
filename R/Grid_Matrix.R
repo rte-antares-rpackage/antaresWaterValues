@@ -347,7 +347,7 @@
   # prepare Bellman values for the end of the year (week 53)
   {
   if (length(week_53) == 1) week_53 <- rep_len(week_53, length(states))
-  next_week_values <- (week_53 * niveau_max)/2   # approximation to get initial bellman values from initial water values
+  next_week_values <- week_53   # approximation to get initial bellman values from initial water values
   counter <- 0
 
   }

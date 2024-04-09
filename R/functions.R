@@ -203,6 +203,12 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
                                hydroStorage=sum(.data$hydroStorage)) %>%
       dplyr::rename("timeId"="week") %>%
       dplyr::mutate(area=area, time=NaN)
+    if (unique(inflow$tsId) == c(1)){
+      inflow <- inflow %>%
+        dplyr::select(-("tsId")) %>%
+        dplyr::cross_join(data.table(tsId=mcyears))
+    }
+    assertthat::assert_that(all(mcyears %in% unique(inflow$tsId)),msg = "Couldn't find inflow for all scenarios, please modify your study.")
   }
 
 

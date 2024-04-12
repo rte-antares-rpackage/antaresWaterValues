@@ -477,7 +477,12 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                         .data$area==list_areas[[j]]) %>%
         dplyr::select(-c("area"))
 
-      generate_rhs_bc(constraint_value=constraint_value,coeff=list_coeff[[j]],opts=opts)
+      if (length(list_areas)==1){
+        coeff <- list_coeff
+      } else {
+        coeff <- list_coeff[[j]]
+      }
+      generate_rhs_bc(constraint_value=constraint_value,coeff=coeff,opts=opts)
     }
 
 

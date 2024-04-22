@@ -93,6 +93,21 @@ calculateUI <- function(id, opts) {
         ns = NS(id),
         condition = "input.force_final_level",
         shinyWidgets::materialSwitch(
+          NS(id,"final_level_exact"),
+          "Final level should be respected for all scenarios (if not consider expectancy)",
+          value = T,
+          status = "success"
+        ) %>%
+          bsplus::shinyInput_label_embed(
+            bsplus::shiny_iconlink() %>%
+              bsplus::bs_embed_popover(
+                title ="If true, penalties ensure that the final level is met, if not the expectancy of final levels should be equal to the objective and there is no hard constraint.")),
+        ),
+
+      shiny::conditionalPanel(
+        ns = NS(id),
+        condition = "input.force_final_level",
+        shinyWidgets::materialSwitch(
           NS(id,"final_level_egal_initial"),
           "Final level should be equal to initial level",
           value = T,
@@ -302,7 +317,7 @@ calculateServer <- function(id, opts, silent) {
                               reward_db = reward_db,
                               simulation_names = simulation_res()$simulation_names,
                               simulation_values = simulation_res()$simulation_values,
-                              nb_cycle = 2,
+                              nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
                               opts = opts,
                               week_53 = 0,
                               district_name = "water values district" ,

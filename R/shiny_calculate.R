@@ -117,14 +117,25 @@ calculateUI <- function(id, opts) {
             bsplus::shiny_iconlink() %>%
               bsplus::bs_embed_popover(title ="If the final level should be equal to the initial level. There could be a deviation of the final level to the closest integer due to the implementation of penalties through water values.")),
         shiny::numericInput(
-          NS(id,"penalty_final_level"),
-          "Penalty for final level",
+          NS(id,"penalty_final_level_high"),
+          "Penalty for final level (top rule curve)",
+          value = 3001
+        ),
+        shiny::numericInput(
+          NS(id,"penalty_final_level_low"),
+          "Penalty for final level (bottom rule curve)",
           value = 3001
         ),
       ),
 
       shinyBS::bsTooltip(
-        NS(id,"penalty_final_level"),
+        NS(id,"penalty_final_level_low"),
+        "Penalty will be added proportionally to the distance from the expected final level.",
+        "bottom"
+      ),
+
+      shinyBS::bsTooltip(
+        NS(id,"penalty_final_level_high"),
         "Penalty will be added proportionally to the distance from the expected final level.",
         "bottom"
       ),
@@ -334,7 +345,8 @@ calculateServer <- function(id, opts, silent) {
                               penalty_high = input$penalty_high,
                               force_final_level = input$force_final_level,
                               final_level = final_lvl(),
-                              penalty_final_level = input$penalty_final_level
+                              penalty_final_level_low = input$penalty_final_level_low,
+                              penalty_final_level_high = input$penalty_final_level_high
                             )$aggregated_results
 
                             shiny::isolate(res$results <- results)

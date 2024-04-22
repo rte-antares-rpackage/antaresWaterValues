@@ -42,7 +42,8 @@ Grid_Matrix(
   max_hydro_weekly = NULL,
   force_final_level = F,
   final_level = NULL,
-  penalty_final_level = NULL,
+  penalty_final_level_low = NULL,
+  penalty_final_level_high = NULL,
   ...
 )
 }
@@ -136,7 +137,9 @@ between two water values is less then this value those values are converged.}
 
 \item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 
-\item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
+\item{penalty_final_level_low}{Penalties for both bottom rule curve to constrain final level}
+
+\item{penalty_final_level_high}{Penalties for top rule curve to constrain final level}
 
 \item{...}{further arguments passed to or from other methods.}
 }

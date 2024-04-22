@@ -12,7 +12,8 @@ build_data_watervalues(
   penalty_level_high,
   penalty_level_low,
   force_final_level = F,
-  penalty_final_level = 0,
+  penalty_final_level_low = 0,
+  penalty_final_level_high = 0,
   final_level = NULL
 )
 }
@@ -29,7 +30,9 @@ build_data_watervalues(
 
 \item{force_final_level}{Binary. Whether final level should be constrained}
 
-\item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
+\item{penalty_final_level_low}{Penalties for both bottom rule curve to constrain final level}
+
+\item{penalty_final_level_high}{Penalties for top rule curve to constrain final level}
 
 \item{final_level}{Double. Final level to consider}
 }

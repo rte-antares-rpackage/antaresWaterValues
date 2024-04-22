@@ -54,7 +54,8 @@
 #' @param max_hydro_weekly Weekly maximum pumping and turbining powers
 #' @param force_final_level Binary. Whether final level should be constrained
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
-#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
+#' @param penalty_final_level_low Penalties for both bottom rule curve to constrain final level
+#' @param penalty_final_level_high Penalties for top rule curve to constrain final level
 #'
 #' @return List of a data.frame with aggregated water values and
 #' a data.frame of more detailed water values
@@ -92,7 +93,8 @@
                           max_hydro_weekly=NULL,
                           force_final_level = F,
                           final_level = NULL,
-                          penalty_final_level = NULL,
+                          penalty_final_level_low = NULL,
+                          penalty_final_level_high = NULL,
                         ...) {
 
 
@@ -387,8 +389,8 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_low},
-                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_high},
+                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
                         lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
                         lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]}
                         )
@@ -431,7 +433,7 @@
       }
       # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level,final_level=final_level)
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
     }
 
@@ -463,8 +465,8 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_low},
-                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_high},
+                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
                         lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
                         lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]}
         )
@@ -503,7 +505,8 @@
         message("Error in the calculation of Bellman values")
       }
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level,final_level=final_level)
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},
+                                               penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
 
       if(n_cycl>1){

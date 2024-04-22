@@ -8,14 +8,16 @@
 #' @param penalty_level_high Penalty for violating the bottom rule curve
 #' @param penalty_level_low Penalty for violating the top rule curve
 #' @param force_final_level Binary. Whether final level should be constrained
-#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
+#' @param penalty_final_level_low Penalties for both bottom rule curve to constrain final level
+#' @param penalty_final_level_high Penalties for top rule curve to constrain final level
 #' @param final_level Double. Final level to consider
 #'
 #' @return Data frame with water value (vu) for each week (weeks) and each state (states).
 #' vu_pen corresponds to water value without penalties
 build_data_watervalues <- function(watervalues,statesdt,reservoir,
                                    penalty_level_high,penalty_level_low,
-                                   force_final_level=F,penalty_final_level=0, final_level=NULL){
+                                   force_final_level=F,penalty_final_level_low=0,
+                                   penalty_final_level_high=0,final_level=NULL){
   # calculate derivative of Bellman values (ie watervalues not yet penalized)
   value_nodes_dt <- value_node_gen(watervalues,statesdt,reservoir)
 
@@ -43,14 +45,14 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
                                           dplyr::case_when(states>.data$level_high ~ vu - penalty_level_high,
                                             states<.data$level_low ~ vu + penalty_level_low,
                                             TRUE ~ vu),
-                                          dplyr::case_when(states>.data$level_high ~ vu - penalty_final_level,
-                                                           states<.data$level_low ~ vu + penalty_final_level,
+                                          dplyr::case_when(states>.data$level_high ~ vu - penalty_final_level_high,
+                                                           states<.data$level_low ~ vu + penalty_final_level_low,
                                                            TRUE ~ vu))) %>%
       dplyr::mutate(force_final_level=TRUE) %>%
       dplyr::mutate(penalty_low=dplyr::if_else(.data$weeks!=53,
-                                               penalty_level_low,penalty_final_level),
+                                               penalty_level_low,penalty_final_level_low),
                     penalty_high=dplyr::if_else(.data$weeks!=53,
-                                                penalty_level_high,penalty_final_level)) %>%
+                                                penalty_level_high,penalty_final_level_high)) %>%
       dplyr::rename(vu="vu_pen",vu_pen="vu")
   }
 

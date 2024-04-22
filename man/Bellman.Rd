@@ -19,7 +19,9 @@ Bellman(
   niveau_max,
   states_steps,
   penalty_level_low,
-  penalty_level_high
+  penalty_level_high,
+  lvl_high,
+  lvl_low
 )
 }
 \arguments{
@@ -65,6 +67,10 @@ grid of quantile algorithm.}
 \item{penalty_level_low}{Penalty for violating the bottom rule curve, comparable to the unsupplied energy}
 
 \item{penalty_level_high}{Penalty for violating the top rule curve, comparable to the spilled energy}
+
+\item{lvl_high}{Double. Upper rule curve for the considered week.}
+
+\item{lvl_low}{Double. Bottom rule curve for the considered week.}
 }
 \value{
 a \code{data.table} like Data_week with the Bellman values

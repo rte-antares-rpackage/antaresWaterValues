@@ -41,7 +41,6 @@ Grid_Matrix(
   max_hydro_hourly = NULL,
   max_hydro_weekly = NULL,
   force_final_level = F,
-  final_level_egal_initial = F,
   final_level = NULL,
   penalty_final_level = NULL,
   ...
@@ -134,8 +133,6 @@ between two water values is less then this value those values are converged.}
 \item{max_hydro_weekly}{Weekly maximum pumping and turbining powers}
 
 \item{force_final_level}{Binary. Whether final level should be constrained}
-
-\item{final_level_egal_initial}{Binary. Whether final level, if constrained, should be equal to initial level}
 
 \item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 

@@ -6,9 +6,6 @@
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @param force_final_level Binary. Whether final level should be constrained
-#' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
-#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #'
 #' @return a data.table
 #' @export
@@ -16,10 +13,7 @@
 readReservoirLevels <- function(area,
                                 timeStep = "weekly",
                                 byReservoirCapacity = TRUE,
-                                opts = antaresRead::simOptions(),
-                                force_final_level = F,
-                                final_level_egal_initial = F,
-                                final_level = NULL) {
+                                opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (antaresEditObject::is_antares_v7(opts = opts)) {
     res <- readReservoirLevelsV7(
@@ -35,22 +29,6 @@ readReservoirLevels <- function(area,
       byReservoirCapacity = byReservoirCapacity,
       opts = opts
     )
-  }
-  if (force_final_level){
-    if (final_level_egal_initial|is.null(final_level)){
-      final_level <- readReservoirLevels(area, timeStep = "daily",
-                                         byReservoirCapacity = FALSE,
-                                         opts = opts)[1,]
-      assertthat::assert_that(final_level$level_low==final_level$level_high,
-                              msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
-      final_level <- final_level$level_low*100
-    }
-
-    last_timeId <- res[nrow(res)]$timeId
-    res <- res %>%
-      dplyr::mutate(level_low = dplyr::if_else(.data$timeId==last_timeId,final_level/100,.data$level_low),
-                    level_avg = dplyr::if_else(.data$timeId==last_timeId,final_level/100,.data$level_avg),
-                    level_high = dplyr::if_else(.data$timeId==last_timeId,final_level/100,.data$level_high))
   }
   return(res)
 }
@@ -165,4 +143,13 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
     }
   }
   reservoir[]
+}
+
+get_initial_level <- function(area,opts){
+  final_level <- readReservoirLevels(area, timeStep = "daily",
+                                     byReservoirCapacity = FALSE,
+                                     opts = opts)[1,]
+  assertthat::assert_that(final_level$level_low==final_level$level_high,
+                          msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
+  final_level <- final_level$level_low*100
 }

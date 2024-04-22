@@ -53,7 +53,6 @@
 #' @param max_hydro_hourly Hourly maximum pumping and turbining powers
 #' @param max_hydro_weekly Weekly maximum pumping and turbining powers
 #' @param force_final_level Binary. Whether final level should be constrained
-#' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
@@ -92,7 +91,6 @@
                           max_hydro_hourly=NULL,
                           max_hydro_weekly=NULL,
                           force_final_level = F,
-                          final_level_egal_initial = F,
                           final_level = NULL,
                           penalty_final_level = NULL,
                         ...) {
@@ -100,7 +98,6 @@
 
 
   #----- shiny Loader
-
 
   # check the method chosen to calculate Bellman values is a valid method
   methods <- c("mean-grid","grid-mean","quantile")
@@ -280,15 +277,16 @@
   # Reservoir (rule curves)
   {
     reservoir <- readReservoirLevels(area, timeStep = "weekly",
-                                     byReservoirCapacity = FALSE, opts = opts,
-                                     force_final_level = force_final_level,
-                                     final_level_egal_initial = final_level_egal_initial,
-                                     final_level = final_level)
+                                     byReservoirCapacity = FALSE, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
     reservoir[,
               (vars) := lapply(.SD, function(x) {round(x * max(states))}),
               .SDcols = vars
     ]
+  }
+
+  if (force_final_level){
+    final_level <- final_level*max(states)/100
   }
 
   # Prepare data.table watervalues that give Bellman value for each week, each MC year and each state
@@ -367,6 +365,8 @@
 
       pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
+      watervalues[watervalues$weeks==53,"value_node" :=next_week_values]
+
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
 
@@ -387,8 +387,10 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=if((i==52)&force_final_level){penalty_final_level}else{penalty_low},
-                        penalty_level_high=if((i==52)&force_final_level){penalty_final_level}else{penalty_high}
+                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_high},
+                        lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
+                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]}
                         )
 
 
@@ -429,7 +431,7 @@
       }
       # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level,penalty_final_level)
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level,final_level=final_level)
 
     }
 
@@ -441,6 +443,8 @@
       cat("Calculating value nodes, cycle number:", n_cycl, "\n")
 
       pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
+
+      watervalues[watervalues$weeks==53,"value_node" :=next_week_values]
 
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
@@ -459,8 +463,10 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=if((i==52)&force_final_level){penalty_final_level}else{penalty_low},
-                        penalty_level_high=if((i==52)&force_final_level){penalty_final_level}else{penalty_high}
+                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level}else{penalty_high},
+                        lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
+                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]}
         )
 
         if(shiny&n_cycl==1&i==52){
@@ -497,7 +503,7 @@
         message("Error in the calculation of Bellman values")
       }
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level,penalty_final_level)
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level,final_level=final_level)
 
 
       if(n_cycl>1){

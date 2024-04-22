@@ -95,15 +95,11 @@ shiny_water_values <-
 
       res <- calculateServer("calculate",opts,silent)
 
-      bellmanServer("bellman",opts, res$watervalues, res$penalty_high,
-                    res$penalty_low, res$force_final_level,
-                    res$penalty_final_level)
+      bellmanServer("bellman",opts, res$watervalues)
 
       rewardServer("reward", opts, res$reward_db)
 
-      postProcessServer("post", opts, res$watervalues, res$penalty_high,
-                        res$penalty_low, res$area, res$force_final_level,
-                        res$penalty_final_level)
+      postProcessServer("post", opts, res$watervalues, res$area)
 
     }
 

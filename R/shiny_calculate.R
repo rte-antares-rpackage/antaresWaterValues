@@ -219,25 +219,64 @@ calculateServer <- function(id, opts, silent) {
     })
 
     constraints <- shiny::reactive({
-      constraint_generator(
-        area = simulation_res()$area,
-        opts = opts,
-        pumping = simulation_res()$pumping,
-        nb_disc_stock = 20,
-        pumping_efficiency = simulation_res()$eff,
-        mcyears = simulation_res()$mc_years
-      )
+      if ("mcYear" %in% names(simulation_res()$simulation_values)){
+        constraint_generator(
+          area = simulation_res()$area,
+          opts = opts,
+          pumping = simulation_res()$pumping,
+          nb_disc_stock = 20,
+          pumping_efficiency = simulation_res()$eff,
+          mcyears = simulation_res()$mc_years
+        ) %>%
+          dplyr::cross_join(data.frame(mcYear=simulation_res()$mc_years))
+      }
+      else {
+        constraint_generator(
+          area = simulation_res()$area,
+          opts = opts,
+          pumping = simulation_res()$pumping,
+          nb_disc_stock = 20,
+          pumping_efficiency = simulation_res()$eff,
+          mcyears = simulation_res()$mc_years
+        )
+      }
     })
 
     possible_controls <- shiny::reactive({
-      rbind(
+      if ("mcYear" %in% names(simulation_res()$simulation_values)){
+        rbind(
+          simulation_res()$simulation_values,
+          constraints()
+        ) %>%
+          dplyr::select("week", "u","mcYear") %>%
+          dplyr::distinct() %>%
+          dplyr::arrange(.data$mcYear,week, .data$u)
+      }
+      else {
+        rbind(
           simulation_res()$simulation_values,
           constraints()
         ) %>%
           dplyr::select("week", "u") %>%
           dplyr::distinct() %>%
           dplyr::arrange(week, .data$u)
+      }
+
     })
+
+    final_lvl <- shiny::reactive({if (input$force_final_level){
+      if (input$final_level_egal_initial|is.null(input$final_level)){
+        final_lvl <- readReservoirLevels(simulation_res()$area, timeStep = "daily",
+                                         byReservoirCapacity = FALSE,
+                                         opts = opts)[1,]
+        assertthat::assert_that(final_lvl$level_low==final_lvl$level_high,
+                                msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
+        final_lvl$level_low*100
+      } else {
+        input$final_level
+      }
+    }
+  })
 
     shiny::observeEvent(input$Calculate,
 
@@ -279,8 +318,7 @@ calculateServer <- function(id, opts, silent) {
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,
                               force_final_level = input$force_final_level,
-                              final_level_egal_initial = input$final_level_egal_initial,
-                              final_level = input$final_level,
+                              final_level = final_lvl(),
                               penalty_final_level = input$penalty_final_level
                             )$aggregated_results
 
@@ -325,12 +363,8 @@ calculateServer <- function(id, opts, silent) {
 
     list(
       watervalues = reactive(res$results),
-      penalty_high = reactive(input$penalty_high),
-      penalty_low = reactive(input$penalty_low),
       reward_db = reactive(res$reward_db),
-      area = reactive(simulation_res()$area),
-      force_final_level = reactive(input$force_final_level),
-      penalty_final_level = reactive(input$penalty_final_level)
+      area = reactive(simulation_res()$area)
     )
   })
 }

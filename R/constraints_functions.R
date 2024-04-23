@@ -81,14 +81,13 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
 
 
     # Implement binding constraint
-
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
       overwrite = TRUE,
-      coefficients = c(coeff[1],efficiency*coeff[4], coeff[2], coeff[3]),
+      coefficients = c(coeff[1],coeff[4]*efficiency, coeff[2], coeff[3]),
       opts = opts)
 
 

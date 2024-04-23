@@ -339,6 +339,8 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
 #'
 
 runWaterValuesSimulationMultiStock <- function(list_areas,
+                                               list_pumping,
+                                               list_efficiency,
                                      simulation_name = "wv_sim_%s",
                                      nb_mcyears = NULL,
                                      binding_constraint = "WeeklyWaterAmount",
@@ -348,8 +350,6 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                      overwrite = FALSE,
                                      opts = antaresRead::simOptions(),
                                      shiny=F,otp_dest=NULL,file_name=NULL,
-                                     list_pumping=NULL,
-                                     list_efficiency=NULL,
                                      launch_simulations=T,
                                      reset_hydro=T,
                                      constraint_values=NULL,...){

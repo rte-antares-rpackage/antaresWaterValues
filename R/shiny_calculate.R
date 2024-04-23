@@ -320,7 +320,9 @@ calculateServer <- function(id, opts, silent) {
                                 max_hydro = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,
                                 area = simulation_res()$area,
-                                district_balance = "water values district"
+                                district_balance = "water values district",
+                                expansion = simulation_res()$expansion,
+                                fictive_areas=simulation_res()$fictive_areas
                               )
 
                             results <-     Grid_Matrix(

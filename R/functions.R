@@ -222,17 +222,43 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
 #'   \code{antaresRead::setSimulationPath}
 #' @param district The district concerned by the simulation.
 #' @param mcyears Vector of years used to evaluate cost
+#' @param fictive_areas Vector of chr. Fictive areas used in simulation
+#' @param expansion Binary. True if mode expansion was used to run simulations
+#'
 #' @export
 
-get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears){
+get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,expansion=F,fictive_areas=NULL){
 
-  cost <- antaresRead::readAntares(districts = district, mcYears = mcyears,
-                           timeStep = "hourly", opts = opts, select=c("OV. COST"))
-
-  cost$week <- (cost$timeId-1)%/%168+1
-  cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
-                           ov_cost=sum(.data$`OV. COST`)) %>%
+  if (!expansion){
+    cost <- antaresRead::readAntares(districts = district, mcYears = mcyears,
+                                     timeStep = "hourly", opts = opts, select=c("OV. COST"))
+    cost$week <- (cost$timeId-1)%/%168+1
+    cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
+                             ov_cost=sum(.data$`OV. COST`)) %>%
       dplyr::rename("timeId"="week")
+  } else {
+    cost <- antaresRead::readAntares(areas = fictive_areas, mcYears = mcyears,
+                                     timeStep = "hourly", opts = opts, select=c("OV. COST"))
+    cost$week <- (cost$timeId-1)%/%168+1
+    cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
+                             ov_cost=sum(.data$`OV. COST`)) %>%
+      dplyr::rename("timeId"="week") %>%
+      dplyr::mutate(cost_xpansion=0)
+
+    for (week in 1:52){
+      for (scenario in mcyears){
+        assertthat::assert_that(opts$antaresVersion>=842,
+                                msg="Antares version should be greater than 8.4.2 to work with mode expansion.")
+        cost_xpansion <- as.numeric(strsplit(utils::read.delim(paste0(opts$simPath,"/criterion-",
+                                                               scenario,"-",week,"--optim-nb-1.txt"),
+                                                        header = FALSE)[[1]],":")[[1]][[2]])
+        cost[(cost$timeId==week)&(cost$mcYear==scenario),4] <- cost_xpansion
+      }
+    }
+    cost <- cost %>%
+      dplyr::mutate(ov_cost =.data$cost_xpansion-.data$ov_cost) %>%
+      dplyr::select(-c("cost_xpansion"))
+  }
 
   return(data.table(cost))
 }

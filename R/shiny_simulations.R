@@ -53,6 +53,17 @@ simulationUI <- function(id,opts) {
         "bottom"
       ),
 
+      shinyWidgets::materialSwitch(
+        NS(id,"expansion"),
+        "Mode expansion",
+        value = F,
+        status = "success"
+      ) %>%
+        bsplus::shinyInput_label_embed(
+          bsplus::shiny_iconlink() %>%
+            bsplus::bs_embed_popover(title = "Mode expansion of Antares is used or not. If it is used, simulations are computed faster and results are smoother.")
+        ),
+
 
       shiny::h2("Saving parameters"),
 
@@ -146,7 +157,8 @@ simulationServer <- function(id,opts,silent) {
                               otp_dest = input$sim_output_dir,
                               file_name = input$file_name,
                               pumping = pumping(),
-                              efficiency = eff()
+                              efficiency = eff(),
+                              expansion = input$expansion
                             )
                           },
                           prefix = "")

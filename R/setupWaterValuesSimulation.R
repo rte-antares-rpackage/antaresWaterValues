@@ -27,6 +27,9 @@ setupWaterValuesSimulation <- function(area,
                                        link_from=NULL,pumping=F,max_load=100000000,...) {
 
   assertthat::assert_that(class(opts) == "simOptions")
+  assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
+                          msg=paste0("Unserved cost is null in ",area,
+                                     ", unserved energy will be exported to this area in simulations launched by the package."))
 
   changeHydroManagement(opts=opts,watervalues = F, heuristic = T, area=area)
 

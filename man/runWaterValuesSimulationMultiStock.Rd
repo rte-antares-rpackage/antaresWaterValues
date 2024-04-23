@@ -6,6 +6,8 @@
 \usage{
 runWaterValuesSimulationMultiStock(
   list_areas,
+  list_pumping,
+  list_efficiency,
   simulation_name = "wv_sim_\%s",
   nb_mcyears = NULL,
   binding_constraint = "WeeklyWaterAmount",
@@ -17,8 +19,6 @@ runWaterValuesSimulationMultiStock(
   shiny = F,
   otp_dest = NULL,
   file_name = NULL,
-  list_pumping = NULL,
-  list_efficiency = NULL,
   launch_simulations = T,
   reset_hydro = T,
   constraint_values = NULL,
@@ -27,6 +27,10 @@ runWaterValuesSimulationMultiStock(
 }
 \arguments{
 \item{list_areas}{List of areas concerned by the simulation.}
+
+\item{list_pumping}{List of bools to tell if pumping is available in areas}
+
+\item{list_efficiency}{List of pumping efficiency}
 
 \item{simulation_name}{character}
 
@@ -50,10 +54,6 @@ runWaterValuesSimulationMultiStock(
 \item{otp_dest}{the path in which the script save Rdata file.}
 
 \item{file_name}{the Rdata file name.}
-
-\item{list_pumping}{List of bools to tell if pumping is available in areas}
-
-\item{list_efficiency}{List of pumping efficiency}
 
 \item{launch_simulations}{Boolean. True to to run the simulations.}
 

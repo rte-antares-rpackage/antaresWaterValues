@@ -145,6 +145,14 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
   reservoir[]
 }
 
+#' Get initial level of an area
+#'
+#' @param area An 'antares' area.
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @export
+
 get_initial_level <- function(area,opts){
   final_level <- readReservoirLevels(area, timeStep = "daily",
                                      byReservoirCapacity = FALSE,

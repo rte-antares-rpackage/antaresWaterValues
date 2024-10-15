@@ -9,7 +9,9 @@ reward_offset(
   df_reward,
   u0 = c(),
   mcyears,
-  district_cost = "water values district"
+  district_cost = "water values district",
+  fictive_areas = NULL,
+  expansion = F
 )
 }
 \arguments{
@@ -23,6 +25,10 @@ reward_offset(
 \item{mcyears}{Vector of years used to evaluate rewards}
 
 \item{district_cost}{Name of district used to evaluate overall cost}
+
+\item{fictive_areas}{Vector of chr. Fictive areas used in simulation}
+
+\item{expansion}{Binary. True if mode expansion was used to run simulations}
 }
 \value{
 a data.table {mcYear,week,u,reward}

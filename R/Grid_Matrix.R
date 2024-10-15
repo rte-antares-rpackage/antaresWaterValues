@@ -56,6 +56,8 @@
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level_low Penalties for both bottom rule curve to constrain final level
 #' @param penalty_final_level_high Penalties for top rule curve to constrain final level
+#' @param expansion Binary. True if mode expansion was used to run simulations
+#' @param fictive_areas Vector of chr. Fictive areas used in simulation
 #'
 #' @return List of a data.frame with aggregated water values and
 #' a data.frame of more detailed water values
@@ -63,7 +65,7 @@
 #'
 
 
-  Grid_Matrix <- function(area, simulation_names,reward_db=NULL,inflow=NULL,
+  Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,inflow=NULL,
                              simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,
                              week_53 = 0,
@@ -95,6 +97,7 @@
                           final_level = NULL,
                           penalty_final_level_low = NULL,
                           penalty_final_level_high = NULL,
+                          fictive_areas=NULL,
                         ...) {
 
 
@@ -254,7 +257,8 @@
                            hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
                            simulation_values = simulation_values, mcyears=mcyears,area=area,
-                           district_balance=district_name, pump_eff = efficiency)
+                           district_balance=district_name, pump_eff = efficiency,
+                           expansion=expansion, fictive_areas=fictive_areas)
 
       # Retriving controls (u) for each week
       decision_space <- reward_db$simulation_values

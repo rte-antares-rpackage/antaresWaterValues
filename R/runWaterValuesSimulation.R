@@ -61,7 +61,7 @@ runWaterValuesSimulation <- function(area,
                                      launch_simulations=T,
                                      reset_hydro=T,
                                      constraint_values=NULL,
-                                     expansion=F,
+                                     expansion=T,
                                      ...){
 
 
@@ -337,6 +337,7 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
 #' @param list_areas List of areas concerned by the simulation.
 #' @param list_pumping List of bools to tell if pumping is available in areas
 #' @param list_efficiency List of pumping efficiency
+#' @param expansion Binary. True if mode expansion was used to run simulations
 #'
 #' @note This function have side effects on the Antares study used, a fictive area is created and a new district as well.
 #'
@@ -357,7 +358,8 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                      shiny=F,otp_dest=NULL,file_name=NULL,
                                      launch_simulations=T,
                                      reset_hydro=T,
-                                     constraint_values=NULL,...){
+                                     constraint_values=NULL,
+                                     expansion=T,...){
 
 
 
@@ -500,7 +502,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     if(launch_simulations){
       antaresEditObject::runSimulation(
         name = sim_name,
-        mode = "economy",
+        mode = if (!expansion){"economy"}else{"expansion"},
         wait = wait,
         path_solver = path_solver,
         show_output_on_console = show_output_on_console,

@@ -27,7 +27,7 @@ runWaterValuesSimulation(
   launch_simulations = T,
   reset_hydro = T,
   constraint_values = NULL,
-  expansion = F,
+  expansion = T,
   ...
 )
 }

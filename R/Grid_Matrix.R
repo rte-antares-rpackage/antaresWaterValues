@@ -65,7 +65,7 @@
 #'
 
 
-  Grid_Matrix <- function(area, simulation_names,reward_db=NULL,inflow=NULL,
+  Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,inflow=NULL,
                              simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,
                              week_53 = 0,
@@ -97,7 +97,6 @@
                           final_level = NULL,
                           penalty_final_level_low = NULL,
                           penalty_final_level_high = NULL,
-                          expansion=F,
                           fictive_areas=NULL,
                         ...) {
 

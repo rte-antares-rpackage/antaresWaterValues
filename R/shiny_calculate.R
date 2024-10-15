@@ -348,7 +348,8 @@ calculateServer <- function(id, opts, silent) {
                               force_final_level = input$force_final_level,
                               final_level = final_lvl(),
                               penalty_final_level_low = input$penalty_final_level_low,
-                              penalty_final_level_high = input$penalty_final_level_high
+                              penalty_final_level_high = input$penalty_final_level_high,
+                              expansion = simulation_res()$expansion
                             )$aggregated_results
 
                             shiny::isolate(res$results <- results)

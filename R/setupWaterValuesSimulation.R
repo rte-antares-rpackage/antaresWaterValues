@@ -191,7 +191,7 @@ setupWaterValuesSimulation <- function(area,
   })
 
   # Adjust thematic trimming
-  settings_ini <- antaresEditObject::readIniFile(file.path(opts$studyPath, "settings", "generaldata.ini"))
+  settings_ini <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "generaldata.ini"))
   if (settings_ini$general$`thematic-trimming`){
     for (p in list("OV. COST","MRG. PRICE","BALANCE")){
       if (p %in% settings_ini$`variables selection`){

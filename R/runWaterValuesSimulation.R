@@ -438,9 +438,9 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     }
 
     if (length(list_coeff)==0){
-      list_coeff <- coeff
+      list_coeff <- list(coeff)
     } else {
-      list_coeff <- list(list_coeff,coeff)
+      list_coeff <- c(list_coeff,list(coeff))
     }
 
     remove_area <- c(remove_area,fictive_areas)

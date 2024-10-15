@@ -44,7 +44,7 @@ runWaterValuesSimulation <- function(area,
                                      simulation_name = "wv_sim_%s",
                                      nb_disc_stock = 10,
                                      nb_mcyears = NULL,
-                                     binding_constraint = "WeeklyWaterAmount",
+                                     binding_constraint = "weekly_water_amount",
                                      fictive_area = NULL,
                                      thermal_cluster = NULL,
                                      path_solver=NULL,
@@ -111,7 +111,7 @@ runWaterValuesSimulation <- function(area,
   #generating the fictive area parameters
 
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
-  thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "WaterValueCluster"
+  thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "water_value_cluster"
 
   # Get max hydro power that can be generated in a week
   if (is.null(constraint_values)){
@@ -281,7 +281,7 @@ runWaterValuesSimulation <- function(area,
 #'
 #' @export
 resetStudy <- function(opts, area, pumping,fictive_area = NULL,
-                       binding_constraint="WeeklyWaterAmount"){
+                       binding_constraint="weekly_water_amount"){
 
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
 
@@ -343,7 +343,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                                list_efficiency,
                                      simulation_name = "wv_sim_%s",
                                      nb_mcyears = NULL,
-                                     binding_constraint = "WeeklyWaterAmount",
+                                     binding_constraint = "weekly_water_amount",
                                      path_solver=NULL,
                                      wait = TRUE,
                                      show_output_on_console = FALSE,
@@ -410,7 +410,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     #generating the fictive area parameters
 
     fictive_area <- paste0("watervalue_", area)
-    thermal_cluster <- "WaterValueCluster"
+    thermal_cluster <- "water_value_cluster"
 
     #create the fictive areas
 

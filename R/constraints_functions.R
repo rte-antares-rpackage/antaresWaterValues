@@ -11,9 +11,9 @@
 disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 
   opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
-  opts <- antaresEditObject::removeBindingConstraint(name = paste0("Turb",area), opts = opts)
+  opts <- antaresEditObject::removeBindingConstraint(name = paste0("turb_",area), opts = opts)
   if(pumping){
-    opts <- antaresEditObject::removeBindingConstraint(name = paste0("Pump",area), opts = opts)
+    opts <- antaresEditObject::removeBindingConstraint(name = paste0("pump_",area), opts = opts)
   }
   return(opts)
 }
@@ -35,7 +35,7 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
   if(length(coeff)==3){
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name =  paste0("Turb",area),
+      name =  paste0("turb_",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = coeff[1],
@@ -57,7 +57,7 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
     # Implement the flow sens in the study Pumping
 
     opts <- antaresEditObject::createBindingConstraint(
-      name = paste0("Pump",area),
+      name = paste0("pump_",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = -coeff[4],
@@ -69,7 +69,7 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
     # Implement the flow sens in the study Turbining
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name = paste0("Turb",area),
+      name = paste0("turb_",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = coeff[1],
@@ -182,6 +182,7 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
                               pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
                               overwrite = TRUE, default_ext = ".dat")
 
+  Sys.sleep(1)
 
   return(opts)
 

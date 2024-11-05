@@ -252,7 +252,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 #' @return List of constraint values for the week
 constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro){
   maxi <- min(hydro$turb,res_cap+hydro$max_app)
-  mini <- -hydro$pump*pumping_efficiency
+  mini <- max(-res_cap,-hydro$pump*pumping_efficiency)
 
   if(pumping){
     if(nb_disc_stock<3){

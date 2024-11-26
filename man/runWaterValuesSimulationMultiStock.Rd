@@ -10,7 +10,7 @@ runWaterValuesSimulationMultiStock(
   list_efficiency,
   simulation_name = "wv_sim_\%s",
   nb_mcyears = NULL,
-  binding_constraint = "WeeklyWaterAmount",
+  binding_constraint = "weekly_water_amount",
   path_solver = NULL,
   wait = TRUE,
   show_output_on_console = FALSE,

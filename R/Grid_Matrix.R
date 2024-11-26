@@ -346,6 +346,13 @@
   E_max <-max_hydro_weekly$turb
   P_max <- max_hydro_weekly$pump*efficiency
 
+  overflow_cost <- 0
+  if ("spilled" %in% names(opts$energyCosts)){
+    if (area %in% opts$energyCosts$spilled){
+      overflow_cost <- opts$energyCosts$spilled[[area]]
+    }
+  }
+
 
 
   # prepare Bellman values for the end of the year (week 53)
@@ -396,8 +403,8 @@
                         penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
                         penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
                         lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
-                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]}
-                        )
+                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]},
+                        overflow_cost=overflow_cost)
 
 
 
@@ -472,7 +479,8 @@
                         penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
                         penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
                         lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
-                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]}
+                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]},
+                        overflow_cost = overflow_cost
         )
 
         if(shiny&n_cycl==1&i==52){

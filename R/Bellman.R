@@ -30,6 +30,7 @@
   #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy
   #' @param lvl_high Double. Upper rule curve for the considered week.
   #' @param lvl_low Double. Bottom rule curve for the considered week.
+  #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
 
@@ -39,7 +40,7 @@
                       counter,
                       stop_rate=5,debugger_feas=F,niveau_max,
                       states_steps,penalty_level_low,penalty_level_high,
-                      lvl_high,lvl_low){
+                      lvl_high,lvl_low,overflow_cost){
 
     # Getting all possible transitions between a state for the current week and a state for the next week
     decision_space <- dplyr::select(decision_space,-c("week"))
@@ -62,7 +63,7 @@
     # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
                                            mcyears,lvl_high,lvl_low,E_max,P_max,
-                                           next_week_values_l,niveau_max)
+                                           next_week_values_l,niveau_max,overflow_cost)
 
     # For each transition (control), find the associated reward and for each next state,
     # calculate penalties for violating rule curves. Then, find for each MC year and each state,

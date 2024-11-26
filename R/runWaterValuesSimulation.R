@@ -563,7 +563,11 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     simulation_names = simulation_names,
     simulation_values = constraint_values,
     list_areas = list_areas,
-    mc_years = nb_mcyears
+    mc_years = nb_mcyears,
+    list_pumping = list_pumping,
+    list_eff = list_efficiency,
+    expansion = expansion,
+    fictive_areas = remove_area
   )
 
   if(!is.null(otp_dest)){

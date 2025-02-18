@@ -156,6 +156,7 @@ getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOption
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param area Antares area
+#' @export
 changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
   hydro_ini <- antaresRead::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
   assertthat::assert_that(area %in% names(hydro_ini$reservoir),msg = "No reservoir managment for this area, check Antares study")

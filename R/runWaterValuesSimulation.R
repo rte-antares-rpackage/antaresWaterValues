@@ -458,18 +458,16 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     generate_constraints(coeff=coeff,name_constraint=paste0(binding_constraint,"_",area),
                          efficiency=list_efficiency[area],opts=opts,area = area)
 
-  }
+    opts <- antaresEditObject::createDistrict(
+      name = paste0("district_balance_",area),
+      apply_filter = "add-all",
+      remove_area = fictive_areas,
+      output = TRUE,
+      overwrite = TRUE,
+      opts = opts
+    )
 
-  opts <- antaresEditObject::createDistrict(
-    name = "water values district",
-    caption = "water values district",
-    comments = "Used for calculate water values",
-    apply_filter = "add-all",
-    remove_area = remove_area,
-    output = TRUE,
-    overwrite = TRUE,
-    opts = opts
-  )
+  }
 
   # Start the simulations
 

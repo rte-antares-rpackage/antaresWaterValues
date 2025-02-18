@@ -150,8 +150,8 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
 
   sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
 
-  assertthat::assert_that(names(sb_file)==c("Default Ruleset"),
-                          msg="There should be only Default Ruleset in scenario builder.")
+  assertthat::assert_that(length(names(sb_file))==1,
+                          msg="There should be only ruleset in scenario builder.")
 
   sbuilder <- antaresEditObject::scenarioBuilder(
     areas = area_thermal_cluster,
@@ -176,7 +176,8 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
 
   new_sb <- unlist(list(values_sb))
   names(new_sb) <- names_sb
-  sb_file$`Default Ruleset` <- append(sb_file$`Default Ruleset`,new_sb)
+  name_ruleset <- names(sb_file)[[1]]
+  sb_file[[name_ruleset]] <- append(sb_file[[name_ruleset]],new_sb)
 
   antaresEditObject::writeIni(listData = sb_file,
                               pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),

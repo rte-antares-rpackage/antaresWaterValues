@@ -126,7 +126,8 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     reward <- dplyr::filter(reward,.data$control==0) %>%
       dplyr::select("mcYear","timeId","reward") %>%
       dplyr::right_join(reward,by=c("mcYear","timeId"),suffix=c("_0","")) %>%
-      dplyr::mutate(reward=.data$reward_0-.data$reward) %>%
+      # dplyr::mutate(reward=.data$reward_0-.data$reward) %>%
+      dplyr::mutate(reward=-.data$reward) %>%
       dplyr::select(-c("reward_0","simulation","sim"))
     reward <- as.data.table(reward)
 
@@ -174,6 +175,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
                                        district_balance)
         }
         res <- reward_offset(o,res, u,mcyears,district_name,fictive_areas=fictive_areas, expansion=expansion)
+        res <- dplyr::mutate(res,simulation=o$name)
         res
       },
       o = opts_o,
@@ -183,6 +185,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
 
 
     reward <- rbindlist(reward)   #merge the all simulations tables together
+    local_reward <- reward
 
     # Getting the minimum reward for each year, each week and each control (u)
     reward <- reward %>%
@@ -190,7 +193,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     #Subtracting the reward corresponding to control 0 for each year and each week
     reward <- dplyr::filter(reward,.data$u==0) %>% dplyr::select("mcYear","week","reward") %>%
       dplyr::right_join(reward,by=c("mcYear","week"),suffix=c("_0","")) %>%
-      dplyr::mutate(reward=.data$reward-.data$reward_0) %>%
+      # dplyr::mutate(reward=.data$reward-.data$reward_0) %>%
       dplyr::rename("timeId"="week","control"="u") %>%
       dplyr::select(-c("reward_0"))
     reward <- as.data.table(reward)
@@ -199,6 +202,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     # Prepare output
     output <- list()
     output$reward <- reward
+    output$local_reward <- local_reward
     output$simulation_names <- simulation_names
     output$simulation_values <- possible_controls
   }

@@ -237,14 +237,18 @@ get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,exp
                              ov_cost=sum(.data$`OV. COST`)) %>%
       dplyr::rename("timeId"="week")
   } else {
-    assertthat::assert_that(!is.null(fictive_areas))
-    cost <- antaresRead::readAntares(areas = fictive_areas, mcYears = mcyears,
-                                     timeStep = "hourly", opts = opts, select=c("OV. COST"))
-    cost$week <- (cost$timeId-1)%/%168+1
-    cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
-                             ov_cost=sum(.data$`OV. COST`)) %>%
-      dplyr::rename("timeId"="week") %>%
-      dplyr::mutate(cost_xpansion=0)
+    if (is.null(fictive_areas)){
+      cost <- data.frame(tidyr::expand_grid(mcYear=mcyears,timeId=1:52))%>%
+        dplyr::mutate(ov_cost=0,cost_xpansion=0)
+    } else {
+      cost <- antaresRead::readAntares(areas = fictive_areas, mcYears = mcyears,
+                                       timeStep = "hourly", opts = opts, select=c("OV. COST"))
+      cost$week <- (cost$timeId-1)%/%168+1
+      cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
+                               ov_cost=sum(.data$`OV. COST`)) %>%
+        dplyr::rename("timeId"="week") %>%
+        dplyr::mutate(cost_xpansion=0)
+    }
 
     for (week in 1:52){
       for (scenario in mcyears){

@@ -167,7 +167,7 @@ postProcessServer <- function(id, opts, watervalues, area) {
 
     shiny::observeEvent(input$to_antares, {
       results <- final_result()
-      reshaped_values <- to_Antares_Format(results)
+      reshaped_values <- to_Antares_Format_bis(results)
       antaresEditObject::writeWaterValues(area = area(),
                                           data = reshaped_values)
       shinyWidgets::show_alert(title = "Implement water values in Antares",

@@ -155,7 +155,7 @@ setupWaterValuesSimulation <- function(area,
 
     # Create link
     if(grepl("_turb$", fictive_area)|grepl("_pump$", fictive_area)){
-      suppressWarnings({
+     suppressWarnings({
         opts <- antaresEditObject::createLink(
           from = from_area,
           to = fictive_area,
@@ -173,21 +173,6 @@ setupWaterValuesSimulation <- function(area,
   # Activate output year by year
   suppressWarnings({
     antaresEditObject::updateGeneralSettings(year.by.year = TRUE, opts = opts)
-  })
-
-
-  # Create a water values district
-  suppressWarnings({
-    antaresEditObject::createDistrict(
-      name = "water values district",
-      caption = "water values district",
-      comments = "Used for calculate water values",
-      apply_filter = "add-all",
-      remove_area = fictive_areas,
-      output = TRUE,
-      overwrite = TRUE,
-      opts = opts
-    )
   })
 
   # Adjust thematic trimming

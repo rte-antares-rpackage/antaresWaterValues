@@ -84,13 +84,13 @@ runWaterValuesSimulation <- function(area,
     file_name <- paste0(area,"_",file_name)
   }
 
-
+  disable_constraint(binding_constraint,opts,pumping,area = area)
   # restore hydro inflow if there is a previous intercepted simulation.
-  restoreHydroStorage(area = area, opts = opts,silent = T)
+  suppressWarnings({restoreHydroStorage(area = area, opts = opts,silent = T)})
   # restore Pump power if there is a previous intercepted simulation.
-  restorePumpPower(area = area, opts = opts,silent = T)
+  suppressWarnings({restorePumpPower(area = area, opts = opts,silent = T)})
 
-  restore_fictive_fatal_prod_demand(area = area, opts = opts,silent = T)
+  suppressWarnings({restore_fictive_fatal_prod_demand(area = area, opts = opts,silent = T)})
 
   # MC years
   assertthat::assert_that(is.numeric(nb_mcyears)==TRUE)
@@ -168,6 +168,17 @@ runWaterValuesSimulation <- function(area,
     coeff <- c(coeff,coeff_pump)
   }
 
+  opts <- antaresEditObject::createDistrict(
+    name = "water values district",
+    caption = "water values district",
+    comments = "Used for calculate water values",
+    apply_filter = "add-all",
+    remove_area = fictive_areas,
+    output = TRUE,
+    overwrite = TRUE,
+    opts = opts
+  )
+
   restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
   # Start the simulations
@@ -207,8 +218,10 @@ runWaterValuesSimulation <- function(area,
       #Simulation Control
       sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
       sim_check <- file.path(opts$studyPath,"output",sim_name)
+      info <- antaresRead::readIniFile(file.path(sim_check, "info.antares-output"))$general
 
       if(!dir.exists(file.path(sim_check,"economy","mc-all"))){
+
         #remove the Binding Constraints
 
         disable_constraint(binding_constraint,opts,pumping,area = area)
@@ -225,6 +238,25 @@ runWaterValuesSimulation <- function(area,
         restorePumpPower(area = area, opts = opts)
         restore_fictive_fatal_prod_demand(area = area, opts = opts)
         stop("Simulation Error. Please check simulation log.")
+      }
+      if(info$mode != "Economy"){
+
+        #remove the Binding Constraints
+
+        disable_constraint(binding_constraint,opts,pumping,area = area)
+        restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
+        # remove the fictive area
+        suppressWarnings({
+          for (fictive_area in fictive_areas){
+            antaresEditObject::removeArea(fictive_area,opts = opts)
+          }
+        })
+
+        # restore hydrostorage
+        restoreHydroStorage(area = area, opts = opts)
+        restorePumpPower(area = area, opts = opts)
+        restore_fictive_fatal_prod_demand(area = area, opts = opts)
+        stop("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
       }
     }
   }
@@ -362,10 +394,6 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                      expansion=T,...){
 
 
-
-
-
-
   #check the study is well selected
   assertthat::assert_that(class(opts) == "simOptions")
 
@@ -398,7 +426,9 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
   remove_area <- c()
   list_coeff <- list()
 
-  for (area in list_areas){
+  for (j in 1:length(list_areas)){
+    area <- list_areas[[j]]
+    disable_constraint(paste0(binding_constraint,"_",area),opts,list_pumping[[j]],area = area)
     # restore hydro inflow if there is a previous intercepted simulation.
     restoreHydroStorage(area = area, opts = opts,silent = T)
     # restore Pump power if there is a previous intercepted simulation.
@@ -469,6 +499,17 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
 
   }
 
+  opts <- antaresEditObject::createDistrict(
+    name = "water values district",
+    caption = "water values district",
+    comments = "Used for calculate water values",
+    apply_filter = "add-all",
+    remove_area = remove_area,
+    output = TRUE,
+    overwrite = TRUE,
+    opts = opts
+  )
+
   # Start the simulations
 
   simulation_names <- vector(mode = "character", length = nb_disc_stock)
@@ -513,6 +554,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       #Simulation Control
       sim_name <- utils::tail(getSimulationNames(pattern =sim_name , opts = opts),n=1)
       sim_check <- file.path(opts$studyPath,"output",sim_name)
+      info <- antaresRead::readIniFile(file.path(sim_check, "info.antares-output"))$general
 
       if(!dir.exists(file.path(sim_check,"economy","mc-all"))){
         #remove the Binding Constraints
@@ -536,6 +578,25 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
         stop("Simulation Error. Please check simulation log.")
       }
     }
+    if(info$mode != "Economy"){
+      for (j in 1:length(list_areas)){
+        area <- list_areas[[j]]
+        disable_constraint(paste0(binding_constraint,"_",area),opts,list_pumping[[j]],area = area)
+        restoreScenarioBuilder(opts=opts, fictive_area = paste0("watervalue_", area,"_bc"))
+        # restore hydrostorage
+        restoreHydroStorage(area = area, opts = opts)
+        restorePumpPower(area = area, opts = opts)
+        restore_fictive_fatal_prod_demand(area = area, opts = opts)
+      }
+      # remove the fictive area
+      suppressWarnings({
+        for (fictive_area in remove_area){
+          antaresEditObject::removeArea(fictive_area,opts = opts)
+        }
+      })
+      stop("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
+    }
+
   }
 
   for (j in 1:length(list_areas)){

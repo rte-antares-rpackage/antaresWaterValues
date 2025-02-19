@@ -229,7 +229,13 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
 
 get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,expansion=F,fictive_areas=NULL){
 
-  if (!expansion){
+  criterium_file <- FALSE
+  if (expansion){
+    path <- paste0(opts$simPath)
+    all_files <- list.files(path)
+    criterium_file <- sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears)
+  }
+  if (!criterium_file){
     cost <- antaresRead::readAntares(districts = district, mcYears = mcyears,
                                      timeStep = "hourly", opts = opts, select=c("OV. COST"))
     cost$week <- (cost$timeId-1)%/%168+1
@@ -252,10 +258,10 @@ get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,exp
 
     for (week in 1:52){
       for (scenario in mcyears){
-        assertthat::assert_that(opts$antaresVersion>=842,
-                                msg="Antares version should be greater than 8.4.2 to work with mode expansion.")
-        cost_xpansion <- as.numeric(strsplit(utils::read.delim(paste0(opts$simPath,"/criterion-",
-                                                               scenario,"-",week,"--optim-nb-1.txt"),
+        path <- all_files[stringr::str_detect(all_files,paste0("criterion-",
+                                                               scenario,"-",
+                                                               week,"-"))][[1]]
+        cost_xpansion <- as.numeric(strsplit(utils::read.delim(paste0(opts$simPath,"/",path),
                                                         header = FALSE)[[1]],":")[[1]][[2]])
         cost[(cost$timeId==week)&(cost$mcYear==scenario),4] <- cost_xpansion
       }

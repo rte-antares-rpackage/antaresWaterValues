@@ -240,23 +240,7 @@ runWaterValuesSimulation <- function(area,
         stop("Simulation Error. Please check simulation log.")
       }
       if(info$mode != "Economy"){
-
-        #remove the Binding Constraints
-
-        disable_constraint(binding_constraint,opts,pumping,area = area)
-        restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
-        # remove the fictive area
-        suppressWarnings({
-          for (fictive_area in fictive_areas){
-            antaresEditObject::removeArea(fictive_area,opts = opts)
-          }
-        })
-
-        # restore hydrostorage
-        restoreHydroStorage(area = area, opts = opts)
-        restorePumpPower(area = area, opts = opts)
-        restore_fictive_fatal_prod_demand(area = area, opts = opts)
-        stop("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
+        message("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
       }
     }
   }
@@ -579,22 +563,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       }
     }
     if(info$mode != "Economy"){
-      for (j in 1:length(list_areas)){
-        area <- list_areas[[j]]
-        disable_constraint(paste0(binding_constraint,"_",area),opts,list_pumping[[j]],area = area)
-        restoreScenarioBuilder(opts=opts, fictive_area = paste0("watervalue_", area,"_bc"))
-        # restore hydrostorage
-        restoreHydroStorage(area = area, opts = opts)
-        restorePumpPower(area = area, opts = opts)
-        restore_fictive_fatal_prod_demand(area = area, opts = opts)
-      }
-      # remove the fictive area
-      suppressWarnings({
-        for (fictive_area in remove_area){
-          antaresEditObject::removeArea(fictive_area,opts = opts)
-        }
-      })
-      stop("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
+      message("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
     }
 
   }

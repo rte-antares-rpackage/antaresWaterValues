@@ -7,17 +7,17 @@ Maintainer: The package maintainer <safedhia@gmail.com>
 Description: This package aims at generating water values for Antares.
 License: MIT + file LICENSE
 Depends:
-    data.table (>= 1.14.0),
-    R (>= 4.1.0),
-    shiny (>= 1.6.0),
-    shinyBS (>= 0.61)
+    data.table (>= 1.15.0),
+    R (>= 4.1.0)
 Imports:
-    antaresEditObject (>= 0.2.2),
-    antaresRead (>= 2.2.8),
+    antaresEditObject (>= 0.7.0),
+    antaresRead (>= 2.7.0),
     assertthat (>= 0.2.1),
     bsplus (>= 0.1.2),
     dplyr (>= 1.1.0),
     ggplot2 (>= 3.3.5),
+    shiny (>= 1.6.0),
+    shinyBS (>= 0.61),
     stats (>= 4.1.0),
     stringr (>= 1.4.0),
     tidyr (>= 1.1.3),

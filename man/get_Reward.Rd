@@ -12,7 +12,6 @@ get_Reward(
   opts = antaresRead::simOptions(),
   correct_monotony = FALSE,
   method_old = TRUE,
-  hours = 0:168,
   possible_controls = NULL,
   max_hydro,
   mcyears = "all",
@@ -38,8 +37,6 @@ get_Reward(
 \item{correct_monotony}{Binary argument (default to false). True to correct monotony of rewards.}
 
 \item{method_old}{If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices}
-
-\item{hours}{If method_old=F, vector of hours used to evaluate costs/rewards of pumping/generating}
 
 \item{possible_controls}{If method_old=F, data.frame {week,u} of controls evaluated per week}
 

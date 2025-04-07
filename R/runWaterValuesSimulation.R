@@ -203,6 +203,8 @@ runWaterValuesSimulation <- function(area,
     message("#  ------------------------------------------------------------------------")
     # run the simulation
     if(launch_simulations){
+      assertthat::assert_that(stringr::str_detect(path_solver,"solver.exe$"),
+                              msg = "Path solver is not the solver executable of Antares.")
       antaresEditObject::runSimulation(
         name = sim_name,
         mode = if (!expansion){"economy"}else{"expansion"},
@@ -523,6 +525,8 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     message("#  ------------------------------------------------------------------------")
     # run the simulation
     if(launch_simulations){
+      assertthat::assert_that(stringr::str_detect(path_solver,"solver.exe$"),
+                              msg = "Path solver is not the solver executable of Antares.")
       antaresEditObject::runSimulation(
         name = sim_name,
         mode = if (!expansion){"economy"}else{"expansion"},

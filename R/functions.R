@@ -684,13 +684,18 @@ restoreScenarioBuilder <- function(opts, fictive_area){
 
   sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
 
-  assertthat::assert_that(length(names(sb_file))==1,
-                          msg="There should be only one ruleset in scenario builder.")
+  if (length(names(sb_file))>0){
+    assertthat::assert_that(length(names(sb_file))==1,
+                            msg="There should be only one ruleset in scenario builder.")
 
-  name_ruleset <- names(sb_file)[[1]]
-  sb_file[[name_ruleset]] <- sb_file[[name_ruleset]][!grepl(fictive_area,names(sb_file$`Default Ruleset`))]
+    name_ruleset <- names(sb_file)[[1]]
+    sb_file[[name_ruleset]] <- sb_file[[name_ruleset]][!grepl(fictive_area,names(sb_file$`Default Ruleset`))]
 
-  antaresEditObject::writeIni(listData = sb_file,
-                              pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
-                              overwrite = TRUE, default_ext = ".dat")
+    antaresEditObject::writeIni(listData = sb_file,
+                                pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
+                                overwrite = TRUE, default_ext = ".dat")
+
+    Sys.sleep(1)
+  }
+
 }

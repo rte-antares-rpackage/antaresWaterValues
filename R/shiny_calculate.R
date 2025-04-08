@@ -315,7 +315,6 @@ calculateServer <- function(id, opts, silent) {
                                 district_name = "water values district",
                                 opts = opts,
                                 method_old = F,
-                                hours = round(seq(0, 168, length.out = 10)),
                                 possible_controls = possible_controls(),
                                 max_hydro = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,

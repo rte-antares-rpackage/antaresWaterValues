@@ -37,7 +37,6 @@ Grid_Matrix(
   penalty_low = 3000,
   penalty_high = 3000,
   method_old_gain = F,
-  hours_reward_calculation = c(seq.int(0, 168, 10), 168),
   controls_reward_calculation = NULL,
   max_hydro_hourly = NULL,
   max_hydro_weekly = NULL,
@@ -128,8 +127,6 @@ between two water values is less then this value those values are converged.}
 \item{penalty_high}{Penalty for violating the top rule curve, comparable to the spilled energy cost}
 
 \item{method_old_gain}{If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices}
-
-\item{hours_reward_calculation}{If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating}
 
 \item{controls_reward_calculation}{If method_old_gain=F, vector of controls evaluated}
 

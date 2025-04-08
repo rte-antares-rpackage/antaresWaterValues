@@ -156,40 +156,43 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
 
   sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
 
-  assertthat::assert_that(length(names(sb_file))==1,
-                          msg="There should be only one ruleset in scenario builder.")
+  if (length(names(sb_file))>0){
+    assertthat::assert_that(length(names(sb_file))==1,
+                            msg="There should be only one ruleset in scenario builder.")
 
-  sbuilder <- antaresEditObject::scenarioBuilder(
-    areas = area_thermal_cluster,
-    n_scenario = nb_scenarios,
-    opts=opts)
+    sbuilder <- antaresEditObject::scenarioBuilder(
+      areas = area_thermal_cluster,
+      n_scenario = nb_scenarios,
+      opts=opts)
 
 
-  fictive_clusters <- antaresRead::readClusterDesc(opts = opts) %>%
-    dplyr::filter(.data$area==area_thermal_cluster) %>%
-    dplyr::select(c("area","cluster"))
+    fictive_clusters <- antaresRead::readClusterDesc(opts = opts) %>%
+      dplyr::filter(.data$area==area_thermal_cluster) %>%
+      dplyr::select(c("area","cluster"))
 
-  names_sb <- c()
-  values_sb <- c()
+    names_sb <- c()
+    values_sb <- c()
 
-  for (s in seq_along(sbuilder)){
-    for (cl in 1:nrow(fictive_clusters)){
-      names_sb <- c(names_sb,paste("t",fictive_clusters$area[cl],
-                      s-1,fictive_clusters$cluster[cl],sep=","))
-      values_sb <- c(values_sb,as.integer(sbuilder[s]))
+    for (s in seq_along(sbuilder)){
+      for (cl in 1:nrow(fictive_clusters)){
+        names_sb <- c(names_sb,paste("t",fictive_clusters$area[cl],
+                                     s-1,fictive_clusters$cluster[cl],sep=","))
+        values_sb <- c(values_sb,as.integer(sbuilder[s]))
+      }
     }
+
+    new_sb <- unlist(list(values_sb))
+    names(new_sb) <- names_sb
+    name_ruleset <- names(sb_file)[[1]]
+    sb_file[[name_ruleset]] <- append(sb_file[[name_ruleset]],new_sb)
+
+    antaresEditObject::writeIni(listData = sb_file,
+                                pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
+                                overwrite = TRUE, default_ext = ".dat")
+
+    Sys.sleep(1)
   }
 
-  new_sb <- unlist(list(values_sb))
-  names(new_sb) <- names_sb
-  name_ruleset <- names(sb_file)[[1]]
-  sb_file[[name_ruleset]] <- append(sb_file[[name_ruleset]],new_sb)
-
-  antaresEditObject::writeIni(listData = sb_file,
-                              pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
-                              overwrite = TRUE, default_ext = ".dat")
-
-  Sys.sleep(1)
 
   return(opts)
 

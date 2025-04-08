@@ -50,21 +50,9 @@ setupWaterValuesSimulation <- function(area,
   suppressWarnings(resetPumpPower(area = area, opts = opts))
   # Prepare thermal Cluster parameters
   if (utils::hasName(hydro_storage_max, "hstorPMaxHigh")) {
-    prepro_modulation <- matrix(
-      data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max$hstorPMaxHigh/hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)],
-               rep(0, times = 365 * 24 * 1)),
-      ncol = 4
-    )
     time_series <- hydro_storage_max$hstorPMaxHigh
     nominalcapacity_turb <- hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)]
   } else {
-    prepro_modulation <- matrix(
-      data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max$generatingMaxPower/hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)],
-               rep(0, times = 365 * 24 * 1)),
-      ncol = 4
-    )
     time_series <- hydro_storage_max$generatingMaxPower
     nominalcapacity_turb <- hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)]
   }
@@ -80,7 +68,6 @@ setupWaterValuesSimulation <- function(area,
   if(pumping){
     fictive_areas <- c(fictive_areas,paste0(fictive_area_name,"_pump"))
   }
-
 
   for(fictive_area in fictive_areas){
 
@@ -98,10 +85,6 @@ setupWaterValuesSimulation <- function(area,
           group = "other", unitcount = "1",
           time_series = time_series,
           nominalcapacity = nominalcapacity_turb,
-          prepro_modulation = prepro_modulation,
-          `min-down-time` = "1",
-          `marginal-cost` = 0.01,
-          `market-bid-cost` = 0.01,
           overwrite = overwrite,
           opts = opts
         )
@@ -116,19 +99,16 @@ setupWaterValuesSimulation <- function(area,
 
     if(grepl("_bc$", fictive_area)){
       #add load
-      max_pump <- hydro_storage_max$pumpingMaxPower
-      max_turb <- hydro_storage_max$generatingMaxPower
+      max_pump <- max(hydro_storage_max$pumpingMaxPower)
+      max_turb <- max(hydro_storage_max$generatingMaxPower)
       antaresEditObject::writeInputTS(fictive_area, type = "load",
-                                      data = max_pump+max_turb)
+                                      data = rep(max_pump+max_turb,8760))
       # add positive cluster
       antaresEditObject::createCluster(
         area = fictive_area,
         cluster_name = "positive",
         group = "other", unitcount = "1",
         nominalcapacity = nominalcapacity_pump,
-        `min-down-time` = "1",
-        `marginal-cost` = 0.01,
-        `market-bid-cost` = 0.01,
         overwrite = overwrite,
         opts = opts
       )
@@ -138,9 +118,6 @@ setupWaterValuesSimulation <- function(area,
         cluster_name = "negative",
         group = "other", unitcount = "1",
         nominalcapacity = nominalcapacity_turb,
-        `min-down-time` = "1",
-        `marginal-cost` = 0.01,
-        `market-bid-cost` = 0.01,
         overwrite = overwrite,
         opts = opts
       )
@@ -168,7 +145,6 @@ setupWaterValuesSimulation <- function(area,
     }
 
   }#end fictive areas loop
-
 
   # Activate output year by year
   suppressWarnings({

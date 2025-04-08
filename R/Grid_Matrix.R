@@ -48,7 +48,6 @@
 #' @param penalty_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
 #' @param penalty_high Penalty for violating the top rule curve, comparable to the spilled energy cost
 #' @param method_old_gain If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices
-#' @param hours_reward_calculation If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating
 #' @param controls_reward_calculation If method_old_gain=F, vector of controls evaluated
 #' @param max_hydro_hourly Hourly maximum pumping and turbining powers
 #' @param max_hydro_weekly Weekly maximum pumping and turbining powers
@@ -89,7 +88,6 @@
                              penalty_low = 3000,
                              penalty_high = 3000,
                              method_old_gain = F,
-                             hours_reward_calculation = c(seq.int(0,168,10),168),
                              controls_reward_calculation = NULL,
                           max_hydro_hourly=NULL,
                           max_hydro_weekly=NULL,
@@ -254,7 +252,6 @@
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,
                            method_old = method_old_gain,max_hydro=max_hydro_hourly,
-                           hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
                            simulation_values = simulation_values, mcyears=mcyears,area=area,
                            district_balance=district_name, pump_eff = efficiency,

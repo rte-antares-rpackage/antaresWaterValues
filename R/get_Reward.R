@@ -287,7 +287,7 @@ get_local_reward <- function(opts,possible_controls,max_hydro,area_price,mcyears
     dplyr::mutate(dif_vol = .data$dif_vol + .data$u0)%>%
     dplyr::group_by(.data$mcYear,.data$week) %>%
     dplyr::arrange(.data$dif_vol) %>%
-    dplyr::mutate(marg = (dplyr::lead(reward)-reward)/(dplyr::lead(dif_vol)-dif_vol))%>%
+    dplyr::mutate(marg = (dplyr::lead(.data$reward)-.data$reward)/(dplyr::lead(.data$dif_vol)-.data$dif_vol))%>%
     dplyr::mutate(dif_vol_sup = dplyr::lead(.data$dif_vol),reward_sup=dplyr::lead(.data$reward)) %>%
     dplyr::rename(dif_vol_inf = "dif_vol", reward_inf = "reward") %>%
     tidyr::drop_na() %>%

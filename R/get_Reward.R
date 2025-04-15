@@ -319,9 +319,10 @@ get_local_reward <- function(opts,possible_controls,max_hydro,area_price,mcyears
                                                        x$mcYear==y$mcYear,
                                                        x$u>=y$dif_vol_inf,
                                                        x$u<=y$dif_vol_sup)) %>%
-    dplyr::mutate(reward = (.data$reward_sup-.data$reward_inf)/(
-      .data$dif_vol_sup-.data$dif_vol_inf)*(.data$u-.data$dif_vol_inf)+
-        .data$reward_inf) %>%
+    dplyr::mutate(reward = dplyr::if_else(.data$dif_vol_sup!=.data$dif_vol_inf,
+      (.data$reward_sup-.data$reward_inf)/(.data$dif_vol_sup-
+      .data$dif_vol_inf)*(.data$u-.data$dif_vol_inf)+.data$reward_inf,
+      .data$reward_sup)) %>%
     dplyr::distinct(.data$week,.data$mcYear,.data$u,.data$reward)%>%
     dplyr::select("mcYear","week","u","reward") %>%
     dplyr::ungroup()

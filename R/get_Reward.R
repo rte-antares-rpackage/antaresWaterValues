@@ -177,6 +177,9 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     reward <- rbindlist(reward)   #merge the all simulations tables together
     local_reward <- reward
 
+    assertthat::assert_that(sum(is.na(local_reward))==0,
+                            msg="NaN values in local reward, something went wrong.")
+
     # Getting the minimum reward for each year, each week and each control (u)
     reward <- reward %>%
       dplyr::group_by(.data$mcYear,.data$week,.data$u) %>% dplyr::summarise(reward=min(.data$reward),.groups="drop")
@@ -198,9 +201,6 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
   }
 
   class(output) <- "Reward matrix , simulation names and values"
-
-  assertthat::assert_that(sum(is.na(local_reward))==0,
-                          msg="NaN values in local reward, something went wrong.")
 
   assertthat::assert_that(sum(is.na(reward))==0,
                           msg="NaN values in reward, something went wrong.")

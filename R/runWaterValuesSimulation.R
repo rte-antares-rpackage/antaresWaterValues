@@ -565,9 +565,9 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
 
         stop("Simulation Error. Please check simulation log.")
       }
-    }
-    if(info$mode != "Economy"){
-      message("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
+      if(info$mode != "Economy"){
+        message("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
+      }
     }
 
   }

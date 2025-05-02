@@ -115,12 +115,12 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   constraint_value <- dplyr::mutate(constraint_value,u=.data$u/168)
 
   if ("mcYear" %in% names(constraint_value)){
-    nb_scenarios <- length(unique(constraint_value$mcYear))
+    scenarios <- unique(constraint_value$mcYear)
     constraint_value <- constraint_value %>%
       dplyr::arrange(.data$mcYear) %>%
       tidyr::pivot_wider(names_from = "mcYear",values_from = "u")
   } else {
-    nb_scenarios <- 1L
+    scenarios <- NULL
   }
   constraint_value <- constraint_value %>%
     dplyr::arrange(.data$week) %>%
@@ -154,17 +154,7 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
     time_series = negative_constraint
   )
 
-  sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
-
-  if (length(names(sb_file))>0){
-    assertthat::assert_that(length(names(sb_file))==1,
-                            msg="There should be only one ruleset in scenario builder.")
-
-    sbuilder <- antaresEditObject::scenarioBuilder(
-      areas = area_thermal_cluster,
-      n_scenario = nb_scenarios,
-      opts=opts)
-
+  if (!is.null(scenarios)){
 
     fictive_clusters <- antaresRead::readClusterDesc(opts = opts) %>%
       dplyr::filter(.data$area==area_thermal_cluster) %>%
@@ -173,18 +163,31 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
     names_sb <- c()
     values_sb <- c()
 
-    for (s in seq_along(sbuilder)){
-      for (cl in 1:nrow(fictive_clusters)){
+    for (cl in 1:nrow(fictive_clusters)){
+      for (i in 1:length(scenarios)){
         names_sb <- c(names_sb,paste("t",fictive_clusters$area[cl],
-                                     s-1,fictive_clusters$cluster[cl],sep=","))
-        values_sb <- c(values_sb,as.integer(sbuilder[s]))
+                                     scenarios[i]-1,
+                                     fictive_clusters$cluster[cl],sep=","))
+        values_sb <- c(values_sb,as.integer(i))
       }
     }
 
     new_sb <- unlist(list(values_sb))
     names(new_sb) <- names_sb
-    name_ruleset <- names(sb_file)[[1]]
-    sb_file[[name_ruleset]] <- append(sb_file[[name_ruleset]],new_sb)
+
+    sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
+
+    if (length(names(sb_file))>0){
+      assertthat::assert_that(length(names(sb_file))==1,
+                              msg="There should be only one ruleset in scenario builder.")
+
+      name_ruleset <- names(sb_file)[[1]]
+      sb_file[[name_ruleset]] <- append(sb_file[[name_ruleset]],new_sb)
+
+    } else {
+      sb_file = new_sb
+      names(sb_file) = c("Default ruleset")
+    }
 
     antaresEditObject::writeIni(listData = sb_file,
                                 pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),

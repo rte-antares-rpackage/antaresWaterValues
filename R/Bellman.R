@@ -28,6 +28,9 @@
   #' @param niveau_max Level max of the reservoir
   #' @param penalty_level_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy
   #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy
+  #' @param lvl_high Double. Upper rule curve for the considered week.
+  #' @param lvl_low Double. Bottom rule curve for the considered week.
+  #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
 
@@ -36,7 +39,8 @@
                       method,mcyears,q_ratio=0.75,
                       counter,
                       stop_rate=5,debugger_feas=F,niveau_max,
-                      states_steps,penalty_level_low,penalty_level_high){
+                      states_steps,penalty_level_low,penalty_level_high,
+                      lvl_high,lvl_low,overflow_cost){
 
     # Getting all possible transitions between a state for the current week and a state for the next week
     decision_space <- dplyr::select(decision_space,-c("week"))
@@ -45,10 +49,6 @@
         dplyr::cross_join(data.frame(mcYear=mcyears))
     }
     decision_space <- round(decision_space)
-
-    # Rule curves at the end of the current week (and beginning of the next one)
-    level_high <- Data_week$level_high[1]
-    level_low <- Data_week$level_low[1]
 
     # Possible next states
     states_next <- Data_week$states_next[[1]]
@@ -62,16 +62,16 @@
 
     # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
-                                           mcyears,level_high,level_low,E_max,P_max,
-                                           next_week_values_l,niveau_max)
+                                           mcyears,lvl_high,lvl_low,E_max,P_max,
+                                           next_week_values_l,niveau_max,overflow_cost)
 
     # For each transition (control), find the associated reward and for each next state,
     # calculate penalties for violating rule curves. Then, find for each MC year and each state,
     # the maximum sum of reward, next bellman value and penalties
     df_SDP <- df_SDP %>%
       dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
-             penalty_low = dplyr::if_else(.data$next_state<=level_low,penalty_level_low*(.data$next_state-level_low),0),
-             penalty_high = dplyr::if_else(.data$next_state>=level_high,penalty_level_high*(level_high-.data$next_state),0),
+             penalty_low = dplyr::if_else(.data$next_state<=lvl_low,penalty_level_low*(.data$next_state-lvl_low),0),
+             penalty_high = dplyr::if_else(.data$next_state>=lvl_high,penalty_level_high*(lvl_high-.data$next_state),0),
              sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(.data$years,.data$states) %>%
       dplyr::slice(which.max(.data$sum)) %>%

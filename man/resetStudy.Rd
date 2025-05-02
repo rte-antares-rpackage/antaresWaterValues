@@ -10,7 +10,7 @@ resetStudy(
   area,
   pumping,
   fictive_area = NULL,
-  binding_constraint = "WeeklyWaterAmount"
+  binding_constraint = "weekly_water_amount"
 )
 }
 \arguments{

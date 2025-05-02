@@ -12,7 +12,7 @@ bellmanUI <- function(id,opts) {
 
       shinyBS::bsTooltip(
         NS(id,"week_id"),
-        "The number of the week you want to plot (Bellman values are plotted for the end of the week and watervalues for the beginning of the week)",
+        "Weeks for which you want to plot (Bellman values and watervalues are plotted at the end of the wanted weeks)",
         "bottom"
       ),
 
@@ -34,17 +34,11 @@ bellmanUI <- function(id,opts) {
 
 }
 
-bellmanServer <- function(id, opts, watervalues, pen_high, pen_low,
-                          force_final_level,penalty_final_level) {
+bellmanServer <- function(id, opts, watervalues) {
   moduleServer(id, function(input, output, session) {
     plot <- reactive(plot_Bellman(
       watervalues(),
-      input$week_id[1]:input$week_id[2],
-      pen_low(),
-      pen_high(),
-      force_final_level(),
-      penalty_final_level()
-    ))
+      input$week_id[1]:input$week_id[2]))
 
     output$plot_Bellman <-
       shiny::renderPlot(plot())

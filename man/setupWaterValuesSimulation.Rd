@@ -8,7 +8,7 @@ used in \code{runWaterValuesSimulation}}
 setupWaterValuesSimulation(
   area,
   fictive_area_name = paste0("watervalue_", area),
-  thermal_cluster = "WaterValueCluster",
+  thermal_cluster = "water_value_cluster",
   overwrite = FALSE,
   remove_areas = NULL,
   opts = antaresRead::simOptions(),

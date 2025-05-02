@@ -7,17 +7,11 @@
 #' @param replace_na_method Method to replace extreme values, either "constant values" to replace
 #' by max_vu and min_vu or "extreme values" to replace by the extreme values of the current week
 #' @param max maximal accepted water value
-#' @param penalty_level_high Penalty for violating top rule curve
-#' @param penalty_level_low Penalty for violating bottom rule curve
-#' @param force_final_level Binary. Whether final level should be constrained
-#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return a \code{data.table}
 #' @export
 
-remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_method,
-                       penalty_level_high, penalty_level_low, force_final_level=F,
-                       penalty_final_level = 0){
+remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_method){
 
   results <- copy(results_dt)
 
@@ -49,21 +43,10 @@ remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_met
     }
   }
 
-  if (!force_final_level){
-    results <- results %>%
-      dplyr::mutate(vu_pen=dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_level_high,
-                                            .data$states<.data$level_low ~ .data$vu - penalty_level_low,
+  results <- results %>%
+    dplyr::mutate(vu_pen=dplyr::case_when(.data$states>.data$level_high ~ .data$vu + .data$penalty_high,
+                                            .data$states<.data$level_low ~ .data$vu - .data$penalty_low,
                                             TRUE ~ .data$vu))
-  } else {
-    results <- results %>%
-      dplyr::mutate(vu_pen=dplyr::if_else(.data$weeks!=1,
-                                          dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_level_high,
-                                                           .data$states<.data$level_low ~ .data$vu - penalty_level_low,
-                                                           TRUE ~ .data$vu),
-                                          dplyr::case_when(.data$states>.data$level_high ~ .data$vu + penalty_final_level,
-                                                            .data$states<.data$level_low ~ .data$vu - penalty_final_level,
-                                                            TRUE ~ .data$vu)))
-  }
 
   return(results)
 }

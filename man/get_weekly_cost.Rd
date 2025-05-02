@@ -4,7 +4,13 @@
 \alias{get_weekly_cost}
 \title{Get overall cost in a week, used in different functions}
 \usage{
-get_weekly_cost(district, opts = antaresRead::simOptions(), mcyears)
+get_weekly_cost(
+  district,
+  opts = antaresRead::simOptions(),
+  mcyears,
+  expansion = F,
+  fictive_areas = NULL
+)
 }
 \arguments{
 \item{district}{The district concerned by the simulation.}
@@ -13,6 +19,10 @@ get_weekly_cost(district, opts = antaresRead::simOptions(), mcyears)
 \code{antaresRead::setSimulationPath}}
 
 \item{mcyears}{Vector of years used to evaluate cost}
+
+\item{expansion}{Binary. True if mode expansion was used to run simulations}
+
+\item{fictive_areas}{Vector of chr. Fictive areas used in simulation}
 }
 \description{
 Get overall cost in a week, used in different functions

@@ -130,8 +130,7 @@ postProcessUI <- function(id,opts) {
 
 }
 
-postProcessServer <- function(id, opts, watervalues, pen_high, pen_low, area,
-                              force_final_level,penalty_final_level) {
+postProcessServer <- function(id, opts, watervalues, area) {
   moduleServer(id, function(input, output, session) {
 
     final_result <- shiny::reactive({
@@ -142,11 +141,7 @@ postProcessServer <- function(id, opts, watervalues, pen_high, pen_low, area,
           max = input$max_rm,
           replace_na_method = input$replace_na_method,
           max_vu = input$max_vu,
-          min_vu = input$min_vu,
-          penalty_level_high = pen_high(),
-          penalty_level_low = pen_low(),
-          force_final_level = force_final_level(),
-          penalty_final_level = penalty_final_level()
+          min_vu = input$min_vu
         )
       } else{
         watervalues()
@@ -172,12 +167,7 @@ postProcessServer <- function(id, opts, watervalues, pen_high, pen_low, area,
 
     shiny::observeEvent(input$to_antares, {
       results <- final_result()
-      results <- results[results$weeks != 53,]
-      reshaped_values <- to_Antares_Format(results,
-                                           penalty_level_low=pen_low(),
-                                           penalty_level_high=pen_high(),
-                                           force_final_level=force_final_level(),
-                                           penalty_final_level=penalty_final_level())
+      reshaped_values <- to_Antares_Format_bis(results)
       antaresEditObject::writeWaterValues(area = area(),
                                           data = reshaped_values)
       shinyWidgets::show_alert(title = "Implement water values in Antares",

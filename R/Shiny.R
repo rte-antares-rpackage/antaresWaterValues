@@ -59,14 +59,17 @@ shiny_water_values <-
       shiny::navbarPage(
         "Water Values !",
 
-        shiny::tabPanel("Simulations",
+        shiny::tabPanel("Launch Antares simulations",
                         simulationUI("simulation", opts)),
 
+        shiny::tabPanel("Calculate Water Values",
+                        calculateUI("calculate", opts)),
+
+        shiny::tabPanel("Export results to Antares",
+                        postProcessUI("post",opts)),
 
         shiny::navbarMenu(
-          "Water values calculation",
-          shiny::tabPanel("Calculate Water Values",
-                          calculateUI("calculate", opts)),
+          "Analyze results",
 
           shiny::tabPanel(
             "Bellman plot",
@@ -77,11 +80,6 @@ shiny_water_values <-
           shiny::tabPanel(
             "Rewards Plot",
             rewardUI("reward",opts)
-          ),
-
-          shiny::tabPanel(
-            "Post Process",
-            postProcessUI("post",opts)
           ),
         ),
         #end navbarMenu
@@ -101,15 +99,11 @@ shiny_water_values <-
 
       res <- calculateServer("calculate",opts,silent)
 
-      bellmanServer("bellman",opts, res$watervalues, res$penalty_high,
-                    res$penalty_low, res$force_final_level,
-                    res$penalty_final_level)
+      bellmanServer("bellman",opts, res$watervalues)
 
       rewardServer("reward", opts, res$reward_db)
 
-      postProcessServer("post", opts, res$watervalues, res$penalty_high,
-                        res$penalty_low, res$area, res$force_final_level,
-                        res$penalty_final_level)
+      postProcessServer("post", opts, res$watervalues, res$area)
 
       iterativeServer("iterative",opts, silent)
 

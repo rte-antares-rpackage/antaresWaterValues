@@ -24,37 +24,24 @@ simulationUI <- function(id,opts) {
 
       shiny::h2("Simulation parameters"),
 
-      shinyWidgets::materialSwitch(
-        NS(id,"pumping"),
-        "Activate Pumping",
-        value = F,
-        status = "success"
-      ) %>%
-        bsplus::shinyInput_label_embed(
-          bsplus::shiny_iconlink() %>%
-            bsplus::bs_embed_popover(title = "Take into account the pumping in the area.")
-        ),
-
       shiny::textOutput(
         NS(id,"pumping_eff")),
 
       shiny::numericInput(
         NS(id,"sim_nb_disc_stock"),
-        "Number of reservoir discretization",
+        "Number of Antares simulation",
         value = 2,
         min = 1
       ),
       shinyBS::bsTooltip(
         NS(id,"sim_nb_disc_stock"),
-        " Number of simulation to launch, a vector of energy constraint will be created from 0 to the hydro storage maximum and of length this parameter.",
+        " Number of simulation to launch",
         "bottom"
       ),
 
-      shiny::uiOutput(NS(id,"choose_simulation")),
-
       shiny::sliderInput(
         NS(id,"sim_mcyears"),
-        label = "choose the number of MC years to simulate",
+        label = "Choose the number of MC years to simulate",
         min = 1,
         max = opts$parameters$general$nbyears,
         value = c(1, opts$parameters$general$nbyears),
@@ -66,13 +53,24 @@ simulationUI <- function(id,opts) {
         "bottom"
       ),
 
+      shinyWidgets::materialSwitch(
+        NS(id,"expansion"),
+        "Mode expansion",
+        value = F,
+        status = "success"
+      ) %>%
+        bsplus::shinyInput_label_embed(
+          bsplus::shiny_iconlink() %>%
+            bsplus::bs_embed_popover(title = "Mode expansion of Antares is used or not. If it is used, simulations are computed faster and results are smoother.")
+        ),
+
 
       shiny::h2("Saving parameters"),
 
       shiny::uiOutput(NS(id,"dir")),
       shinyBS::bsTooltip(
         NS(id,"dir"),
-        " the path where the simulation results Rdata file will be saved. ",
+        "The path where the simulation results Rdata file will be saved. ",
         "bottom"
       ),
 
@@ -106,10 +104,6 @@ simulationUI <- function(id,opts) {
     #end sidebarPanel
 
     shiny::mainPanel(
-      shiny::h2(
-        "Controls (u) in MWh per week evaluated for each week and for each simulation (sim)"
-      ),
-      DT::dataTableOutput(NS(id,"simulation_constraint"))
     )
   ))# end sidebar layout
 
@@ -118,17 +112,19 @@ simulationUI <- function(id,opts) {
 simulationServer <- function(id,opts,silent) {
   moduleServer(id, function(input, output, session) {
 
-    eff <- shiny::reactive({
-      if (input$pumping){
-        if (!is.null(input$sim_area))getPumpEfficiency(area = input$sim_area, opts = opts)
-        else 1
-      } else {1}
-
+    pumping <- shiny::reactive({
+      max_hydro <- get_max_hydro(area = input$sim_area,opts=opts,timeStep = "hourly")
+      if (min(max_hydro$pump)>0){
+        T
+      } else {
+        F
+      }
     })
 
-    output$pumping_eff <- shiny::renderText({
-      if(input$pumping) {
-        paste0("Efficiency : ", eff())}
+    eff <- shiny::reactive({
+      if (pumping()){
+        getPumpEfficiency(area = input$sim_area, opts = opts)
+      } else {1}
     })
 
     output$dir <- shiny::renderUI({
@@ -136,34 +132,6 @@ simulationServer <- function(id,opts,silent) {
                        "Saving directory",
                        value = paste0(opts$studyPath, "/user"))
 
-    })
-
-    simulation_constraint <- shiny::reactive({
-      constraint_generator(
-        area = input$sim_area,
-        opts = opts,
-        pumping = input$pumping,
-        nb_disc_stock = input$sim_nb_disc_stock,
-        pumping_efficiency = eff(),
-        mcyears = seq(
-          from = input$sim_mcyears[1],
-          to = input$sim_mcyears[2]
-        )
-      )
-    })
-
-    output$simulation_constraint <- DT::renderDataTable({
-      dplyr::filter(simulation_constraint(),
-                    .data$sim %in% input$subset_simulation)
-    })
-
-    output$choose_simulation <- shiny::renderUI({
-      shiny::checkboxGroupInput(
-        NS(id,"subset_simulation"),
-        "Choose which simulations you want to run",
-        unique(simulation_constraint()$sim),
-        selected = unique(simulation_constraint()$sim)
-      )
     })
 
     shiny::observeEvent(input$simulate,
@@ -179,21 +147,18 @@ simulationServer <- function(id,opts,silent) {
                                 to = input$sim_mcyears[2]
                               ),
                               path_solver = input$solver_path,
-                              binding_constraint = "WeeklyWaterAmount",
+                              binding_constraint = "weekly_water_amount",
                               fictive_area = "fictive_watervalues",
-                              thermal_cluster = "WaterValueCluster",
+                              thermal_cluster = "water_value_cluster",
                               overwrite = T,
                               link_from = input$sim_area,
                               opts = opts,
                               shiny = T,
                               otp_dest = input$sim_output_dir,
                               file_name = input$file_name,
-                              pumping = input$pumping,
+                              pumping = pumping(),
                               efficiency = eff(),
-                              constraint_values = dplyr::filter(
-                                simulation_constraint(),
-                                .data$sim %in% input$subset_simulation
-                              )
+                              expansion = input$expansion
                             )
                           },
                           prefix = "")
@@ -210,9 +175,9 @@ simulationServer <- function(id,opts,silent) {
                           resetStudy(
                             opts = opts_temp,
                             area = input$sim_area,
-                            pumping = input$pumping,
+                            pumping = pumping(),
                             fictive_area = "fictive_watervalues",
-                            binding_constraint = "WeeklyWaterAmount"
+                            binding_constraint = "weekly_water_amount"
                           )
                         }, print_cat = F,
                         message = F, warning = silent))

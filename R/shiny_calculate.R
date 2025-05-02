@@ -37,159 +37,7 @@ calculateUI <- function(id, opts) {
         "bottom"
       ),
 
-      shiny::h2("Reward calculation"),
-      # Reward calculation
-      shinyWidgets::materialSwitch(
-        NS(id,"smart_interpolation_reward"),
-        "Use marginal prices to interpolate rewards",
-        value = F,
-        status = "success"
-      ) %>%
-        bsplus::shinyInput_label_embed(
-          bsplus::shiny_iconlink() %>%
-            bsplus::bs_embed_popover(title = "If marginal prices are used, one can use less Antares simulation to retrieve reward function")
-        ),
-
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "input.smart_interpolation_reward",
-        shiny::sliderInput(
-          NS(id,"hours"),
-          "Number of hours to use to calculate rewards",
-          max = 168,
-          min = 1,
-          value = 10
-        ),
-        shiny::numericInput(
-          NS(id,"controls"),
-          "Number of controls to calculate",
-          min = 0,
-          value = 3
-        )
-      ),
-
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "!input.smart_interpolation_reward",
-        # correct monotony option for gains
-        shinyWidgets::materialSwitch(
-          NS(id,"correct_monotony_gain"),
-          "Correct monotony of gains",
-          value = F,
-          status = "success"
-        ) %>%
-          bsplus::shinyInput_label_embed(
-            bsplus::shiny_iconlink() %>%
-              bsplus::bs_embed_popover(title = "Correct monotony of gain, ie the more water is turbined the less the cost of the electric system is high")
-          )
-      ),
-
       shiny::h2("Bellman values calculation"),
-      # Algorithm
-      shinyWidgets::radioGroupButtons(
-        inputId = NS(id,"method"),
-        label = "Select algorithm to use",
-        choices = c("grid-mean", "mean-grid", "quantile"),
-        individual = TRUE,
-        justified = TRUE,
-        checkIcon = list(yes = shiny::icon("ok",
-                                           lib = "glyphicon"))
-      ),
-      shinyBS::bsTooltip(
-        NS(id,"method"),
-        " Select the algorithm to use in calculation for more information check documentation.",
-        "bottom"
-      ),
-
-
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "input.method=='quantile'",
-        shiny::sliderInput(
-          NS(id,"q_ratio"),
-          label = NULL,
-          min = 0,
-          max = 100,
-          value = 50,
-          post  = " %"
-        ),
-      ),
-      shinyBS::bsTooltip(
-        NS(id,"q_ratio"),
-        "The bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
-        "bottom"
-      ),
-
-      shinyWidgets::materialSwitch(
-        NS(id,"until_convergence"),
-        "Repeat until convergence",
-        value = F,
-        status = "success"
-      ) %>%
-        bsplus::shinyInput_label_embed(
-          bsplus::shiny_iconlink() %>%
-            bsplus::bs_embed_popover(title = "Repeat the calculation using in each time the last calculation as initial condition until the convergence.")
-        ),
-
-      #number of cycles
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "!input.until_convergence",
-        shiny::numericInput(
-          NS(id,"nb_cycle"),
-          "Number of cycle to calculate",
-          value = 2,
-          min = 1
-        )
-      ),
-      shinyBS::bsTooltip(
-        NS(id,"nb_cycle"),
-        " Number of times to run the algorithm to reduce the initial values effects.",
-        "bottom"
-      ),
-
-
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "input.until_convergence",
-        shiny::sliderInput(
-          NS(id,"convergence_rate"),
-          "Convergence goal",
-          max = 100,
-          min = 0,
-          value = 90,
-          post  = " %"
-        ),
-        shiny::numericInput(NS(id,"convergence_criteria"), "convergence landmark", value =
-                              1),
-        shiny::numericInput(NS(id,"cycle_limit"), "Number of Cycles limit ", value =
-                              10)
-      ),
-
-      shinyBS::bsTooltip(
-        NS(id,"convergence_rate"),
-        "The convergence level from which we suppose that no need to continue another cycle.",
-        "bottom"
-      ),
-      shinyBS::bsTooltip(
-        NS(id,"convergence_criteria"),
-        "the value define convergence. if the difference between two water values is less then this value those values are converged.",
-        "bottom"
-      ),
-      shinyBS::bsTooltip(
-        NS(id,"cycle_limit"),
-        "The maximum number of cycles to calculate before convergence.",
-        "bottom"
-      ),
-
-      #week 53 value
-      shiny::numericInput(NS(id,"week_53"), "Water value initial condition", value =
-                            0),
-      shinyBS::bsTooltip(
-        NS(id,"week_53"),
-        " Water values for week 53, will be mutiplied by the half capacity of the reservoir to genrate an approximitive bellman values as initial condition",
-        "bottom"
-      ),
 
       #number of states:
       shiny::sliderInput(
@@ -245,6 +93,21 @@ calculateUI <- function(id, opts) {
         ns = NS(id),
         condition = "input.force_final_level",
         shinyWidgets::materialSwitch(
+          NS(id,"final_level_exact"),
+          "Final level should be respected for all scenarios (if not consider expectancy)",
+          value = T,
+          status = "success"
+        ) %>%
+          bsplus::shinyInput_label_embed(
+            bsplus::shiny_iconlink() %>%
+              bsplus::bs_embed_popover(
+                title ="If true, penalties ensure that the final level is met, if not the expectancy of final levels should be equal to the objective and there is no hard constraint.")),
+        ),
+
+      shiny::conditionalPanel(
+        ns = NS(id),
+        condition = "input.force_final_level",
+        shinyWidgets::materialSwitch(
           NS(id,"final_level_egal_initial"),
           "Final level should be equal to initial level",
           value = T,
@@ -254,14 +117,25 @@ calculateUI <- function(id, opts) {
             bsplus::shiny_iconlink() %>%
               bsplus::bs_embed_popover(title ="If the final level should be equal to the initial level. There could be a deviation of the final level to the closest integer due to the implementation of penalties through water values.")),
         shiny::numericInput(
-          NS(id,"penalty_final_level"),
-          "Penalty for final level",
+          NS(id,"penalty_final_level_high"),
+          "Penalty for final level (top rule curve)",
+          value = 3001
+        ),
+        shiny::numericInput(
+          NS(id,"penalty_final_level_low"),
+          "Penalty for final level (bottom rule curve)",
           value = 3001
         ),
       ),
 
       shinyBS::bsTooltip(
-        NS(id,"penalty_final_level"),
+        NS(id,"penalty_final_level_low"),
+        "Penalty will be added proportionally to the distance from the expected final level.",
+        "bottom"
+      ),
+
+      shinyBS::bsTooltip(
+        NS(id,"penalty_final_level_high"),
         "Penalty will be added proportionally to the distance from the expected final level.",
         "bottom"
       ),
@@ -281,19 +155,6 @@ calculateUI <- function(id, opts) {
         "There could be a deviation of the final level to the closest integer.",
         "bottom"
       ),
-
-
-      # correct concavity option for Bellman values
-      shinyWidgets::materialSwitch(
-        NS(id,"correct_concavity"),
-        "Correct concavity of Bellman values",
-        value = F,
-        status = "success"
-      ) %>%
-        bsplus::shinyInput_label_embed(
-          bsplus::shiny_iconlink() %>%
-            bsplus::bs_embed_popover(title = "Correct concavity of Bellman values to have monotone water values.")
-        ),
 
 
       shiny::actionButton(
@@ -338,8 +199,6 @@ calculateUI <- function(id, opts) {
         color = "primary",
         block = T
       ),
-
-      DT::dataTableOutput(NS(id,"calculated_controls"))
 
     )
   )
@@ -386,52 +245,40 @@ calculateServer <- function(id, opts, silent) {
     })
 
     constraints <- shiny::reactive({
-      constraint_generator(
-        area = simulation_res()$area,
-        opts = opts,
-        pumping = simulation_res()$pumping,
-        nb_disc_stock = input$controls,
-        pumping_efficiency = simulation_res()$eff,
-        mcyears = simulation_res()$mc_years
-      )
-    })
-
-    calculated_controls <- shiny::reactive({
-      rbind(
-        dplyr::mutate(simulation_res()$simulation_values, From = "Simulation"),
-        dplyr::mutate(constraints(),
-          From = "Calculated controls"
-        )
-      ) %>%
-        dplyr::select(-c("sim")) %>%
-        dplyr::group_by(.data$week, .data$From) %>%
-        dplyr::summarise(Controls = list(.data$u), .groups = "drop") %>%
-        tidyr::pivot_wider(names_from = .data$From,
-                           values_from = .data$Controls) %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(Union = list(union(
-          .data$`Calculated controls`, .data$Simulation
-        ))) %>%
-        tidyr::pivot_longer(cols = 2:4,
-                            names_to = "From",
-                            values_to = "Controls") %>%
-        dplyr::mutate(Total = lengths(.data$Controls)) %>%
-        dplyr::mutate(Controls = as.character(.data$Controls)) %>%
-        as.data.table()
-    })
-
-    output$calculated_controls <- DT::renderDataTable({
-      if (is.null(simulation_res())){data.frame()}
+      if ("mcYear" %in% names(simulation_res()$simulation_values)){
+        constraint_generator(
+          area = simulation_res()$area,
+          opts = opts,
+          pumping = simulation_res()$pumping,
+          nb_disc_stock = 20,
+          pumping_efficiency = simulation_res()$eff,
+          mcyears = simulation_res()$mc_years
+        ) %>%
+          dplyr::cross_join(data.frame(mcYear=simulation_res()$mc_years))
+      }
       else {
-        if (input$smart_interpolation_reward)  calculated_controls()
-        else {
-          dplyr::filter(calculated_controls(),.data$From=="Simulation")
-        }
+        constraint_generator(
+          area = simulation_res()$area,
+          opts = opts,
+          pumping = simulation_res()$pumping,
+          nb_disc_stock = 20,
+          pumping_efficiency = simulation_res()$eff,
+          mcyears = simulation_res()$mc_years
+        )
       }
     })
 
     possible_controls <- shiny::reactive({
-      possible_controls <- if (input$smart_interpolation_reward) {
+      if ("mcYear" %in% names(simulation_res()$simulation_values)){
+        rbind(
+          simulation_res()$simulation_values,
+          constraints()
+        ) %>%
+          dplyr::select("week", "u","mcYear") %>%
+          dplyr::distinct() %>%
+          dplyr::arrange(.data$mcYear,week, .data$u)
+      }
+      else {
         rbind(
           simulation_res()$simulation_values,
           constraints()
@@ -439,11 +286,23 @@ calculateServer <- function(id, opts, silent) {
           dplyr::select("week", "u") %>%
           dplyr::distinct() %>%
           dplyr::arrange(week, .data$u)
-      } else {
-        simulation_res()$simulation_values %>% dplyr::select("week", "u")
       }
-      possible_controls
+
     })
+
+    final_lvl <- shiny::reactive({if (input$force_final_level){
+      if (input$final_level_egal_initial|is.null(input$final_level)){
+        final_lvl <- readReservoirLevels(simulation_res()$area, timeStep = "daily",
+                                         byReservoirCapacity = FALSE,
+                                         opts = opts)[1,]
+        assertthat::assert_that(final_lvl$level_low==final_lvl$level_high,
+                                msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
+        final_lvl$level_low*100
+      } else {
+        input$final_level
+      }
+    }
+  })
 
     shiny::observeEvent(input$Calculate,
 
@@ -455,17 +314,14 @@ calculateServer <- function(id, opts, silent) {
                                 simulation_values = simulation_res()$simulation_values,
                                 district_name = "water values district",
                                 opts = opts,
-                                method_old = !input$smart_interpolation_reward,
-                                hours = if (input$smart_interpolation_reward) {
-                                  round(seq(0, 168, length.out = input$hours))
-                                },
+                                method_old = F,
                                 possible_controls = possible_controls(),
-                                max_hydro = if (input$smart_interpolation_reward) {
-                                  get_max_hydro(simulation_res()$area, opts)
-                                },
+                                max_hydro = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,
                                 area = simulation_res()$area,
-                                district_balance = "water values district"
+                                district_balance = "water values district",
+                                expansion = simulation_res()$expansion,
+                                fictive_areas=simulation_res()$fictive_areas
                               )
 
                             results <-     Grid_Matrix(
@@ -473,36 +329,26 @@ calculateServer <- function(id, opts, silent) {
                               reward_db = reward_db,
                               simulation_names = simulation_res()$simulation_names,
                               simulation_values = simulation_res()$simulation_values,
-                              nb_cycle = input$nb_cycle,
+                              nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
                               opts = opts,
-                              week_53 = input$week_53,
+                              week_53 = 0,
                               district_name = "water values district" ,
-                              method = input$method,
+                              method = "grid-mean",
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mc_years,
-                              q_ratio = input$q_ratio / 100,
                               shiny = T,
-                              until_convergence = input$until_convergence,
-                              convergence_rate = input$convergence_rate / 100,
-                              convergence_criteria = input$convergence_criteria,
-                              cycle_limit = input$cycle_limit,
+                              until_convergence = F,
                               pumping = simulation_res()$pumping,
                               efficiency = simulation_res()$eff,
-                              correct_concavity = input$correct_concavity,
-                              correct_monotony_gain = input$correct_monotony_gain,
+                              correct_concavity = F,
+                              correct_monotony_gain = F,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,
-                              method_old_gain = !input$smart_interpolation_reward,
-                              hours_reward_calculation = if (input$smart_interpolation_reward) {
-                                round(seq(0, 168, length.out = input$hours))
-                              },
-                              controls_reward_calculation = if (input$smart_interpolation_reward) {
-                                constraints()
-                              },
                               force_final_level = input$force_final_level,
-                              final_level_egal_initial = input$final_level_egal_initial,
-                              final_level = input$final_level,
-                              penalty_final_level = input$penalty_final_level
+                              final_level = final_lvl(),
+                              penalty_final_level_low = input$penalty_final_level_low,
+                              penalty_final_level_high = input$penalty_final_level_high,
+                              expansion = simulation_res()$expansion
                             )$aggregated_results
 
                             shiny::isolate(res$results <- results)
@@ -546,12 +392,8 @@ calculateServer <- function(id, opts, silent) {
 
     list(
       watervalues = reactive(res$results),
-      penalty_high = reactive(input$penalty_high),
-      penalty_low = reactive(input$penalty_low),
       reward_db = reactive(res$reward_db),
-      area = reactive(simulation_res()$area),
-      force_final_level = reactive(input$force_final_level),
-      penalty_final_level = reactive(input$penalty_final_level)
+      area = reactive(simulation_res()$area)
     )
   })
 }

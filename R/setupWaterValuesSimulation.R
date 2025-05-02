@@ -19,7 +19,7 @@
 #'
 setupWaterValuesSimulation <- function(area,
                                        fictive_area_name = paste0("watervalue_", area),
-                                       thermal_cluster = "WaterValueCluster",
+                                       thermal_cluster = "water_value_cluster",
                                        overwrite = FALSE,
                                        remove_areas = NULL,
                                        opts = antaresRead::simOptions(),
@@ -27,6 +27,9 @@ setupWaterValuesSimulation <- function(area,
                                        link_from=NULL,pumping=F,max_load=100000000,...) {
 
   assertthat::assert_that(class(opts) == "simOptions")
+  assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
+                          msg=paste0("Unserved cost is null in ",area,
+                                     ", unserved energy will be exported to this area in simulations launched by the package."))
 
   changeHydroManagement(opts=opts,watervalues = F, heuristic = T, area=area)
 
@@ -47,21 +50,9 @@ setupWaterValuesSimulation <- function(area,
   suppressWarnings(resetPumpPower(area = area, opts = opts))
   # Prepare thermal Cluster parameters
   if (utils::hasName(hydro_storage_max, "hstorPMaxHigh")) {
-    prepro_modulation <- matrix(
-      data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max$hstorPMaxHigh/hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)],
-               rep(0, times = 365 * 24 * 1)),
-      ncol = 4
-    )
     time_series <- hydro_storage_max$hstorPMaxHigh
     nominalcapacity_turb <- hydro_storage_max[, max(hydro_storage_max$hstorPMaxHigh)]
   } else {
-    prepro_modulation <- matrix(
-      data = c(rep(1, times = 365 * 24 * 2),
-               hydro_storage_max$generatingMaxPower/hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)],
-               rep(0, times = 365 * 24 * 1)),
-      ncol = 4
-    )
     time_series <- hydro_storage_max$generatingMaxPower
     nominalcapacity_turb <- hydro_storage_max[, max(hydro_storage_max$generatingMaxPower)]
   }
@@ -77,7 +68,6 @@ setupWaterValuesSimulation <- function(area,
   if(pumping){
     fictive_areas <- c(fictive_areas,paste0(fictive_area_name,"_pump"))
   }
-
 
   for(fictive_area in fictive_areas){
 
@@ -95,10 +85,6 @@ setupWaterValuesSimulation <- function(area,
           group = "other", unitcount = "1",
           time_series = time_series,
           nominalcapacity = nominalcapacity_turb,
-          prepro_modulation = prepro_modulation,
-          `min-down-time` = "1",
-          `marginal-cost` = 0.01,
-          `market-bid-cost` = 0.01,
           overwrite = overwrite,
           opts = opts
         )
@@ -113,19 +99,16 @@ setupWaterValuesSimulation <- function(area,
 
     if(grepl("_bc$", fictive_area)){
       #add load
-      max_pump <- hydro_storage_max$pumpingMaxPower
-      max_turb <- hydro_storage_max$generatingMaxPower
+      max_pump <- max(hydro_storage_max$pumpingMaxPower)
+      max_turb <- max(hydro_storage_max$generatingMaxPower)
       antaresEditObject::writeInputTS(fictive_area, type = "load",
-                                      data = max_pump+max_turb)
+                                      data = rep(max_pump+max_turb,8760))
       # add positive cluster
       antaresEditObject::createCluster(
         area = fictive_area,
         cluster_name = "positive",
         group = "other", unitcount = "1",
         nominalcapacity = nominalcapacity_pump,
-        `min-down-time` = "1",
-        `marginal-cost` = 0.01,
-        `market-bid-cost` = 0.01,
         overwrite = overwrite,
         opts = opts
       )
@@ -135,9 +118,6 @@ setupWaterValuesSimulation <- function(area,
         cluster_name = "negative",
         group = "other", unitcount = "1",
         nominalcapacity = nominalcapacity_turb,
-        `min-down-time` = "1",
-        `marginal-cost` = 0.01,
-        `market-bid-cost` = 0.01,
         overwrite = overwrite,
         opts = opts
       )
@@ -152,7 +132,7 @@ setupWaterValuesSimulation <- function(area,
 
     # Create link
     if(grepl("_turb$", fictive_area)|grepl("_pump$", fictive_area)){
-      suppressWarnings({
+     suppressWarnings({
         opts <- antaresEditObject::createLink(
           from = from_area,
           to = fictive_area,
@@ -166,29 +146,13 @@ setupWaterValuesSimulation <- function(area,
 
   }#end fictive areas loop
 
-
   # Activate output year by year
   suppressWarnings({
     antaresEditObject::updateGeneralSettings(year.by.year = TRUE, opts = opts)
   })
 
-
-  # Create a water values district
-  suppressWarnings({
-    antaresEditObject::createDistrict(
-      name = "water values district",
-      caption = "water values district",
-      comments = "Used for calculate water values",
-      apply_filter = "add-all",
-      remove_area = fictive_areas,
-      output = TRUE,
-      overwrite = TRUE,
-      opts = opts
-    )
-  })
-
   # Adjust thematic trimming
-  settings_ini <- antaresEditObject::readIniFile(file.path(opts$studyPath, "settings", "generaldata.ini"))
+  settings_ini <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "generaldata.ini"))
   if (settings_ini$general$`thematic-trimming`){
     for (p in list("OV. COST","MRG. PRICE","BALANCE")){
       if (p %in% settings_ini$`variables selection`){

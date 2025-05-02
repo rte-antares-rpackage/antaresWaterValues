@@ -179,42 +179,29 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 #'
 #' @param value_nodes_dt A data.table contains the Bellman and water values .
 #' Obtained using the function Grid_Matrix()
-#' @param penalty_low Penalty for the lower rule curve
-#' @param penalty_high Penalty for the higher rule curve
 #' @param week_number Numeric of length 1. number of the week to plot.
-#' @param force_final_level Binary. Whether final level should be constrained
-#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return a \code{ggplot} object
 #' @export
 
 
-plot_Bellman <- function(value_nodes_dt,week_number,penalty_low=10000,penalty_high=10000,
-                         force_final_level=F,penalty_final_level=0){
+plot_Bellman <- function(value_nodes_dt,week_number){
 
-  temp <- value_nodes_dt[value_nodes_dt$weeks %in%week_number]
+  value_nodes_dt <- value_nodes_dt %>%
+    dplyr::mutate(week_plot = .data$weeks)
+  temp <- value_nodes_dt[value_nodes_dt$week_plot %in%week_number]
 
-  if (!force_final_level){
-    temp <- temp %>%
-      dplyr::mutate(value_node=dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_high*(.data$states-.data$level_high),
-                                              .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
+  temp <- temp %>%
+      dplyr::mutate(value_node=dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - .data$penalty_high*(.data$states-.data$level_high),
+                                              .data$states<.data$level_low ~ .data$value_node  - .data$penalty_low*(.data$level_low-.data$states),
                                               TRUE ~ .data$value_node ))
-  } else {
-    temp <- temp %>%
-      dplyr::mutate(value_node=dplyr::if_else(.data$weeks!=1,
-                                              dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_high*(.data$states-.data$level_high),
-                                                               .data$states<.data$level_low ~ .data$value_node  - penalty_low*(.data$level_low-.data$states),
-                                                               TRUE ~ .data$value_node ),
-                                              dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - penalty_final_level*(.data$states-.data$level_high),
-                                                               .data$states<.data$level_low ~ .data$value_node  - penalty_final_level*(.data$level_low-.data$states),
-                                                               TRUE ~ .data$value_node )))
-  }
+
   temp <- temp %>%
     dplyr::mutate(states_round_percent=.data$states/max(temp$states)*100) %>%
     dplyr::group_by(.data$weeks) %>%
     dplyr::arrange(.data$weeks,.data$states) %>%
     dplyr::mutate(value_node_dif=.data$value_node-dplyr::lag(.data$value_node),
-                  weeks=as.character(.data$weeks)) %>%
+                  weeks=as.character(.data$week_plot)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(is.finite(.data$vu),!is.nan(.data$vu))
 

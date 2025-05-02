@@ -10,11 +10,17 @@
 
 disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 
-  opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
-  opts <- antaresEditObject::removeBindingConstraint(name = paste0("Turb",area), opts = opts)
-  if(pumping){
-    opts <- antaresEditObject::removeBindingConstraint(name = paste0("Pump",area), opts = opts)
+  bc <- antaresRead::readBindingConstraints(opts)
+  if (!is.null(bc)){
+    if (name_bc %in% names(bc)){
+      opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
+      opts <- antaresEditObject::removeBindingConstraint(name = paste0("turb_",area), opts = opts)
+      if(pumping){
+        opts <- antaresEditObject::removeBindingConstraint(name = paste0("pump_",area), opts = opts)
+      }
+    }
   }
+
   return(opts)
 }
 
@@ -35,7 +41,7 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
   if(length(coeff)==3){
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name =  paste0("Turb",area),
+      name =  paste0("turb_",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = coeff[1],
@@ -57,7 +63,7 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
     # Implement the flow sens in the study Pumping
 
     opts <- antaresEditObject::createBindingConstraint(
-      name = paste0("Pump",area),
+      name = paste0("pump_",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = -coeff[4],
@@ -69,7 +75,7 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
     # Implement the flow sens in the study Turbining
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name = paste0("Turb",area),
+      name = paste0("turb_",area),
       enabled = TRUE,
       operator = "greater",
       coefficients = coeff[1],
@@ -81,14 +87,13 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
 
 
     # Implement binding constraint
-
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
       overwrite = TRUE,
-      coefficients = c(coeff[1],efficiency*coeff[4], coeff[2], coeff[3]),
+      coefficients = c(coeff[1],coeff[4]*efficiency, coeff[2], coeff[3]),
       opts = opts)
 
 
@@ -110,12 +115,12 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
   constraint_value <- dplyr::mutate(constraint_value,u=.data$u/168)
 
   if ("mcYear" %in% names(constraint_value)){
-    nb_scenarios <- length(unique(constraint_value$mcYear))
+    scenarios <- unique(constraint_value$mcYear)
     constraint_value <- constraint_value %>%
       dplyr::arrange(.data$mcYear) %>%
       tidyr::pivot_wider(names_from = "mcYear",values_from = "u")
   } else {
-    nb_scenarios <- 1L
+    scenarios <- NULL
   }
   constraint_value <- constraint_value %>%
     dplyr::arrange(.data$week) %>%
@@ -149,39 +154,47 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
     time_series = negative_constraint
   )
 
-  sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
+  if (!is.null(scenarios)){
 
-  assertthat::assert_that(names(sb_file)==c("Default Ruleset"),
-                          msg="There should be only Default Ruleset in scenario builder.")
+    fictive_clusters <- antaresRead::readClusterDesc(opts = opts) %>%
+      dplyr::filter(.data$area==area_thermal_cluster) %>%
+      dplyr::select(c("area","cluster"))
 
-  sbuilder <- antaresEditObject::scenarioBuilder(
-    areas = area_thermal_cluster,
-    n_scenario = nb_scenarios,
-    opts=opts)
+    names_sb <- c()
+    values_sb <- c()
 
-
-  fictive_clusters <- antaresRead::readClusterDesc(opts = opts) %>%
-    dplyr::filter(.data$area==area_thermal_cluster) %>%
-    dplyr::select(c("area","cluster"))
-
-  names_sb <- c()
-  values_sb <- c()
-
-  for (s in seq_along(sbuilder)){
     for (cl in 1:nrow(fictive_clusters)){
-      names_sb <- c(names_sb,paste("t",fictive_clusters$area[cl],
-                      s-1,fictive_clusters$cluster[cl],sep=","))
-      values_sb <- c(values_sb,as.integer(sbuilder[s]))
+      for (i in 1:length(scenarios)){
+        names_sb <- c(names_sb,paste("t",fictive_clusters$area[cl],
+                                     scenarios[i]-1,
+                                     fictive_clusters$cluster[cl],sep=","))
+        values_sb <- c(values_sb,as.integer(i))
+      }
     }
+
+    new_sb <- unlist(list(values_sb))
+    names(new_sb) <- names_sb
+
+    sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
+
+    if (length(names(sb_file))>0){
+      assertthat::assert_that(length(names(sb_file))==1,
+                              msg="There should be only one ruleset in scenario builder.")
+
+      name_ruleset <- names(sb_file)[[1]]
+      sb_file[[name_ruleset]] <- append(sb_file[[name_ruleset]],new_sb)
+
+    } else {
+      sb_file = new_sb
+      names(sb_file) = c("Default ruleset")
+    }
+
+    antaresEditObject::writeIni(listData = sb_file,
+                                pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
+                                overwrite = TRUE, default_ext = ".dat")
+
+    Sys.sleep(1)
   }
-
-  new_sb <- unlist(list(values_sb))
-  names(new_sb) <- names_sb
-  sb_file$`Default Ruleset` <- append(sb_file$`Default Ruleset`,new_sb)
-
-  antaresEditObject::writeIni(listData = sb_file,
-                              pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
-                              overwrite = TRUE, default_ext = ".dat")
 
 
   return(opts)
@@ -228,7 +241,11 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   weeks <- dplyr::distinct(max_hydro,.data$timeId)$timeId
   df_constraint <- data.frame(week=weeks)
   df_constraint$u <- sapply(df_constraint$week,
-                            FUN = function(w) constraint_week(pumping,pumping_efficiency,nb_disc_stock,res_cap,dplyr::filter(max_hydro,.data$timeId==w)),
+                            FUN = function(w) constraint_week(pumping,
+                                      pumping_efficiency,
+                                      nb_disc_stock,res_cap,
+                                      dplyr::filter(max_hydro,
+                                                    .data$timeId==w),w),
                             simplify = F)
 
   df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
@@ -248,15 +265,18 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 #' @param nb_disc_stock Number of constraint values wanted for each week
 #' @param res_cap Double, reservoir capacity
 #' @param hydro Pumping and turbining maximum powers for the week, generated by \code{get_max_hydro}
+#' @param week Current week for which to compute controls
 #'
 #' @return List of constraint values for the week
-constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro){
+constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro,week){
   maxi <- min(hydro$turb,res_cap+hydro$max_app)
-  mini <- -hydro$pump*pumping_efficiency
+  mini <- max(-res_cap,-hydro$pump*pumping_efficiency)
 
   if(pumping){
     if(nb_disc_stock<3){
-      message("nb_disc_stock should be greater than 2")
+      if (week==1){
+        message("nb_disc_stock should be greater than 2")
+      }
       constraint_values <- c(0)
     } else {
       total <- maxi-mini
@@ -286,7 +306,9 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
 
   }else{
     if(nb_disc_stock<2){
-      message("nb_disc_stock should be greater than 1")
+      if (week==1){
+        message("nb_disc_stock should be greater than 1")
+      }
       constraint_values <- c(0)
     } else {
       constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)

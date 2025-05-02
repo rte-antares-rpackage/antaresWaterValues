@@ -1,7 +1,12 @@
 
-# <img src="inst/images/antares_simulator.png" width="250" />
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+<img src="man/figures/antares_simulator.png" width="250" />
 
 # antaresWaterValues
+
+<!-- badges: start -->
+<!-- badges: end -->
 
 The R package watervalues allows to calculate water values for a given
 reservoir using Antares simulations and dynamic programming.
@@ -10,23 +15,19 @@ More theoretical details are given at the end.
 
 ## Installation
 
-You can install the package from [GitHub](https://github.com/) with:
+You can install the development version of antaresWaterValues from
+[GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("rte-antares-rpackage/antaresWaterValues", build_vignettes = TRUE)
+devtools::install_github("rte-antares-rpackage/antaresWaterValues")
 ```
-
-To install all the package dependencies you can run the script
-`inst/dependencies.R`
 
 ## Using the Shiny app
 
 ``` r
 library(antaresWaterValues)
 #> Le chargement a nécessité le package : data.table
-#> Le chargement a nécessité le package : shiny
-#> Le chargement a nécessité le package : shinyBS
 ```
 
 Now we are ready to use our package.
@@ -36,7 +37,7 @@ study_path <- "your/path/to/the/antares/study"
 shiny_water_values(antaresRead::setSimulationPath(study_path,"input"))
 ```
 
-![](inst/images/calculate_water_values.gif)
+![](man/figures/calculate_water_values.gif)
 
 ## Without the Shiny app
 
@@ -103,10 +104,10 @@ results <- Grid_Matrix(
                                                      pumping_efficiency = pump_eff,
                                                      opts=opts,
                                                      mcyears=mcyears),# used for marginal prices interpolation
-  force_final_level = F, # T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)
-  final_level = get_initial_level(area=area,opts=opts), # wanted final level (between 0 and 100%)
-  penalty_final_level_low = 4,
-  penalty_final_level_high = 1
+force_final_level = F, # T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)
+final_level = get_initial_level(area=area,opts=opts), # wanted final level (between 0 and 100%)
+penalty_final_level_low = 4,
+penalty_final_level_high = 1
 )
 aggregated_results <- results$aggregated_results
 ```
@@ -114,7 +115,8 @@ aggregated_results <- results$aggregated_results
 Water values are written to Antares thanks to the following instructions
 
 ``` r
-reshaped_values <- to_Antares_Format(aggregated_results)
+reshaped_values <- aggregated_results[aggregated_results$weeks!=53,] %>%
+  to_Antares_Format()
 antaresEditObject::writeWaterValues(
   area = area,
   data = reshaped_values
@@ -134,18 +136,9 @@ plot_Bellman(value_nodes_dt = aggregated_results,
              week_number = c(1,3))
 ```
 
-<img src="man/figures/README-bellman-1.png" width="100%" />
-
 You can also plot reward functions
 
 ``` r
-controls_reward_calculation <-constraint_generator(area=area,
-                                           nb_disc_stock = 20,
-                                           pumping = pumping,
-                                           pumping_efficiency = pump_eff,
-                                           opts=opts,
-                                           mcyears=mcyears)
-controls_reward_calculation <-dplyr::arrange(dplyr::distinct(dplyr::select(rbind(simulation_res$simulation_values,controls_reward_calculation),-c("sim"))),.data$week,.data$u)
 reward <- get_Reward(
   simulation_names = simulation_res$simulation_names,
   simulation_values = simulation_res$simulation_values,
@@ -155,9 +148,11 @@ reward <- get_Reward(
   pump_eff = pump_eff,
   method_old = T,# T if you want a simple linear interpolation of rewards,
                  # F if you want to use marginal price to interpolate
-  hours = c(seq.int(0,168,10),168),# used for marginal prices interpolation
-  possible_controls = controls_reward_calculation,# used for marginal prices interpolation
-  max_hydro = get_max_hydro(area,timeStep = "hourly")
+  possible_controls = constraint_generator(area=area,
+                                           nb_disc_stock = 20,
+                                           pumping = pumping,
+                                           pumping_efficiency = pump_eff,
+                                           opts=opts)# used for marginal prices interpolation
 )
 reward <- reward$reward
 ```
@@ -278,7 +273,7 @@ between the gain at week $t$ and the gain between the beginning of week
 $t+1$ and the end of the year. In other words, it is the best compromise
 between using water during week $t$ and keeping it for the other weeks.
 
-<img src="inst/images/bellman_calculation.PNG" width="466" />
+<img src="man/figures/bellman_calculation.PNG" width="466" />
 
 ### Practice
 

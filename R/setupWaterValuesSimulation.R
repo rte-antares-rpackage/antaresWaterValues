@@ -64,7 +64,7 @@ setupWaterValuesSimulation <- function(area,
     from_area <- area
   }
 
-  fictive_areas <- c(paste0(fictive_area_name,"_turb"),paste0(fictive_area_name,"_bc"))
+  fictive_areas <- c(paste0(fictive_area_name,"_turb"))
   if(pumping){
     fictive_areas <- c(fictive_areas,paste0(fictive_area_name,"_pump"))
   }
@@ -96,39 +96,6 @@ setupWaterValuesSimulation <- function(area,
       max_pump <- hydro_storage_max$pumpingMaxPower
       antaresEditObject::writeInputTS(fictive_area, type = "load", data = max_pump)
     }
-
-    if(grepl("_bc$", fictive_area)){
-      #add load
-      max_pump <- max(hydro_storage_max$pumpingMaxPower)
-      max_turb <- max(hydro_storage_max$generatingMaxPower)
-      antaresEditObject::writeInputTS(fictive_area, type = "load",
-                                      data = rep(max_pump+max_turb,8760))
-      # add positive cluster
-      antaresEditObject::createCluster(
-        area = fictive_area,
-        cluster_name = "positive",
-        group = "other", unitcount = "1",
-        nominalcapacity = nominalcapacity_pump,
-        overwrite = overwrite,
-        opts = opts
-      )
-      # add negative cluster
-      antaresEditObject::createCluster(
-        area = fictive_area,
-        cluster_name = "negative",
-        group = "other", unitcount = "1",
-        nominalcapacity = nominalcapacity_turb,
-        overwrite = overwrite,
-        opts = opts
-      )
-
-      unsp_cost <- max(opts$energyCosts$unserved)
-      antaresEditObject::writeEconomicOptions(data.frame(
-        area = c(fictive_area),
-        average_unsupplied_energy_cost = c(2*unsp_cost)
-      ))
-    }
-
 
     # Create link
     if(grepl("_turb$", fictive_area)|grepl("_pump$", fictive_area)){

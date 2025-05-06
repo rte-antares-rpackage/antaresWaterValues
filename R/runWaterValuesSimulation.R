@@ -239,7 +239,12 @@ runWaterValuesSimulation <- function(area,
         stop("Simulation Error. Please check simulation log.")
       }
       if(info$mode != "Economy"){
-        message("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
+        {
+          output_info = antaresRead::readIniFile(file.path(sim_check, "info.antares-output"))
+          output_info$general$mode <- "Economy"
+          antaresEditObject::writeIniFile(output_info,file.path(sim_check, "info.antares-output"),
+                                          overwrite = T)
+        }
       }
     }
   }
@@ -304,7 +309,7 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
 
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
 
-  disable_constraint(binding_constraint,opts,pumping,area = area)
+  disable_constraint(tolower(binding_constraint),opts,pumping,area = area)
 
   fictive_areas <- c(paste0(fictive_area,"_turb"))
 
@@ -556,8 +561,10 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
         stop("Simulation Error. Please check simulation log.")
       }
       if(info$mode != "Economy"){
-        message("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
-      }
+        output_info = antaresRead::readIniFile(file.path(sim_check, "info.antares-output"))
+        output_info$general$mode <- "Economy"
+        antaresEditObject::writeIniFile(output_info,file.path(sim_check, "info.antares-output"),
+                                        overwrite = T)      }
     }
 
   }

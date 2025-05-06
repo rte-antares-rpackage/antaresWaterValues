@@ -19,7 +19,6 @@ calculateBellmanWithIterativeSimulations(
   penalty_high,
   path_solver,
   study_path,
-  hours = round(seq(0, 168, length.out = 10)),
   states_step_ratio = 1/50,
   method_dp = "grid-mean",
   q_ratio = 0.5,
@@ -54,8 +53,6 @@ calculateBellmanWithIterativeSimulations(
 \item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
 \item{study_path}{Character containing the Antares study}
-
-\item{hours}{Vector of hours used to evaluate costs/rewards of pumping/generating}
 
 \item{states_step_ratio}{Discretization ratio to generate steps levels
 between the reservoir capacity and zero}

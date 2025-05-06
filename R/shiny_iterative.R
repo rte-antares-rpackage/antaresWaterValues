@@ -215,7 +215,6 @@ iterativeServer <- function(id, opts, silent) {
                               penalty_high = input$itr_penalty_high,
                               path_solver = input$itr_solver_path,
                               study_path = opts$studyPath,
-                              hours = round(seq(0, 168, length.out = input$itr_hours)),
                               states_step_ratio = 1 / input$itr_nb_states,
                               method_dp = input$method_dp,
                               q_ratio = input$q_ratio_dp / 100
@@ -247,8 +246,7 @@ iterativeServer <- function(id, opts, silent) {
                         {
                           reshaped_values <-
                             rv$itr_results[rv$itr_results$weeks != 53, ] %>%
-                            to_Antares_Format(penalty_level_low=input$itr_penalty_low,
-                                              penalty_level_high=input$itr_penalty_high)
+                            to_Antares_Format_bis()
                           antaresEditObject::writeWaterValues(area = input$itr_sim_area,
                                                               data = reshaped_values)
                           shinyWidgets::show_alert(title = "To antares",

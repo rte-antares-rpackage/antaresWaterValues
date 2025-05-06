@@ -48,10 +48,15 @@
 #' @param penalty_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
 #' @param penalty_high Penalty for violating the top rule curve, comparable to the spilled energy cost
 #' @param method_old_gain If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices
-#' @param hours_reward_calculation If method_old_gain=F, vector of hours used to evaluate costs/rewards of pumping/generating
 #' @param controls_reward_calculation If method_old_gain=F, vector of controls evaluated
 #' @param max_hydro_hourly Hourly maximum pumping and turbining powers
 #' @param max_hydro_weekly Weekly maximum pumping and turbining powers
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
+#' @param penalty_final_level_low Penalties for both bottom rule curve to constrain final level
+#' @param penalty_final_level_high Penalties for top rule curve to constrain final level
+#' @param expansion Binary. True if mode expansion was used to run simulations
+#' @param fictive_areas Vector of chr. Fictive areas used in simulation
 #'
 #' @return List of a data.frame with aggregated water values and
 #' a data.frame of more detailed water values
@@ -59,7 +64,7 @@
 #'
 
 
-  Grid_Matrix <- function(area, simulation_names,reward_db=NULL,inflow=NULL,
+  Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,inflow=NULL,
                              simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,
                              week_53 = 0,
@@ -83,16 +88,19 @@
                              penalty_low = 3000,
                              penalty_high = 3000,
                              method_old_gain = F,
-                             hours_reward_calculation = c(seq.int(0,168,10),168),
                              controls_reward_calculation = NULL,
                           max_hydro_hourly=NULL,
                           max_hydro_weekly=NULL,
+                          force_final_level = F,
+                          final_level = NULL,
+                          penalty_final_level_low = NULL,
+                          penalty_final_level_high = NULL,
+                          fictive_areas=NULL,
                         ...) {
 
 
 
   #----- shiny Loader
-
 
   # check the method chosen to calculate Bellman values is a valid method
   methods <- c("mean-grid","grid-mean","quantile")
@@ -110,7 +118,7 @@
   if(is.null(reward_db)){
     if(!is.null(simulation_names)){
       if (is.null(simulation_values)) {
-        simulation_values <- constraint_generator(area,length(simulation_names),pumping,opts)
+        simulation_values <- constraint_generator(area,length(simulation_names),pumping,opts, mcyears=mcyears)
         message(paste0("Using simulation_values: ", paste(simulation_values, collapse = ", ")))
       }}
     }else
@@ -158,10 +166,7 @@
 
   # Getting inflow in the reservoir
   {
-    try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly"),silent = T)
-    if (nrow(inflow)==0){
-      inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
-    }
+    inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
     inflow[with(inflow, order(inflow$tsId, inflow$timeId)),]
     inflow <- inflow[, c("area", "tsId" , "timeId", "time", "hydroStorage")]
     # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
@@ -189,12 +194,16 @@
           controls_reward_calculation <- constraint_generator(area=area,nb_disc_stock=10,
                                                             pumping=pumping,
                                                             pumping_efficiency=efficiency,
-                                                            opts=opts)
+                                                            opts=opts, mcyears=mcyears)
       }
 
       # Addig controls used is the simulation to the controls used to interpolate reward
+      if (("mcYear" %in% names(simulation_values))&!("mcYear" %in% names(controls_reward_calculation))){
+        controls_reward_calculation <- dplyr::cross_join(controls_reward_calculation,
+                                                 data.frame(mcYear=mcyears))
+      }
       controls_reward_calculation <- rbind(simulation_values,controls_reward_calculation) %>%
-        dplyr::select("week","u") %>%
+        dplyr::select(-c("sim")) %>%
         dplyr::distinct() %>%
         dplyr::arrange(.data$week,.data$u)
 
@@ -204,8 +213,14 @@
           assertthat::assert_that(length(simulation_names)>=3,
                                   msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
         } else {
-          nb_distinct <- controls_reward_calculation %>%
-            dplyr::group_by(.data$week) %>%
+          if (!("mcYear" %in% names(controls_reward_calculation))){
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week)
+          } else {
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week,.data$mcYear)
+          }
+          nb_distinct <- n_distinct %>%
             dplyr::summarise(n=dplyr::n()) %>%
             dplyr::pull("n") %>%
             min()
@@ -217,8 +232,14 @@
           assertthat::assert_that(length(simulation_names)>=2,
                                   msg="If you have less than 3 simulations, you have to interpolate with marginal prices")
         } else {
-          nb_distinct <- controls_reward_calculation %>%
-            dplyr::group_by(.data$week) %>%
+          if (!("mcYear" %in% names(controls_reward_calculation))){
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week)
+          } else {
+            n_distinct <- controls_reward_calculation %>%
+              dplyr::group_by(.data$week,.data$mcYear)
+          }
+          nb_distinct <- n_distinct %>%
             dplyr::summarise(n=dplyr::n()) %>%
             dplyr::pull("n") %>%
             min()
@@ -231,19 +252,26 @@
       reward_db <- get_Reward(simulation_names = simulation_names, district_name = district_name,
                            opts = opts, correct_monotony = correct_monotony_gain,
                            method_old = method_old_gain,max_hydro=max_hydro_hourly,
-                           hours=hours_reward_calculation,
                            possible_controls=controls_reward_calculation,
                            simulation_values = simulation_values, mcyears=mcyears,area=area,
-                           district_balance=district_name)
+                           district_balance=district_name, pump_eff = efficiency,
+                           expansion=expansion, fictive_areas=fictive_areas)
 
       # Retriving controls (u) for each week
-      decision_space <- reward_db$simulation_values[,c("week","u")]
+      decision_space <- reward_db$simulation_values
+      if ("sim" %in% names(decision_space)){
+        decision_space <- dplyr::select(decision_space,-c("sim"))
+      }
       decision_space <- round(decision_space)
       reward_db <- reward_db$reward
 
 
     } else {
-      decision_space <- simulation_values[,c("week","u")]
+      if ("sim" %in% names(simulation_values)){
+        decision_space <- simulation_values %>% dplyr::select(-c("sim"))
+      } else {
+        decision_space <- simulation_values
+      }
       decision_space <- round(decision_space)
     }
 
@@ -251,12 +279,17 @@
 
   # Reservoir (rule curves)
   {
-    reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
+    reservoir <- readReservoirLevels(area, timeStep = "weekly",
+                                     byReservoirCapacity = FALSE, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
     reservoir[,
               (vars) := lapply(.SD, function(x) {round(x * max(states))}),
               .SDcols = vars
     ]
+  }
+
+  if (force_final_level){
+    final_level <- final_level*max(states)/100
   }
 
   # Prepare data.table watervalues that give Bellman value for each week, each MC year and each state
@@ -308,14 +341,21 @@
     max_hydro_weekly <- get_max_hydro(area,timeStep = "weekly")
   }
   E_max <-max_hydro_weekly$turb
-  P_max <- max_hydro_weekly$pump
+  P_max <- max_hydro_weekly$pump*efficiency
+
+  overflow_cost <- 0
+  if ("spilled" %in% names(opts$energyCosts)){
+    if (area %in% opts$energyCosts$spilled){
+      overflow_cost <- opts$energyCosts$spilled[[area]]
+    }
+  }
 
 
 
   # prepare Bellman values for the end of the year (week 53)
   {
   if (length(week_53) == 1) week_53 <- rep_len(week_53, length(states))
-  next_week_values <- (week_53 * niveau_max)/2   # approximation to get initial bellman values from initial water values
+  next_week_values <- week_53   # approximation to get initial bellman values from initial water values
   counter <- 0
 
   }
@@ -335,6 +375,8 @@
 
       pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
+      watervalues[watervalues$weeks==53,"value_node" :=next_week_values]
+
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
 
@@ -345,7 +387,7 @@
         # Bellman equation for week i
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        decision_space=dplyr::filter(decision_space,week==i),
                         E_max=E_max[i],
                         P_max=P_max[i],
                         states_steps=states_steps,
@@ -355,8 +397,11 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=penalty_low,
-                        penalty_level_high=penalty_high)
+                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
+                        lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
+                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]},
+                        overflow_cost=overflow_cost)
 
 
 
@@ -395,7 +440,8 @@
         message("Error in the calculation of Bellman values")
       }
       # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
-      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
     }
 
@@ -408,6 +454,8 @@
 
       pb <- utils::txtProgressBar(min = 0, max = 51, style = 3)
 
+      watervalues[watervalues$weeks==53,"value_node" :=next_week_values]
+
       for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
 
 
@@ -415,7 +463,7 @@
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=sort(dplyr::filter(decision_space,week==i)$u),
+                        decision_space=dplyr::filter(decision_space,week==i),
                         E_max=E_max[i],
                         P_max=P_max[i],
                         states_steps=states_steps,
@@ -425,8 +473,12 @@
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
-                        penalty_level_low=penalty_low,
-                        penalty_level_high=penalty_high)
+                        penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
+                        penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
+                        lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
+                        lvl_low =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_low[1]},
+                        overflow_cost = overflow_cost
+        )
 
         if(shiny&n_cycl==1&i==52){
           for (p in c("shinybusy")){
@@ -461,7 +513,9 @@
       if(nrow(watervalues[is.na(watervalues$value_node)&(watervalues$weeks<=52)])>=1){
         message("Error in the calculation of Bellman values")
       }
-      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low)
+      value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},
+                                               penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
 
       if(n_cycl>1){

@@ -122,9 +122,9 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
 getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
-  antaresEditObject:::check_area_name(area = area, opts = opts)
-
-  hydro_ini <- antaresEditObject::readIni(file.path("input","hydro","hydro"),opts=opts)
+  if (!area %in% antaresRead::getAreas(opts = opts))
+    stop("Not a valid area!")
+  hydro_ini <- antaresRead::readIniFile(file.path("input","hydro","hydro"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]]) | force) {
     Pump_Efficiency <- hydro_ini[["pumping efficiency"]][[area]]
   } else {
@@ -140,8 +140,9 @@ getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOption
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param area Antares area
+#' @export
 changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
-  hydro_ini <- antaresEditObject::readIni(file.path("input","hydro","hydro"),opts=opts)
+  hydro_ini <- antaresRead::readIniFile(file.path("input","hydro","hydro"),opts=opts)
   assertthat::assert_that(area %in% names(hydro_ini$reservoir),msg = "No reservoir managment for this area, check Antares study")
   assertthat::assert_that(hydro_ini$reservoir[area]==T,msg="No reservoir managment for this area, check Antares study")
   assertthat::assert_that((watervalues|heuristic)==T,msg="Watervalues or heuristic has to be selected")

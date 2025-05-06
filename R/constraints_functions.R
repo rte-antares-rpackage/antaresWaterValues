@@ -9,27 +9,22 @@
 #'
 
 disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
-
-  turb_name_bc <- paste0("Turb",area)
-  pump_name_bc <- paste0("Pump",area)
-  if(antaresEditObject:::is_api_study(opts)){
-    # When using antares API : name_bc parameters refer to id, not name
-    name_bc <- tolower(name_bc)
-    turb_name_bc <- tolower(turb_name_bc)
-    pump_name_bc <- tolower(pump_name_bc)
+  suppressWarnings({bc <- antaresRead::readBindingConstraints(opts)})
+  if (!is.null(bc)){
+    if (name_bc %in% names(bc)){
+      opts <- antaresEditObject::removeBindingConstraint(name = tolower(name_bc), opts = opts)
+      opts <- antaresEditObject::removeBindingConstraint(name = tolower(paste0("turb_",area)), opts = opts)
+      if(pumping){
+        opts <- antaresEditObject::removeBindingConstraint(name = tolower(paste0("pump_",area)), opts = opts)
+      }
+    }
   }
 
-  opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
-  opts <- antaresEditObject::removeBindingConstraint(name = turb_name_bc, opts = opts)
-  if(pumping){
-    opts <- antaresEditObject::removeBindingConstraint(name = pump_name_bc, opts = opts)
-  }
   return(opts)
 }
 
 #' This function generate binding constraints for \code{runWaterValuesSimulation}
 #'
-#' @param constraint_value the value of the constraint
 #' @param coeff the sens of the constraint notation in Antares.
 #' @param name_constraint the name of the constraint.
 #' @param efficiency in [0,1]. efficient ratio of pumping.
@@ -39,79 +34,162 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 #' @param area Area used to calculate watervalues
 
 
-generate_constraints <- function(constraint_value,coeff,name_constraint,efficiency=0.75,opts,area=NULL){
+generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area=NULL){
 
-
-  if(length(coeff)==2){
+  if (opts$antaresVersion<870){
+    default_values = matrix(data = rep(0, 8760 * 3), ncol = 3)
+    default_values_weekly = matrix(data = rep(0, 365 * 3), ncol = 3)
+  } else {
+    df <- matrix(data = rep(0, 8760), ncol = 1)
+    default_values = list(gt= df)
+    default_values_weekly = list(eq = matrix(data = rep(0, 365), ncol = 1))
+  }
+  if(length(coeff)==1){
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name =  paste0("Turb",area),
+      name =  paste0("turb_",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = coeff[2],
+      coefficients = coeff[1],
       opts = opts,
       overwrite = TRUE,
-      timeStep = "hourly"
+      timeStep = "hourly",
+      values = default_values
     )
 
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = as.matrix(data.frame(less = c(rep(constraint_value, each=7),
-                                             rep(constraint_value[1],2)),
-                                    greater = rep(0,366),
-                                    equal = rep(0,366))),
       enabled = TRUE,
       timeStep = "weekly",
-      operator = "less",
+      operator = "equal",
       overwrite = TRUE,
       coefficients = coeff[1],
+      values = default_values_weekly,
+      group = "watervalues",
       opts = opts)
   }else{
 
     # Implement the flow sens in the study Pumping
 
     opts <- antaresEditObject::createBindingConstraint(
-      name = paste0("Pump",area),
+      name = paste0("pump_",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = -coeff[3],
+      coefficients = -coeff[2],
       opts = opts,
       overwrite = TRUE,
-      timeStep = "hourly"
+      timeStep = "hourly",
+      values = default_values
     )
 
     # Implement the flow sens in the study Turbining
 
     opts <-  antaresEditObject::createBindingConstraint(
-      name = paste0("Turb",area),
+      name = paste0("turb_",area),
       enabled = TRUE,
       operator = "greater",
-      coefficients = coeff[2],
+      coefficients = coeff[1],
       opts = opts,
       overwrite = TRUE,
-      timeStep = "hourly"
+      timeStep = "hourly",
+      values = default_values
     )
 
 
 
     # Implement binding constraint
-
     opts <- antaresEditObject::createBindingConstraint(
       name = name_constraint,
-      values = as.matrix(data.frame(less = rep(0,366),
-                                    greater = rep(0,366),
-                                    equal = c(rep(constraint_value, each=7),
-                                              rep(constraint_value[1],2)))),
       enabled = TRUE,
       timeStep = "weekly",
       operator = "equal",
       overwrite = TRUE,
-      coefficients = c(coeff[1],efficiency*coeff[3]),
+      coefficients = c(coeff[1],coeff[2]*efficiency),
+      values = default_values_weekly,
+      group = "watervalues",
       opts = opts)
+
+
+  }
+
+  return(opts)
+}
+
+#' Modify time-series of clusters in fictive_area_bc to implement the constraint value
+#' for each week and each MC year
+#'
+#' @param constraint_value Data.frame {week,sim,u}
+#' @param name_constraint the name of the constraint.
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+
+generate_rhs_bc <- function(constraint_value,name_constraint,opts){
+
+  if ("mcYear" %in% names(constraint_value)){
+    scenarios <- unique(constraint_value$mcYear)
+    constraint_value <- constraint_value %>%
+      dplyr::arrange(.data$mcYear) %>%
+      tidyr::pivot_wider(names_from = "mcYear",values_from = "u")
+  } else {
+    scenarios <- NULL
+  }
+  constraint_value <- constraint_value %>%
+    dplyr::arrange(.data$week) %>%
+    dplyr::select(-c("sim","week"))
+  constraint_value <- as.matrix(constraint_value)
+  constraint_value = rbind(matrix(rep(constraint_value/7, each=7),ncol=ncol(constraint_value)),
+                          matrix(rep(0,2*ncol(constraint_value)),ncol=ncol(constraint_value)))
+
+  if (opts$antaresVersion<870){
+    values = data.frame(equal = constraint_value)
+  } else {
+    values = list(eq= constraint_value)
+    }
+  antaresEditObject::editBindingConstraint(
+    name = name_constraint,
+    operator = "equal",
+    values = values,
+    opts = opts
+  )
+
+  if (!is.null(scenarios)){
+
+    names_sb <- c()
+    values_sb <- c()
+
+    for (i in 1:length(scenarios)){
+      names_sb <- c(names_sb,paste("bc","watervalues",
+                                   scenarios[i]-1,sep=","))
+      values_sb <- c(values_sb,as.integer(i))
+    }
+
+    new_sb <- unlist(list(values_sb))
+    names(new_sb) <- names_sb
+
+    sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
+
+    if (length(names(sb_file))>0){
+      assertthat::assert_that(length(names(sb_file))==1,
+                              msg="There should be only one ruleset in scenario builder.")
+
+      name_ruleset <- names(sb_file)[[1]]
+      sb_file[[name_ruleset]] <- append(sb_file[[name_ruleset]],new_sb)
+
+    } else {
+      sb_file = new_sb
+      names(sb_file) = c("Default ruleset")
+    }
+
+    antaresEditObject::writeIni(listData = sb_file,
+                                pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
+                                overwrite = TRUE, default_ext = ".dat")
+
+    Sys.sleep(1)
   }
 
 
   return(opts)
+
 }
 
 #' Generate the list of constraint values of the link between the fictive area and the real one
@@ -126,10 +204,11 @@ generate_constraints <- function(constraint_value,coeff,name_constraint,efficien
 #'   List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}
 #' @param max_hydro weekly pumping and turbining maximum powers, generated by \code{get_max_hydro}
 #' @param inflow weekly inflow
+#' @param mcyears Vector of years used to evaluate inflow
 #'
 #' @export
 constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency=NULL,opts,max_hydro=NULL,
-                                 inflow=NULL){
+                                 inflow=NULL,mcyears=NULL){
 
 
 
@@ -142,10 +221,8 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   }
   res_cap <- get_reservoir_capacity(area,opts)
   if (is.null(inflow)){
-    try(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="weekly", opts=opts),silent = T)
-    if (nrow(inflow)==0){
-      inflow <- dplyr::transmute(max_hydro,timeId=.data$timeId,hydroStorage=0)
-    }
+    assertthat::assert_that(!is.null(mcyears))
+    inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
   }
   max_app <- inflow %>%
     dplyr::group_by(.data$timeId) %>%
@@ -155,7 +232,11 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
   weeks <- dplyr::distinct(max_hydro,.data$timeId)$timeId
   df_constraint <- data.frame(week=weeks)
   df_constraint$u <- sapply(df_constraint$week,
-                            FUN = function(w) constraint_week(pumping,pumping_efficiency,nb_disc_stock,res_cap,dplyr::filter(max_hydro,.data$timeId==w)),
+                            FUN = function(w) constraint_week(pumping,
+                                      pumping_efficiency,
+                                      nb_disc_stock,res_cap,
+                                      dplyr::filter(max_hydro,
+                                                    .data$timeId==w),w),
                             simplify = F)
 
   df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
@@ -175,15 +256,18 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 #' @param nb_disc_stock Number of constraint values wanted for each week
 #' @param res_cap Double, reservoir capacity
 #' @param hydro Pumping and turbining maximum powers for the week, generated by \code{get_max_hydro}
+#' @param week Current week for which to compute controls
 #'
 #' @return List of constraint values for the week
-constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro){
+constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro,week){
   maxi <- min(hydro$turb,res_cap+hydro$max_app)
-  mini <- -hydro$pump*pumping_efficiency
+  mini <- max(-res_cap,-hydro$pump*pumping_efficiency)
 
   if(pumping){
     if(nb_disc_stock<3){
-      message("nb_disc_stock should be greater than 2")
+      if (week==1){
+        message("nb_disc_stock should be greater than 2")
+      }
       constraint_values <- c(0)
     } else {
       total <- maxi-mini
@@ -206,14 +290,14 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
 
       constraint_values <- append(constraint_values_pump,constraint_values_turb)
       constraint_values <- constraint_values[!duplicated(constraint_values)]
-
-      constraint_values <- round(constraint_values)
     }
 
 
   }else{
     if(nb_disc_stock<2){
-      message("nb_disc_stock should be greater than 1")
+      if (week==1){
+        message("nb_disc_stock should be greater than 1")
+      }
       constraint_values <- c(0)
     } else {
       constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
@@ -228,31 +312,14 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
 #'
 #' @param area Area with the area
 #' @param fictive_area Fictive area involved in the biding contraint
-#' @param pumping Boolean. True to take into account the pumping.
-#' @param opts List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}
 #'
 #' @return Named vector of coefficients
-generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antaresRead::simOptions()){
+generate_link_coeff <- function(area,fictive_area){
 
-  # For the case of the pumping node, the constraint will be applied on the flow from the real area to the pumping node
-  if(pumping == TRUE & grepl("_pump$", fictive_area)){
-    if (match(area, sort(c(area, fictive_area))) == 1) {
-      coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
-    } else {
-      coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
-    }
-    #Otherwise, the constraint will be applied on the generation from the thermal cluster
-  }else{
-    cluster_desc <- antaresRead::readClusterDesc(opts)
-    fictive_cluster <- cluster_desc[cluster_desc$area == fictive_area, ]$cluster
-    coeff1 <- stats::setNames(1, paste(fictive_area, fictive_cluster, sep = "."))
-
-    if (match(area, sort(c(area, fictive_area))) == 1) {
-      coeff2 <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
-    } else {
-      coeff2 <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
-    }
-    coeff <- c(coeff1, coeff2)
+  if (match(area, sort(c(area, fictive_area))) == 1) {
+    coeff <- stats::setNames(-1, paste(area, fictive_area, sep = "%"))
+  } else {
+    coeff <- stats::setNames(1, paste(fictive_area, area, sep = "%"))
   }
 
   return(coeff)

@@ -16,20 +16,21 @@ readReservoirLevels <- function(area,
                                 opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (antaresEditObject::is_antares_v7(opts = opts)) {
-    readReservoirLevelsV7(
+    res <- readReservoirLevelsV7(
       area = area,
       timeStep = timeStep,
       byReservoirCapacity = byReservoirCapacity,
       opts = opts
     )
   } else {
-    readReservoirLevelsV6(
+    res <- readReservoirLevelsV6(
       area = area,
       timeStep = timeStep,
       byReservoirCapacity = byReservoirCapacity,
       opts = opts
     )
   }
+  return(res)
 }
 
 
@@ -144,4 +145,21 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
     }
   }
   reservoir[]
+}
+
+#' Get initial level of an area
+#'
+#' @param area An 'antares' area.
+#' @param opts List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#'
+#' @export
+
+get_initial_level <- function(area,opts){
+  final_level <- readReservoirLevels(area, timeStep = "daily",
+                                     byReservoirCapacity = FALSE,
+                                     opts = opts)[1,]
+  assertthat::assert_that(final_level$level_low==final_level$level_high,
+                          msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
+  final_level <- final_level$level_low*100
 }

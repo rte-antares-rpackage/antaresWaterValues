@@ -6,11 +6,11 @@
 \usage{
 get_local_reward(
   opts,
-  hours,
   possible_controls,
   max_hydro,
   area_price,
   mcyears,
+  u0,
   district_balance = "water values district",
   pump_eff = 1
 )
@@ -19,8 +19,6 @@ get_local_reward(
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
-\item{hours}{vector of hours used to evaluate costs/rewards of pumping/generating}
-
 \item{possible_controls}{data.frame {week,u} of controls evaluated per week}
 
 \item{max_hydro}{data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values}
@@ -28,6 +26,8 @@ get_local_reward(
 \item{area_price}{Area used to evaluate marginal prices}
 
 \item{mcyears}{Vector of years used to evaluate rewards}
+
+\item{u0}{data.table {week,u} Constraint values per week used in the simulation}
 
 \item{district_balance}{Name of district used to evaluate controls on the stock}
 

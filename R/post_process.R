@@ -42,5 +42,11 @@ remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_met
         as.data.table()
     }
   }
+
+  results <- results %>%
+    dplyr::mutate(vu_pen=dplyr::case_when(.data$states>.data$level_high ~ .data$vu + .data$penalty_high,
+                                            .data$states<.data$level_low ~ .data$vu - .data$penalty_low,
+                                            TRUE ~ .data$vu))
+
   return(results)
 }

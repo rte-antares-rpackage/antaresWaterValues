@@ -5,7 +5,13 @@
 \title{Reset an Antares study. In case, there is a problem when executing \code{runWaterValuesSimulation},
 run this function to restore the study.}
 \usage{
-resetStudy(opts, area, pumping, fictive_area = NULL)
+resetStudy(
+  opts,
+  area,
+  pumping,
+  fictive_area = NULL,
+  binding_constraint = "weekly_water_amount"
+)
 }
 \arguments{
 \item{opts}{List of simulation parameters returned by the function
@@ -16,6 +22,8 @@ resetStudy(opts, area, pumping, fictive_area = NULL)
 \item{pumping}{Boolean. True to take into account the pumping.}
 
 \item{fictive_area}{Name of the fictive area created}
+
+\item{binding_constraint}{character}
 }
 \description{
 Reset an Antares study. In case, there is a problem when executing \code{runWaterValuesSimulation},

@@ -12,13 +12,14 @@ get_Reward(
   opts = antaresRead::simOptions(),
   correct_monotony = FALSE,
   method_old = TRUE,
-  hours = 0:168,
   possible_controls = NULL,
   max_hydro,
   mcyears = "all",
   area = NULL,
   pump_eff = NULL,
-  district_balance = "water values district"
+  district_balance = "water values district",
+  expansion = F,
+  fictive_areas = NULL
 )
 }
 \arguments{
@@ -37,8 +38,6 @@ get_Reward(
 
 \item{method_old}{If T, linear interpolation used between simulations reward, else smarter interpolation based on marginal prices}
 
-\item{hours}{If method_old=F, vector of hours used to evaluate costs/rewards of pumping/generating}
-
 \item{possible_controls}{If method_old=F, data.frame {week,u} of controls evaluated per week}
 
 \item{max_hydro}{data.frame {timeId,pump,turb} returned by the function \code{get_max_hydro}, should be hourly values}
@@ -50,6 +49,10 @@ get_Reward(
 \item{pump_eff}{Pumping efficiency}
 
 \item{district_balance}{Name of district used to evaluate controls on the stock}
+
+\item{expansion}{Binary. True if mode expansion was used to run simulations}
+
+\item{fictive_areas}{Vector of chr. Fictive areas used in simulation}
 }
 \value{
 list containing a data.table {timeid,MCyear,simulation overall cost}, list of simulations names and list of simulations values

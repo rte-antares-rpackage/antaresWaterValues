@@ -166,7 +166,7 @@ generate_rhs_bc <- function(constraint_value,name_constraint,opts){
     new_sb <- unlist(list(values_sb))
     names(new_sb) <- names_sb
 
-    sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
+    sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
 
     if (length(names(sb_file))>0){
       assertthat::assert_that(length(names(sb_file))==1,
@@ -181,7 +181,8 @@ generate_rhs_bc <- function(constraint_value,name_constraint,opts){
     }
 
     antaresEditObject::writeIni(listData = sb_file,
-                                pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
+                                opts=opts,
+                                pathIni = file.path("settings", "scenariobuilder.dat"),
                                 overwrite = TRUE, default_ext = ".dat")
 
     Sys.sleep(1)

@@ -35,6 +35,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
   assertthat::assert_that(class(opts) == "simOptions")
   assertthat::assert_that(district_name %in% antaresRead::getDistricts(opts=opts))
   studyPath <- opts$studyPath
+  area = tolower(area)
 
   # just a test if there is a simulation done or not
   {if (is.null(simulation_names)) {

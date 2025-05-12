@@ -15,6 +15,7 @@ readReservoirLevels <- function(area,
                                 byReservoirCapacity = TRUE,
                                 opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "daily"))
+  area = tolower(area)
   vars <- c("level_low", "level_avg", "level_high")
   reservoir = antaresRead:::fread_antares(opts=opts,
                                           file=file.path(opts$inputPath,
@@ -51,6 +52,7 @@ readReservoirLevels <- function(area,
 #' @export
 
 get_initial_level <- function(area,opts){
+  area = tolower(area)
   final_level <- readReservoirLevels(area, timeStep = "daily",
                                      byReservoirCapacity = FALSE,
                                      opts = opts)[1,]

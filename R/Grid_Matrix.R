@@ -99,7 +99,7 @@
                         ...) {
 
 
-
+  area = tolower(area)
   #----- shiny Loader
 
   # check the method chosen to calculate Bellman values is a valid method

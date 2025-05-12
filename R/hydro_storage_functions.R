@@ -120,7 +120,7 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
 #' @export
 #'
 getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
-
+  area = tolower(area)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]]) | force) {
     Pump_Efficiency <- hydro_ini[["pumping efficiency"]][[area]]

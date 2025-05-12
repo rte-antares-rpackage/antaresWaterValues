@@ -138,6 +138,7 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
 #'
 getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
+  area = tolower(area)
   if (!area %in% antaresRead::getAreas(opts = opts))
     stop("Not a valid area!")
   hydro_ini <- antaresRead::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))

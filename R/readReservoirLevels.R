@@ -15,6 +15,7 @@ readReservoirLevels <- function(area,
                                 byReservoirCapacity = TRUE,
                                 opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
+  area = tolower(area)
   if (antaresEditObject::is_antares_v7(opts = opts)) {
     res <- readReservoirLevelsV7(
       area = area,
@@ -154,6 +155,7 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
 #' @export
 
 get_initial_level <- function(area,opts){
+  area = tolower(area)
   final_level <- readReservoirLevels(area, timeStep = "daily",
                                      byReservoirCapacity = FALSE,
                                      opts = opts)[1,]

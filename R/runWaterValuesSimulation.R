@@ -65,8 +65,8 @@ runWaterValuesSimulation <- function(area,
                                      ...){
 
 
-
-
+  area = tolower(area)
+  binding_constraint = tolower(binding_constraint)
 
 
   #check the study is well selected
@@ -76,13 +76,16 @@ runWaterValuesSimulation <- function(area,
 
   # check the name format
 
+  simulation_name <- tolower(simulation_name)
   if(!endsWith(simulation_name,"_%s")){
     simulation_name <- paste0(simulation_name,"_%s")
   }
 
+  file_name = tolower(file_name)
   if (!stringr::str_detect(file_name,area)){
     file_name <- paste0(area,"_",file_name)
   }
+
 
   disable_constraint(binding_constraint,opts,pumping,area = area)
   # restore hydro inflow if there is a previous intercepted simulation.
@@ -114,6 +117,7 @@ runWaterValuesSimulation <- function(area,
   #generating the fictive area parameters
 
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
+  fictive_area = tolower(fictive_area)
   thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "water_value_cluster"
 
   # Get max hydro power that can be generated in a week
@@ -195,7 +199,7 @@ runWaterValuesSimulation <- function(area,
     generate_rhs_bc(constraint_value=constraint_value,name_constraint=binding_constraint,opts=opts)
 
     sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
-      stringr::str_extract(name_sim, "\\d+$"), decimal.mark = ",")))
+      name_sim, decimal.mark = ",")))
     message("#  ------------------------------------------------------------------------")
     message(paste0("Running simulation: ", i, " - ", sim_name))
     message("#  ------------------------------------------------------------------------")

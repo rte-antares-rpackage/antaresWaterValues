@@ -314,12 +314,18 @@ updateReward <- function(study_path,pumping,controls,max_hydro,
                          mcyears,area,pump_eff,u0,df_rewards,i){
   opts_sim <- antaresRead::setSimulationPath(study_path,simulation=-1)
 
-  reward <- get_local_reward(opts=opts_sim,u0=list(u0),
-                               possible_controls=controls,max_hydro=max_hydro,
+  u <- u0 %>%
+    dplyr::mutate(sim=as.double(stringr::str_extract(.data$sim,"\\d+$"))) %>%
+    dplyr::group_by(.data$sim) %>%
+    tidyr::nest() %>%
+    tidyr::pivot_wider(names_from=.data$sim,values_from=.data$data)
+
+  reward <- get_local_reward(opts=opts_sim,u0=u[[1]][[1]],
+                              possible_controls=controls,max_hydro=max_hydro,
                                mcyears=mcyears,area_price=area,pump_eff= pump_eff)
 
   reward <- reward_offset(opts=opts_sim,df_reward = reward,
-                          u0=list(u0),mcyears=mcyears)
+                          u0=u[[1]][[1]],mcyears=mcyears)
 
   df_rewards <- dplyr::bind_rows(df_rewards,
                                  dplyr::mutate(reward,n=as.character(i)))

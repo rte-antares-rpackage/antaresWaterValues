@@ -149,7 +149,9 @@ generate_rhs_bc <- function(constraint_value,name_constraint,opts){
     name = name_constraint,
     operator = "equal",
     values = values,
-    opts = opts
+    opts = opts,
+    timeStep = "weekly",
+    group = "watervalues"
   )
 
   if (!is.null(scenarios)){

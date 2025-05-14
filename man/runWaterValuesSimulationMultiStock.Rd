@@ -31,7 +31,7 @@ runWaterValuesSimulationMultiStock(
 
 \item{simulation_name}{character}
 
-\item{nb_mcyears}{list}
+\item{nb_mcyears}{Number of Monte Carlo years to simulate or a vector of years indexes to launch.}
 
 \item{binding_constraint}{character}
 

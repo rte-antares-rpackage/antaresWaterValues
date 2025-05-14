@@ -8,7 +8,7 @@ runWaterValuesSimulation(
   area,
   simulation_name = "wv_sim_\%s",
   nb_disc_stock = 10,
-  nb_mcyears = NULL,
+  mcyears = NULL,
   binding_constraint = "weekly_water_amount",
   fictive_area = NULL,
   thermal_cluster = NULL,
@@ -34,7 +34,7 @@ runWaterValuesSimulation(
 
 \item{nb_disc_stock}{integer}
 
-\item{nb_mcyears}{list}
+\item{mcyears}{list of Monte Carlo years}
 
 \item{binding_constraint}{character}
 

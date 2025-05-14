@@ -142,7 +142,7 @@ simulationServer <- function(id,opts,silent) {
                               area = input$sim_area,
                               simulation_name = paste0(input$sim_area, "_wv_sim_%s"),
                               nb_disc_stock = input$sim_nb_disc_stock,
-                              nb_mcyears = seq(
+                              mcyears = seq(
                                 from = input$sim_mcyears[1],
                                 to = input$sim_mcyears[2]
                               ),
@@ -153,7 +153,6 @@ simulationServer <- function(id,opts,silent) {
                               overwrite = T,
                               link_from = input$sim_area,
                               opts = opts,
-                              shiny = T,
                               otp_dest = input$sim_output_dir,
                               file_name = input$file_name,
                               pumping = pumping(),

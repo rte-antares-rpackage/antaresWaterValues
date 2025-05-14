@@ -39,9 +39,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
 
   # just a test if there is a simulation done or not
   {if (is.null(simulation_names)) {
-    if (is.null(pattern))
-      stop("If 'simulation_names' is not provided, 'pattern' cannot be NULL.")
-    simulation_names <- getSimulationNames(pattern = pattern, studyPath = studyPath)
+    stop("'simulation_names' is not provided")
   }}
 
   # this part prepare the environment of each simulation
@@ -50,7 +48,15 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
       X = simulation_names,
       FUN = function(i) {
         suppressWarnings({
-          antaresRead::setSimulationPath(path = studyPath, simulation = i)
+          if (!antaresRead:::is_api_study(opts)){
+            antaresRead::setSimulationPath(path = studyPath, simulation = i)
+          } else {
+            antaresRead::setSimulationPathAPI(host = opts$host,
+                                              study_id = opts$study_id,
+                                              token = opts$token,
+                                              simulation = i)
+          }
+
         })
       }
     )
@@ -178,7 +184,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     reward <- rbindlist(reward)   #merge the all simulations tables together
     local_reward <- reward
 
-    assertthat::assert_that(sum(is.na(local_reward))==0,
+    assertthat::assert_that(sum(is.na(local_reward$reward))==0,
                             msg="NaN values in local reward, something went wrong.")
 
     # Getting the minimum reward for each year, each week and each control (u)
@@ -203,7 +209,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
 
   class(output) <- "Reward matrix , simulation names and values"
 
-  assertthat::assert_that(sum(is.na(reward))==0,
+  assertthat::assert_that(sum(is.na(reward$reward))==0,
                           msg="NaN values in reward, something went wrong.")
 
   return(output)

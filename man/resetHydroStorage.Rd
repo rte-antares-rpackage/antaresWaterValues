@@ -4,16 +4,10 @@
 \alias{resetHydroStorage}
 \title{Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}}
 \usage{
-resetHydroStorage(
-  area,
-  path_manual_storage = NULL,
-  opts = antaresRead::simOptions()
-)
+resetHydroStorage(area, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{A valid Antares area.}
-
-\item{path_manual_storage}{Optional, a path where to save the hydro storage file.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
@@ -25,8 +19,7 @@ An updated list containing various information about the simulation.
 Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}
 }
 \note{
-The function makes a copy of the original hydro storage time series,
- you can restore these with \code{restoreHydroStorage}.
+You can restore the original hydro storage time series with \code{restoreHydroStorage}.
 }
 \seealso{
 \link{restoreHydroStorage}

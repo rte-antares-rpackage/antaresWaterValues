@@ -7,7 +7,8 @@
 restore_fictive_fatal_prod_demand(
   area,
   opts = antaresRead::simOptions(),
-  silent = F
+  load,
+  misc_gen
 )
 }
 \arguments{
@@ -16,7 +17,9 @@ restore_fictive_fatal_prod_demand(
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
-\item{silent}{Boolean. True to run without messages.}
+\item{load}{Matrix with 8760 rows that contains backup load for the area}
+
+\item{misc_gen}{Matrix with 8760 rows that contains backup misc generation for the area}
 }
 \value{
 An updated list containing various information about the simulation.

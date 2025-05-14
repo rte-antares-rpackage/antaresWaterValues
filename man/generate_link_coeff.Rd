@@ -4,21 +4,12 @@
 \alias{generate_link_coeff}
 \title{Generate coefficients for biding constraints, used in \code{runWaterValuesSimulation}}
 \usage{
-generate_link_coeff(
-  area,
-  fictive_area,
-  pumping = FALSE,
-  opts = antaresRead::simOptions()
-)
+generate_link_coeff(area, fictive_area)
 }
 \arguments{
 \item{area}{Area with the area}
 
 \item{fictive_area}{Fictive area involved in the biding contraint}
-
-\item{pumping}{Boolean. True to take into account the pumping.}
-
-\item{opts}{List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}}
 }
 \value{
 Named vector of coefficients

@@ -9,14 +9,13 @@
 #'
 
 disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
-
   suppressWarnings({bc <- antaresRead::readBindingConstraints(opts)})
   if (!is.null(bc)){
     if (name_bc %in% names(bc)){
-      opts <- antaresEditObject::removeBindingConstraint(name = name_bc, opts = opts)
-      opts <- antaresEditObject::removeBindingConstraint(name = paste0("turb_",area), opts = opts)
+      opts <- antaresEditObject::removeBindingConstraint(name = tolower(name_bc), opts = opts)
+      opts <- antaresEditObject::removeBindingConstraint(name = tolower(paste0("turb_",area)), opts = opts)
       if(pumping){
-        opts <- antaresEditObject::removeBindingConstraint(name = paste0("pump_",area), opts = opts)
+        opts <- antaresEditObject::removeBindingConstraint(name = tolower(paste0("pump_",area)), opts = opts)
       }
     }
   }
@@ -150,7 +149,9 @@ generate_rhs_bc <- function(constraint_value,name_constraint,opts){
     name = name_constraint,
     operator = "equal",
     values = values,
-    opts = opts
+    opts = opts,
+    timeStep = "weekly",
+    group = "watervalues"
   )
 
   if (!is.null(scenarios)){
@@ -167,7 +168,7 @@ generate_rhs_bc <- function(constraint_value,name_constraint,opts){
     new_sb <- unlist(list(values_sb))
     names(new_sb) <- names_sb
 
-    sb_file <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "scenariobuilder.dat"))
+    sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
 
     if (length(names(sb_file))>0){
       assertthat::assert_that(length(names(sb_file))==1,
@@ -182,7 +183,8 @@ generate_rhs_bc <- function(constraint_value,name_constraint,opts){
     }
 
     antaresEditObject::writeIni(listData = sb_file,
-                                pathIni = file.path(opts$studyPath, "settings", "scenariobuilder.dat"),
+                                opts=opts,
+                                pathIni = file.path("settings", "scenariobuilder.dat"),
                                 overwrite = TRUE, default_ext = ".dat")
 
     Sys.sleep(1)

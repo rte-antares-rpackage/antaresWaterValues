@@ -9,8 +9,7 @@ runWaterValuesSimulationMultiStock(
   list_pumping,
   list_efficiency,
   simulation_name = "wv_sim_\%s",
-  nb_mcyears = NULL,
-  binding_constraint = "weekly_water_amount",
+  mcyears = NULL,
   path_solver = NULL,
   show_output_on_console = FALSE,
   overwrite = FALSE,
@@ -31,9 +30,7 @@ runWaterValuesSimulationMultiStock(
 
 \item{simulation_name}{character}
 
-\item{nb_mcyears}{Number of Monte Carlo years to simulate or a vector of years indexes to launch.}
-
-\item{binding_constraint}{character}
+\item{mcyears}{Number of Monte Carlo years to simulate or a vector of years indexes to launch.}
 
 \item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 

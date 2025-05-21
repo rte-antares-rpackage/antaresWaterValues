@@ -147,11 +147,7 @@ simulationServer <- function(id,opts,silent) {
                                 to = input$sim_mcyears[2]
                               ),
                               path_solver = input$solver_path,
-                              binding_constraint = "weekly_water_amount",
-                              fictive_area = "fictive_watervalues",
-                              thermal_cluster = "water_value_cluster",
                               overwrite = T,
-                              link_from = input$sim_area,
                               opts = opts,
                               otp_dest = input$sim_output_dir,
                               file_name = input$file_name,
@@ -174,9 +170,7 @@ simulationServer <- function(id,opts,silent) {
                           resetStudy(
                             opts = opts_temp,
                             area = input$sim_area,
-                            pumping = pumping(),
-                            fictive_area = "fictive_watervalues",
-                            binding_constraint = "weekly_water_amount"
+                            pumping = pumping()
                           )
                         }, print_cat = F,
                         message = F, warning = silent))

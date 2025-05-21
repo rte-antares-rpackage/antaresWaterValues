@@ -18,8 +18,7 @@ get_Reward(
   area = NULL,
   pump_eff = NULL,
   district_balance = "water values district",
-  expansion = F,
-  fictive_areas = NULL
+  expansion = F
 )
 }
 \arguments{
@@ -51,8 +50,6 @@ get_Reward(
 \item{district_balance}{Name of district used to evaluate controls on the stock}
 
 \item{expansion}{Binary. True if mode expansion was used to run simulations}
-
-\item{fictive_areas}{Vector of chr. Fictive areas used in simulation}
 }
 \value{
 list containing a data.table {timeid,MCyear,simulation overall cost}, list of simulations names and list of simulations values

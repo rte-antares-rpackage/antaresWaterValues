@@ -2,10 +2,9 @@
 #' used in \code{runWaterValuesSimulation}
 #'
 #' @param area The area concerned by the simulation.
-#' @param fictive_area_name Name of the fictive area to create.
-#' @param thermal_cluster Name of the thermal cluster to create.
 #' @param overwrite If area or cluster already exists, overwrite them ?
 #' @param pumping Boolean. True to take into account the pumping.
+#' @param efficiency Double. Pumping efficiency
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -14,12 +13,24 @@
 #' @return The result of antaresRead::simOptions
 #'
 setupWaterValuesSimulation <- function(area,
-                                       fictive_area_name = paste0("watervalue_", area),
-                                       thermal_cluster = "water_value_cluster",
                                        overwrite = FALSE,
                                        opts = antaresRead::simOptions(),
                                        pumping=F,
+                                       efficiency,
                                        backup) {
+
+   assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
+                          msg=paste0("Unserved cost is null in ",area,
+                                     ", unserved energy will be exported to this area in simulations launched by the package."))
+
+  #assert the weekly output of the area:
+  area_filtering = antaresRead::readIni(file.path("input","areas",area,"optimization.ini"),
+                                        opts=opts)
+  assertthat::assert_that(stringr::str_detect(area_filtering$filtering$`filter-year-by-year`,"hourly"),
+                          msg = paste0(area," must have year by year hourly output."))
+
+  fictive_area_name <- paste0("watervalue_", area)
+  thermal_cluster <- "water_value_cluster"
 
   changeHydroManagement(opts=opts,watervalues = F, heuristic = T, area=area)
 
@@ -81,6 +92,40 @@ setupWaterValuesSimulation <- function(area,
     }
 
   }#end fictive areas loop
+
+  if (!paste0("district_balance_",area) %in% opts$districtsDef$district){
+    opts <- antaresEditObject::createDistrict(
+      name = paste0("district_balance_",area),
+      apply_filter = "add-all",
+      remove_area = fictive_areas,
+      output = TRUE,
+      overwrite = TRUE,
+      opts = opts
+    )
+  }
+
+  generate_constraints(pumping=pumping,efficiency=efficiency,
+                       opts=opts,area = area)
+
+  return(opts)
+}
+
+setWaterValuesDistrict <- function(opts){
+  remove_area <- antaresRead::getAreas("watervalue_",opts=opts)
+  if (!"water values district" %in% opts$districtsDef$district){
+    opts <- antaresEditObject::createDistrict(
+      name = "water values district",
+      caption = "water values district",
+      comments = "Used for calculate water values",
+      apply_filter = "add-all",
+      remove_area = remove_area,
+      output = TRUE,
+      overwrite = TRUE,
+      opts = opts
+    )
+  } else {
+    message("Water values district already exists, this could be a problem. If so, try to remove it manually.")
+  }
 
   return(opts)
 }

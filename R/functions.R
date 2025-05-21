@@ -100,12 +100,11 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
 #'   \code{antaresRead::setSimulationPath}
 #' @param district The district concerned by the simulation.
 #' @param mcyears Vector of years used to evaluate cost
-#' @param fictive_areas Vector of chr. Fictive areas used in simulation
 #' @param expansion Binary. True if mode expansion was used to run simulations
 #'
 #' @export
 
-get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,expansion=F,fictive_areas=NULL){
+get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,expansion=F){
 
   criterium_file <- FALSE
   if (expansion){
@@ -121,18 +120,8 @@ get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,exp
                              ov_cost=sum(.data$`OV. COST`)) %>%
       dplyr::rename("timeId"="week")
   } else {
-    if (is.null(fictive_areas)){
-      cost <- data.frame(tidyr::expand_grid(mcYear=mcyears,timeId=1:52))%>%
+    cost <- data.frame(tidyr::expand_grid(mcYear=mcyears,timeId=1:52))%>%
         dplyr::mutate(ov_cost=0,cost_xpansion=0)
-    } else {
-      cost <- antaresRead::readAntares(areas = fictive_areas, mcYears = mcyears,
-                                       timeStep = "hourly", opts = opts, select=c("OV. COST"))
-      cost$week <- (cost$timeId-1)%/%168+1
-      cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
-                               ov_cost=sum(.data$`OV. COST`)) %>%
-        dplyr::rename("timeId"="week") %>%
-        dplyr::mutate(cost_xpansion=0)
-    }
 
     for (week in 1:52){
       for (scenario in mcyears){

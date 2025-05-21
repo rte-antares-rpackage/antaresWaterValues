@@ -5,53 +5,38 @@
 \title{Run a simulation for calculating water values for a specific area}
 \usage{
 runWaterValuesSimulation(
-  area,
+  area = NULL,
   simulation_name = "wv_sim_\%s",
   nb_disc_stock = 10,
   mcyears = NULL,
-  binding_constraint = "weekly_water_amount",
-  fictive_area = NULL,
-  thermal_cluster = NULL,
   path_solver = NULL,
   show_output_on_console = FALSE,
   overwrite = FALSE,
-  link_from = NULL,
-  remove_areas = NULL,
   opts = antaresRead::simOptions(),
   otp_dest = NULL,
   file_name = NULL,
-  pumping = F,
-  efficiency = NULL,
+  pumping = T,
+  efficiency,
   launch_simulations = T,
   constraint_values = NULL,
   expansion = T
 )
 }
 \arguments{
-\item{area}{area}
+\item{area}{The area concerned by the simulation.}
 
-\item{simulation_name}{character}
+\item{simulation_name}{The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.}
 
-\item{nb_disc_stock}{integer}
+\item{nb_disc_stock}{Number of simulation to launch, a vector of energy constraint
+will be created from maximum pumping power to the hydro storage maximum and of length this parameter.}
 
-\item{mcyears}{list of Monte Carlo years}
-
-\item{binding_constraint}{character}
-
-\item{fictive_area}{Name of the fictive area to create, argument passed to \code{\link{setupWaterValuesSimulation}}.}
-
-\item{thermal_cluster}{Name of the thermal cluster to create, argument passed to \code{\link{setupWaterValuesSimulation}}.}
+\item{mcyears}{Number of Monte Carlo years to simulate or a vector of years indexes to launch.}
 
 \item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
 \item{show_output_on_console}{Argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
 \item{overwrite}{If area or cluster already exists, should they be overwritten?}
-
-\item{link_from}{area that will be linked to the created fictive area. If it's
-\code{NULL} it will takes the area concerned by the simulation.}
-
-\item{remove_areas}{Character vector of area(s) to remove from the created district.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

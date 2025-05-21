@@ -4,22 +4,15 @@
 \alias{restoreHydroStorage}
 \title{Restore the hydro storage time series, used in \code{runWaterValuesSimulation}}
 \usage{
-restoreHydroStorage(
-  area,
-  path_manual_backup = NULL,
-  opts = antaresRead::simOptions(),
-  silent = F
-)
+restoreHydroStorage(area, opts = antaresRead::simOptions(), data)
 }
 \arguments{
 \item{area}{A valid Antares area.}
 
-\item{path_manual_backup}{Path to a manual backup.}
-
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
-\item{silent}{Boolean. True to run without messages.}
+\item{data}{Backup hydro storage matrix}
 }
 \value{
 An updated list containing various information about the simulation.

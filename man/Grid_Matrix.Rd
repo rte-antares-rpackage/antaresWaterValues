@@ -44,7 +44,6 @@ Grid_Matrix(
   final_level = NULL,
   penalty_final_level_low = NULL,
   penalty_final_level_high = NULL,
-  fictive_areas = NULL,
   ...
 )
 }
@@ -141,8 +140,6 @@ between two water values is less then this value those values are converged.}
 \item{penalty_final_level_low}{Penalties for both bottom rule curve to constrain final level}
 
 \item{penalty_final_level_high}{Penalties for top rule curve to constrain final level}
-
-\item{fictive_areas}{Vector of chr. Fictive areas used in simulation}
 
 \item{...}{further arguments passed to or from other methods.}
 }

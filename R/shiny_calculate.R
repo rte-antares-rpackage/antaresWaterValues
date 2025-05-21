@@ -320,8 +320,7 @@ calculateServer <- function(id, opts, silent) {
                                 mcyears = simulation_res()$mc_years,
                                 area = simulation_res()$area,
                                 district_balance = "water values district",
-                                expansion = simulation_res()$expansion,
-                                fictive_areas=simulation_res()$fictive_areas
+                                expansion = simulation_res()$expansion
                               )
 
                             results <-     Grid_Matrix(

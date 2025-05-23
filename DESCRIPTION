@@ -16,6 +16,7 @@ Imports:
     bsplus (>= 0.1.2),
     dplyr (>= 1.1.0),
     ggplot2 (>= 3.3.5),
+    jsonlite,
     shiny (>= 1.6.0),
     shinyBS (>= 0.61),
     stats (>= 4.1.0),

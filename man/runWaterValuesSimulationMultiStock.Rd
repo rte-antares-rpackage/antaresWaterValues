@@ -14,7 +14,6 @@ runWaterValuesSimulationMultiStock(
   show_output_on_console = FALSE,
   overwrite = FALSE,
   opts = antaresRead::simOptions(),
-  otp_dest = NULL,
   file_name = NULL,
   launch_simulations = T,
   constraint_values = NULL,
@@ -40,8 +39,6 @@ runWaterValuesSimulationMultiStock(
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
-
-\item{otp_dest}{the path in which the script save Rdata file.}
 
 \item{file_name}{the Rdata file name.}
 

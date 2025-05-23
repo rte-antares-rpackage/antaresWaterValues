@@ -9,7 +9,6 @@
 #' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param show_output_on_console Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param overwrite If area or cluster already exists, should they be overwritten?
-#' @param otp_dest the path in which the script save Rdata file.
 #' @param file_name the Rdata file name.
 #' @param pumping Boolean. True to take into account the pumping.
 #' @param efficiency in [0,1]. efficient ratio of pumping.
@@ -236,7 +235,6 @@ resetStudy <- function(opts, area, pumping,
 #' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param show_output_on_console Argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param overwrite If area or cluster already exists, should they be overwritten?
-#' @param otp_dest the path in which the script save Rdata file.
 #' @param file_name the Rdata file name.
 #' @param launch_simulations Boolean. True to to run the simulations.
 #' @param opts

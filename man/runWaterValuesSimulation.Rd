@@ -13,7 +13,6 @@ runWaterValuesSimulation(
   show_output_on_console = FALSE,
   overwrite = FALSE,
   opts = antaresRead::simOptions(),
-  otp_dest = NULL,
   file_name = NULL,
   pumping = T,
   efficiency,
@@ -40,8 +39,6 @@ will be created from maximum pumping power to the hydro storage maximum and of l
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
-
-\item{otp_dest}{the path in which the script save Rdata file.}
 
 \item{file_name}{the Rdata file name.}
 

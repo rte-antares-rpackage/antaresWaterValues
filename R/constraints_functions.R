@@ -222,7 +222,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
                                  inflow=NULL,mcyears=NULL){
 
 
-
+  area = tolower(area)
   if(is.null(pumping_efficiency)){
     pumping_efficiency <- getPumpEfficiency(area,opts=opts)
   }

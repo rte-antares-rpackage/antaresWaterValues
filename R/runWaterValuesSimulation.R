@@ -33,7 +33,6 @@ runWaterValuesSimulation <- function(area=NULL,
                                      show_output_on_console = FALSE,
                                      overwrite = FALSE,
                                      opts = antaresRead::simOptions(),
-                                     otp_dest=NULL,
                                      file_name=NULL,
                                      pumping=T,
                                      efficiency,
@@ -110,15 +109,15 @@ runWaterValuesSimulation <- function(area=NULL,
       expansion = expansion
     )
 
-    if(!is.null(otp_dest)&!antaresRead:::is_api_study(opts)){
-
-      main_path <- getwd()
-
-      setwd(otp_dest)
-
-      save(simulation_res,file=paste0(file_name,".RData"))
-
-      setwd(main_path)
+    if(!antaresRead:::is_api_study(opts)){
+      save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
+    } else {
+      body = list()
+      body$file <- jsonlite::toJSON(simulation_res,
+                                    auto_unbox = TRUE)
+      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
+                                                     "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
+                           body=body)
     }
 
   },
@@ -264,7 +263,6 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                      show_output_on_console = FALSE,
                                      overwrite = FALSE,
                                      opts = antaresRead::simOptions(),
-                                     otp_dest=NULL,
                                      file_name=NULL,
                                      launch_simulations=T,
                                      constraint_values=NULL,
@@ -346,15 +344,15 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       expansion = expansion
     )
 
-    if(!is.null(otp_dest)&!antaresRead:::is_api_study(opts)){
-
-      main_path <- getwd()
-
-      setwd(otp_dest)
-
-      save(simulation_res,file=paste0(file_name,".RData"))
-
-      setwd(main_path)
+    if(!antaresRead:::is_api_study(opts)){
+      save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
+    } else {
+      body = list()
+      body$file <- jsonlite::toJSON(simulation_res,
+                               auto_unbox = TRUE)
+      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
+        "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
+        body=body)
     }
   },
   finally = {

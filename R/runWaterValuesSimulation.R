@@ -196,6 +196,7 @@ runWaterValuesSimulation <- function(area,
 
     sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
       stringr::str_extract(name_sim, "\\d+$"), decimal.mark = ",")))
+    Sys.sleep(300)
     message("#  ------------------------------------------------------------------------")
     message(paste0("Running simulation: ", i, " - ", sim_name))
     message("#  ------------------------------------------------------------------------")

@@ -351,6 +351,7 @@ reward_offset <- function(opts, df_reward, u0=c(),mcyears,district_cost= "water 
     dplyr::rename(week="timeId") %>%
     dplyr::select("mcYear","week","ov_cost") %>%
     as.data.frame()
+  assertthat::assert_that(all(cost$ov_cost>0))
   if (sum(is.na(u0))>=1){
     u0 <- c()
   }

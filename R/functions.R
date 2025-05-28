@@ -622,6 +622,8 @@ add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions()
     res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
   })
 
+  Sys.sleep(10)
+
   invisible(res)
 
 }

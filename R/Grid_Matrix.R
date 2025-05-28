@@ -262,7 +262,6 @@
       if ("sim" %in% names(decision_space)){
         decision_space <- dplyr::select(decision_space,-c("sim"))
       }
-      decision_space <- round(decision_space)
       reward_db <- reward_db$reward
 
 
@@ -272,7 +271,6 @@
       } else {
         decision_space <- simulation_values
       }
-      decision_space <- round(decision_space)
     }
 
     reward_db <- reward_db[reward_db$timeId %in% seq_len(n_week)]}
@@ -283,7 +281,7 @@
                                      byReservoirCapacity = FALSE, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
     reservoir[,
-              (vars) := lapply(.SD, function(x) {round(x * max(states))}),
+              (vars) := lapply(.SD, function(x) {x * max(states)}),
               .SDcols = vars
     ]
   }
@@ -301,7 +299,6 @@
     statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
     statesdt[, "weeks" := as.numeric(gsub("V", "", statesdt$weeks))] #turn weeks to numbers V1==> 1
     statesdt[, "statesid" := seq_along(states), by = c("weeks")] # add id to refer to the state
-    statesdt[, "states" := round(statesdt$states)]
   }
 
   # add states plus 1 (ie states for the following week)
@@ -570,10 +567,40 @@
 
   }
 
+  initial_level <- get_initial_level(area,opts)
+
+  res <- watervalues %>%
+    dplyr::filter(weeks==1) %>%
+    dplyr::group_by(.data$weeks, .data$states) %>%
+    dplyr::summarise(value_node=mean_finite(.data$value_node),.groups = "drop") %>%
+    dplyr::mutate(value_node=dplyr::if_else(!is.finite(.data$value_node),
+                                            NaN,.data$value_node))
+
+
+  top <- res %>%
+    dplyr::filter(states >= initial_level*niveau_max/100) %>%
+    dplyr::filter(states==min(states)) %>%
+    dplyr::select(c("states","value_node"))
+
+  bottom <- res %>%
+    dplyr::filter(states <= initial_level*niveau_max/100) %>%
+    dplyr::filter(states==max(states))%>%
+    dplyr::select(c("states","value_node"))
+
+  if (top$states == bottom$states){
+    lb <- top$value_node
+  } else {
+    lb <- (top$value_node-bottom$value_node)/(
+      top$states-bottom$states)*(initial_level*niveau_max/100-
+                                   bottom$states)+
+      bottom$value_node
+  }
+
   # Prepare output
   result <- list()
   result$watervalues <- watervalues
   result$aggregated_results <- value_nodes_dt
+  result$lower_bound <- lb
   class(result) <- "detailled and aggregated results of watervalues calculation"
   return(result)
 }

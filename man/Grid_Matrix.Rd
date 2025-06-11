@@ -12,7 +12,6 @@ Grid_Matrix(
   inflow = NULL,
   simulation_values = NULL,
   nb_cycle = 1L,
-  district_name = "water values district",
   mcyears = NULL,
   week_53 = 0,
   states_step_ratio = 0.01,
@@ -63,8 +62,6 @@ with th option \code{hydrostorage = TRUE}. If it's NULL it auto calculated.}
 \item{simulation_values}{Values for the simulation.}
 
 \item{nb_cycle}{Number of times to run the algorithm.}
-
-\item{district_name}{Name of the district used to store output.}
 
 \item{mcyears}{MC years to consider, by default all of them.}
 

@@ -4,14 +4,7 @@
 \alias{reward_offset}
 \title{Modify local reward to take into account overall cost of the simulation, mainly used in \code{Get_Reward}}
 \usage{
-reward_offset(
-  opts,
-  df_reward,
-  u0 = c(),
-  mcyears,
-  district_cost = "water values district",
-  expansion = F
-)
+reward_offset(opts, df_reward, u0 = c(), mcyears, expansion = F)
 }
 \arguments{
 \item{opts}{List of simulation parameters returned by the function
@@ -22,8 +15,6 @@ reward_offset(
 \item{u0}{data.table {week,u} Constraint values per week used in the simulation, empty list if none}
 
 \item{mcyears}{Vector of years used to evaluate rewards}
-
-\item{district_cost}{Name of district used to evaluate overall cost}
 
 \item{expansion}{Binary. True if mode expansion was used to run simulations}
 }

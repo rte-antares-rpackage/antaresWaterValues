@@ -98,13 +98,12 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @param district The district concerned by the simulation.
 #' @param mcyears Vector of years used to evaluate cost
 #' @param expansion Binary. True if mode expansion was used to run simulations
 #'
 #' @export
 
-get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,expansion=F){
+get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
 
   criterium_file <- FALSE
   if (expansion){
@@ -113,7 +112,7 @@ get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,exp
     criterium_file <- sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears)
   }
   if (!criterium_file){
-    cost <- antaresRead::readAntares(districts = district, mcYears = mcyears,
+    cost <- antaresRead::readAntares(districts = "water values district", mcYears = mcyears,
                                      timeStep = "hourly", opts = opts, select=c("OV. COST"))
     cost$week <- (cost$timeId-1)%/%168+1
     cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),

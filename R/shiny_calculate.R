@@ -308,14 +308,12 @@ calculateServer <- function(id, opts, silent) {
                               get_Reward(
                                 simulation_names = simulation_res()$simulation_names,
                                 simulation_values = simulation_res()$simulation_values,
-                                district_name = "water values district",
                                 opts = opts,
                                 method_old = F,
                                 possible_controls = possible_controls(),
                                 max_hydro = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,
                                 area = simulation_res()$area,
-                                district_balance = "water values district",
                                 expansion = simulation_res()$expansion
                               )
 
@@ -327,7 +325,6 @@ calculateServer <- function(id, opts, silent) {
                               nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
                               opts = opts,
                               week_53 = 0,
-                              district_name = "water values district" ,
                               method = "grid-mean",
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mc_years,

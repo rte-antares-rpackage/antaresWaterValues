@@ -41,7 +41,7 @@ resetHydroStorage <- function(area, opts = antaresRead::simOptions()) {
                                   type="hydroSTOR",
                                   opts=opts)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
-  hydro_ini$reservoir[area]=T
+  hydro_ini$reservoir[area]=F
   antaresEditObject::writeIni(hydro_ini,
                               file.path("input","hydro","hydro"),
                               overwrite=T,

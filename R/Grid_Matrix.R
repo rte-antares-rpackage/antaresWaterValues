@@ -277,8 +277,7 @@
 
   # Reservoir (rule curves)
   {
-    reservoir <- readReservoirLevels(area, timeStep = "weekly",
-                                     byReservoirCapacity = FALSE, opts = opts)
+    reservoir <- readReservoirLevels(area, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
     reservoir[,
               (vars) := lapply(.SD, function(x) {round(x * max(states))}),

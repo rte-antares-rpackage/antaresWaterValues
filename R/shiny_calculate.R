@@ -292,12 +292,8 @@ calculateServer <- function(id, opts, silent) {
 
     final_lvl <- shiny::reactive({if (input$force_final_level){
       if (input$final_level_egal_initial|is.null(input$final_level)){
-        final_lvl <- readReservoirLevels(simulation_res()$area, timeStep = "daily",
-                                         byReservoirCapacity = FALSE,
-                                         opts = opts)[1,]
-        assertthat::assert_that(final_lvl$level_low==final_lvl$level_high,
-                                msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
-        final_lvl$level_low*100
+        final_lvl <- get_initial_level(area = simulation_res()$area,
+                                       opts = opts)
       } else {
         input$final_level
       }

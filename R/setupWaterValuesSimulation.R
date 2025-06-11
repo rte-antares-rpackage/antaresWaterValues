@@ -19,15 +19,18 @@ setupWaterValuesSimulation <- function(area,
                                        efficiency,
                                        backup) {
 
-   assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
-                          msg=paste0("Unserved cost is null in ",area,
-                                     ", unserved energy will be exported to this area in simulations launched by the package."))
+ assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
+                        msg=paste0("Unserved cost is null in ",area,
+                                   ", unserved energy will be exported to this area in simulations launched by the package."))
 
   #assert the weekly output of the area:
   area_filtering = antaresRead::readIni(file.path("input","areas",area,"optimization.ini"),
                                         opts=opts)
   assertthat::assert_that(stringr::str_detect(area_filtering$filtering$`filter-year-by-year`,"hourly"),
                           msg = paste0(area," must have year by year hourly output."))
+
+  assertthat::assert_that(max(dplyr::pull(antaresRead::readInputTS(mingen = area),"mingen"))==0,
+                          msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
 
   fictive_area_name <- paste0("watervalue_", area)
   thermal_cluster <- "water_value_cluster"

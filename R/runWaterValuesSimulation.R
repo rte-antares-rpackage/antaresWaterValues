@@ -44,6 +44,14 @@ runWaterValuesSimulation <- function(area=NULL,
 
   backup = getBackupData(area,mcyears,opts)
 
+  # Get max hydro power that can be generated in a week
+  if (is.null(constraint_values)){
+    constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
+                                              pumping=pumping,
+                                              pumping_efficiency = efficiency,
+                                              opts=opts, mcyears=mcyears)
+  }
+
   res = setupGeneralParameters(opts,
                                expansion,
                                mcyears,
@@ -55,14 +63,6 @@ runWaterValuesSimulation <- function(area=NULL,
   file_name = res[[2]]
   constraint_values = res[[3]]
   nb_disc_stock = res[[4]]
-
-  # Get max hydro power that can be generated in a week
-  if (is.null(constraint_values)){
-    constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
-                                              pumping=pumping,
-                                              pumping_efficiency = efficiency,
-                                              opts=opts, mcyears=mcyears)
-  }
 
   simulation_res <- list()
 
@@ -178,7 +178,8 @@ setupGeneralParameters <- function(opts,
                             msg = "Scenarization of rhs of binding constraints not available with the version of Antares. Update the study to 8.7.0 or don't scenarize control values.")
   } else {
     constraint_values <- constraint_values %>%
-      dplyr::filter(.data$week %in% 1:52)
+      dplyr::filter(.data$week %in% 1:52) %>%
+      dplyr::cross_join(data.frame(mcYear=mcyears))
   }
   if (multistock){
     constraint_values <- constraint_values %>%

@@ -48,7 +48,6 @@
       decision_space <- decision_space %>%
         dplyr::cross_join(data.frame(mcYear=mcyears))
     }
-    decision_space <- round(decision_space)
 
     # Possible next states
     states_next <- Data_week$states_next[[1]]

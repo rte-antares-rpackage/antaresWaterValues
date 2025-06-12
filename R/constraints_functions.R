@@ -145,13 +145,14 @@ generate_rhs_bc <- function(constraint_value,area,opts){
     dplyr::arrange(.data$week) %>%
     dplyr::select(-c("sim","week"))
   constraint_value <- as.matrix(constraint_value)
-  constraint_value = rbind(matrix(rep(constraint_value/7, each=7),ncol=ncol(constraint_value)),
-                          matrix(rep(0,2*ncol(constraint_value)),ncol=ncol(constraint_value)))
+
+  equal_cst = matrix(0,nrow = 366,ncol=ncol(constraint_value))
+  equal_cst[seq.int(1,364,7),1:ncol(constraint_value)] = constraint_value
 
   if (opts$antaresVersion<870){
-    values = data.frame(equal = constraint_value)
+    values = data.frame(equal = equal_cst)
   } else {
-    values = list(eq= constraint_value)
+    values = list(eq= equal_cst)
     }
   antaresEditObject::editBindingConstraint(
     name = name_constraint,
@@ -312,7 +313,6 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
       constraint_values <- c(0)
     } else {
       constraint_values <- seq(from = 0, to = maxi, length.out = nb_disc_stock)
-      constraint_values <- round(constraint_values)
     }
 
   }

@@ -259,7 +259,6 @@
       if ("sim" %in% names(decision_space)){
         decision_space <- dplyr::select(decision_space,-c("sim"))
       }
-      decision_space <- round(decision_space)
       reward_db <- reward_db$reward
 
 
@@ -269,7 +268,6 @@
       } else {
         decision_space <- simulation_values
       }
-      decision_space <- round(decision_space)
     }
 
     reward_db <- reward_db[reward_db$timeId %in% seq_len(n_week)]}
@@ -279,7 +277,7 @@
     reservoir <- readReservoirLevels(area, opts = opts)
     vars <- c("level_low", "level_avg", "level_high")
     reservoir[,
-              (vars) := lapply(.SD, function(x) {round(x * max(states))}),
+              (vars) := lapply(.SD, function(x) {x * max(states)}),
               .SDcols = vars
     ]
   }
@@ -297,7 +295,6 @@
     statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
     statesdt[, "weeks" := as.numeric(gsub("V", "", statesdt$weeks))] #turn weeks to numbers V1==> 1
     statesdt[, "statesid" := seq_along(states), by = c("weeks")] # add id to refer to the state
-    statesdt[, "states" := round(statesdt$states)]
   }
 
   # add states plus 1 (ie states for the following week)

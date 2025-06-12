@@ -95,6 +95,9 @@ runWaterValuesSimulation <- function(area=NULL,
       if(launch_simulations){
         launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
       }
+
+      clear_scenario_builder(opts)
+
       simulation_names[i] <- sim_name
     }
 
@@ -120,7 +123,10 @@ runWaterValuesSimulation <- function(area=NULL,
     }
 
   },
-  finally = resetStudy(opts,area,pumping,backup))
+  finally = {
+    resetStudy(opts,area,pumping,backup)
+    clear_scenario_builder(opts)}
+  )
 
 
   return(simulation_res)
@@ -331,6 +337,9 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
         launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
       }
       simulation_names[i] <- sim_name
+
+      clear_scenario_builder(opts)
+
     }
 
     simulation_res <- list(
@@ -359,6 +368,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       area = list_areas[[j]]
       resetStudy(opts,area,list_pumping[area],list_backup[[j]])
     }
+    clear_scenario_builder(opts)
   }
   )
 

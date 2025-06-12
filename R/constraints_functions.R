@@ -204,6 +204,27 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 
 }
 
+clear_scenario_builder <- function(opts){
+  sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
+
+  if (length(names(sb_file))>0){
+    assertthat::assert_that(length(names(sb_file))==1,
+                            msg="There should be only one ruleset in scenario builder.")
+
+    name_ruleset <- names(sb_file)[[1]]
+    sb_file[[name_ruleset]] <- sb_file[[name_ruleset]][!stringr::str_detect(names(sb_file[[name_ruleset]]),"bc,watervalues")]
+
+    antaresEditObject::writeIni(listData = sb_file,
+                                opts=opts,
+                                pathIni = file.path("settings", "scenariobuilder.dat"),
+                                overwrite = TRUE, default_ext = ".dat")
+
+    Sys.sleep(1)
+
+  }
+
+}
+
 #' Generate the list of constraint values of the link between the fictive area and the real one
 #' Used to run simulations in \code{runWaterValuesSimulation} and also to estimate reward functions
 #' in functions such as \code{Grid_Matrix} and \code{iterations_simulation_DP}

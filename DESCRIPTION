@@ -1,9 +1,9 @@
 Type: Package
 Package: antaresWaterValues
 Title: Generating water values for Antares
-Version: 0.4.1
+Version: 1.0.0
 Author: Dhia Gharsallaoui
-Maintainer: The package maintainer <safedhia@gmail.com>
+BugReports: https://github.com/rte-antares-rpackage/antaresWaterValues/issues
 Description: This package aims at generating water values for Antares.
 License: MIT + file LICENSE
 Depends:

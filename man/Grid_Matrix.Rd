@@ -12,7 +12,6 @@ Grid_Matrix(
   inflow = NULL,
   simulation_values = NULL,
   nb_cycle = 1L,
-  district_name = "water values district",
   mcyears = NULL,
   week_53 = 0,
   states_step_ratio = 0.01,
@@ -44,7 +43,6 @@ Grid_Matrix(
   final_level = NULL,
   penalty_final_level_low = NULL,
   penalty_final_level_high = NULL,
-  fictive_areas = NULL,
   ...
 )
 }
@@ -64,8 +62,6 @@ with th option \code{hydrostorage = TRUE}. If it's NULL it auto calculated.}
 \item{simulation_values}{Values for the simulation.}
 
 \item{nb_cycle}{Number of times to run the algorithm.}
-
-\item{district_name}{Name of the district used to store output.}
 
 \item{mcyears}{MC years to consider, by default all of them.}
 
@@ -141,8 +137,6 @@ between two water values is less then this value those values are converged.}
 \item{penalty_final_level_low}{Penalties for both bottom rule curve to constrain final level}
 
 \item{penalty_final_level_high}{Penalties for top rule curve to constrain final level}
-
-\item{fictive_areas}{Vector of chr. Fictive areas used in simulation}
 
 \item{...}{further arguments passed to or from other methods.}
 }

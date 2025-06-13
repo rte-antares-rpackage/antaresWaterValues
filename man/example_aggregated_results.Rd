@@ -5,7 +5,7 @@
 \alias{example_aggregated_results}
 \title{Example of output of \code{Grid_Matrix}}
 \format{
-An object of class \code{data.table} (inherits from \code{data.frame}) with 2652 rows and 10 columns.
+An object of class \code{data.table} (inherits from \code{data.frame}) with 2704 rows and 13 columns.
 }
 \source{
 Generated with a Antares toy study

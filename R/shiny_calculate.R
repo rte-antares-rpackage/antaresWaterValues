@@ -292,12 +292,8 @@ calculateServer <- function(id, opts, silent) {
 
     final_lvl <- shiny::reactive({if (input$force_final_level){
       if (input$final_level_egal_initial|is.null(input$final_level)){
-        final_lvl <- readReservoirLevels(simulation_res()$area, timeStep = "daily",
-                                         byReservoirCapacity = FALSE,
-                                         opts = opts)[1,]
-        assertthat::assert_that(final_lvl$level_low==final_lvl$level_high,
-                                msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
-        final_lvl$level_low*100
+        final_lvl <- get_initial_level(area = simulation_res()$area,
+                                       opts = opts)
       } else {
         input$final_level
       }
@@ -312,16 +308,13 @@ calculateServer <- function(id, opts, silent) {
                               get_Reward(
                                 simulation_names = simulation_res()$simulation_names,
                                 simulation_values = simulation_res()$simulation_values,
-                                district_name = "water values district",
                                 opts = opts,
                                 method_old = F,
                                 possible_controls = possible_controls(),
                                 max_hydro = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,
                                 area = simulation_res()$area,
-                                district_balance = "water values district",
-                                expansion = simulation_res()$expansion,
-                                fictive_areas=simulation_res()$fictive_areas
+                                expansion = simulation_res()$expansion
                               )
 
                             results <-     Grid_Matrix(
@@ -332,7 +325,6 @@ calculateServer <- function(id, opts, silent) {
                               nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
                               opts = opts,
                               week_53 = 0,
-                              district_name = "water values district" ,
                               method = "grid-mean",
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mc_years,

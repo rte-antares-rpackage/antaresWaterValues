@@ -17,7 +17,8 @@ build_all_possible_decisions(
   P_max,
   next_week_values,
   niveau_max,
-  overflow_cost
+  overflow_cost,
+  next_states = NULL
 )
 }
 \arguments{

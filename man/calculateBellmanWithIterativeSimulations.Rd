@@ -27,7 +27,8 @@ calculateBellmanWithIterativeSimulations(
   force_final_level = F,
   final_level_egal_initial = F,
   final_level = NULL,
-  penalty_final_level = NULL
+  penalty_final_level = NULL,
+  initial_traj = NULL
 )
 }
 \arguments{

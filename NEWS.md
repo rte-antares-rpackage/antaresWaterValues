@@ -1,3 +1,12 @@
+# antaresWaterValues 1.0.0
+
+## Major changes
+
+* Compatibilty with AntaREST
+* Simplification and factorization of runWaterValuesSimulation
+* Removing arguments relative to district and fictive areas
+* Better deal with errors in runWaterValuesSimulation with backup data
+
 # antaresWaterValues 0.4.0
 
 ## Major changes

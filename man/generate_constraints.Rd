@@ -4,18 +4,10 @@
 \alias{generate_constraints}
 \title{This function generate binding constraints for \code{runWaterValuesSimulation}}
 \usage{
-generate_constraints(
-  coeff,
-  name_constraint,
-  efficiency = 0.75,
-  opts,
-  area = NULL
-)
+generate_constraints(pumping, efficiency, opts, area)
 }
 \arguments{
-\item{coeff}{the sens of the constraint notation in Antares.}
-
-\item{name_constraint}{the name of the constraint.}
+\item{pumping}{bool}
 
 \item{efficiency}{in [0,1]. efficient ratio of pumping.}
 

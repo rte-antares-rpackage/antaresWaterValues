@@ -18,3 +18,4 @@ An updated list containing various information about the simulation.
 \description{
 Add fictive production and fictive load to avoid infeasabilities with binding constraints
 }
+\keyword{internal}

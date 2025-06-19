@@ -19,3 +19,4 @@ generate_rhs_bc(constraint_value, coeff, opts)
 Modify time-series of clusters in fictive_area_bc to implement the constraint value
 for each week and each MC year
 }
+\keyword{internal}

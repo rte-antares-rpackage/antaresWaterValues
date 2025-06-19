@@ -1,4 +1,4 @@
-#' Read Reservoir Levels
+#' Read reservoir low and high levels (rule curves)
 #'
 #' @param area An 'antares' area.
 #' @param timeStep Resolution of the data to import: weekly (default, a linear interpolation is done on the data), monthly (original data).
@@ -44,7 +44,7 @@ readReservoirLevels <- function(area,
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @return a data.table
-
+#' @keywords internal
 readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   if (!requireNamespace("zoo", quietly = TRUE)) {
     stop(
@@ -101,6 +101,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @return a data.table
+#' @keywords internal
 readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly", "daily"))
   if (!area %in% antaresRead::getAreas(opts = opts))
@@ -152,7 +153,6 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @export
-
 get_initial_level <- function(area,opts){
   final_level <- readReservoirLevels(area, timeStep = "daily",
                                      byReservoirCapacity = FALSE,

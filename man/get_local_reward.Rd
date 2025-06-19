@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_Reward.R
 \name{get_local_reward}
 \alias{get_local_reward}
-\title{Calculate rewards for a simulation based on marginal prices, mainly used in \code{Get_Reward}}
+\title{Compute rewards for different controls based on marginal prices of a given simulation, mainly used in \code{Get_Reward}}
 \usage{
 get_local_reward(
   opts,
@@ -37,5 +37,5 @@ get_local_reward(
 a data.table {mcYear,week,u,reward}
 }
 \description{
-Calculate rewards for a simulation based on marginal prices, mainly used in \code{Get_Reward}
+Compute rewards for different controls based on marginal prices of a given simulation, mainly used in \code{Get_Reward}
 }

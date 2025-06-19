@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{to_Antares_Format_bis}
 \alias{to_Antares_Format_bis}
-\title{Convert water values to Antares format}
+\title{Convert water values to Antares format with high accuracy}
 \usage{
 to_Antares_Format_bis(data)
 }

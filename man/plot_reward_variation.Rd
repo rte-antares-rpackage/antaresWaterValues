@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plot_functions.R
 \name{plot_reward_variation}
 \alias{plot_reward_variation}
-\title{Plot the reward variation and return the results in table}
+\title{Plot the reward variation}
 \usage{
 plot_reward_variation(reward_base, week_id)
 }
@@ -16,5 +16,5 @@ Obtained using the function get_Reward()}
 a \code{ggplot} object
 }
 \description{
-Plot the reward variation and return the results in table
+Plot the reward variation
 }

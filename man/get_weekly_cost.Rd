@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{get_weekly_cost}
 \alias{get_weekly_cost}
-\title{Get overall cost in a week, used in different functions}
+\title{Get objective value for each week and each scenario, mainly used in \code{get_Reward}}
 \usage{
 get_weekly_cost(
   district,
@@ -25,5 +25,5 @@ get_weekly_cost(
 \item{fictive_areas}{Vector of chr. Fictive areas used in simulation}
 }
 \description{
-Get overall cost in a week, used in different functions
+Get objective value for each week and each scenario, mainly used in \code{get_Reward}
 }

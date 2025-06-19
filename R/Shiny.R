@@ -1,4 +1,4 @@
-#' Open watervalues Calculator in APP Web
+#' Open web interface for computing water values
 #'
 #' @param opts
 #'   List of simulation parameters returned by the function
@@ -13,7 +13,6 @@
 #' @import shinyBS
 #' @import shiny
 #' @export
-
 shiny_water_values <-
   function(opts = NULL,
            simulation_res = NULL,
@@ -30,7 +29,6 @@ shiny_water_values <-
       "shinythemes",
       "spsComps",
       "spsUtil",
-      "tools",
       "shinyWidgets",
       "shiny"
     )) {

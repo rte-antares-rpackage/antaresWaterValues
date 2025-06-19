@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plot_functions.R
 \name{plot_reward_mc}
 \alias{plot_reward_mc}
-\title{Plot the reward and return the results in table}
+\title{Plot the reward}
 \usage{
 plot_reward_mc(reward_base, week_id, Mc_year)
 }
@@ -18,5 +18,5 @@ Obtained using the function get_Reward()}
 a \code{ggplot} object
 }
 \description{
-Plot the reward and return the results in table
+Plot the reward
 }

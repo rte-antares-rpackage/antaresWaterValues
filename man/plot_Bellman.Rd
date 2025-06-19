@@ -2,7 +2,7 @@
 % Please edit documentation in R/Plot_functions.R
 \name{plot_Bellman}
 \alias{plot_Bellman}
-\title{Plot Bellman and Water values}
+\title{Plot Bellman and water values}
 \usage{
 plot_Bellman(value_nodes_dt, week_number)
 }
@@ -16,5 +16,5 @@ Obtained using the function Grid_Matrix()}
 a \code{ggplot} object
 }
 \description{
-Plot Bellman and Water values
+Plot Bellman and water values
 }

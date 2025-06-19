@@ -16,7 +16,7 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param ... further arguments passed to or from other methods.
 #' @return The result of antaresRead::simOptions
-#'
+#' @keywords internal
 setupWaterValuesSimulation <- function(area,
                                        fictive_area_name = paste0("watervalue_", area),
                                        thermal_cluster = "water_value_cluster",

@@ -2,8 +2,11 @@ Type: Package
 Package: antaresWaterValues
 Title: Generating water values for Antares
 Version: 0.4.1
-Author: Dhia Gharsallaoui
-Maintainer: The package maintainer <safedhia@gmail.com>
+Authors@R: c(
+    person("Dhia", "Gharsallaoui", role = "aut"),
+    person("Juliette", "Gerbaux", email = "juliette.gerbaux@rte-france.com",role = c("aut","cre")),
+    person("Paul", "Plessiez", role = "ctb")
+    )
 Description: This package aims at generating water values for Antares.
 License: MIT + file LICENSE
 Depends:
@@ -36,7 +39,6 @@ Suggests:
     spsComps (>= 0.3.0),
     spsUtil,
     testthat (>= 3.0.0),
-    tools (>= 4.1.0),
     zoo
 VignetteBuilder: 
     knitr

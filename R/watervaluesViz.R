@@ -1,4 +1,4 @@
-#' Visualize mean grid layer
+#' Plot water values
 #'
 #' @param Data Output from \code{Grid_Matrix}.
 #' @param filter_penalties Binary paramater. If T, show only watervalues inside rule curves

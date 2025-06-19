@@ -14,3 +14,4 @@ mean_finite(x)
 Calculate the mean of finite values.
 Return \code{-Inf} if all \code{-Inf}.
 }
+\keyword{internal}

@@ -34,3 +34,4 @@ List of constraint values for the week
 Generate constraint values for a week at a time used in \code{constraint_generator}
 depending on the maximum powers for the week
 }
+\keyword{internal}

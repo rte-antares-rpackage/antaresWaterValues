@@ -81,3 +81,4 @@ a \code{data.table} like Data_week with the Bellman values
 \description{
 Compute Bellman values at step i from step i+1, used in \code{Grid_Matrix}
 }
+\keyword{internal}

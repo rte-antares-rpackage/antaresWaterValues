@@ -2,7 +2,7 @@
 % Please edit documentation in R/readReservoirLevels.R
 \name{readReservoirLevels}
 \alias{readReservoirLevels}
-\title{Read Reservoir Levels}
+\title{Read reservoir low and high levels (rule curves)}
 \usage{
 readReservoirLevels(
   area,
@@ -25,5 +25,5 @@ readReservoirLevels(
 a data.table
 }
 \description{
-Read Reservoir Levels
+Read reservoir low and high levels (rule curves)
 }

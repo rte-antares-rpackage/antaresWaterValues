@@ -1,4 +1,4 @@
-#' Remove outliers water Values
+#' Replace extreme water values
 #'
 #' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
 #' @param min minimal accepted water value
@@ -10,7 +10,6 @@
 #'
 #' @return a \code{data.table}
 #' @export
-
 remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_method){
 
   results <- copy(results_dt)

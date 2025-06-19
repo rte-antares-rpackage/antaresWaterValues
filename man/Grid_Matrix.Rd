@@ -2,7 +2,7 @@
 % Please edit documentation in R/Grid_Matrix.R
 \name{Grid_Matrix}
 \alias{Grid_Matrix}
-\title{Calculate grid layer matrix of Bellman values and water values}
+\title{Compute Bellman values and water values with dynamic programming based on reward functions computed with \code{get_Reward}}
 \usage{
 Grid_Matrix(
   area,
@@ -151,5 +151,5 @@ List of a data.frame with aggregated water values and
 a data.frame of more detailed water values
 }
 \description{
-Calculate grid layer matrix of Bellman values and water values
+Compute Bellman values and water values with dynamic programming based on reward functions computed with \code{get_Reward}
 }

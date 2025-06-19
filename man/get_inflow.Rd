@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{get_inflow}
 \alias{get_inflow}
-\title{Get inflow in a week, used in different functions}
+\title{Get inflow per week and per scenario for a given area}
 \usage{
 get_inflow(area, opts = antaresRead::simOptions(), mcyears)
 }
@@ -15,5 +15,5 @@ get_inflow(area, opts = antaresRead::simOptions(), mcyears)
 \item{mcyears}{Vector of years used to evaluate cost}
 }
 \description{
-Get inflow in a week, used in different functions
+Get inflow per week and per scenario for a given area
 }

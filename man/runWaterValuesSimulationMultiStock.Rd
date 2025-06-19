@@ -2,7 +2,7 @@
 % Please edit documentation in R/runWaterValuesSimulation.R
 \name{runWaterValuesSimulationMultiStock}
 \alias{runWaterValuesSimulationMultiStock}
-\title{Run a simulation for calculating water values for a specific area}
+\title{Run Antares simulations in order to compute reward for multiple areas}
 \usage{
 runWaterValuesSimulationMultiStock(
   list_areas,
@@ -67,7 +67,7 @@ runWaterValuesSimulationMultiStock(
 \item{...}{further arguments passed to or from other methods.}
 }
 \description{
-Run a simulation for calculating water values for a specific area
+Run Antares simulations in order to compute reward for multiple areas
 }
 \note{
 This function have side effects on the Antares study used, a fictive area is created and a new district as well.

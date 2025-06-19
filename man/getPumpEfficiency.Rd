@@ -2,7 +2,7 @@
 % Please edit documentation in R/hydro_storage_functions.R
 \name{getPumpEfficiency}
 \alias{getPumpEfficiency}
-\title{Get the Pumping efficiency ratio for an area reservoir}
+\title{Get the pumping efficiency ratio for an area}
 \usage{
 getPumpEfficiency(area, force = FALSE, opts = antaresRead::simOptions())
 }
@@ -18,5 +18,5 @@ getPumpEfficiency(area, force = FALSE, opts = antaresRead::simOptions())
 the reservoir capacity (in MWh), or \code{NULL} if none.
 }
 \description{
-Get the Pumping efficiency ratio for an area reservoir
+Get the pumping efficiency ratio for an area
 }

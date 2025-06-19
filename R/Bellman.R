@@ -33,8 +33,7 @@
   #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
-
-
+  #' @keywords internal
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       method,mcyears,q_ratio=0.75,
                       counter,
@@ -86,14 +85,9 @@
                                                                           "transition_reward","next_bellman_value")],
                            by=c("years","states"))
 
-
-    #------ mean-grid method---------
-
     if (method == "mean-grid") {
       return(Data_week)
     }
-
-    #------ grid-mean method---------
 
     if(method=="grid-mean"){
       # mean all values

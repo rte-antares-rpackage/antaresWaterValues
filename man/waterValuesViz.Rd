@@ -2,7 +2,7 @@
 % Please edit documentation in R/watervaluesViz.R
 \name{waterValuesViz}
 \alias{waterValuesViz}
-\title{Visualize mean grid layer}
+\title{Plot water values}
 \usage{
 waterValuesViz(Data, filter_penalties = FALSE)
 }
@@ -15,5 +15,5 @@ waterValuesViz(Data, filter_penalties = FALSE)
 a \code{ggplot} object
 }
 \description{
-Visualize mean grid layer
+Plot water values
 }

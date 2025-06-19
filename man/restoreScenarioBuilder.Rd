@@ -15,3 +15,4 @@ restoreScenarioBuilder(opts, fictive_area)
 \description{
 Restore initial scenario builder
 }
+\keyword{internal}

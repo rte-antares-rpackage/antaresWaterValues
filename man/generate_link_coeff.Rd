@@ -26,3 +26,4 @@ Named vector of coefficients
 \description{
 Generate coefficients for biding constraints, used in \code{runWaterValuesSimulation}
 }
+\keyword{internal}

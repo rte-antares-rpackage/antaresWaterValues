@@ -1,14 +1,11 @@
 
-#---------Plot reward variation--------
-#' Plot the reward variation and return the results in table
+#' Plot the reward variation
 #'
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
 #' @param week_id Numeric of length 1. number of the week to plot.
 #' @return a \code{ggplot} object
 #' @export
-
-
 plot_reward_variation <- function(reward_base,week_id)
 {
   temp <- reward_base %>%
@@ -40,8 +37,7 @@ plot_reward_variation <- function(reward_base,week_id)
   return(output)
 }
 
-#--------- Plot reward -----------
-#' Plot the reward and return the results in table
+#' Plot the mean reward
 #'
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
@@ -49,7 +45,6 @@ plot_reward_variation <- function(reward_base,week_id)
 #'
 #' @return a \code{ggplot} object
 #' @export
-
 plot_reward <- function(reward_base,week_id)
 {
   temp <- reward_base %>%
@@ -82,8 +77,7 @@ plot_reward <- function(reward_base,week_id)
 }
 
 
-#--------- Plot reward by MC year -----------
-#' Plot the reward and return the results in table
+#' Plot the reward
 #'
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
@@ -91,7 +85,6 @@ plot_reward <- function(reward_base,week_id)
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #' @return a \code{ggplot} object
 #' @export
-
 plot_reward_mc <- function(reward_base,week_id,Mc_year)
 {
   temp <- reward_base[reward_base$timeId %in% week_id&reward_base$mcYear%in%Mc_year] %>%
@@ -132,8 +125,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 
 
 
-#--------- Plot reward variation by MC year -----------
-#' Plot the reward and return the results in table
+#' Plot the mean reward variation
 #'
 #' @param reward_base A data.table contains the rewards.
 #' Obtained using the function get_Reward()
@@ -141,7 +133,6 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 #' @param Mc_year Numeric of length 1. number of thr MC year to plot
 #' @return a \code{ggplot} object
 #' @export
-
 plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 {
   temp <- reward_base %>%
@@ -174,8 +165,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 }
 
 
-#----------Bellman Plot--------------
-#' Plot Bellman and Water values
+#' Plot Bellman and water values
 #'
 #' @param value_nodes_dt A data.table contains the Bellman and water values .
 #' Obtained using the function Grid_Matrix()
@@ -183,8 +173,6 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 #'
 #' @return a \code{ggplot} object
 #' @export
-
-
 plot_Bellman <- function(value_nodes_dt,week_number){
 
   value_nodes_dt <- value_nodes_dt %>%

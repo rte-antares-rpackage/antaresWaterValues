@@ -1,4 +1,4 @@
-#' Calculate grid layer matrix of Bellman values and water values
+#' Compute Bellman values and water values with dynamic programming based on reward functions computed with \code{get_Reward}
 #'
 #' @param area An 'antares' area.
 #' @param simulation_names Names of simulations to retrieve.
@@ -61,9 +61,6 @@
 #' @return List of a data.frame with aggregated water values and
 #' a data.frame of more detailed water values
 #' @export
-#'
-
-
   Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,inflow=NULL,
                              simulation_values = NULL, nb_cycle = 1L,
                              district_name = "water values district", mcyears = NULL,

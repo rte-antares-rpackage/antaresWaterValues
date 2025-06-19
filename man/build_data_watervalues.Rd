@@ -44,3 +44,4 @@ vu_pen corresponds to water value without penalties
 Calculate and plot watervalues with \code{value_node_gen}. Penalties taken into account.
 Used in \code{Grid_Matrix}
 }
+\keyword{internal}

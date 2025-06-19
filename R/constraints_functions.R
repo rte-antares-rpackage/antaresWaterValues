@@ -6,8 +6,7 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param pumping Boolean. True to take into account the pumping.
 #' @param area Area used to calculate watervalues
-#'
-
+#' @keywords internal
 disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 
   bc <- antaresRead::readBindingConstraints(opts)
@@ -33,8 +32,7 @@ disable_constraint <- function(name_bc,opts,pumping=F,area=NULL){
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param area Area used to calculate watervalues
-
-
+#' @keywords internal
 generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area=NULL){
 
 
@@ -109,7 +107,7 @@ generate_constraints <- function(coeff,name_constraint,efficiency=0.75,opts,area
 #' @param coeff the sens and the name of constraints
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-
+#' @keywords internal
 generate_rhs_bc <- function(constraint_value,coeff,opts){
 
   constraint_value <- dplyr::mutate(constraint_value,u=.data$u/168)
@@ -201,9 +199,9 @@ generate_rhs_bc <- function(constraint_value,coeff,opts){
 
 }
 
-#' Generate the list of constraint values of the link between the fictive area and the real one
+#' Generate a list of control values, eg difference between final and initial level for each week.
 #' Used to run simulations in \code{runWaterValuesSimulation} and also to estimate reward functions
-#' in functions such as \code{Grid_Matrix} and \code{iterations_simulation_DP}
+#' in functions such as \code{Grid_Matrix} and \code{get_Reward}
 #'
 #' @param area The area concerned by the simulation.
 #' @param nb_disc_stock Number of constraint values wanted for each week
@@ -268,6 +266,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=F,pumping_efficiency
 #' @param week Current week for which to compute controls
 #'
 #' @return List of constraint values for the week
+#' @keywords internal
 constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hydro,week){
   maxi <- min(hydro$turb,res_cap+hydro$max_app)
   mini <- max(-res_cap,-hydro$pump*pumping_efficiency)
@@ -327,6 +326,7 @@ constraint_week <- function(pumping,pumping_efficiency,nb_disc_stock,res_cap,hyd
 #' @param opts List of simulation parameters returned by the function \code{antaresRead::setSimulationPath}
 #'
 #' @return Named vector of coefficients
+#' @keywords internal
 generate_link_coeff <- function(area,fictive_area, pumping = FALSE, opts = antaresRead::simOptions()){
 
   if(!grepl("_bc$", fictive_area)){

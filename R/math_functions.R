@@ -14,6 +14,7 @@
 #'
 #' @return Data frame with water value (vu) for each week (weeks) and each state (states).
 #' vu_pen corresponds to water value without penalties
+#' @keywords internal
 build_data_watervalues <- function(watervalues,statesdt,reservoir,
                                    penalty_level_high,penalty_level_low,
                                    force_final_level=F,penalty_final_level_low=0,
@@ -72,6 +73,7 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
 #' @param watervalues an intermediate result in Grid_Matrix contains the bellman values
 #' @param statesdt an intermediate result in Grid_Matrix contains the states dicretization
 #' @param reservoir an intermediate result in Grid_Matrix contains the reservoir levels
+#' @keywords internal
 value_node_gen <- function(watervalues,statesdt,reservoir){
   # Calculating mean of Bellman values for each week and each state
   value_nodes_dt <- watervalues %>%
@@ -102,7 +104,7 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
 #' test a difference vector convergence, used in \code{Grid_Matrix}
 #' @param diff_vect is a vector of water values differences
 #' @param conv is the value from which the difference become converged
-
+#' @keywords internal
 converged <- function(diff_vect,conv=1){
   t <- abs(diff_vect)
   t2 <- is.nan(t)
@@ -118,7 +120,7 @@ converged <- function(diff_vect,conv=1){
 #' Calculate the mean of finite values.
 #' Return \code{-Inf} if all \code{-Inf}.
 #' @param x numeric vector whose mean is wanted.
-
+#' @keywords internal
 mean_finite <- function(x) {
   if (all(!is.finite(x))) {
     -Inf
@@ -127,11 +129,10 @@ mean_finite <- function(x) {
   }
 }
 
-#------- states to percent -----
 #' Convert Reservoir levels from MWh to percent of reservoir.
 #' @param data  A data.table contains the statesid and states columns
 #' @param states_step_ratio percent step between two successive levels.
-
+#' @keywords internal
 states_to_percent <- function(data,states_step_ratio=0.01){
 
   # rescale levels to round percentages ranging from 0 to 100
@@ -169,6 +170,7 @@ states_to_percent <- function(data,states_step_ratio=0.01){
 #' @param df_value_node DataFrame containing bellman values
 #'
 #' @return vector of corrected Bellman values
+#' @keywords internal
 correct_concavity <- function(df_value_node, weeks){
 
   for (s in weeks){

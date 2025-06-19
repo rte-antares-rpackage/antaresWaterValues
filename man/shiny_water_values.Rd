@@ -2,7 +2,7 @@
 % Please edit documentation in R/Shiny.R
 \name{shiny_water_values}
 \alias{shiny_water_values}
-\title{Open watervalues Calculator in APP Web}
+\title{Open web interface for computing water values}
 \usage{
 shiny_water_values(opts = NULL, simulation_res = NULL, silent = F, ...)
 }
@@ -18,5 +18,5 @@ shiny_water_values(opts = NULL, simulation_res = NULL, silent = F, ...)
 \item{...}{further arguments passed to or from other methods.}
 }
 \description{
-Open watervalues Calculator in APP Web
+Open web interface for computing water values
 }

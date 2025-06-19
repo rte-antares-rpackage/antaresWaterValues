@@ -16,3 +16,4 @@ List of \code{stats::approxfun} for each scenario
 \description{
 Create approximation of reward function for each scenario, used in \code{Bellman}
 }
+\keyword{internal}

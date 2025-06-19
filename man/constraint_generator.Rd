@@ -2,9 +2,9 @@
 % Please edit documentation in R/constraints_functions.R
 \name{constraint_generator}
 \alias{constraint_generator}
-\title{Generate the list of constraint values of the link between the fictive area and the real one
+\title{Generate a list of control values, eg difference between final and initial level for each week.
 Used to run simulations in \code{runWaterValuesSimulation} and also to estimate reward functions
-in functions such as \code{Grid_Matrix} and \code{iterations_simulation_DP}}
+in functions such as \code{Grid_Matrix} and \code{get_Reward}}
 \usage{
 constraint_generator(
   area,
@@ -35,7 +35,7 @@ constraint_generator(
 \item{mcyears}{Vector of years used to evaluate inflow}
 }
 \description{
-Generate the list of constraint values of the link between the fictive area and the real one
+Generate a list of control values, eg difference between final and initial level for each week.
 Used to run simulations in \code{runWaterValuesSimulation} and also to estimate reward functions
-in functions such as \code{Grid_Matrix} and \code{iterations_simulation_DP}
+in functions such as \code{Grid_Matrix} and \code{get_Reward}
 }

@@ -1,4 +1,4 @@
-#' Run a simulation for calculating water values for a specific area
+#' Run Antares simulations in order to compute reward for a specific area
 #'
 #' @param area The area concerned by the simulation.
 #' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.
@@ -330,7 +330,7 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
   restore_fictive_fatal_prod_demand(area = area, opts = opts)
 }
 
-#' Run a simulation for calculating water values for a specific area
+#' Run Antares simulations in order to compute reward for multiple areas
 #'
 #' @param simulation_name The name of the simulation, \code{s} is a placeholder for the constraint value defined by \code{nb_disc_stock}.
 #' @param nb_mcyears Number of Monte Carlo years to simulate or a vector of years indexes to launch.

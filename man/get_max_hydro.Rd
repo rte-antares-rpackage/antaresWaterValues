@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions.R
 \name{get_max_hydro}
 \alias{get_max_hydro}
-\title{Get max hydro power that can be generated in a week, used in different functions}
+\title{Get max hydro power (pumping and generating) in a week.}
 \usage{
 get_max_hydro(area, opts = antaresRead::simOptions(), timeStep = "hourly")
 }
@@ -15,5 +15,5 @@ get_max_hydro(area, opts = antaresRead::simOptions(), timeStep = "hourly")
 \item{timeStep}{among "hourly", "daily" and "weekly"}
 }
 \description{
-Get max hydro power that can be generated in a week, used in different functions
+Get max hydro power (pumping and generating) in a week.
 }

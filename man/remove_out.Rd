@@ -2,7 +2,7 @@
 % Please edit documentation in R/post_process.R
 \name{remove_out}
 \alias{remove_out}
-\title{Remove outliers water Values}
+\title{Replace extreme water values}
 \usage{
 remove_out(
   results_dt,
@@ -31,5 +31,5 @@ by max_vu and min_vu or "extreme values" to replace by the extreme values of the
 a \code{data.table}
 }
 \description{
-Remove outliers water Values
+Replace extreme water values
 }

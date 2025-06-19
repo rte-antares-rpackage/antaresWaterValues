@@ -7,7 +7,7 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param silent Boolean. True to run without messages.
 #' @return An updated list containing various information about the simulation.
-#'
+#' @keywords internal
 restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% opts$areaList)
@@ -17,7 +17,6 @@ restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresR
   inputPath <- opts$inputPath
 
   if (is.null(path_manual_backup)) {
-    # Hydro storage ----
     path_hydro_storage_backup <- file.path(inputPath, "hydro", "series", area, "mod_backup.txt")
 
     if (file.exists(path_hydro_storage_backup)) {
@@ -60,7 +59,7 @@ restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresR
 #'
 #'
 #' @return An updated list containing various information about the simulation.
-#'
+#' @keywords internal
 resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRead::simOptions()) {
 
   assertthat::assert_that(class(opts) == "simOptions")
@@ -70,7 +69,6 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
   # Input path
   inputPath <- opts$inputPath
 
-  # Hydro storage ----
   if (is.null(path_manual_storage)) {
     restoreHydroStorage(area,silent=T)
     path_hydro_storage <- file.path(inputPath, "hydro", "series", area, "mod.txt")
@@ -125,7 +123,7 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
   invisible(res)
 }
 
-#' Get the Pumping efficiency ratio for an area reservoir
+#' Get the pumping efficiency ratio for an area
 #'
 #' @param area An 'antares' area.
 #' @param force If "reservoir management" is disabled, return anyway the reservoir capacity?
@@ -135,7 +133,6 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
 #'
 #' @return the reservoir capacity (in MWh), or \code{NULL} if none.
 #' @export
-#'
 getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
   assertthat::assert_that(class(opts) == "simOptions")
   if (!area %in% antaresRead::getAreas(opts = opts))

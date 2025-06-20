@@ -149,17 +149,23 @@ generate_rhs_bc <- function(constraint_value,area,opts){
   equal_cst = matrix(0,nrow = 366,ncol=ncol(constraint_value))
   equal_cst[seq.int(1,364,7),1:ncol(constraint_value)] = constraint_value
 
+  coeff = c()
   if (opts$antaresVersion<870){
-    values = data.frame(equal = equal_cst)
+    values =  matrix(data = c(rep(0, 366 * 2),equal_cst), ncol = 3)
+    if (antaresRead:::is_api_study(opts)){
+      bc = antaresRead::readBindingConstraints(opts)
+      coeff = bc[[name_constraint]]$coefs
+    }
   } else {
     values = list(eq= equal_cst)
-    }
+  }
   antaresEditObject::editBindingConstraint(
     name = name_constraint,
     operator = "equal",
     values = values,
     opts = opts,
     timeStep = "weekly",
+    coefficients = coeff,
     group = "watervalues"
   )
 

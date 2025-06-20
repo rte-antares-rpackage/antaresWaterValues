@@ -142,7 +142,6 @@ setupGeneralParameters <- function(opts,
 
   #check the study is well selected
   assertthat::assert_that(class(opts) == "simOptions")
-  assertthat::assert_that(!antaresRead:::is_api_study(opts)|!expansion)
 
   assertthat::assert_that(is.numeric(mcyears)==TRUE)
 
@@ -182,17 +181,23 @@ setupGeneralParameters <- function(opts,
       dplyr::filter(.data$mcYear %in% mcyears, .data$week %in% 1:52)
     assertthat::assert_that(opts$antaresVersion>=870,
                             msg = "Scenarization of rhs of binding constraints not available with the version of Antares. Update the study to 8.7.0 or don't scenarize control values.")
+    if (multistock){
+      constraint_values <- constraint_values %>%
+        dplyr::select(c("mcYear","week","u","sim","area"))
+    } else {
+      constraint_values <- constraint_values %>%
+        dplyr::select(c("mcYear","week","u","sim"))
+    }
   } else {
     constraint_values <- constraint_values %>%
-      dplyr::filter(.data$week %in% 1:52) %>%
-      dplyr::cross_join(data.frame(mcYear=mcyears))
-  }
-  if (multistock){
-    constraint_values <- constraint_values %>%
-      dplyr::select(c("mcYear","week","u","sim","area"))
-  } else {
-    constraint_values <- constraint_values %>%
-      dplyr::select(c("mcYear","week","u","sim"))
+      dplyr::filter(.data$week %in% 1:52)
+    if (multistock){
+      constraint_values <- constraint_values %>%
+        dplyr::select(c("week","u","sim","area"))
+    } else {
+      constraint_values <- constraint_values %>%
+        dplyr::select(c("week","u","sim"))
+    }
   }
   nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 

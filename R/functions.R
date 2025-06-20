@@ -104,14 +104,12 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
 #' @export
 
 get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
-
-  criterium_file <- FALSE
-  if (expansion){
+  if (!antaresRead:::is_api_study(opts)){
     path <- paste0(opts$simPath)
     all_files <- list.files(path)
-    criterium_file <- sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears)
+    assertthat::assert_that(sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears))
   }
-  if (!criterium_file){
+  if (!expansion){
     cost <- antaresRead::readAntares(districts = "water values district", mcYears = mcyears,
                                      timeStep = "hourly", opts = opts, select=c("OV. COST"))
     cost$week <- (cost$timeId-1)%/%168+1
@@ -124,11 +122,18 @@ get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
 
     for (week in 1:52){
       for (scenario in mcyears){
-        path <- all_files[stringr::str_detect(all_files,paste0("criterion-",
-                                                               scenario,"-",
-                                                               week,"-"))][[1]]
-        cost_xpansion <- as.numeric(strsplit(utils::read.delim(paste0(opts$simPath,"/",path),
-                                                        header = FALSE)[[1]],":")[[1]][[2]])
+        if (antaresRead:::is_api_study(opts)){
+          file = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,
+                    "/raw?path=output%2F",opts$simOutputName,"%2Fcriterion-",scenario,"-",week,"--optim-nb-1"),
+                                                  parse_result = "text",encoding = "UTF-8")
+        } else{
+          path <- all_files[stringr::str_detect(all_files,paste0("criterion-",
+                                                                 scenario,"-",
+                                                                 week,"-"))][[1]]
+          file = utils::read.delim(paste0(opts$simPath,"/",path),
+                                   header = FALSE)
+        }
+        cost_xpansion <- as.numeric(strsplit(file[[1]],":")[[1]][[2]])
         cost[(cost$timeId==week)&(cost$mcYear==scenario),4] <- cost_xpansion
       }
     }

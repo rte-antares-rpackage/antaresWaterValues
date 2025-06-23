@@ -450,20 +450,10 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
   )
   if (antaresRead:::is_api_study(opts)){
     assertthat::assert_that(status$status == "success")
-    simu <- antaresRead::setSimulationPathAPI(host = opts$host,
-                                              study_id = opts$study_id,
-                                              token = opts$token,
-                                              simulation = -1)
+    if (expansion){
+      antaresEditObject::updateGeneralSettings(mode = "economy",opts=opts)
+    }
   } else {
     assertthat::assert_that(status == 0)
-    simu <- antaresRead::setSimulationPath(opts$studyPath,
-                                            simulation = -1)
-    info <- antaresRead::readIni(file.path(stringr::str_remove(simu$simPath,".*(?=output/)"),
-                                            "info.antares-output"),
-                                  opts=opts,
-                                  default_ext = "antares-output")$general
-    if(info$mode != "Economy"){
-      message("This mode is not compatible with this version of Antares and AntaresRead. Use mode Economy instead.")
-    }
   }
 }

@@ -29,8 +29,11 @@ setupWaterValuesSimulation <- function(area,
   assertthat::assert_that(stringr::str_detect(area_filtering$filtering$`filter-year-by-year`,"hourly"),
                           msg = paste0(area," must have year by year hourly output."))
 
-  assertthat::assert_that(max(dplyr::pull(antaresRead::readInputTS(mingen = area),"mingen"))==0,
-                          msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
+  suppressWarnings({mingen = antaresRead::readInputTS(mingen = area,opts=opts)})
+  if (nrow(mingen)>0){
+    assertthat::assert_that(max(dplyr::pull(mingen,"mingen"))==0,
+                            msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
+  }
 
   fictive_area_name <- paste0("watervalue_", area)
   thermal_cluster <- "water_value_cluster"

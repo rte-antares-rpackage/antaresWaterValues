@@ -162,13 +162,20 @@ setupGeneralParameters <- function(opts,
   settings_ini <- antaresRead::readIni(file.path("settings", "generaldata"),
                                         opts=opts)
   if (settings_ini$general$`thematic-trimming`){
-    for (p in list("OV. COST","MRG. PRICE","BALANCE")){
-      if (p %in% settings_ini$`variables selection`){
-        idx <- which(settings_ini$`variables selection`== p)
-        settings_ini$`variables selection`[[idx]] <- NULL
+    if (!antaresRead:::is_api_study(opts)) {
+      for (p in list("OV. COST","MRG. PRICE","BALANCE")){
+        if (p %in% settings_ini$`variables selection`){
+          idx <- which(settings_ini$`variables selection`== p)
+          settings_ini$`variables selection`[[idx]] <- NULL
+        }
+        settings_ini$`variables selection` <- append(settings_ini$`variables selection`,
+                                                      list(`select_var +`=p))
       }
-      settings_ini$`variables selection` <- append(settings_ini$`variables selection`,
-                                                    list(`select_var +`=p))
+    } else {
+      variable = unique(c(stringr::str_remove(stringr::str_remove(unlist(stringr::str_split(settings_ini$`variables selection`$`select_var +`,"\',\'")),"\\[\'"),"\'\\]"),
+                          "OV. COST","MRG. PRICE","BALANCE"))
+      new_variable_selection = paste0("[\'", stringr::str_flatten(variable,collapse = "\',\'"), "\']")
+      settings_ini$`variables selection`$`select_var +` = new_variable_selection
     }
     antaresEditObject::writeIni(settings_ini,
                                 file.path("settings", "generaldata"),

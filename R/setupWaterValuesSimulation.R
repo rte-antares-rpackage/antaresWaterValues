@@ -58,6 +58,9 @@ setupWaterValuesSimulation <- function(area,
     fictive_areas <- c(fictive_areas,paste0(fictive_area_name,"_pump"))
   }
 
+  assertthat::assert_that(opts$antaresVersion>860|max(abs(hydro_storage_max$pump-round(hydro_storage_max$pump)))==0,
+                          msg = "This version of Antares can't take into account non integer pumping power.")
+
   for(fictive_area in fictive_areas){
 
     # Create fictive areas

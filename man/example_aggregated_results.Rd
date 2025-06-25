@@ -16,4 +16,4 @@ example_aggregated_results
 \description{
 A list containing a watervalues data frame and an aggregated_results data frame
 }
-\keyword{datasets}
+\keyword{internal}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/post_process.R
 \name{remove_out}
 \alias{remove_out}
-\title{Replace extreme water values}
+\title{Post process water values}
 \usage{
 remove_out(
   results_dt,
@@ -14,22 +14,22 @@ remove_out(
 )
 }
 \arguments{
-\item{results_dt}{Output from \code{watervalues} or \code{Grid_Matrix}}
+\item{results_dt}{A \code{dplyr::tibble()} containing water values. Output \code{watervalues} from \code{Grid_Matrix()}.}
 
-\item{min}{minimal accepted water value}
+\item{min}{Double. Minimal accepted water value.}
 
-\item{max}{maximal accepted water value}
+\item{max}{Double. Maximal accepted water value.}
 
-\item{max_vu}{value to replace values higher than max}
+\item{max_vu}{Double. Value to use for water values higher than \code{max}.}
 
-\item{min_vu}{value to replace values lower than min}
+\item{min_vu}{Double. Value to use for water values lower than \code{min}.}
 
-\item{replace_na_method}{Method to replace extreme values, either "constant values" to replace
-by max_vu and min_vu or "extreme values" to replace by the extreme values of the current week}
+\item{replace_na_method}{Character. Method to replace extreme values, either \code{"constant values"} to replace
+by \code{max_vu} and \code{min_vu} or \code{"extreme values"} to replace by the extreme values of the current week.}
 }
 \value{
-a \code{data.table}
+A \code{dplyr::tibble()} with same format than \code{results_dt}.
 }
 \description{
-Replace extreme water values
+Replace extreme water values by chosen values.
 }

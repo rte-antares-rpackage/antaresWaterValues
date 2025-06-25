@@ -2,21 +2,21 @@
 % Please edit documentation in R/Plot_functions.R
 \name{plot_reward_variation_mc}
 \alias{plot_reward_variation_mc}
-\title{Plot the mean reward variation}
+\title{Plot reward variation}
 \usage{
-plot_reward_variation_mc(reward_base, week_id, Mc_year)
+plot_reward_variation_mc(reward_base, weeks_to_plot, scenarios_to_plot)
 }
 \arguments{
-\item{reward_base}{A data.table contains the rewards.
-Obtained using the function get_Reward()}
+\item{reward_base}{A \code{dplyr::tibble()} containing reward functions. Output \code{reward} from \code{get_Reward()}.}
 
-\item{week_id}{Numeric of length 1. number of the week to plot.}
+\item{weeks_to_plot}{Vector of integer. Weeks to plot.}
 
-\item{Mc_year}{Numeric of length 1. number of thr MC year to plot}
+\item{scenarios_to_plot}{Vector of integer. Scenarios to plot.}
 }
 \value{
-a \code{ggplot} object
+\item{graph}{A \code{ggplot2::ggplot()} object.}
+\item{table}{A \code{dplyr::tibble()} containing plotted data.}
 }
 \description{
-Plot the mean reward variation
+Plot variation of reward functions for different weeks listed in \code{weeks_to_plot} and different scenarios listed in \code{scenarios_to_plot}.
 }

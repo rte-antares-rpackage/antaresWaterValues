@@ -2,18 +2,20 @@
 % Please edit documentation in R/functions.R
 \name{get_max_hydro}
 \alias{get_max_hydro}
-\title{Get max hydro power (pumping and generating) in a week.}
+\title{Get pumping and generating hydro power}
 \usage{
-get_max_hydro(area, opts = antaresRead::simOptions(), timeStep = "hourly")
+get_max_hydro(area, opts, timeStep = "hourly")
 }
 \arguments{
-\item{area}{The area concerned by the simulation.}
+\item{area}{Character. The Antares area concerned by water values computation.}
 
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
-\item{timeStep}{among "hourly", "daily" and "weekly"}
+\item{timeStep}{Character among "hourly", "daily" and "weekly".}
+}
+\value{
+A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"pump"} and \code{"turb"}.
 }
 \description{
-Get max hydro power (pumping and generating) in a week.
+Get maximum pumping and generating hydro capacities over a given horizon given in \code{timeStep}.
 }

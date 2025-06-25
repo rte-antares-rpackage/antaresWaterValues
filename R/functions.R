@@ -120,14 +120,16 @@ resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead:
   invisible(res)
 }
 
-#' Get reservoir capacity for a given area
+#' Get reservoir capacity
 #'
-#' @param area The area concerned by the simulation.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
+#' Get hydro reservoir capacity for the given area. Reservoir management must be on.
+#'
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @returns Double, reservoir capacity in MWh.
+#'
 #' @export
-get_reservoir_capacity <- function(area, opts=antaresRead::simOptions()){
+get_reservoir_capacity <- function(area, opts){
   hydro_ini <- antaresRead::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
   if (isTRUE(hydro_ini$reservoir[[area]])) {
     reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
@@ -141,15 +143,17 @@ get_reservoir_capacity <- function(area, opts=antaresRead::simOptions()){
 }
 
 
-#' Get max hydro power (pumping and generating) in a week.
+#' Get pumping and generating hydro power
 #'
-#' @param area The area concerned by the simulation.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param timeStep among "hourly", "daily" and "weekly"
+#' Get maximum pumping and generating hydro capacities over a given horizon given in \code{timeStep}.
+#'
+#' @inheritParams runWaterValuesSimulation
+#' @param timeStep Character among "hourly", "daily" and "weekly".
+#'
+#' @returns A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"pump"} and \code{"turb"}.
+#'
 #' @export
-get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"){
+get_max_hydro <- function(area, opts,timeStep="hourly"){
 
   #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
   max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
@@ -180,26 +184,29 @@ get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"
   return(max_hydro)
 }
 
-#' Get inflow per week and per scenario for a given area
+#' Get weekly inflows
 #'
-#' @param area The area concerned by the simulation.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param mcyears Vector of years used to evaluate cost
+#' Get weekly inflows of the given area for all weeks from 1 to 52 and for all time-series in \code{mcyears}.
+#' Please note that if time series index don't correspond to scenario number in scenario builder, this could generate inconsistencies.
+#'
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @returns A \code{dplyr::tibble()} with 4 columns : \code{"timeId"} (integer), \code{"tsId"} (integer), \code{"hydroStorage"} (double) and \code{"area"} (character).
+#' Each line give the amount of weekly inflow (\code{"hydroStorage"}) for \code{area} for a week (\code{"timeId"}) and a scenario (\code{"tsId"}).
+#'
 #' @export
-get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
+get_inflow <- function(area, opts,mcyears){
 
   suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="hourly"))
   if (nrow(inflow)==0){
     message("No inflow has been found, considering it as null")
-    inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
+    inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area))
   } else {
     inflow$week <- (inflow$timeId-1)%/%168+1
     inflow <- dplyr::summarise(dplyr::group_by(inflow,.data$week,.data$tsId),
                                hydroStorage=sum(.data$hydroStorage)) %>%
       dplyr::rename("timeId"="week") %>%
-      dplyr::mutate(area=area, time=NaN)
+      dplyr::mutate(area=area)
     if (length(unique(inflow$tsId))==1){
       inflow <- inflow %>%
         dplyr::select(-("tsId")) %>%
@@ -212,28 +219,28 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
   return(data.table(inflow))
 }
 
-#' Get objective value for each week and each scenario, mainly used in \code{get_Reward}
+#' Get objective values
 #'
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
+#' Get objective values of the optimization problem of each week and each scenario for a given simulation \code{simu}, mainly used in \code{get_Reward()} to build reward functions.
+#'
+#' @inheritParams get_local_reward
 #' @param district The district concerned by the simulation.
-#' @param mcyears Vector of years used to evaluate cost
-#' @param fictive_areas Vector of chr. Fictive areas used in simulation
-#' @param expansion Binary. True if mode expansion was used to run simulations
+#' @param fictive_areas Vector of chr. Fictive areas used in simulation.
+#'
+#' @return A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"mcYear"} and \code{"ov_cost"}.
 #'
 #' @export
-get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,expansion=F,fictive_areas=NULL){
+get_weekly_cost <- function(district, simu,mcyears,expansion=F,fictive_areas=NULL){
 
   criterium_file <- FALSE
   if (expansion){
-    path <- paste0(opts$simPath)
+    path <- paste0(simu$simPath)
     all_files <- list.files(path)
     criterium_file <- sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears)
   }
   if (!criterium_file){
     cost <- antaresRead::readAntares(districts = district, mcYears = mcyears,
-                                     timeStep = "hourly", opts = opts, select=c("OV. COST"))
+                                     timeStep = "hourly", opts = simu, select=c("OV. COST"))
     cost$week <- (cost$timeId-1)%/%168+1
     cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
                              ov_cost=sum(.data$`OV. COST`)) %>%
@@ -244,7 +251,7 @@ get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,exp
         dplyr::mutate(ov_cost=0,cost_xpansion=0)
     } else {
       cost <- antaresRead::readAntares(areas = fictive_areas, mcYears = mcyears,
-                                       timeStep = "hourly", opts = opts, select=c("OV. COST"))
+                                       timeStep = "hourly", opts = simu, select=c("OV. COST"))
       cost$week <- (cost$timeId-1)%/%168+1
       cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
                                ov_cost=sum(.data$`OV. COST`)) %>%
@@ -257,7 +264,7 @@ get_weekly_cost <- function(district, opts=antaresRead::simOptions(),mcyears,exp
         path <- all_files[stringr::str_detect(all_files,paste0("criterion-",
                                                                scenario,"-",
                                                                week,"-"))][[1]]
-        cost_xpansion <- as.numeric(strsplit(utils::read.delim(paste0(opts$simPath,"/",path),
+        cost_xpansion <- as.numeric(strsplit(utils::read.delim(paste0(simu$simPath,"/",path),
                                                         header = FALSE)[[1]],":")[[1]][[2]])
         cost[(cost$timeId==week)&(cost$mcYear==scenario),4] <- cost_xpansion
       }
@@ -299,18 +306,17 @@ getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::si
 
 #' Convert water values to Antares format
 #'
-#' This function converts water values generated by \code{Grid_Matrix}
+#' This function converts water values generated by \code{Grid_Matrix()}
 #' to the format expected by Antares: a 365*101 matrix, where
 #' the rows are the 365 days of the year and the columns are round percentage values
 #' ranging from 0 to 100 assessing the reservoir level.
-#' Since \code{Grid_Matrix} output weekly values for an
-#' arbitrary number of reservoir levels, interpolation is performed on both scales
-#' in order to fit the desired format.
+#' Use \code{antaresEditObject::writeWaterValues()} to write water values.
 #'
-#' @param data A data.table generated by \code{Grid_Matrix}
-#' @param constant Boolean. Generate daily constant values by week. FALSE to do interpolation.
-#'
-#' @return A 365*101 numeric matrix
+#' @param data A \code{dplyr::tibble()} representing water values, output \code{aggregated_results} generated by \code{Grid_Matrix()}.
+#' @param constant Binary. Generate daily constant values by week. \code{FALSE} to do interpolation.
+#' @seealso \code{to_Antares_Format_bis()}
+#' @note Please use \code{to_Antares_Format_bis()} if you are using \code{hydro-pricing-mode=accurate} in Antares.
+#' @returns A 365*101 numeric matrix
 #' @export
 to_Antares_Format <- function(data,constant=T){
 
@@ -394,17 +400,10 @@ return(reshaped_matrix)
 
 #' Convert water values to Antares format with high accuracy
 #'
-#' This function converts water values generated by \code{Grid_Matrix}
-#' to the format expected by Antares: a 365*101 matrix, where
-#' the rows are the 365 days of the year and the columns are round percentage values
-#' ranging from 0 to 100 assessing the reservoir level.
-#' Since \code{Grid_Matrix} output weekly values for an
-#' arbitrary number of reservoir levels, interpolation is performed on both scales
-#' in order to fit the desired format.
-#'
-#' @param data A data.table generated by \code{Grid_Matrix}
-#'
-#' @return A 365*101 numeric matrix
+#' @inheritParams to_Antares_Format
+#' @inherit to_Antares_Format description
+#' @inherit to_Antares_Format return
+#' @seealso \code{to_Antares_Format()}
 #' @export
 to_Antares_Format_bis <- function(data){
 

@@ -2,21 +2,18 @@
 % Please edit documentation in R/hydro_storage_functions.R
 \name{getPumpEfficiency}
 \alias{getPumpEfficiency}
-\title{Get the pumping efficiency ratio for an area}
+\title{Get pumping efficiency ratio}
 \usage{
-getPumpEfficiency(area, force = FALSE, opts = antaresRead::simOptions())
+getPumpEfficiency(area, opts)
 }
 \arguments{
-\item{area}{An 'antares' area.}
+\item{area}{Character. The Antares area concerned by water values computation.}
 
-\item{force}{If "reservoir management" is disabled, return anyway the reservoir capacity?}
-
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 }
 \value{
-the reservoir capacity (in MWh), or \code{NULL} if none.
+Double. Pumping efficiency ratio.
 }
 \description{
-Get the pumping efficiency ratio for an area
+Get pumping efficiency ratio for the given area. Reservoir management must be on.
 }

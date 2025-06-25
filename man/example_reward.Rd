@@ -17,4 +17,4 @@ example_reward
 A list containing a reward data frame, a list named simulation_names
 and a data frame named simulation values
 }
-\keyword{datasets}
+\keyword{internal}

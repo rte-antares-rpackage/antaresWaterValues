@@ -1,15 +1,17 @@
 
-#' Plot the reward variation
+#' Plot mean reward variation
 #'
-#' @param reward_base A data.table contains the rewards.
-#' Obtained using the function get_Reward()
-#' @param week_id Numeric of length 1. number of the week to plot.
-#' @return a \code{ggplot} object
+#' Plot variation of mean reward functions for different weeks listed in \code{weeks_to_plot}.
+#'
+#' @inheritParams plot_reward
+#'
+#' @inherit plot_reward return
+#'
 #' @export
-plot_reward_variation <- function(reward_base,week_id)
+plot_reward_variation <- function(reward_base,weeks_to_plot)
 {
   temp <- reward_base %>%
-    dplyr::filter(.data$timeId %in% week_id) %>%
+    dplyr::filter(.data$timeId %in% weeks_to_plot) %>%
     dplyr::group_by(.data$timeId,.data$control) %>%
     dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
     dplyr::mutate(week=as.character(.data$timeId)) %>%
@@ -37,18 +39,21 @@ plot_reward_variation <- function(reward_base,week_id)
   return(output)
 }
 
-#' Plot the mean reward
+#' Plot mean reward
 #'
-#' @param reward_base A data.table contains the rewards.
-#' Obtained using the function get_Reward()
-#' @param week_id Numeric of length 1. number of the week to plot.
+#' Plot mean reward functions for different weeks listed in \code{weeks_to_plot}.
 #'
-#' @return a \code{ggplot} object
+#' @param reward_base A \code{dplyr::tibble()} containing reward functions. Output \code{reward} from \code{get_Reward()}.
+#' @inheritParams plot_Bellman
+#'
+#' @returns
+#' \item{graph}{A \code{ggplot2::ggplot()} object.}
+#' \item{table}{A \code{dplyr::tibble()} containing plotted data.}
 #' @export
-plot_reward <- function(reward_base,week_id)
+plot_reward <- function(reward_base,weeks_to_plot)
 {
   temp <- reward_base %>%
-    dplyr::filter(.data$timeId %in% week_id) %>%
+    dplyr::filter(.data$timeId %in% weeks_to_plot) %>%
     dplyr::group_by(.data$timeId,.data$control) %>%
     dplyr::summarise(Reward=mean(.data$reward),.groups = "drop") %>%
     dplyr::mutate(week=as.character(.data$timeId))
@@ -77,17 +82,19 @@ plot_reward <- function(reward_base,week_id)
 }
 
 
-#' Plot the reward
+#' Plot reward
 #'
-#' @param reward_base A data.table contains the rewards.
-#' Obtained using the function get_Reward()
-#' @param week_id Numeric of length 1. number of the week to plot.
-#' @param Mc_year Numeric of length 1. number of thr MC year to plot
-#' @return a \code{ggplot} object
+#' Plot reward functions for different weeks listed in \code{weeks_to_plot} and different scenarios listed in \code{scenarios_to_plot}.
+#'
+#' @inheritParams plot_reward
+#' @param scenarios_to_plot Vector of integer. Scenarios to plot.
+#'
+#' @inherit plot_reward return
+#'
 #' @export
-plot_reward_mc <- function(reward_base,week_id,Mc_year)
+plot_reward_mc <- function(reward_base,weeks_to_plot,scenarios_to_plot)
 {
-  temp <- reward_base[reward_base$timeId %in% week_id&reward_base$mcYear%in%Mc_year] %>%
+  temp <- reward_base[reward_base$timeId %in% weeks_to_plot&reward_base$mcYear%in%scenarios_to_plot] %>%
     dplyr::rename("Turbining capacity"="control","Reward"="reward") %>%
     dplyr::mutate(week=as.character(.data$timeId))
 
@@ -107,7 +114,7 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 
     }
 
-  p1 <- p1+ggplot2::ggtitle(sprintf("Reward week  MC Year %s",paste(as.character(Mc_year),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+  p1 <- p1+ggplot2::ggtitle(sprintf("Reward week  MC Year %s",paste(as.character(scenarios_to_plot),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
 
  if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2::theme(legend.position="none")
@@ -125,18 +132,19 @@ plot_reward_mc <- function(reward_base,week_id,Mc_year)
 
 
 
-#' Plot the mean reward variation
+#' Plot reward variation
 #'
-#' @param reward_base A data.table contains the rewards.
-#' Obtained using the function get_Reward()
-#' @param week_id Numeric of length 1. number of the week to plot.
-#' @param Mc_year Numeric of length 1. number of thr MC year to plot
-#' @return a \code{ggplot} object
+#' Plot variation of reward functions for different weeks listed in \code{weeks_to_plot} and different scenarios listed in \code{scenarios_to_plot}.
+#'
+#' @inheritParams plot_reward_mc
+#'
+#' @inherit plot_reward return
+#'
 #' @export
-plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
+plot_reward_variation_mc <- function(reward_base,weeks_to_plot,scenarios_to_plot)
 {
   temp <- reward_base %>%
-    dplyr::filter(.data$timeId %in% week_id,.data$mcYear%in%Mc_year) %>%
+    dplyr::filter(.data$timeId %in% weeks_to_plot,.data$mcYear%in%scenarios_to_plot) %>%
     dplyr::group_by(.data$mcYear,.data$timeId) %>%
     dplyr::rename(Reward="reward") %>%
     dplyr::mutate(week=as.character(.data$timeId)) %>%
@@ -151,7 +159,7 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
   p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transistion`,.data$`Reward transition`, col=week)) +
     ggplot2::geom_line(size=0.5)+
     ggplot2::facet_wrap(ggplot2::vars(.data$mcYear))
-  p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(Mc_year),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
+  p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(scenarios_to_plot),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2::theme(legend.position="none")
   }
@@ -167,17 +175,19 @@ plot_reward_variation_mc <- function(reward_base,week_id,Mc_year)
 
 #' Plot Bellman and water values
 #'
-#' @param value_nodes_dt A data.table contains the Bellman and water values .
-#' Obtained using the function Grid_Matrix()
-#' @param week_number Numeric of length 1. number of the week to plot.
+#' Plot Bellman values and water values for differents weeks listed in \code{weeks_to_plot}.
 #'
-#' @return a \code{ggplot} object
+#' @param value_nodes_dt A \code{dplyr::tibble()} containing the Bellman and water values. Output \code{aggregated_results} from \code{Grid_Matrix()}.
+#' @param weeks_to_plot Vector of integer. Weeks to plot.
+#'
+#' @returns A \code{ggplot2::ggplot()} object.
+#'
 #' @export
-plot_Bellman <- function(value_nodes_dt,week_number){
+plot_Bellman <- function(value_nodes_dt,weeks_to_plot){
 
   value_nodes_dt <- value_nodes_dt %>%
     dplyr::mutate(week_plot = .data$weeks)
-  temp <- value_nodes_dt[value_nodes_dt$week_plot %in%week_number]
+  temp <- value_nodes_dt[value_nodes_dt$week_plot %in%weeks_to_plot]
 
   temp <- temp %>%
       dplyr::mutate(value_node=dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - .data$penalty_high*(.data$states-.data$level_high),

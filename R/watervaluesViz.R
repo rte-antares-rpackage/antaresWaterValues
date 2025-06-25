@@ -1,9 +1,12 @@
 #' Plot water values
 #'
-#' @param Data Output from \code{Grid_Matrix}.
-#' @param filter_penalties Binary paramater. If T, show only watervalues inside rule curves
+#' Plot water values for all weeks and all levels of stock.
 #'
-#' @return a \code{ggplot} object
+#' @param Data Water values result. Output \code{aggregated_results} from \code{Grid_Matrix()}.
+#' @param filter_penalties Binary. If \code{TRUE}, show only water values inside rule curves.
+#'
+#' @returns A \code{ggplot2::ggplot()} object.
+#'
 #' @export
 waterValuesViz <- function(Data, filter_penalties=FALSE) {
 

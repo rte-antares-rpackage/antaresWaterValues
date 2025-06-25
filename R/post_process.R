@@ -1,14 +1,16 @@
-#' Replace extreme water values
+#' Post process water values
 #'
-#' @param results_dt Output from \code{watervalues} or \code{Grid_Matrix}
-#' @param min minimal accepted water value
-#' @param max_vu value to replace values higher than max
-#' @param min_vu value to replace values lower than min
-#' @param replace_na_method Method to replace extreme values, either "constant values" to replace
-#' by max_vu and min_vu or "extreme values" to replace by the extreme values of the current week
-#' @param max maximal accepted water value
+#' Replace extreme water values by chosen values.
 #'
-#' @return a \code{data.table}
+#' @param results_dt A \code{dplyr::tibble()} containing water values. Output \code{watervalues} from \code{Grid_Matrix()}.
+#' @param min Double. Minimal accepted water value.
+#' @param max_vu Double. Value to use for water values higher than \code{max}.
+#' @param min_vu Double. Value to use for water values lower than \code{min}.
+#' @param replace_na_method Character. Method to replace extreme values, either \code{"constant values"} to replace
+#' by \code{max_vu} and \code{min_vu} or \code{"extreme values"} to replace by the extreme values of the current week.
+#' @param max Double. Maximal accepted water value.
+#'
+#' @returns A \code{dplyr::tibble()} with same format than \code{results_dt}.
 #' @export
 remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_method){
 

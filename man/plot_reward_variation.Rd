@@ -2,19 +2,19 @@
 % Please edit documentation in R/Plot_functions.R
 \name{plot_reward_variation}
 \alias{plot_reward_variation}
-\title{Plot the reward variation}
+\title{Plot mean reward variation}
 \usage{
-plot_reward_variation(reward_base, week_id)
+plot_reward_variation(reward_base, weeks_to_plot)
 }
 \arguments{
-\item{reward_base}{A data.table contains the rewards.
-Obtained using the function get_Reward()}
+\item{reward_base}{A \code{dplyr::tibble()} containing reward functions. Output \code{reward} from \code{get_Reward()}.}
 
-\item{week_id}{Numeric of length 1. number of the week to plot.}
+\item{weeks_to_plot}{Vector of integer. Weeks to plot.}
 }
 \value{
-a \code{ggplot} object
+\item{graph}{A \code{ggplot2::ggplot()} object.}
+\item{table}{A \code{dplyr::tibble()} containing plotted data.}
 }
 \description{
-Plot the reward variation
+Plot variation of mean reward functions for different weeks listed in \code{weeks_to_plot}.
 }

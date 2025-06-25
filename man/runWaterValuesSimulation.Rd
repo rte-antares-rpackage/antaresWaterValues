@@ -38,7 +38,7 @@ will be created from maximum pumping power to the hydro storage maximum and of l
 \item{overwrite}{If area or cluster already exists, should they be overwritten?}
 
 \item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\code{antaresRead::setSimulationPath} or \code{antaresRead::setSimulationPathAPI}}
 
 \item{file_name}{the Rdata file name.}
 

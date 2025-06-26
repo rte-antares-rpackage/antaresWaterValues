@@ -96,13 +96,23 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   }
   levels <- levels %>%
     dplyr::mutate(true_constraint = constraint)
+  levels = max_hydro_weekly %>%
+    dplyr::mutate(constraint = -.data$pump*pump_eff,
+                  true_constraint = .data$constraint,
+                  lev = NA) %>%
+    dplyr::select(-c("turb","pump")) %>%
+    dplyr::rename(week=timeId) %>%
+    dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
+
 
 
   i <- 1
   gap <- 1
   df_gap <- data.frame()
 
-  while(gap>1e-4&i<=nb_itr){
+  while(gap>1e-3&i<=nb_itr){
+
+    tryCatch({
 
     constraint_values <- levels %>%
       dplyr::select(c("week", "constraint","mcYear")) %>%
@@ -210,6 +220,10 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       changeHydroManagement(watervalues = F,heuristic = T,opts = opts,area=area)
 
     }
+
+    },
+    error = function(err) {print(err)}
+    )
 
   }
 
@@ -459,6 +473,17 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             method_fast=F,max_hydro_weekly, n=0, pump_eff){
   level_i <- data.frame(states = level_init,scenario=1:length(mcyears))
   levels <- data.frame()
+
+  if (n==1){
+    levels = max_hydro_weekly %>%
+      dplyr::mutate(constraint = .data$turb,
+                    true_constraint = .data$constraint,
+                    lev = NA) %>%
+      dplyr::select(-c("turb","pump")) %>%
+      dplyr::rename(week=timeId) %>%
+      dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
+    return(levels)
+  }
 
   set.seed(192*n) # just to make it reproducible
 

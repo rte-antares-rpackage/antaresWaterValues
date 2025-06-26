@@ -83,7 +83,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   states <- seq(from = niveau_max, to = 0, by = -niveau_max*states_step_ratio)
 
-  reservoir <- readReservoirLevels(area, timeStep = "weekly", byReservoirCapacity = FALSE, opts = opts)
+  reservoir <- readReservoirLevels(area, opts = opts)
 
   if (!is.null(initial_traj)){
     levels = initial_traj
@@ -312,7 +312,8 @@ getInitialTrend <- function(level_init,inflow,mcyears,niveau_max,
 #' @return Updated data frame df_rewards
 updateReward <- function(study_path,pumping,controls,max_hydro,
                          mcyears,area,pump_eff,u0,df_rewards,i){
-  opts_sim <- antaresRead::setSimulationPath(study_path,simulation=-1)
+  opts_sim <- antaresRead::setSimulationPath(study_path,
+                                             simulation=paste0(i,"_itr_",area,"_",i,"_weekly_water_amount_",area,"_u_1"))
 
   u <- u0 %>%
     dplyr::mutate(sim=as.double(stringr::str_extract(.data$sim,"\\d+$"))) %>%

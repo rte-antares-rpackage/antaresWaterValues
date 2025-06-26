@@ -346,7 +346,8 @@ updateReward <- function(study_path,pumping,controls,max_hydro,
     dplyr::mutate(reward = dplyr::if_else(.data$reward>0,0,.data$reward))
 
   df_rewards <- dplyr::bind_rows(df_rewards,
-                                 dplyr::mutate(reward,n=as.character(i)))
+                                 dplyr::mutate(reward,n=as.character(i),
+                                               area=area))
   return(df_rewards)
 }
 
@@ -564,4 +565,241 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     dplyr::ungroup()
 
   return(levels)
+}
+
+#' Calculate Bellman values throughout iterations of Antares simulation and DP
+#' Each simulation leads to a new reward estimation, which leads to new water values,
+#' which leads to the off-line calculation in R of an optimal trajectory, which leads to
+#' new controls to be evaluated which leads to a new simulation
+#'
+#' @param area Area with the reservoir
+#' @param pumping Binary, T if pumping is possible
+#' @param pump_eff Pumping efficiency (1 if no pumping)
+#' @param opts  List of simulation parameters returned by the function
+#'   \code{antaresRead::setSimulationPath}
+#' @param nb_control Number of controls used in the interpolation of the reward function
+#' @param nb_itr Max number of iterations
+#' @param mcyears Vector of years used to evaluate rewards
+#' @param penalty_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
+#' @param penalty_high Penalty for violating the top rule curve, comparable to the spilled energy cost
+#' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
+#' @param study_path Character containing the Antares study
+#' @param states_step_ratio Discretization ratio to generate steps levels
+#' between the reservoir capacity and zero
+#' @param method_dp Algorithm in dynamic programming part
+#' @param q_ratio from 0 to 1. the probability used in quantile method
+#' to determine a bellman value which q_ratio all bellman values are equal or
+#' less to it. (quantile(q_ratio))
+#' @param method_fast Method to choose evaluated controls
+#' @param test_vu Binary. If you want to run a Antares simulation between each iteration
+#' with the latest water values
+#' @param force_final_level Binary. Whether final level should be constrained
+#' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
+#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
+#' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
+#'
+#' @export
+#' @return List containing aggregated water values and the data table with all years for the last iteration
+calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_pumping, list_eff,opts,
+                                                               nb_control=10,nb_itr=3,mcyears,
+                                                               penalty_low,penalty_high,
+                                                               path_solver,study_path,
+                                                               states_step_ratio=1/50,
+                                                               method_dp = "grid-mean",
+                                                               q_ratio = 0.5,
+                                                               method_fast = F,
+                                                               test_vu=F,
+                                                               force_final_level = F,
+                                                               final_level_egal_initial = F,
+                                                               final_level = NULL,
+                                                               penalty_final_level = NULL,
+                                                               initial_traj = NULL){
+
+  # Initialization
+  df_watervalues <- data.frame()
+  df_rewards <- data.frame()
+  df_levels <- data.frame()
+
+  for (area in list_areas){
+    a = area
+    pumping <- list_pumping[area]
+    pump_eff <- list_eff[area]
+    final_level <- get_initial_level(area,opts)
+
+    max_hydro <- get_max_hydro(area)
+    max_hydro_weekly <- max_hydro %>%
+      dplyr::mutate(timeId=(.data$timeId-1)%/%168+1) %>%
+      dplyr::group_by(.data$timeId) %>%
+      dplyr::summarise(pump=sum(.data$pump),turb=sum(.data$turb),.groups = "drop")
+
+    max_hydro <- dplyr::rename(max_hydro,"P_max"="pump","T_max"="turb")
+
+    niveau_max <- get_reservoir_capacity(area = area)
+
+    inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
+
+    controls <- constraint_generator(area = area,nb_disc_stock = nb_control,
+                                     pumping = pumping,opts = opts,
+                                     pumping_efficiency = pump_eff,
+                                     max_hydro = max_hydro_weekly,inflow = inflow)
+    controls <- tidyr::drop_na(controls) %>%
+      dplyr::cross_join(data.frame(mcYear=mcyears))
+
+    controls_ref <- controls %>%
+      dplyr::rename("u_ref"="u") %>%
+      dplyr::select(-c("sim"))
+
+    changeHydroManagement(watervalues = F,heuristic = T,opts = opts,area=area)
+
+    level_init <- get_initial_level(area,opts)*niveau_max/100
+
+    states <- round(seq(from = niveau_max, to = 0, by = -niveau_max*states_step_ratio),6)
+
+    reservoir <- readReservoirLevels(area, opts = opts)
+
+    if (!is.null(initial_traj)){
+      levels = initial_traj %>%
+        dplyr::filter(.data$area==a) %>%
+        dplyr::select(-c("area")) %>%
+        dplyr::rename("constraint"="u")
+      # assertthat::assert_that(names(initial_traj)==c("week","mcYear","lev","constraint","scenario"))
+    } else {
+      levels <- getInitialTrend(level_init=level_init,inflow=inflow,mcyears=mcyears,
+                                niveau_max=niveau_max,penalty_low=penalty_low,penalty_high=penalty_high,
+                                reservoir = reservoir,max_hydro=max_hydro_weekly, states=states,
+                                pump_eff = pump_eff)
+    }
+    levels <- levels %>%
+      dplyr::mutate(true_constraint = constraint)
+    levels = max_hydro_weekly %>%
+      dplyr::mutate(constraint = -.data$pump*pump_eff,
+                    true_constraint = .data$constraint,
+                    lev = NA) %>%
+      dplyr::select(-c("turb","pump")) %>%
+      dplyr::rename(week=timeId) %>%
+      dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
+
+    i <- 1
+    gap <- 1
+    df_gap <- data.frame()
+
+    while(gap>1e-3&i<=nb_itr){
+
+      tryCatch({
+
+        constraint_values <- levels %>%
+          dplyr::select(c("week", "constraint","mcYear")) %>%
+          dplyr::filter(.data$week>0) %>%
+          dplyr::rename("u"="constraint") %>%
+          dplyr::mutate(area = area) %>%
+          rbind(dplyr::filter(initial_traj,.data$area!=a)) %>%
+          dplyr::mutate(sim="u_1")
+
+        df_levels <- dplyr::bind_rows(df_levels,
+                                      dplyr::mutate(levels,n=as.character(i),area=area))
+
+        if (T){
+          simulation_res <- runWaterValuesSimulationMultiStock(
+            list_areas = list_areas,
+            list_pumping = list_pumping,
+            list_eff = list_eff,
+            simulation_name = paste0(i,"_weekly_water_amount_", area, "_%s"),
+            mcyears = mcyears,
+            path_solver =  path_solver,
+            overwrite = T,
+            opts = opts,
+            file_name = paste0(i, "_itr_", area),
+            constraint_values = constraint_values,
+            expansion = T
+          )
+        } else {
+          load(paste0(study_path,"/user/",paste0(i, "_itr_", area),".RData"))
+        }
+
+
+        controls <- simulation_res$simulation_values %>%
+          dplyr::filter(.data$area==a)  %>%
+          dplyr::select(-c(area)) %>%
+          rbind(controls) %>%
+          dplyr::select("week","u","mcYear") %>%
+          dplyr::distinct() %>%
+          dplyr::arrange(.data$week,.data$mcYear,.data$u) %>%
+          dplyr::mutate(sim="u")
+
+        df_rewards <- updateReward(study_path=study_path,pumping=pumping,
+                                   controls=controls,max_hydro=max_hydro,mcyears=mcyears,
+                                   area=area,pump_eff=pump_eff,df_rewards = df_rewards,
+                                   u0=dplyr::filter(simulation_res$simulation_values,.data$area==a),i=i)
+
+        reward <- df_rewards %>%
+          dplyr::filter(.data$area == a) %>%
+          dplyr::group_by(.data$mcYear,.data$week,.data$u) %>%
+          dplyr::summarise(reward=min(reward),.groups="drop")
+
+
+        results <- updateWatervalues(reward=reward,controls=controls,area=area,
+                                     mcyears=mcyears,simulation_res=simulation_res,
+                                     opts=opts,states_step_ratio=states_step_ratio,
+                                     pumping=pumping,pump_eff=pump_eff,
+                                     penalty_low=penalty_low,
+                                     penalty_high=penalty_high,
+                                     inflow=inflow,max_hydro = max_hydro,
+                                     max_hydro_weekly = max_hydro_weekly,
+                                     niveau_max=niveau_max,
+                                     method_dp = method_dp, q_ratio = q_ratio,
+                                     force_final_level = force_final_level,
+                                     final_level_egal_initial = final_level_egal_initial,
+                                     final_level = final_level,
+                                     penalty_final_level = penalty_final_level)
+
+        message(paste0("Lower bound is : ",results$lower_bound))
+
+        df_gap <- dplyr::bind_rows(df_gap,
+                                   data.frame(lb=results$lower_bound,n=as.character(i),area=area))
+
+        if (i>1){
+          gap = (df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]]
+
+
+          message(paste0("Actual gap on lower bound is : ",gap*100," %"))
+
+        }
+
+        df_watervalues <- dplyr::bind_rows(df_watervalues,
+                                           dplyr::mutate(results$aggregated_results,n=as.character(i),area=area))
+
+        levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
+                                  mcyears=mcyears,reward=reward,controls=controls,
+                                  niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
+                                  penalty_low = penalty_low, penalty_high = penalty_high,
+                                  method_fast = method_fast,
+                                  max_hydro_weekly=max_hydro_weekly, n=i,
+                                  pump_eff = pump_eff)
+
+        i <- i+1
+
+      },
+      error = function(err) {
+        print(err)
+      },
+      finally = {
+      })
+    }
+
+    initial_traj <- levels %>%
+      dplyr::select(c("week", "true_constraint","mcYear")) %>%
+      dplyr::filter(.data$week>0) %>%
+      dplyr::rename("u"="true_constraint") %>%
+      dplyr::mutate(area = area) %>%
+      rbind(dplyr::filter(initial_traj,.data$area!=a))
+
+  }
+
+  output <- list()
+  output$df_rewards <- df_rewards
+  output$df_levels <- df_levels
+  output$df_watervalues <- df_watervalues
+  output$df_gap <- df_gap
+  return(output)
+
 }

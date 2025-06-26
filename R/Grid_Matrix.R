@@ -153,7 +153,7 @@
 
 
   # States matrix for all weeks plus an other week representing the end of the year
-  states <- matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1)
+  states <- round(matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1),6)
 
 
   if(is.null(efficiency))

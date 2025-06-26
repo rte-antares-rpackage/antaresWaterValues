@@ -35,7 +35,7 @@ runWaterValuesSimulation <- function(area=NULL,
                                      file_name=NULL,
                                      pumping=T,
                                      efficiency,
-                                     launch_simulations=T,
+                                     launch_simulations=NULL,
                                      constraint_values=NULL,
                                      expansion=T){
 
@@ -92,8 +92,13 @@ runWaterValuesSimulation <- function(area=NULL,
 
       sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
         name_sim, decimal.mark = ",")))
-      if(launch_simulations){
+      if(is.null(launch_simulations)){
         launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+      }
+      else {
+        if(launch_simulations[i]){
+          launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+        }
       }
 
       clear_scenario_builder(opts)
@@ -281,7 +286,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                      overwrite = FALSE,
                                      opts = antaresRead::simOptions(),
                                      file_name=NULL,
-                                     launch_simulations=T,
+                                     launch_simulations=NULL,
                                      constraint_values=NULL,
                                      expansion=T){
   list_areas = tolower(list_areas)
@@ -338,15 +343,19 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                           .data$area==list_areas[[j]]) %>%
           dplyr::select(-c("area"))
 
-        generate_rhs_bc(constraint_value=constraint_value,area=area,
+        generate_rhs_bc(constraint_value=constraint_value,area=list_areas[[j]],
                         opts=opts)
       }
 
 
       sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
         name_sim, decimal.mark = ",")))
-      if(launch_simulations){
+      if(is.null(launch_simulations)){
         launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+      } else{
+        if (launch_simulations[i]){
+          launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+        }
       }
       simulation_names[i] <- sim_name
 

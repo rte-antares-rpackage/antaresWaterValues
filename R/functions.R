@@ -290,6 +290,7 @@ convert_to_percent <- function(data){
   res <- res %>%
     dplyr::mutate(state_ref = .data$states_round_percent * capa/100) %>%
     dplyr::left_join(data,by=c("weeks")) %>%
+    dplyr::mutate(states=round(.data$states,6)) %>%
     dplyr::select(c("weeks","states","value_node","state_ref",
                     "states_round_percent","level_low","level_high",
                     "penalty_low","penalty_high"))

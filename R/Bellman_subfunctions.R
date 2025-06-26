@@ -64,10 +64,15 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 #' next value (Bellman value of next state)
 build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
                                          mcyears,lvl_high,lvl_low,E_max,P_max,
-                                         next_week_values,niveau_max,overflow_cost){
+                                         next_week_values,niveau_max,overflow_cost,
+                                         next_states = NULL){
+
+  if (is.null(next_states)){
+    next_states = Data_week$states
+  }
 
   df_next_week <- data.frame(years = Data_week$years,
-                             next_state = Data_week$states,
+                             next_state = next_states,
                              next_value = next_week_values)
 
   future_states <- Data_week %>%

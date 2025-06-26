@@ -4,19 +4,10 @@
 \alias{readReservoirLevels}
 \title{Read Reservoir Levels}
 \usage{
-readReservoirLevels(
-  area,
-  timeStep = "weekly",
-  byReservoirCapacity = TRUE,
-  opts = antaresRead::simOptions()
-)
+readReservoirLevels(area, opts = antaresRead::simOptions())
 }
 \arguments{
 \item{area}{An 'antares' area.}
-
-\item{timeStep}{Resolution of the data to import: weekly (default, a linear interpolation is done on the data), monthly (original data).}
-
-\item{byReservoirCapacity}{Multiply the result by the reservoir capacity (if available).}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

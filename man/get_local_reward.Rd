@@ -11,7 +11,6 @@ get_local_reward(
   area_price,
   mcyears,
   u0,
-  district_balance = "water values district",
   pump_eff = 1
 )
 }
@@ -28,8 +27,6 @@ get_local_reward(
 \item{mcyears}{Vector of years used to evaluate rewards}
 
 \item{u0}{data.table {week,u} Constraint values per week used in the simulation}
-
-\item{district_balance}{Name of district used to evaluate controls on the stock}
 
 \item{pump_eff}{Pumping efficiency}
 }

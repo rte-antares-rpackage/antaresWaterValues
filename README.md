@@ -25,15 +25,13 @@ To install all the package dependencies you can run the script
 ``` r
 library(antaresWaterValues)
 #> Le chargement a nécessité le package : data.table
-#> Le chargement a nécessité le package : shiny
-#> Le chargement a nécessité le package : shinyBS
 ```
 
 Now we are ready to use our package.
 
 ``` r
-study_path <- "your/path/to/the/antares/study"
-shiny_water_values(antaresRead::setSimulationPath(study_path,"input"))
+opts = antaresRead::setSimulationPath("your/path/to/the/antares/study","input") 
+shiny_water_values(opts)
 ```
 
 ![](inst/images/calculate_water_values.gif)
@@ -58,19 +56,15 @@ Then, you have to run simulations.
 simulation_res <- runWaterValuesSimulation(
     area=area,
     nb_disc_stock = 5, #number of simulations
-    nb_mcyears = mcyears,
+    mcyears = mcyears,
     path_solver = "your/path/to/antares/bin/antares-8.6-solver.exe",
-    fictive_area = paste0("watervalue_",area),
-    thermal_cluster = "watervaluecluster",
     overwrite = TRUE,
-    link_from=area,
     opts = opts,
-    otp_dest=paste0(study_path,"/user"),
-    file_name="water_values", #name of the saving file
+    file_name=paste0("watervalue_",area), #name of the saving file
     pumping=pumping,
     efficiency=pump_eff,
     launch_simulations=T,
-    reset_hydro=T
+    expansion = T # use mode expansion of Antares to have smoother results faster
   )
 ```
 
@@ -92,7 +86,7 @@ results <- Grid_Matrix(
   efficiency=pump_eff,
   correct_concavity = FALSE,#correct concavity of Bellman values
   correct_monotony_gain = FALSE,#correct monotony of rewards
-  penalty_low = 3,#penalty for bottom rule curve
+  penalty_low = 300,#penalty for bottom rule curve
   penalty_high = 0,#penalty for top rule curve
   method_old_gain = T,# T if you want a simple linear interpolation of rewards,
                       # F if you want to use marginal price to interpolate
@@ -103,10 +97,11 @@ results <- Grid_Matrix(
                                                      pumping_efficiency = pump_eff,
                                                      opts=opts,
                                                      mcyears=mcyears),# used for marginal prices interpolation
-  force_final_level = F, # T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)
-  final_level = get_initial_level(area=area,opts=opts), # wanted final level (between 0 and 100%)
-  penalty_final_level_low = 4,
-  penalty_final_level_high = 1
+  force_final_level = T, # T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)
+  final_level = 50, # in percent
+  penalty_final_level_low = 1000,
+  penalty_final_level_high = 1000,
+  expansion = simulation_res$expansion,
 )
 aggregated_results <- results$aggregated_results
 ```
@@ -114,7 +109,8 @@ aggregated_results <- results$aggregated_results
 Water values are written to Antares thanks to the following instructions
 
 ``` r
-reshaped_values <- to_Antares_Format(aggregated_results)
+reshaped_values <- aggregated_results %>%
+  to_Antares_Format_bis()
 antaresEditObject::writeWaterValues(
   area = area,
   data = reshaped_values
@@ -139,13 +135,6 @@ plot_Bellman(value_nodes_dt = aggregated_results,
 You can also plot reward functions
 
 ``` r
-controls_reward_calculation <-constraint_generator(area=area,
-                                           nb_disc_stock = 20,
-                                           pumping = pumping,
-                                           pumping_efficiency = pump_eff,
-                                           opts=opts,
-                                           mcyears=mcyears)
-controls_reward_calculation <-dplyr::arrange(dplyr::distinct(dplyr::select(rbind(simulation_res$simulation_values,controls_reward_calculation),-c("sim"))),.data$week,.data$u)
 reward <- get_Reward(
   simulation_names = simulation_res$simulation_names,
   simulation_values = simulation_res$simulation_values,
@@ -155,8 +144,13 @@ reward <- get_Reward(
   pump_eff = pump_eff,
   method_old = T,# T if you want a simple linear interpolation of rewards,
                  # F if you want to use marginal price to interpolate
-  hours = c(seq.int(0,168,10),168),# used for marginal prices interpolation
-  possible_controls = controls_reward_calculation,# used for marginal prices interpolation
+  possible_controls = constraint_generator(area=area,
+                                           nb_disc_stock = 20,
+                                           pumping = pumping,
+                                           pumping_efficiency = pump_eff,
+                                           opts=opts,
+                                           mcyears = mcyears),# used for marginal prices interpolation
+  expansion = simulation_res$expansion,
   max_hydro = get_max_hydro(area,timeStep = "hourly")
 )
 reward <- reward$reward

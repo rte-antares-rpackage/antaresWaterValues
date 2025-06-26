@@ -83,6 +83,10 @@ shiny_water_values <-
           ),
         ),
         #end navbarMenu
+        shiny::tabPanel(
+          "Iterative calculation of Bellman values",
+          iterativeUI("iterative",opts)
+        ),
 
       ) #navbar
 
@@ -100,6 +104,8 @@ shiny_water_values <-
       rewardServer("reward", opts, res$reward_db)
 
       postProcessServer("post", opts, res$watervalues, res$area)
+
+      iterativeServer("iterative",opts, silent)
 
     }
 

@@ -5,7 +5,7 @@
 \alias{example_reward}
 \title{Example of output of \code{get_Reward}}
 \format{
-An object of class \code{data.table} (inherits from \code{data.frame}) with 5200 rows and 4 columns.
+An object of class \code{data.table} (inherits from \code{data.frame}) with 5304 rows and 4 columns.
 }
 \source{
 Generated with a Antares toy study

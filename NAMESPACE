@@ -2,6 +2,7 @@
 
 export(Grid_Matrix)
 export(calculateBellmanWithIterativeSimulations)
+export(calculateBellmanWithIterativeSimulationsMultiStock)
 export(changeHydroManagement)
 export(constraint_generator)
 export(getBackupData)

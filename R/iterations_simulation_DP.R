@@ -333,7 +333,7 @@ updateReward <- function(study_path,pumping,controls,max_hydro,
     dplyr::mutate(sim=as.double(stringr::str_extract(.data$sim,"\\d+$"))) %>%
     dplyr::group_by(.data$sim) %>%
     tidyr::nest() %>%
-    tidyr::pivot_wider(names_from=.data$sim,values_from=.data$data)
+    tidyr::pivot_wider(names_from="sim",values_from="data")
 
   reward <- get_local_reward(opts=opts_sim,u0=u[[1]][[1]],
                               possible_controls=controls,max_hydro=max_hydro,
@@ -619,6 +619,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   df_watervalues <- data.frame()
   df_rewards <- data.frame()
   df_levels <- data.frame()
+  df_gap <- data.frame()
 
   for (area in list_areas){
     a = area
@@ -681,7 +682,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
     i <- 1
     gap <- 1
-    df_gap <- data.frame()
 
     while(gap>1e-3&i<=nb_itr){
 

@@ -76,6 +76,8 @@ with the latest water values}
 \item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
+
+\item{initial_traj}{Initial trajectory}
 }
 \value{
 List containing aggregated water values and the data table with all years for the last iteration

@@ -32,6 +32,10 @@ calculateBellmanWithIterativeSimulationsMultiStock(
 )
 }
 \arguments{
+\item{list_areas}{List of areas concerned by the simulation.}
+
+\item{list_pumping}{List of bools to tell if pumping is available in areas}
+
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
@@ -71,11 +75,7 @@ with the latest water values}
 
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 
-\item{area}{Area with the reservoir}
-
-\item{pumping}{Binary, T if pumping is possible}
-
-\item{pump_eff}{Pumping efficiency (1 if no pumping)}
+\item{initial_traj}{Initial trajectory}
 }
 \value{
 List containing aggregated water values and the data table with all years for the last iteration

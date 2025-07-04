@@ -47,6 +47,10 @@ as \code{getOptimalTrend} and \code{getInitialTrend}}
 
 \item{penalty_high}{Penalty for violating the top rule curve}
 
+\item{penalty_final_level}{Penalty for final level}
+
+\item{final_level}{Final level}
+
 \item{method_fast}{Method to choose evaluated controls}
 
 \item{max_hydro_weekly}{Data frame with weekly maximum pumping and generating powers}
@@ -54,6 +58,8 @@ as \code{getOptimalTrend} and \code{getInitialTrend}}
 \item{n}{Iteration}
 
 \item{pump_eff}{Pumping efficiency (1 if no pumping)}
+
+\item{mix_scenario}{Should scenario be mix from one week to another ?}
 }
 \value{
 Data frame with level (lev) and transition

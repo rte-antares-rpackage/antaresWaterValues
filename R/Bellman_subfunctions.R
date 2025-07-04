@@ -58,6 +58,7 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 #' @param next_week_values Vector of Bellman values for the next week
 #' @param niveau_max Reservoir capacity in MWh
 #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
+#' @param next_states possible states for next week
 #'
 #' @return Data frame with same format as Data week with 3 more columns :
 #' next_state, control (transition to next state) and

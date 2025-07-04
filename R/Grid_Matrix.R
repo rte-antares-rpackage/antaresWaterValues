@@ -566,7 +566,7 @@
   initial_level <- get_initial_level(area,opts)
 
   res <- watervalues %>%
-    dplyr::filter(weeks==1) %>%
+    dplyr::filter(.data$weeks==1) %>%
     dplyr::group_by(.data$weeks, .data$states) %>%
     dplyr::summarise(value_node=mean_finite(.data$value_node),.groups = "drop") %>%
     dplyr::mutate(value_node=dplyr::if_else(!is.finite(.data$value_node),

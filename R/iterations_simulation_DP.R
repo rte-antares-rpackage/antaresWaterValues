@@ -30,6 +30,7 @@
 #' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
+#' @param initial_traj Initial trajectory
 #'
 #' @export
 #' @return List containing aggregated water values and the data table with all years for the last iteration
@@ -95,13 +96,13 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                               pump_eff = pump_eff)
   }
   levels <- levels %>%
-    dplyr::mutate(true_constraint = constraint)
+    dplyr::mutate(true_constraint = .data$constraint)
   levels = max_hydro_weekly %>%
     dplyr::mutate(constraint = -.data$pump*pump_eff,
                   true_constraint = .data$constraint,
                   lev = NA) %>%
     dplyr::select(-c("turb","pump")) %>%
-    dplyr::rename(week=timeId) %>%
+    dplyr::rename(week=.data$timeId) %>%
     dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
 
 
@@ -127,13 +128,10 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       area = area,
       simulation_name = paste0(i,"_weekly_water_amount_", area, "_%s"),
       nb_disc_stock = 1,
-      nb_mcyears = mcyears,
+      mcyears = mcyears,
       path_solver =  path_solver,
-      remove_areas = c(),
       overwrite = T,
-      link_from = area,
       opts = opts,
-      otp_dest = paste0(study_path, "/user"),
       file_name = paste0(i, "_itr_", area),
       pumping = pumping,
       efficiency = pump_eff,
@@ -467,6 +465,9 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 #' @param max_hydro_weekly Data frame with weekly maximum pumping and generating powers
 #' @param n Iteration
 #' @param pump_eff Pumping efficiency (1 if no pumping)
+#' @param penalty_final_level Penalty for final level
+#' @param final_level Final level
+#' @param mix_scenario Should scenario be mix from one week to another ?
 #'
 #' @return Data frame with level (lev) and transition
 #' to evaluate (constraint) for each week (w)
@@ -483,7 +484,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                     true_constraint = .data$constraint,
                     lev = NA) %>%
       dplyr::select(-c("turb","pump")) %>%
-      dplyr::rename(week=timeId) %>%
+      dplyr::rename(week=.data$timeId) %>%
       dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
     return(levels)
   }
@@ -501,7 +502,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     # Rule curves at the end of the current week (and beginning of the next one)
     Data_week <- watervalues %>%
       dplyr::filter(.data$weeks==w) %>%
-      dplyr::filter(statesid == 1)
+      dplyr::filter(.data$statesid == 1)
     Data_week$value_node <- NA_real_
     Data_week$transition <- NA_real_
     Data_week$transition_reward <- NA_real_
@@ -514,10 +515,10 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     Data_week <- Data_week %>%
       dplyr::select(-c("states")) %>%
       dplyr::left_join(level_i,by=c("scenario"))
-    l_high <- if_else(w<52,Data_week$level_high[1],final_level*niveau_max/100)
-    l_low <- if_else(w<52,Data_week$level_low[1],final_level*niveau_max/100)
-    pen_high <- if_else(w<52,penalty_high,penalty_final_level)
-    pen_low <- if_else(w<52,penalty_low,penalty_final_level)
+    l_high <- ifelse(w<52,Data_week$level_high[1],final_level*niveau_max/100)
+    l_low <- ifelse(w<52,Data_week$level_low[1],final_level*niveau_max/100)
+    pen_high <- ifelse(w<52,penalty_high,penalty_final_level)
+    pen_low <- ifelse(w<52,penalty_low,penalty_final_level)
 
     # Get interpolation function of rewards for each possible transition for each MC year
     f_reward_year <- get_reward_interpolation(Data_week)
@@ -526,7 +527,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
 
     decision_space <-  dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
-      tidyr::unnest(c(reward_db)) %>%
+      tidyr::unnest(c("reward_db")) %>%
       dplyr::select(c("years","control")) %>%
       dplyr::rename("mcYear"="years","u"="control")
 
@@ -562,13 +563,13 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
   levels <- df_levels %>%
     dplyr::rename(previous_constraint=.data$constraint) %>%
     dplyr::select(c("week","mcYear","previous_constraint")) %>%
-    dplyr::left_join(levels,by = dplyr::join_by(week, mcYear)) %>%
+    dplyr::left_join(levels,by = dplyr::join_by(.data$week, .data$mcYear)) %>%
     dplyr::mutate(dis = abs(.data$constraint-.data$previous_constraint)) %>%
     dplyr::left_join(max_hydro_weekly, by=c("week"="timeId")) %>%
-    dplyr::group_by(week,mcYear) %>%
-    dplyr::summarise(lev = min(lev), scenario = min(scenario), true_constraint = min(constraint),
-                     constraint = dplyr::if_else(min(dis)<=min(.data$turb+.data$pump*pump_eff)/1000,
-                                                 runif(1,min(-.data$pump*pump_eff),min(.data$turb)),
+    dplyr::group_by(.data$week,.data$mcYear) %>%
+    dplyr::summarise(lev = min(.data$lev), scenario = min(.data$scenario), true_constraint = min(.data$constraint),
+                     constraint = dplyr::if_else(min(.data$dis)<=min(.data$turb+.data$pump*pump_eff)/1000,
+                                                 stats::runif(1,min(-.data$pump*pump_eff),min(.data$turb)),
                                                  min(.data$constraint))) %>%
     dplyr::ungroup()
 
@@ -580,9 +581,6 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' which leads to the off-line calculation in R of an optimal trajectory, which leads to
 #' new controls to be evaluated which leads to a new simulation
 #'
-#' @param area Area with the reservoir
-#' @param pumping Binary, T if pumping is possible
-#' @param pump_eff Pumping efficiency (1 if no pumping)
 #' @param opts  List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param nb_control Number of controls used in the interpolation of the reward function
@@ -605,10 +603,12 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
+#' @inheritParams runWaterValuesSimulationMultiStock
+#' @inheritParams calculateBellmanWithIterativeSimulations
 #'
 #' @export
 #' @return List containing aggregated water values and the data table with all years for the last iteration
-calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_pumping, list_eff,opts,
+calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_pumping, list_efficiency,opts,
                                                                nb_control=10,nb_itr=3,mcyears,
                                                                penalty_low,penalty_high,
                                                                path_solver,study_path,
@@ -632,7 +632,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   for (area in list_areas){
     a = area
     pumping <- list_pumping[area]
-    pump_eff <- list_eff[area]
+    pump_eff <- list_efficiency[area]
     final_level <- get_initial_level(area,opts)
 
     max_hydro <- get_max_hydro(area)
@@ -679,13 +679,13 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                 pump_eff = pump_eff)
     }
     levels <- levels %>%
-      dplyr::mutate(true_constraint = constraint)
+      dplyr::mutate(true_constraint = .data$constraint)
     levels = max_hydro_weekly %>%
       dplyr::mutate(constraint = -.data$pump*pump_eff,
                     true_constraint = .data$constraint,
                     lev = NA) %>%
       dplyr::select(-c("turb","pump")) %>%
-      dplyr::rename(week=timeId) %>%
+      dplyr::rename(week=.data$timeId) %>%
       dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
 
     i <- 1
@@ -710,7 +710,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
           simulation_res <- runWaterValuesSimulationMultiStock(
             list_areas = list_areas,
             list_pumping = list_pumping,
-            list_eff = list_eff,
+            list_efficiency = list_efficiency,
             simulation_name = paste0(i,"_weekly_water_amount_", area, "_%s"),
             mcyears = mcyears,
             path_solver =  path_solver,

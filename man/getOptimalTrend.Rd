@@ -16,6 +16,8 @@ getOptimalTrend(
   df_levels,
   penalty_low,
   penalty_high,
+  penalty_final_level,
+  final_level,
   method_fast = F,
   max_hydro_weekly,
   n = 0,

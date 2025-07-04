@@ -193,6 +193,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                               mcyears=mcyears,reward=reward,controls=controls,
                               niveau_max = niveau_max,df_levels = df_levels,
                               penalty_low = penalty_low, penalty_high = penalty_high,
+                              penalty_final_level = penalty_final_level, final_level = final_level,
                               method_fast = method_fast,
                               max_hydro_weekly=max_hydro_weekly, n=i,
                               pump_eff = pump_eff)
@@ -471,6 +472,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 #' to evaluate (constraint) for each week (w)
 getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             niveau_max,df_levels,penalty_low,penalty_high,
+                            penalty_final_level, final_level,
                             method_fast=F,max_hydro_weekly, n=0, pump_eff,mix_scenario=T){
   level_i <- data.frame(states = level_init,scenario=1:length(mcyears))
   levels <- data.frame()
@@ -494,7 +496,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
   for (w in 1:52){
 
     transition <- watervalues %>%
-      dplyr::filter(.data$weeks==dplyr::if_else(w<52,w+1,1))
+      dplyr::filter(.data$weeks==w+1)
 
     # Rule curves at the end of the current week (and beginning of the next one)
     Data_week <- watervalues %>%
@@ -512,8 +514,10 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     Data_week <- Data_week %>%
       dplyr::select(-c("states")) %>%
       dplyr::left_join(level_i,by=c("scenario"))
-    level_high <- Data_week$level_high[1]
-    level_low <- Data_week$level_low[1]
+    l_high <- if_else(w<52,Data_week$level_high[1],final_level*niveau_max/100)
+    l_low <- if_else(w<52,Data_week$level_low[1],final_level*niveau_max/100)
+    pen_high <- if_else(w<52,penalty_high,penalty_final_level)
+    pen_low <- if_else(w<52,penalty_low,penalty_final_level)
 
     # Get interpolation function of rewards for each possible transition for each MC year
     f_reward_year <- get_reward_interpolation(Data_week)
@@ -527,7 +531,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
       dplyr::rename("mcYear"="years","u"="control")
 
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
-                                           mcyears,level_high,level_low,
+                                           mcyears,l_high,l_low,
                                            max_hydro_weekly$turb[w],
                                            max_hydro_weekly$pump[w]*pump_eff,
                                            transition$value_node,niveau_max,0,
@@ -535,8 +539,8 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 
     control <- df_SDP %>%
       dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
-                    penalty_low = dplyr::if_else(.data$next_state<=level_low,penalty_low*(.data$next_state-level_low),0),
-                    penalty_high = dplyr::if_else(.data$next_state>=level_high,penalty_high*(level_high-.data$next_state),0),
+                    penalty_low = dplyr::if_else(.data$next_state<=l_low,pen_low*(.data$next_state-l_low),0),
+                    penalty_high = dplyr::if_else(.data$next_state>=l_high,pen_high*(l_high-.data$next_state),0),
                     sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(.data$years) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
@@ -776,6 +780,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                   mcyears=mcyears,reward=reward,controls=controls,
                                   niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
                                   penalty_low = penalty_low, penalty_high = penalty_high,
+                                  penalty_final_level = penalty_final_level, final_level = final_level,
                                   method_fast = method_fast,
                                   max_hydro_weekly=max_hydro_weekly, n=i,
                                   pump_eff = pump_eff)
@@ -794,6 +799,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                               mcyears=mcyears,reward=reward,controls=controls,
                               niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
                               penalty_low = penalty_low, penalty_high = penalty_high,
+                              penalty_final_level = penalty_final_level, final_level = final_level,
                               method_fast = method_fast,
                               max_hydro_weekly=max_hydro_weekly, n=i,
                               pump_eff = pump_eff, mix_scenario = F)

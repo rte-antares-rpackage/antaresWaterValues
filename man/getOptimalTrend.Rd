@@ -19,7 +19,8 @@ getOptimalTrend(
   method_fast = F,
   max_hydro_weekly,
   n = 0,
-  pump_eff
+  pump_eff,
+  mix_scenario = T
 )
 }
 \arguments{

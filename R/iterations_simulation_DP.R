@@ -471,7 +471,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 #' to evaluate (constraint) for each week (w)
 getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             niveau_max,df_levels,penalty_low,penalty_high,
-                            method_fast=F,max_hydro_weekly, n=0, pump_eff){
+                            method_fast=F,max_hydro_weekly, n=0, pump_eff,mix_scenario=T){
   level_i <- data.frame(states = level_init,scenario=1:length(mcyears))
   levels <- data.frame()
 
@@ -504,7 +504,11 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     Data_week$transition <- NA_real_
     Data_week$transition_reward <- NA_real_
     Data_week$next_bellman_value <- NA_real_
-    Data_week$scenario <- sample(1:length(mcyears))
+    if (mix_scenario){
+      Data_week$scenario <- sample(1:length(mcyears))
+    } else {
+      Data_week$scenario <- 1:length(mcyears)
+    }
     Data_week <- Data_week %>%
       dplyr::select(-c("states")) %>%
       dplyr::left_join(level_i,by=c("scenario"))
@@ -785,6 +789,14 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       finally = {
       })
     }
+
+    levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
+                              mcyears=mcyears,reward=reward,controls=controls,
+                              niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
+                              penalty_low = penalty_low, penalty_high = penalty_high,
+                              method_fast = method_fast,
+                              max_hydro_weekly=max_hydro_weekly, n=i,
+                              pump_eff = pump_eff, mix_scenario = F)
 
     initial_traj <- levels %>%
       dplyr::select(c("week", "true_constraint","mcYear")) %>%

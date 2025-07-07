@@ -138,6 +138,17 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       expansion = T
     )
 
+    if (antaresRead:::is_api_study(opts)&opts$antaresVersion>=880){
+      output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
+      output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+      info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
+      info$general$mode = "Economy"
+      body <- jsonlite::toJSON(info,auto_unbox = TRUE)
+      antaresRead::api_post(opts=opts,endpoint=paste0(opts$study_id,
+                                                     "/raw?path=output%2F",output_dir,"%2Finfo"),
+                           body=body)
+    }
+
     controls <- rbind(simulation_res$simulation_values,controls) %>%
       dplyr::select("week","u","mcYear") %>%
       dplyr::distinct() %>%

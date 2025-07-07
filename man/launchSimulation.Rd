@@ -10,7 +10,8 @@ launchSimulation(
   sim_name,
   path_solver,
   expansion,
-  show_output_on_console
+  show_output_on_console,
+  constraint_value
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ launchSimulation(
 \item{expansion}{Binary. True if mode expansion was used to run simulations}
 
 \item{show_output_on_console}{Argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
+
+\item{constraint_value}{Data.frame {week,sim,u}}
 }
 \description{
 Launch the simulation

@@ -15,7 +15,7 @@ runWaterValuesSimulationMultiStock(
   overwrite = FALSE,
   opts = antaresRead::simOptions(),
   file_name = NULL,
-  launch_simulations = T,
+  launch_simulations = NULL,
   constraint_values = NULL,
   expansion = T
 )

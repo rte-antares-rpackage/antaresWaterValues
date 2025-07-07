@@ -93,11 +93,11 @@ runWaterValuesSimulation <- function(area=NULL,
       sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
         name_sim, decimal.mark = ",")))
       if(is.null(launch_simulations)){
-        launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+        launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console,constraint_value)
       }
       else {
         if(launch_simulations[i]){
-          launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+          launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console,constraint_value)
         }
       }
 
@@ -351,10 +351,10 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
         name_sim, decimal.mark = ",")))
       if(is.null(launch_simulations)){
-        launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+        launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console,constraint_value)
       } else{
         if (launch_simulations[i]){
-          launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console)
+          launchSimulation(opts,i,sim_name,path_solver,expansion,show_output_on_console,constraint_value)
         }
       }
       simulation_names[i] <- sim_name
@@ -448,7 +448,8 @@ getBackupData <- function(area,
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param expansion Binary. True if mode expansion was used to run simulations
-launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_on_console){
+#' @param constraint_value Data.frame {week,sim,u}
+launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_on_console,constraint_value){
   message("#  ------------------------------------------------------------------------")
   message(paste0("Running simulation: ", i, " - ", sim_name))
   message("#  ------------------------------------------------------------------------")
@@ -471,5 +472,11 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
     }
   } else {
     assertthat::assert_that(status == 0)
+  }
+  if ("mcYear" %in% colnames(constraint_value) & !antaresRead:::is_api_study(opts)){
+    opts_sim = antaresRead::setSimulationPath(opts$studyPath,simulation=sim_name)
+    ts_number = read.csv(paste0(opts_sim$simPath,"/ts-numbers/bindingconstraints/watervalues.txt"))
+    scenarios = unique(constraint_value$mcYear)
+    assertthat::assert_that(all(ts_number[scenarios,1] == 1:length(scenarios)))
   }
 }

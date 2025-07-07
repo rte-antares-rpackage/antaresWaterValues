@@ -16,7 +16,7 @@ runWaterValuesSimulation(
   file_name = NULL,
   pumping = T,
   efficiency,
-  launch_simulations = T,
+  launch_simulations = NULL,
   constraint_values = NULL,
   expansion = T
 )

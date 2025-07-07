@@ -183,6 +183,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
     new_sb <- unlist(list(values_sb))
     names(new_sb) <- names_sb
 
+    if (!antaresRead:::is_api_study(opts)){
     sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
 
     if (length(names(sb_file))>0){
@@ -203,6 +204,16 @@ generate_rhs_bc <- function(constraint_value,area,opts){
                                 overwrite = TRUE, default_ext = ".dat")
 
     Sys.sleep(1)
+    } else {
+      new_sb = as.list(1:length(scenarios))
+      names(new_sb) = as.character(scenarios-1)
+      sb_file = list()
+      sb_file$bindingConstraints$watervalues = new_sb
+      body = list()
+      body <- jsonlite::toJSON(sb_file,
+                                    auto_unbox = TRUE)
+      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,"/config/scenariobuilder/bindingConstraints"),body=body)
+    }
   }
 
 
@@ -211,6 +222,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 }
 
 clear_scenario_builder <- function(opts){
+  if (!antaresRead:::is_api_study(opts)){
   sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
 
   if (length(names(sb_file))>0){
@@ -227,6 +239,7 @@ clear_scenario_builder <- function(opts){
 
     Sys.sleep(1)
 
+  }
   }
 
 }

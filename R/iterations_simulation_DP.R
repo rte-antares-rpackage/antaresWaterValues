@@ -579,7 +579,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
   levels <- df_levels %>%
     dplyr::rename(previous_constraint=.data$constraint) %>%
     dplyr::select(c("week","mcYear","previous_constraint")) %>%
-    dplyr::left_join(levels,by = dplyr::join_by(.data$week, .data$mcYear)) %>%
+    dplyr::left_join(levels,by = dplyr::join_by("week", "mcYear")) %>%
     dplyr::mutate(dis = abs(.data$constraint-.data$previous_constraint)) %>%
     dplyr::left_join(max_hydro_weekly, by=c("week"="timeId")) %>%
     dplyr::group_by(.data$week,.data$mcYear) %>%
@@ -819,6 +819,9 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                               method_fast = method_fast,
                               max_hydro_weekly=max_hydro_weekly, n=i,
                               pump_eff = pump_eff, mix_scenario = F)
+
+    df_levels <- dplyr::bind_rows(df_levels,
+                                  dplyr::mutate(levels,n=as.character(i),area=area))
 
     initial_traj <- levels %>%
       dplyr::select(c("week", "true_constraint","mcYear")) %>%

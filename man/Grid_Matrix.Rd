@@ -19,7 +19,7 @@ Grid_Matrix(
   na_rm = FALSE,
   method,
   only_input = FALSE,
-  q_ratio = 0.5,
+  cvar_value = 0.5,
   test_week = NULL,
   opts = antaresRead::simOptions(),
   shiny = F,
@@ -81,9 +81,7 @@ grid of quantile algorithm.}
 
 \item{only_input}{if TRUE skip bellman values calculation and return the input}
 
-\item{q_ratio}{from 0 to 1. the probability used in quantile method
-to determine a bellman value which q_ratio all bellman values are equal or
-less to it. (quantile(q_ratio))}
+\item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
 
 \item{test_week}{the week number u want to see it's calculation information
 in the console}

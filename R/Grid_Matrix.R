@@ -14,9 +14,7 @@
 #'  grid of quantile algorithm.
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero . Defaults to 0.05
-#' @param q_ratio from 0 to 1. the probability used in quantile method
-#' to determine a bellman value which q_ratio all bellman values are equal or
-#' less to it. (quantile(q_ratio))
+#' @param cvar_value Double from 0 to 1. The probability used in cvar method.
 #' @param test_week the week number u want to see it's calculation information
 #' in the console
 #' @param reservoir_capacity Reservoir capacity for the given area in MWh,
@@ -71,7 +69,7 @@
                              na_rm = FALSE,
                              method ,
                              only_input=FALSE,
-                             q_ratio=0.5,
+                             cvar_value=0.5,
                              test_week=NULL,
                              opts = antaresRead::simOptions(),
                              shiny=F,
@@ -100,9 +98,9 @@
   #----- shiny Loader
 
   # check the method chosen to calculate Bellman values is a valid method
-  methods <- c("mean-grid","grid-mean","quantile")
+  methods <- c("mean-grid","grid-mean","cvar")
   if (!method %in% methods){
-    stop("Unknown method. available methods: ('mean-grid','grid-mean','quantile') ")
+    stop("Unknown method. available methods: ('mean-grid','grid-mean','cvar') ")
   }
 
   assertthat::assert_that(class(opts) == "simOptions")
@@ -386,7 +384,7 @@
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
-                        q_ratio= q_ratio,
+                        cvar_value= cvar_value,
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
@@ -462,7 +460,7 @@
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
-                        q_ratio= q_ratio,
+                        cvar_value= cvar_value,
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
@@ -568,7 +566,7 @@
   res <- watervalues %>%
     dplyr::filter(.data$weeks==1) %>%
     dplyr::group_by(.data$weeks, .data$states) %>%
-    dplyr::summarise(value_node=mean_finite(.data$value_node),.groups = "drop") %>%
+    dplyr::summarise(value_node=mean(.data$value_node),.groups = "drop") %>%
     dplyr::mutate(value_node=dplyr::if_else(!is.finite(.data$value_node),
                                             NaN,.data$value_node))
 

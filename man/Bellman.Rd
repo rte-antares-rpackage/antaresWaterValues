@@ -12,7 +12,7 @@ Bellman(
   P_max = 0,
   method,
   mcyears,
-  q_ratio = 0.75,
+  cvar_value = 0.75,
   counter,
   stop_rate = 5,
   debugger_feas = F,
@@ -47,11 +47,11 @@ hydro storage over one step of time.}
 reservoir over one step of time.}
 
 \item{method}{Character. Perform mean of grids algorithm or grid of means algorithm or
-grid of quantile algorithm.}
+grid of cvar algorithm.}
 
 \item{mcyears}{Vector. Monte Carlo years}
 
-\item{q_ratio}{numeric in [0,1]. the probability used in quantile algorithm.}
+\item{cvar_value}{numeric in [0,1]. the probability used in quantile algorithm.}
 
 \item{counter}{Numeric of length 1. number of the week in calculation.}
 

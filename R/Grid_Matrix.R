@@ -112,7 +112,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
 
   # Getting reservoir capacity (ie maximum level)
   {if (is.null(reservoir_capacity)) {
-    niveau_max <- get_reservoir_capacity(area = area)
+    niveau_max <- get_reservoir_capacity(area = area,opts=opts)
     if (length(niveau_max) == 0) {
       ask_niveau_max <- "Failed to retrieve reservoir capacity from Antares, please specify value (in GWh, e.g. 10000 for France):\n"
       niveau_max <- readline(prompt = ask_niveau_max)
@@ -145,7 +145,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
   {
     inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
     inflow[with(inflow, order(inflow$tsId, inflow$timeId)),]
-    inflow <- inflow[, c("area", "tsId" , "timeId", "time", "hydroStorage")]
+    inflow <- inflow[, c("area", "tsId" , "timeId", "hydroStorage")]
     # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
     inflow[, "timeId" := as.numeric(inflow$timeId)]
     inflow <- inflow %>%
@@ -159,7 +159,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
 
   # Getting maximum pumping and generating powers for each hour
   if (is.null(max_hydro_hourly)){
-    max_hydro_hourly <- get_max_hydro(area,timeStep = "hourly")
+    max_hydro_hourly <- get_max_hydro(area,timeStep = "hourly",opts=opts)
   }
 
 
@@ -315,7 +315,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
 
   # get maximum generating and pumping energy for each week
   if (is.null(max_hydro_weekly)){
-    max_hydro_weekly <- get_max_hydro(area,timeStep = "weekly")
+    max_hydro_weekly <- get_max_hydro(area,timeStep = "weekly",opts=opts)
   }
   E_max <-max_hydro_weekly$turb
   P_max <- max_hydro_weekly$pump*efficiency

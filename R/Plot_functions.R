@@ -19,13 +19,13 @@ plot_reward_variation <- function(reward_base,weeks_to_plot)
     dplyr::group_by(week) %>%
     dplyr::arrange(.data$week,.data$control) %>%
     dplyr::mutate("Reward transition"=(dplyr::lead(.data$Reward)-.data$Reward)/(dplyr::lead(.data$control)-.data$control)) %>%
-    dplyr::rename(`Turbining transistion`="control") %>%
+    dplyr::rename(`Turbining transition`="control") %>%
     tidyr::drop_na()
 
   temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
 
 
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transistion`,.data$`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
+  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transition`,.data$`Reward transition`, col=week)) +ggplot2::geom_line(size=0.5)
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation"))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))
   if(length(unique(temp$week))>10){
     p1 <- p1+ggplot2::theme(legend.position="none")
@@ -150,13 +150,13 @@ plot_reward_variation_mc <- function(reward_base,weeks_to_plot,scenarios_to_plot
     dplyr::mutate(week=as.character(.data$timeId)) %>%
     dplyr::arrange(.data$control) %>%
     dplyr::mutate("Reward transition"=(dplyr::lead(.data$Reward)-.data$Reward)/(dplyr::lead(.data$control)-.data$control)) %>%
-    dplyr::rename(`Turbining transistion`="control") %>%
+    dplyr::rename(`Turbining transition`="control") %>%
     tidyr::drop_na()
 
   temp$`Reward transition` <- round(temp$`Reward transition`,digits = 2)
 
 
-  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transistion`,.data$`Reward transition`, col=week)) +
+  p1 <- ggplot2::ggplot(data = temp,ggplot2::aes(x=.data$`Turbining transition`,.data$`Reward transition`, col=week)) +
     ggplot2::geom_line(size=0.5)+
     ggplot2::facet_wrap(ggplot2::vars(.data$mcYear))
   p1 <- p1+ggplot2::ggtitle(sprintf("Reward variation  MC Year %s",paste(as.character(scenarios_to_plot),collapse =" ")))+ggplot2::theme(plot.title = ggplot2::element_text(hjust = 0.5))

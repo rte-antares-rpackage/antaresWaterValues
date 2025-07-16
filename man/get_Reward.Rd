@@ -16,7 +16,7 @@ get_Reward(
   max_hydro_hourly,
   mcyears,
   area = NULL,
-  pump_eff = NULL,
+  efficiency = NULL,
   district_balance = "water values district",
   expansion = F,
   fictive_areas = NULL
@@ -46,6 +46,8 @@ Correspond to \code{simulation_names} output of \code{runWaterValuesSimulation()
 \item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
 
 \item{area}{Character. The Antares area concerned by water values computation.}
+
+\item{efficiency}{Double between 0 and 1. Pumping efficiency ratio. Get it with \code{getPumpEfficiency()}.}
 
 \item{district_balance}{Character. Name of district used to evaluate controls on the stock.}
 

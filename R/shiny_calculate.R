@@ -251,7 +251,7 @@ calculateServer <- function(id, opts, silent) {
           opts = opts,
           pumping = simulation_res()$pumping,
           nb_disc_stock = 20,
-          pumping_efficiency = simulation_res()$eff,
+          efficiency = simulation_res()$eff,
           mcyears = simulation_res()$mc_years
         ) %>%
           dplyr::cross_join(data.frame(mcYear=simulation_res()$mc_years))
@@ -262,7 +262,7 @@ calculateServer <- function(id, opts, silent) {
           opts = opts,
           pumping = simulation_res()$pumping,
           nb_disc_stock = 20,
-          pumping_efficiency = simulation_res()$eff,
+          efficiency = simulation_res()$eff,
           mcyears = simulation_res()$mc_years
         )
       }
@@ -312,11 +312,11 @@ calculateServer <- function(id, opts, silent) {
                               get_Reward(
                                 simulation_names = simulation_res()$simulation_names,
                                 simulation_values = simulation_res()$simulation_values,
-                                district_name = "water values district",
+                                district_cost = "water values district",
                                 opts = opts,
                                 method_old = F,
                                 possible_controls = possible_controls(),
-                                max_hydro = get_max_hydro(simulation_res()$area, opts),
+                                max_hydro_hourly = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,
                                 area = simulation_res()$area,
                                 district_balance = "water values district",

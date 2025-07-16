@@ -224,6 +224,7 @@ get_inflow <- function(area, opts,mcyears){
 #' Get objective values of the optimization problem of each week and each scenario for a given simulation \code{simu}, mainly used in \code{get_Reward()} to build reward functions.
 #'
 #' @inheritParams get_local_reward
+#' @inheritParams runWaterValuesSimulation
 #' @param district The district concerned by the simulation.
 #' @param fictive_areas Vector of chr. Fictive areas used in simulation.
 #'

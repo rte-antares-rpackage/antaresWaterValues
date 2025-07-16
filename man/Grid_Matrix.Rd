@@ -11,7 +11,7 @@ Grid_Matrix(
   reward_db = NULL,
   simulation_values = NULL,
   nb_cycle = 1L,
-  district_name = "water values district",
+  district_cost = "water values district",
   mcyears = NULL,
   week_53 = 0,
   states_step_ratio = 0.01,
@@ -62,6 +62,8 @@ Correspond to \code{simulation_values} output of \code{runWaterValuesSimulation(
 
 \item{nb_cycle}{Integer. Number of times to run dynamic programming. Used to avoid dependency on final Bellman values.}
 
+\item{district_cost}{Character. Name of the district used to store overall costs.}
+
 \item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
 
 \item{week_53}{Double or vector of doubles. Final bellman values used at the end of week 52 for the first cycle performed.}
@@ -95,6 +97,10 @@ attending the limit.}
 \item{convergence_criteria}{Double. Used if \code{until_convergence=TRUE}. Thereshold to consider that two different water values are identical.}
 
 \item{cycle_limit}{Integer. Used if \code{until_convergence=TRUE}. Maximum cycles to perform.}
+
+\item{pumping}{Boolean. True to take into account the pumping capacity.}
+
+\item{efficiency}{Double between 0 and 1. Pumping efficiency ratio. Get it with \code{getPumpEfficiency()}.}
 
 \item{stop_rate}{the percent from which the calculation stop. for example
 \code{stop_rate=5} means the calculation stop if there is a week with less then

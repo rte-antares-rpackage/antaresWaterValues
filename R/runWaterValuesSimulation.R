@@ -128,7 +128,7 @@ runWaterValuesSimulation <- function(area,
   if (is.null(constraint_values)){
     constraint_values <- constraint_generator(area=area,nb_disc_stock=nb_disc_stock,
                                               pumping=pumping,
-                                              pumping_efficiency = efficiency,
+                                              efficiency = efficiency,
                                               opts=opts, mcyears=play_years)
   }
   if ("mcYear" %in% names(constraint_values)){
@@ -375,7 +375,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                      launch_simulations=T,
                                      reset_hydro=T,
                                      constraint_values=NULL,
-                                     expansion=T,...){
+                                     expansion=T){
 
 
   #check the study is well selected

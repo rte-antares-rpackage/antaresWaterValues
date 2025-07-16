@@ -12,7 +12,7 @@ get_local_reward(
   mcyears,
   u0,
   district_balance,
-  pump_eff
+  efficiency
 )
 }
 \arguments{
@@ -30,6 +30,8 @@ get_local_reward(
 Could be extracted from the \code{simulation_values} output of \code{runWaterValuesSimulation()} by filtering column \code{"sim"} to the corresponding simulation.}
 
 \item{district_balance}{Character. Name of district used to evaluate controls on the stock.}
+
+\item{efficiency}{Double between 0 and 1. Pumping efficiency ratio. Get it with \code{getPumpEfficiency()}.}
 }
 \value{
 A \code{dplyr::tibble()} with columns \code{"week"}, \code{"mcYear"}, \code{"u"} and \code{"reward"}. Controls in column \code{"u"} correspond to \code{possible_controls}.

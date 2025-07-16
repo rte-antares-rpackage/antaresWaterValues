@@ -30,7 +30,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
                        district_cost = "water values district",
                        opts, correct_monotony = FALSE,
                        method_old = TRUE, possible_controls = NULL,
-                       max_hydro_hourly, mcyears,area=NULL,pump_eff=NULL,
+                       max_hydro_hourly, mcyears,area=NULL,efficiency=NULL,
                        district_balance="water values district",
                        expansion=F,fictive_areas=NULL) {
   assertthat::assert_that(class(opts) == "simOptions")
@@ -68,7 +68,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     {reward <- lapply(
       X = opts_o,
       FUN = function(o) {
-        res <- get_weekly_cost(district = district_cost, mcyears = mcyears, opts = o,
+        res <- get_weekly_cost(district = district_cost, mcyears = mcyears, simu = o,
                                fictive_areas = fictive_areas, expansion = expansion)
         res$simulation <- o$name
         res
@@ -139,8 +139,8 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     output$simulation_values <- simulation_values
 
   } else {
-    if(is.null(pump_eff)){
-      pump_eff <- getPumpEfficiency(area=area, opts = opts)
+    if(is.null(efficiency)){
+      efficiency <- getPumpEfficiency(area=area, opts = opts)
     }
 
     max_hydro_hourly <- dplyr::rename(max_hydro_hourly,"P_max"="pump","T_max"="turb")
@@ -164,7 +164,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
     {reward <- mapply(
       FUN = function(o,u) {
         res <- get_local_reward(o,possible_controls,max_hydro_hourly,area,mcyears,u[[1]],
-                                  district_balance,pump_eff)
+                                  district_balance,efficiency)
         res <- reward_offset(o,res, u[[1]],mcyears,district_cost,fictive_areas=fictive_areas, expansion=expansion)
         res <- dplyr::mutate(res,simulation=o$name)
         res
@@ -224,7 +224,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
 #' @returns A \code{dplyr::tibble()} with columns \code{"week"}, \code{"mcYear"}, \code{"u"} and \code{"reward"}. Controls in column \code{"u"} correspond to \code{possible_controls}.
 #' @export
 get_local_reward <- function(simu,possible_controls,max_hydro_hourly,area,mcyears,u0,
-                             district_balance,pump_eff){
+                             district_balance,efficiency){
   # Get hourly marginal prices and energy pumped and generated for each hour
   price <- antaresRead::readAntares(areas=area,select=c("MRG. PRICE"),
                        opts=simu,mcYears = mcyears, timeStep = "hourly") %>%
@@ -240,12 +240,12 @@ get_local_reward <- function(simu,possible_controls,max_hydro_hourly,area,mcyear
 
   price <- price %>%
     dplyr::cross_join(data.frame(pumping=c(T,F))) %>%
-    dplyr::mutate(price = dplyr::if_else(.data$pumping,.data$price/pump_eff,.data$price)) %>%
+    dplyr::mutate(price = dplyr::if_else(.data$pumping,.data$price/efficiency,.data$price)) %>%
     dplyr::mutate(gap_greater_control = dplyr::if_else(.data$pumping,
-                                       dplyr::if_else(.data$balance>0,.data$balance*pump_eff,0),
+                                       dplyr::if_else(.data$balance>0,.data$balance*efficiency,0),
                                        dplyr::if_else(.data$balance<0,.data$T_max+.data$balance,.data$T_max)),
                   gap_lower_control = dplyr::if_else(.data$pumping,
-                                      dplyr::if_else(.data$balance>0,(.data$balance-.data$P_max)*pump_eff,(-.data$P_max)*pump_eff),
+                                      dplyr::if_else(.data$balance>0,(.data$balance-.data$P_max)*efficiency,(-.data$P_max)*efficiency),
                                       dplyr::if_else(.data$balance<0,.data$balance,0)))
   greater_control_reward <- price %>%
     dplyr::group_by(.data$mcYear,.data$week) %>%
@@ -344,7 +344,7 @@ get_local_reward <- function(simu,possible_controls,max_hydro_hourly,area,mcyear
 #' @export
 reward_offset <- function(simu, df_reward, u0,mcyears,district_cost= "water values district",
                           fictive_areas=NULL, expansion = F){
-  cost <- get_weekly_cost(district = district_cost, mcyears = mcyears, opts = simu,
+  cost <- get_weekly_cost(district = district_cost, mcyears = mcyears, simu = simu,
                           fictive_areas = fictive_areas, expansion=expansion) %>%
     dplyr::rename(week="timeId") %>%
     dplyr::select("mcYear","week","ov_cost") %>%

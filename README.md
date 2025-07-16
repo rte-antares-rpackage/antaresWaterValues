@@ -28,7 +28,6 @@ To load the package use :
 
 ``` r
 library(antaresWaterValues)
-#> Le chargement a nécessité le package : data.table
 ```
 
 Now we are ready to use our package. If something gets wrong, please
@@ -54,9 +53,9 @@ opts <- antaresRead::setSimulationPath("your/path/to/the/antares/study","input")
 ``` r
 area <- "area"
 pumping <- T #T if pumping possible
-mcyears <- 1:10 # Monte Carlo years you want to use
-pump_eff <- getPumpEfficiency(area,opts=opts)
-name = "5sim"
+mcyears <- 1:3 # Monte Carlo years you want to use
+efficiency <- getPumpEfficiency(area,opts=opts)
+name = "3sim"
 ```
 
 Then, you have to run simulations.
@@ -64,14 +63,14 @@ Then, you have to run simulations.
 ``` r
 simulation_res <- runWaterValuesSimulation(
     area=area,
-    nb_disc_stock = 5, #number of simulations
-    nb_mcyears = mcyears,
+    nb_disc_stock = 3, #number of simulations
+    mcyears = mcyears,
     path_solver = "your/path/to/antares/bin/antares-8.6-solver.exe",
     opts = opts,
-    otp_dest=paste0(study_path,"/user"),
+    otp_dest=paste0(opts$studyPath,"/user"),
     file_name=name, #name of the saving file
     pumping=pumping,
-    efficiency=pump_eff
+    efficiency=efficiency
   )
 ```
 
@@ -90,7 +89,7 @@ reward_db <- get_Reward(
   opts=opts,
   area = area,
   mcyears = mcyears,
-  pump_eff = pump_eff,
+  efficiency = efficiency,
   method_old = T,# T if you want a simple linear interpolation of rewards,
                  # F if you want to use marginal price to interpolate
   possible_controls = constraint_generator(area=area,
@@ -113,7 +112,7 @@ results <- Grid_Matrix(
   method= "mean-grid",
   opts = opts,
   pumping=pumping,
-  efficiency=pump_eff,
+  efficiency=efficiency,
   penalty_low = 1000,#penalty for bottom rule curve
   penalty_high = 100,#penalty for top rule curve
   force_final_level = T, # T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)
@@ -121,6 +120,11 @@ results <- Grid_Matrix(
   penalty_final_level_low = 2000,
   penalty_final_level_high = 2000
 )
+```
+
+<img src="man/figures/README-grid_matrix-1.png" width="100%" />
+
+``` r
 aggregated_results <- results$aggregated_results
 ```
 
@@ -151,7 +155,7 @@ antaresEditObject::writeIni(settings_ini, file.path("settings", "generaldata.ini
 ### Plot results
 
 ``` r
-waterValuesViz(Data=aggregated_results,filter_penalties = F)
+waterValuesViz(Data=aggregated_results,filter_penalties = T)
 ```
 
 <img src="man/figures/README-watervalues-1.png" width="100%" />
@@ -160,6 +164,8 @@ waterValuesViz(Data=aggregated_results,filter_penalties = F)
 plot_Bellman(value_nodes_dt = aggregated_results, 
              weeks_to_plot = c(1,3))
 ```
+
+<img src="man/figures/README-bellman-1.png" width="100%" />
 
 You can also plot reward functions
 

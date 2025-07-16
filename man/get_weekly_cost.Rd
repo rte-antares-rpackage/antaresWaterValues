@@ -13,6 +13,8 @@ get_weekly_cost(district, simu, mcyears, expansion = F, fictive_areas = NULL)
 
 \item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
 
+\item{expansion}{Binary. True if mode expansion of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
+
 \item{fictive_areas}{Vector of chr. Fictive areas used in simulation.}
 }
 \value{

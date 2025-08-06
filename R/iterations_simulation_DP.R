@@ -20,9 +20,7 @@
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
 #' @param method_dp Algorithm in dynamic programming part
-#' @param q_ratio from 0 to 1. the probability used in quantile method
-#' to determine a bellman value which q_ratio all bellman values are equal or
-#' less to it. (quantile(q_ratio))
+#' @param cvar_value from 0 to 1. the probability used in cvar method
 #' @param method_fast Method to choose evaluated controls
 #' @param test_vu Binary. If you want to run a Antares simulation between each iteration
 #' with the latest water values
@@ -40,7 +38,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      path_solver,study_path,
                                                      states_step_ratio=1/50,
                                                      method_dp = "grid-mean",
-                                                     q_ratio = 0.5,
+                                                     cvar_value = 0.5,
                                                      method_fast = F,
                                                      test_vu=F,
                                                      force_final_level = F,
@@ -148,6 +146,16 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      "/raw?path=output%2F",output_dir,"%2Finfo"),
                            body=body)
     }
+    if (!antaresRead:::is_api_study(opts)){
+      {
+        output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = F)
+        output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+        output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
+        output_info$general$mode <- "Economy"
+        antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
+                                        overwrite = T)
+      }
+    }
 
     controls <- rbind(simulation_res$simulation_values,controls) %>%
       dplyr::select("week","u","mcYear") %>%
@@ -174,7 +182,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                  inflow=inflow,max_hydro = max_hydro,
                                  max_hydro_weekly = max_hydro_weekly,
                                  niveau_max=niveau_max,
-                                 method_dp = method_dp, q_ratio = q_ratio,
+                                 method_dp = method_dp, cvar_value = cvar_value,
                                  force_final_level = force_final_level,
                                  final_level_egal_initial = final_level_egal_initial,
                                  final_level = final_level,
@@ -392,9 +400,9 @@ updateReward <- function(opts,pumping,controls,max_hydro,
 #' @param max_hydro_weekly data.frame {timeId,pump,turb} with maximum pumping and storing
 #' powers for each week,returned by the function  \code{get_max_hydro}
 #' @param method_dp Algorithm in dynamic programming part
-#' @param q_ratio from 0 to 1. the probability used in quantile method
-#' to determine a bellman value which q_ratio all bellman values are equal or
-#' less to it. (quantile(q_ratio))
+#' @param cvar_value from 0 to 1. the probability used in quantile method
+#' to determine a bellman value which cvar_value all bellman values are equal or
+#' less to it. (quantile(cvar_value))
 #' @param force_final_level Binary. Whether final level should be constrained
 #' @param final_level_egal_initial Binary. Whether final level, if constrained, should be equal to initial level
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
@@ -405,7 +413,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
                               states_step_ratio,pumping,pump_eff,
                               penalty_low,penalty_high,inflow,niveau_max,
                               max_hydro,max_hydro_weekly, method_dp="grid-mean",
-                              q_ratio = 0.5,
+                              cvar_value = 0.5,
                               force_final_level = F,
                               final_level_egal_initial = F,
                               final_level = NULL,
@@ -433,7 +441,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
     week_53 = 0,
     district_name = "water values district",
     method = method_dp,
-    q_ratio = q_ratio,
+    cvar_value = cvar_value,
     states_step_ratio = states_step_ratio,  # in how many states the reservoirs is divided
     monotonic_bellman = FALSE,  # done in post-process
     inaccessible_states = 99/100,  # for convergence sake
@@ -609,9 +617,9 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
 #' @param method_dp Algorithm in dynamic programming part
-#' @param q_ratio from 0 to 1. the probability used in quantile method
-#' to determine a bellman value which q_ratio all bellman values are equal or
-#' less to it. (quantile(q_ratio))
+#' @param cvar_value from 0 to 1. the probability used in quantile method
+#' to determine a bellman value which cvar_value all bellman values are equal or
+#' less to it. (quantile(cvar_value))
 #' @param method_fast Method to choose evaluated controls
 #' @param test_vu Binary. If you want to run a Antares simulation between each iteration
 #' with the latest water values
@@ -630,12 +638,11 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                path_solver,study_path,
                                                                states_step_ratio=1/50,
                                                                method_dp = "grid-mean",
-                                                               q_ratio = 0.5,
+                                                               cvar_value = 0.5,
                                                                method_fast = F,
                                                                test_vu=F,
                                                                force_final_level = F,
                                                                final_level_egal_initial = F,
-                                                               final_level = NULL,
                                                                penalty_final_level = NULL,
                                                                initial_traj = NULL){
 
@@ -740,6 +747,27 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
           load(paste0(study_path,"/user/",paste0(i, "_itr_", area),".RData"))
         }
 
+        if (antaresRead:::is_api_study(opts)&opts$antaresVersion>=880){
+          output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
+          output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+          info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
+          info$general$mode = "Economy"
+          body <- jsonlite::toJSON(info,auto_unbox = TRUE)
+          antaresRead::api_post(opts=opts,endpoint=paste0(opts$study_id,
+                                                          "/raw?path=output%2F",output_dir,"%2Finfo"),
+                                body=body)
+        }
+        if (!antaresRead:::is_api_study(opts)){
+          {
+            output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = F)
+            output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+            output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
+            output_info$general$mode <- "Economy"
+            antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
+                                            overwrite = T)
+          }
+        }
+
 
         controls <- simulation_res$simulation_values %>%
           dplyr::filter(.data$area==a)  %>%
@@ -770,7 +798,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                      inflow=inflow,max_hydro = max_hydro,
                                      max_hydro_weekly = max_hydro_weekly,
                                      niveau_max=niveau_max,
-                                     method_dp = method_dp, q_ratio = q_ratio,
+                                     method_dp = method_dp, cvar_value = cvar_value,
                                      force_final_level = force_final_level,
                                      final_level_egal_initial = final_level_egal_initial,
                                      final_level = final_level,

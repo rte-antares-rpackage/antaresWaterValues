@@ -1,8 +1,8 @@
 ---
-title: "computation_watervalues"
+title: "Watervalues computation"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{computation_watervalues}
+  %\VignetteIndexEntry{Watervalues computation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

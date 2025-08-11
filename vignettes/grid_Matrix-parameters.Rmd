@@ -85,13 +85,7 @@ reward_db <- get_Reward(
   area = area,
   mcyears = mcyears,
   efficiency = efficiency,
-  method_old = T,# T if you want a simple linear interpolation of rewards,
-                 # F if you want to use marginal price to interpolate
-  possible_controls = constraint_generator(area=area,
-                                           nb_disc_stock = 20,
-                                           pumping = pumping,
-                                           pumping_efficiency = pump_eff,
-                                           opts=opts)# used for marginal prices interpolation
+  method_old = T,
 )
 reward <- reward_db$reward
 ```

@@ -30,7 +30,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
                        district_cost = "water values district",
                        opts, correct_monotony = FALSE,
                        method_old = TRUE, possible_controls = NULL,
-                       max_hydro_hourly, mcyears,area=NULL,efficiency=NULL,
+                       max_hydro_hourly = NULL, mcyears,area=NULL,efficiency=NULL,
                        district_balance="water values district",
                        expansion=F,fictive_areas=NULL) {
   assertthat::assert_that(class(opts) == "simOptions")
@@ -141,6 +141,10 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
   } else {
     if(is.null(efficiency)){
       efficiency <- getPumpEfficiency(area=area, opts = opts)
+    }
+
+    if(is.null(max_hydro_hourly)){
+      max_hydro_hourly = get_max_hydro(area,opts,timeStep = "hourly")
     }
 
     max_hydro_hourly <- dplyr::rename(max_hydro_hourly,"P_max"="pump","T_max"="turb")

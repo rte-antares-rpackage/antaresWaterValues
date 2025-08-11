@@ -1,6 +1,7 @@
 #' Compute Bellman values
 #'
 #' Compute Bellman values and water values with dynamic programming based on reward functions computed with \code{get_Reward()}.
+#' Mode information about this function in \code{vignette("Grid_Matrix parameters", package = "antaresWaterValues")}.
 #'
 #' @inheritParams runWaterValuesSimulation
 #' @inheritParams get_Reward

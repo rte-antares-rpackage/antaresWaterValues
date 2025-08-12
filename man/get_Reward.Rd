@@ -51,7 +51,8 @@ Correspond to \code{simulation_names} output of \code{runWaterValuesSimulation()
 
 \item{district_balance}{Character. Name of district used to evaluate controls on the stock.}
 
-\item{expansion}{Binary. True if mode expansion of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
+\item{expansion}{Binary. True if mode expansion (ie linear relaxation) of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
+It is recommended to use mode expansion, it will be faster (only one iteration is done) and results will be smoother as the cost result will correspond to the linear relaxation of the problem.}
 
 \item{fictive_areas}{Vector of character. Fictive areas used in simulation.}
 }

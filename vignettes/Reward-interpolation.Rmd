@@ -123,6 +123,7 @@ reward_db$local_reward %>%
   ggplot2::aes(x = u, y = reward, color = simulation) +
   ggplot2::geom_point()
 ```
+
 The final estimation is obtained by taking the minimum of all estimations :
 ```{r}
 reward_marg_interp %>% 
@@ -131,6 +132,7 @@ reward_marg_interp %>%
   ggplot2::aes(x = control, y = reward) +
   ggplot2::geom_point()
 ```
+
 In this example, with `nb_disc_stock = 20`, the reward function for the first week and the first Monte Carlo year has 20 different controls.
 
 # Comparaison 
@@ -144,4 +146,5 @@ rbind(dplyr::mutate(reward_marg_interp,interpolation = "marg_prices"),
   ggplot2::geom_line(linewidth = 1) +
   ggplot2::geom_point()
 ```
+
 Simple interpolation undestimates the reward function and interpolation with marginal prices overestimates the reward function. The real one is between the red and the blue curve. The interpolation with marginal prices is more time consuming but is more precise for the same number of simulation so this method should be use in order to reduce the number of simulations. 

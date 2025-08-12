@@ -28,7 +28,8 @@ Could be extracted from the \code{simulation_values} output of \code{runWaterVal
 
 \item{fictive_areas}{Vector of character. Fictive areas used in simulation.}
 
-\item{expansion}{Binary. True if mode expansion of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
+\item{expansion}{Binary. True if mode expansion (ie linear relaxation) of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
+It is recommended to use mode expansion, it will be faster (only one iteration is done) and results will be smoother as the cost result will correspond to the linear relaxation of the problem.}
 }
 \value{
 A \code{dplyr::tibble()} with columns \code{"week"}, \code{"mcYear"}, \code{"u"} and \code{"reward"}.

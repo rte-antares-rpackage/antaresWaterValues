@@ -11,7 +11,7 @@
 #' @param method Character among \code{c("mean-grid","grid-mean","quantile")}. Way to perform aggregation of scenarios in dynamic programming algorithm.
 #' @param states_step_ratio Double. Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero for which Bellman values are computed.
-#' @param q_ratio Double from 0 to 1. Probability used in quantile \code{method}.
+#' @param cvar_value Double from 0 to 1. The probability used in cvar method.
 #' @param test_week the week number u want to see it's calculation information
 #' in the console
 #' @param reservoir_capacity Double. Reservoir capacity for the given area in MWh given by \code{get_reservoir_capacity()}.
@@ -52,7 +52,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
                              na_rm = FALSE,
                              method ,
                              only_input=FALSE,
-                             q_ratio=0.5,
+                             cvar_value=0.5,
                              test_week=NULL,
                              opts,
                              shiny=F,
@@ -78,13 +78,13 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
                         ...) {
 
 
-
+  area = tolower(area)
   #----- shiny Loader
 
   # check the method chosen to calculate Bellman values is a valid method
-  methods <- c("mean-grid","grid-mean","quantile")
+  methods <- c("mean-grid","grid-mean","cvar")
   if (!method %in% methods){
-    stop("Unknown method. available methods: ('mean-grid','grid-mean','quantile') ")
+    stop("Unknown method. available methods: ('mean-grid','grid-mean','cvar') ")
   }
 
   assertthat::assert_that(class(opts) == "simOptions")
@@ -372,7 +372,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
-                        q_ratio= q_ratio,
+                        cvar_value= cvar_value,
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,
@@ -448,7 +448,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
                         states_steps=states_steps,
                         method=method,
                         mcyears = mcyears,
-                        q_ratio= q_ratio,
+                        cvar_value= cvar_value,
                         counter = i,
                         niveau_max=niveau_max,
                         stop_rate=stop_rate,

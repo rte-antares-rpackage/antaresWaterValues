@@ -75,8 +75,8 @@ runWaterValuesSimulation <- function(area,
                                      expansion=T){
 
 
-
-
+  area = tolower(area)
+  binding_constraint = tolower(binding_constraint)
 
 
   #check the study is well selected
@@ -86,13 +86,16 @@ runWaterValuesSimulation <- function(area,
 
   # check the name format
 
+  simulation_name <- tolower(simulation_name)
   if(!endsWith(simulation_name,"_%s")){
     simulation_name <- paste0(simulation_name,"_%s")
   }
 
+  file_name = tolower(file_name)
   if (!stringr::str_detect(file_name,area)){
     file_name <- paste0(area,"_",file_name)
   }
+
 
   disable_constraint(binding_constraint,opts,pumping,area = area)
   # restore hydro inflow if there is a previous intercepted simulation.
@@ -124,6 +127,7 @@ runWaterValuesSimulation <- function(area,
   #generating the fictive area parameters
 
   fictive_area <- if (!is.null(fictive_area)) fictive_area else paste0("watervalue_", area)
+  fictive_area = tolower(fictive_area)
   thermal_cluster <- if (!is.null(thermal_cluster)) thermal_cluster else "water_value_cluster"
 
   # Get max hydro power that can be generated in a week
@@ -136,6 +140,8 @@ runWaterValuesSimulation <- function(area,
   if ("mcYear" %in% names(constraint_values)){
     constraint_values <- constraint_values %>%
       dplyr::filter(.data$mcYear %in% play_years, .data$week %in% 1:52)
+    assertthat::assert_that(opts$antaresVersion>=870,
+                            msg = "Scenarization of rhs of binding constraints not available with the version of Antares. Update the study to 8.7.0 or don't scenarize control values.")
   } else {
     constraint_values <- constraint_values %>%
       dplyr::filter(.data$week %in% 1:52)
@@ -167,14 +173,12 @@ runWaterValuesSimulation <- function(area,
 
 
   #generate the flow sens
-  fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_bc"))
-  coeff_turb <- generate_link_coeff(area,fictive_areas[1], pumping, opts)
-  coeff_bc <- generate_link_coeff(area,fictive_areas[2], pumping, opts)
-  coeff <- c(coeff_turb,coeff_bc)
+  fictive_areas <- c(paste0(fictive_area,"_turb"))
+  coeff <- generate_link_coeff(area,fictive_areas[1])
 
   if(pumping){
     fictive_areas <- c(fictive_areas,paste0(fictive_area,"_pump"))
-    coeff_pump <- generate_link_coeff(area,fictive_areas[3], pumping, opts)
+    coeff_pump <- generate_link_coeff(area,fictive_areas[2])
     coeff <- c(coeff,coeff_pump)
   }
 
@@ -189,8 +193,6 @@ runWaterValuesSimulation <- function(area,
     opts = opts
   )
 
-  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
-
   # Start the simulations
 
   simulation_names <- vector(mode = "character", length = nb_disc_stock)
@@ -204,10 +206,10 @@ runWaterValuesSimulation <- function(area,
     name_sim <- dplyr::distinct(constraint_values,.data$sim)$sim[[i]]
     constraint_value <- dplyr::filter(constraint_values,.data$sim==name_sim)
 
-    generate_rhs_bc(constraint_value=constraint_value,coeff=coeff,opts=opts)
+    generate_rhs_bc(constraint_value=constraint_value,name_constraint=binding_constraint,opts=opts)
 
     sim_name <- paste0(file_name,"_",sprintf(simulation_name, format(
-      stringr::str_extract(name_sim, "\\d+$"), decimal.mark = ",")))
+      name_sim, decimal.mark = ",")))
     message("#  ------------------------------------------------------------------------")
     message(paste0("Running simulation: ", i, " - ", sim_name))
     message("#  ------------------------------------------------------------------------")
@@ -237,7 +239,6 @@ runWaterValuesSimulation <- function(area,
         #remove the Binding Constraints
 
         disable_constraint(binding_constraint,opts,pumping,area = area)
-        restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
         # remove the fictive area
         suppressWarnings({
           for (fictive_area in fictive_areas){
@@ -260,7 +261,6 @@ runWaterValuesSimulation <- function(area,
   #remove the Binding Constraints
 
   disable_constraint(binding_constraint,opts,pumping,area = area)
-  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
   # remove the fictive area
   if(launch_simulations){
@@ -320,13 +320,11 @@ resetStudy <- function(opts, area, pumping,fictive_area = NULL,
 
   disable_constraint(binding_constraint,opts,pumping,area = area)
 
-  fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_bc"))
+  fictive_areas <- c(paste0(fictive_area,"_turb"))
 
   if(pumping){
     fictive_areas <- c(fictive_areas,paste0(fictive_area,"_pump"))
   }
-
-  restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
   for (fictive_area in fictive_areas){
     if (fictive_area %in% opts$areaList){
@@ -449,14 +447,12 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     )
 
     #generate the flow sens
-    fictive_areas <- c(paste0(fictive_area,"_turb"),paste0(fictive_area,"_bc"))
-    coeff_turb <- generate_link_coeff(area,fictive_areas[1],list_pumping[area], opts)
-    coeff_bc <- generate_link_coeff(area,fictive_areas[2], list_pumping[area], opts)
-    coeff <- c(coeff_turb,coeff_bc)
+    fictive_areas <- c(paste0(fictive_area,"_turb"))
+    coeff <- generate_link_coeff(area,fictive_areas[1])
 
     if(list_pumping[area]){
       fictive_areas <- c(fictive_areas,paste0(fictive_area,"_pump"))
-      coeff_pump <- generate_link_coeff(area,fictive_areas[3], list_pumping[area], opts)
+      coeff_pump <- generate_link_coeff(area,fictive_areas[2])
       coeff <- c(coeff,coeff_pump)
     }
 
@@ -467,8 +463,6 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     }
 
     remove_area <- c(remove_area,fictive_areas)
-
-    restoreScenarioBuilder(opts=opts, fictive_area = fictive_areas[2])
 
     # Implement binding constraint
     generate_constraints(coeff=coeff,name_constraint=paste0(binding_constraint,"_",area),
@@ -514,7 +508,8 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       } else {
         coeff <- list_coeff[[j]]
       }
-      generate_rhs_bc(constraint_value=constraint_value,coeff=coeff,opts=opts)
+      generate_rhs_bc(constraint_value=constraint_value,
+                      name_constraint=paste0(binding_constraint,"_",area),opts=opts)
     }
 
 
@@ -550,7 +545,6 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
         for (j in 1:length(list_areas)){
           area <- list_areas[[j]]
           disable_constraint(paste0(binding_constraint,"_",area),opts,list_pumping[[j]],area = area)
-          restoreScenarioBuilder(opts=opts, fictive_area = paste0("watervalue_", area,"_bc"))
           # restore hydrostorage
           restoreHydroStorage(area = area, opts = opts)
           restorePumpPower(area = area, opts = opts)
@@ -575,7 +569,6 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
   for (j in 1:length(list_areas)){
     area <- list_areas[[j]]
     disable_constraint(paste0(binding_constraint,"_",area),opts,list_pumping[[j]],area = area)
-    restoreScenarioBuilder(opts=opts, fictive_area = paste0("watervalue_", area,"_bc"))
     # restore hydrostorage
     restoreHydroStorage(area = area, opts = opts)
     restorePumpPower(area = area, opts = opts)

@@ -78,7 +78,7 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
   # Calculating mean of Bellman values for each week and each state
   value_nodes_dt <- watervalues %>%
     dplyr::group_by(.data$weeks, .data$statesid) %>%
-    dplyr::summarise(value_node=mean_finite(.data$value_node),.groups = "drop") %>%
+    dplyr::summarise(value_node=mean(.data$value_node),.groups = "drop") %>%
     dplyr::mutate(value_node=dplyr::if_else(!is.finite(.data$value_node),
                                             NaN,.data$value_node)) %>%
     dplyr::left_join(statesdt,by=c("statesid","weeks")) %>%
@@ -115,19 +115,6 @@ converged <- function(diff_vect,conv=1){
   converge_percent <-  converged_values/numeric_values
   return(converge_percent)
   }
-
-#----- Mean of finite values
-#' Calculate the mean of finite values.
-#' Return \code{-Inf} if all \code{-Inf}.
-#' @param x numeric vector whose mean is wanted.
-#' @keywords internal
-mean_finite <- function(x) {
-  if (all(!is.finite(x))) {
-    -Inf
-  } else {
-    mean(x[is.finite(x)])
-  }
-}
 
 #' Convert Reservoir levels from MWh to percent of reservoir.
 #' @param data  A data.table contains the statesid and states columns

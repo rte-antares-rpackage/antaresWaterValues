@@ -1,3 +1,13 @@
+# antaresWaterValues 0.4.2
+
+## New features
+
+* Use of cvar in Bellman values computation
+
+## Improvements
+
+* Simplify the scnearization of controls
+
 # antaresWaterValues 0.4.0
 
 ## Major changes

@@ -19,7 +19,7 @@ Grid_Matrix(
   na_rm = FALSE,
   method,
   only_input = FALSE,
-  q_ratio = 0.5,
+  cvar_value = 0.5,
   test_week = NULL,
   opts,
   shiny = F,
@@ -80,7 +80,7 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 
 \item{only_input}{if TRUE skip bellman values calculation and return the input}
 
-\item{q_ratio}{Double from 0 to 1. Probability used in quantile \code{method}.}
+\item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
 
 \item{test_week}{the week number u want to see it's calculation information
 in the console}

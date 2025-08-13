@@ -163,7 +163,7 @@ Bellman values can be computed with 2 different formulas :
 
 ```{r compare_method, message=FALSE}
 compare_method = data.frame()
-for (m in c(1, 0.8, 0.5)){
+for (m in c(1, 0.5, 0.2)){
   compare_method = Grid_Matrix(
     area=area,
     reward_db = reward_db,

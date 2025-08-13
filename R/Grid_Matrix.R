@@ -18,7 +18,7 @@
 #' @param final_level Double. Final level (in percent between 0 and 100) if final level is constrained. If you want initial level, use \code{get_initial_level()}.
 #' @param penalty_final_level_low Double. Penalties for both bottom rule curve to constrain final level.
 #' @param penalty_final_level_high Double. Penalties for top rule curve to constrain final level.
-#' #' @param until_convergence Binary. \code{TRUE} to repeat cycles until convergence of water values or
+#' @param until_convergence Binary. \code{TRUE} to repeat cycles until convergence of water values or
 #'  attending the limit.
 #' @param convergence_rate Double from 0 to 1. Define the convergence level if \code{until_convergence=TRUE}.
 #' \code{1} means all values should have converged (ie identical water values between current cycle and the last one) and \code{0} means no convergence is needed to stop.

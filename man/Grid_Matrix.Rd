@@ -69,6 +69,9 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 
 \item{shiny}{Binary. \code{TRUE} if the function is called from \code{shiny_water_values()}.}
 
+\item{until_convergence}{Binary. \code{TRUE} to repeat cycles until convergence of water values or
+attending the limit.}
+
 \item{convergence_rate}{Double from 0 to 1. Define the convergence level if \code{until_convergence=TRUE}.
 \code{1} means all values should have converged (ie identical water values between current cycle and the last one) and \code{0} means no convergence is needed to stop.}
 
@@ -102,9 +105,7 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 
 \item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
 
-\item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.
-#' @param until_convergence Binary. \code{TRUE} to repeat cycles until convergence of water values or
- attending the limit.}
+\item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.}
 }
 \value{
 \item{watervalues}{A \code{dplyr::tibble()} with multiple columns and detailed results.}

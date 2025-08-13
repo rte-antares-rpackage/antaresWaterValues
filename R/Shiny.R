@@ -10,7 +10,7 @@
 #' @import shiny
 #' @export
 shiny_water_values <-
-  function(opts = NULL,
+  function(opts,
            silent = F) {
     for (p in c(
       "bsplus",

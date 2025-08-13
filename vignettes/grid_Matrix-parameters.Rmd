@@ -200,9 +200,10 @@ Smaller `cvar_value` gives higher water values and therefore more conservative l
 
 ```{r compare_method_bellman}
 compare_method %>%
+  dplyr::mutate(cvar_value = as.character(cvar_value)) %>%
   dplyr::filter(weeks == 1) %>%
   ggplot2::ggplot() +
-  ggplot2::aes(x = states, y = value_node, color = method) +
+  ggplot2::aes(x = states, y = value_node, color = cvar_value) +
   ggplot2::geom_line()
 ```
 

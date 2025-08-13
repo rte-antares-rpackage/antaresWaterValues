@@ -12,7 +12,7 @@ get_Reward(
   correct_monotony = FALSE,
   method_old = TRUE,
   possible_controls = NULL,
-  max_hydro_hourly,
+  max_hydro_hourly = NULL,
   mcyears = "all",
   area = NULL,
   efficiency = NULL,

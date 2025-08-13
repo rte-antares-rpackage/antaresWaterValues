@@ -13,7 +13,7 @@ get_Reward(
   possible_controls = NULL,
   max_hydro_hourly = NULL,
   mcyears = "all",
-  area = NULL,
+  area,
   efficiency = NULL,
   expansion = F
 )

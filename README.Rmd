@@ -141,7 +141,6 @@ results <- Grid_Matrix(
   mcyears = mcyears,
   states_step_ratio = 1/20, # discretization of states
   opts = opts,
-  pumping=pumping,
   efficiency=efficiency,
   penalty_low = 1000,#penalty for bottom rule curve
   penalty_high = 100,#penalty for top rule curve

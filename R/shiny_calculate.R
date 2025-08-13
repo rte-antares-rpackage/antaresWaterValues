@@ -320,23 +320,19 @@ calculateServer <- function(id, opts, silent) {
                             results <-     Grid_Matrix(
                               area = simulation_res()$area,
                               reward_db = reward_db,
-                              simulation_names = simulation_res()$simulation_names,
-                              simulation_values = simulation_res()$simulation_values,
                               nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
                               opts = opts,
                               week_53 = 0,
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mc_years,
                               shiny = T,
-                              pumping = simulation_res()$pumping,
                               efficiency = simulation_res()$eff,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,
                               force_final_level = input$force_final_level,
                               final_level = final_lvl(),
                               penalty_final_level_low = input$penalty_final_level_low,
-                              penalty_final_level_high = input$penalty_final_level_high,
-                              expansion = simulation_res()$expansion
+                              penalty_final_level_high = input$penalty_final_level_high
                             )$aggregated_results
 
                             shiny::isolate(res$results <- results)

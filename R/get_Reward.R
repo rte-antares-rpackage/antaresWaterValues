@@ -25,7 +25,7 @@
 get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
                        opts, correct_monotony = FALSE,
                        method_old = TRUE, possible_controls = NULL,
-                       max_hydro_hourly = NULL, mcyears = "all",area=NULL,efficiency=NULL,
+                       max_hydro_hourly = NULL, mcyears = "all",area,efficiency=NULL,
                        expansion=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   studyPath <- opts$studyPath
@@ -134,8 +134,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
     # Prepare output
     output <- list()
     output$reward <- reward
-    output$simulation_names <- simulation_names
-    output$simulation_values <- simulation_values
+    output$decision_space <- simulation_values %>% dplyr::select(-c("sim"))
 
   } else {
     if(is.null(efficiency)){
@@ -154,6 +153,16 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
       possible_controls <- simulation_values %>%
         dplyr::select("week","u")
     }
+
+    # Adding controls used in simulation to the controls used to interpolate reward
+    if (("mcYear" %in% names(simulation_values))&!("mcYear" %in% names(possible_controls))){
+      possible_controls <- dplyr::cross_join(possible_controls,
+                                             data.frame(mcYear=mcyears))
+    }
+    possible_controls <- rbind(simulation_values,possible_controls) %>%
+      dplyr::select(-c("sim")) %>%
+      dplyr::distinct() %>%
+      dplyr::arrange(.data$week,.data$u)
 
     # Transforming simulation values such that for each week there is a line
     # and for each simulation there is a column
@@ -200,8 +209,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
     output <- list()
     output$reward <- reward
     output$local_reward <- local_reward
-    output$simulation_names <- simulation_names
-    output$simulation_values <- possible_controls
+    output$decision_space <- possible_controls
   }
 
   class(output) <- "Reward matrix , simulation names and values"

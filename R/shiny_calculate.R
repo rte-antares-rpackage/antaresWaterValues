@@ -325,7 +325,6 @@ calculateServer <- function(id, opts, silent) {
                               nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
                               opts = opts,
                               week_53 = 0,
-                              method = "grid-mean",
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mc_years,
                               shiny = T,

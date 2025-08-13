@@ -4,7 +4,7 @@
 \alias{resetHydroStorage}
 \title{Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}}
 \usage{
-resetHydroStorage(area, opts = antaresRead::simOptions())
+resetHydroStorage(area, opts)
 }
 \arguments{
 \item{area}{A valid Antares area.}

@@ -8,7 +8,7 @@ get_Reward(
   simulation_values = NULL,
   simulation_names = NULL,
   pattern = NULL,
-  opts = antaresRead::simOptions(),
+  opts,
   correct_monotony = FALSE,
   method_old = TRUE,
   possible_controls = NULL,

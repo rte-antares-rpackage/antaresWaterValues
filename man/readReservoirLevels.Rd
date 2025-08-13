@@ -4,7 +4,7 @@
 \alias{readReservoirLevels}
 \title{Read reservoir rule curves}
 \usage{
-readReservoirLevels(area, opts = antaresRead::simOptions())
+readReservoirLevels(area, opts)
 }
 \arguments{
 \item{area}{Character. The Antares area concerned by water values computation.}

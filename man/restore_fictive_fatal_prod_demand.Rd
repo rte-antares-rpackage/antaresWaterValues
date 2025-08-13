@@ -4,12 +4,7 @@
 \alias{restore_fictive_fatal_prod_demand}
 \title{Restore load and misc gen time series}
 \usage{
-restore_fictive_fatal_prod_demand(
-  area,
-  opts = antaresRead::simOptions(),
-  load,
-  misc_gen
-)
+restore_fictive_fatal_prod_demand(area, opts, load, misc_gen)
 }
 \arguments{
 \item{area}{A valid Antares area.}

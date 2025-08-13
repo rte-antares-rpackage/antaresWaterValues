@@ -140,7 +140,6 @@ results <- Grid_Matrix(
   reward_db = reward_db,
   mcyears = mcyears,
   states_step_ratio = 1/20, # discretization of states
-  method= "grid-mean",
   opts = opts,
   pumping=pumping,
   efficiency=efficiency,

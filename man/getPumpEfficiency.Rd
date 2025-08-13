@@ -4,7 +4,7 @@
 \alias{getPumpEfficiency}
 \title{Get pumping efficiency ratio}
 \usage{
-getPumpEfficiency(area, opts = antaresRead::simOptions())
+getPumpEfficiency(area, opts)
 }
 \arguments{
 \item{area}{Character. The Antares area concerned by water values computation.}

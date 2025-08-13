@@ -16,9 +16,8 @@ Grid_Matrix(
   states_step_ratio = 0.01,
   reservoir_capacity = NULL,
   na_rm = FALSE,
-  method,
   only_input = FALSE,
-  cvar_value = 0.5,
+  cvar_value = 1,
   test_week = NULL,
   opts,
   shiny = F,
@@ -67,8 +66,6 @@ Correspond to \code{simulation_values} output of \code{runWaterValuesSimulation(
 
 \item{states_step_ratio}{Double. Discretization ratio to generate steps levels
 between the reservoir capacity and zero for which Bellman values are computed.}
-
-\item{method}{Character among \code{c("mean-grid","grid-mean","cvar")}. Way to perform aggregation of scenarios in dynamic programming algorithm.}
 
 \item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
 

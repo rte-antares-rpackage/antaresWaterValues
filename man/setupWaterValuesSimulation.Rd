@@ -8,7 +8,7 @@ used in \code{runWaterValuesSimulation}}
 setupWaterValuesSimulation(
   area,
   overwrite = FALSE,
-  opts = antaresRead::simOptions(),
+  opts,
   pumping = F,
   efficiency,
   backup

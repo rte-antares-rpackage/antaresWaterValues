@@ -10,9 +10,8 @@ Bellman(
   decision_space,
   E_max,
   P_max = 0,
-  method,
   mcyears,
-  cvar_value = 0.75,
+  cvar_value = 1,
   counter,
   stop_rate = 5,
   debugger_feas = F,
@@ -46,12 +45,9 @@ hydro storage over one step of time.}
 \item{P_max}{Numeric of length 1. Maximum energy that can be pumped to
 reservoir over one step of time.}
 
-\item{method}{Character. Perform mean of grids algorithm or grid of means algorithm or
-grid of cvar algorithm.}
-
 \item{mcyears}{Vector. Monte Carlo years}
 
-\item{cvar_value}{numeric in [0,1]. the probability used in quantile algorithm.}
+\item{cvar_value}{numeric in [0,1]. the probability used in cvar algorithm.}
 
 \item{counter}{Numeric of length 1. number of the week in calculation.}
 

@@ -233,7 +233,7 @@ get_local_reward <- function(simu,possible_controls,max_hydro_hourly,area,mcyear
   price <- antaresRead::readAntares(areas=area,select=c("MRG. PRICE"),
                        opts=simu,mcYears = mcyears, timeStep = "hourly") %>%
     dplyr::select(-c("day","month","hour","area","time")) %>%
-    dplyr::left_join(antaresRead::readAntares(districts=paste0("district_balance_",area_price),select=c("BALANCE"),
+    dplyr::left_join(antaresRead::readAntares(districts=paste0("district_balance_",area),select=c("BALANCE"),
                           opts=simu,mcYears = mcyears, timeStep = "hourly"),by=c("timeId","mcYear")) %>%
     dplyr::select(-c("day","month","hour","district","time")) %>%
     dplyr::mutate(week=(.data$timeId-1)%/%168+1) %>%

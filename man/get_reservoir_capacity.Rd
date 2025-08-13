@@ -4,7 +4,7 @@
 \alias{get_reservoir_capacity}
 \title{Get reservoir capacity}
 \usage{
-get_reservoir_capacity(area, opts = antaresRead::simOptions())
+get_reservoir_capacity(area, opts)
 }
 \arguments{
 \item{area}{Character. The Antares area concerned by water values computation.}

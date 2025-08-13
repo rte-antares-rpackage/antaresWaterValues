@@ -2,19 +2,18 @@
 % Please edit documentation in R/Plot_functions.R
 \name{plot_Bellman}
 \alias{plot_Bellman}
-\title{Plot Bellman and Water values}
+\title{Plot Bellman and water values}
 \usage{
-plot_Bellman(value_nodes_dt, week_number)
+plot_Bellman(value_nodes_dt, weeks_to_plot)
 }
 \arguments{
-\item{value_nodes_dt}{A data.table contains the Bellman and water values .
-Obtained using the function Grid_Matrix()}
+\item{value_nodes_dt}{A \code{dplyr::tibble()} containing the Bellman and water values. Output \code{aggregated_results} from \code{Grid_Matrix()}.}
 
-\item{week_number}{Numeric of length 1. number of the week to plot.}
+\item{weeks_to_plot}{Vector of integer. Weeks to plot.}
 }
 \value{
-a \code{ggplot} object
+A \code{ggplot2::ggplot()} object.
 }
 \description{
-Plot Bellman and Water values
+Plot Bellman values and water values for differents weeks listed in \code{weeks_to_plot}.
 }

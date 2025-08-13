@@ -4,4 +4,6 @@
 .Ruserdata
 inst/doc
 matrix.txt
-docs/
+docs
+/doc/
+/Meta/

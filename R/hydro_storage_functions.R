@@ -6,6 +6,7 @@
 #'   \code{antaresRead::setSimulationPath}
 #' @param data Backup hydro storage matrix
 #' @return An updated list containing various information about the simulation.
+#' @keywords internal
 #'
 restoreHydroStorage <- function(area, opts = antaresRead::simOptions(),data) {
   antaresEditObject::writeInputTS(data,
@@ -34,6 +35,7 @@ restoreHydroStorage <- function(area, opts = antaresRead::simOptions(),data) {
 #'
 #'
 #' @return An updated list containing various information about the simulation.
+#' @keywords internal
 #'
 resetHydroStorage <- function(area, opts = antaresRead::simOptions()) {
   antaresEditObject::writeInputTS(matrix(rep(0,365),ncol=1),
@@ -48,21 +50,19 @@ resetHydroStorage <- function(area, opts = antaresRead::simOptions()) {
                               opts=opts)
 }
 
-#' Get the Pumping efficiency ratio for an area reservoir
+#' Get pumping efficiency ratio
 #'
-#' @param area An 'antares' area.
-#' @param force If "reservoir management" is disabled, return anyway the reservoir capacity?
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
+#' Get pumping efficiency ratio for the given area. Reservoir management must be on.
 #'
-#' @return the reservoir capacity (in MWh), or \code{NULL} if none.
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @return Double. Pumping efficiency ratio.
 #' @export
 #'
-getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOptions()) {
+getPumpEfficiency <- function(area, opts = antaresRead::simOptions()) {
   area = tolower(area)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
-  if (isTRUE(hydro_ini$reservoir[[area]]) | force) {
+  if (isTRUE(hydro_ini$reservoir[[area]])) {
     Pump_Efficiency <- hydro_ini[["pumping efficiency"]][[area]]
   } else {
     Pump_Efficiency <- NULL
@@ -70,13 +70,15 @@ getPumpEfficiency <- function(area, force = FALSE, opts = antaresRead::simOption
   Pump_Efficiency
 }
 
-#' Change the mode of management of an area
+#' Change hydro management
 #'
-#' @param watervalues Binary. T if use watervalues
-#' @param heuristic Binary. T if use heuristic
-#' @param opts List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param area Antares area
+#' For the given area, choose if hydro storage is managed with water values and/or heuristic.
+#' It is not possible to have neither water values nor heuristic.
+#'
+#' @param watervalues Binary. T if use water values.
+#' @param heuristic Binary. T if use heuristic.
+#' @inheritParams runWaterValuesSimulation
+#' @param area Character. Antares area for which to change hydro management.
 #' @export
 changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)

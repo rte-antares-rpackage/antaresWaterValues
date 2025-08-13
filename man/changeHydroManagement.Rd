@@ -2,20 +2,20 @@
 % Please edit documentation in R/hydro_storage_functions.R
 \name{changeHydroManagement}
 \alias{changeHydroManagement}
-\title{Change the mode of management of an area}
+\title{Change hydro management}
 \usage{
 changeHydroManagement(watervalues = F, heuristic = T, opts, area)
 }
 \arguments{
-\item{watervalues}{Binary. T if use watervalues}
+\item{watervalues}{Binary. T if use water values.}
 
-\item{heuristic}{Binary. T if use heuristic}
+\item{heuristic}{Binary. T if use heuristic.}
 
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
-\item{area}{Antares area}
+\item{area}{Character. Antares area for which to change hydro management.}
 }
 \description{
-Change the mode of management of an area
+For the given area, choose if hydro storage is managed with water values and/or heuristic.
+It is not possible to have neither water values nor heuristic.
 }

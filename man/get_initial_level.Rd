@@ -2,16 +2,18 @@
 % Please edit documentation in R/readReservoirLevels.R
 \name{get_initial_level}
 \alias{get_initial_level}
-\title{Get initial level of an area}
+\title{Get initial level}
 \usage{
 get_initial_level(area, opts)
 }
 \arguments{
-\item{area}{An 'antares' area.}
+\item{area}{Character. The Antares area concerned by water values computation.}
 
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
+}
+\value{
+Double. Initial level in percentage, value between 0 and 100\%.
 }
 \description{
-Get initial level of an area
+Get initial level of hydro storage for the given area. Initial level is defined trough low and high reservoir levels for the first day.
 }

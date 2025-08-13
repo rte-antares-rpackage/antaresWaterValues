@@ -1,11 +1,12 @@
-#' Get reservoir capacity for concerned area, used in different functions
+#' Get reservoir capacity
 #'
-#' @param area The area concerned by the simulation.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
+#' Get hydro reservoir capacity for the given area. Reservoir management must be on.
+#'
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @returns Double, reservoir capacity in MWh.
+#'
 #' @export
-
 get_reservoir_capacity <- function(area, opts=antaresRead::simOptions()){
   hydro_ini <- antaresRead::readIni(file.path("input", "hydro", "hydro.ini"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]])) {
@@ -20,16 +21,17 @@ get_reservoir_capacity <- function(area, opts=antaresRead::simOptions()){
 }
 
 
-#' Get max hydro power that can be generated in a week, used in different functions
+#' Get pumping and generating hydro power
 #'
-#' @param area The area concerned by the simulation.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param timeStep among "hourly", "daily" and "weekly"
+#' Get maximum pumping and generating hydro capacities over a given horizon given in \code{timeStep}.
+#'
+#' @inheritParams runWaterValuesSimulation
+#' @param timeStep Character among "hourly", "daily" and "weekly".
+#'
+#' @returns A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"pump"} and \code{"turb"}.
+#'
 #' @export
-
-get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"){
+get_max_hydro <- function(area, opts,timeStep="hourly"){
   area = tolower(area)
   #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
   max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
@@ -60,27 +62,29 @@ get_max_hydro <- function(area, opts=antaresRead::simOptions(),timeStep="hourly"
   return(max_hydro)
 }
 
-#' Get inflow in a week, used in different functions
+#' Get weekly inflows
 #'
-#' @param area The area concerned by the simulation.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param mcyears Vector of years used to evaluate cost
+#' Get weekly inflows of the given area for all weeks from 1 to 52 and for all time-series in \code{mcyears}.
+#' Please note that if time series index don't correspond to scenario number in scenario builder, this could generate inconsistencies.
+#'
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @returns A \code{dplyr::tibble()} with 4 columns : \code{"timeId"} (integer), \code{"tsId"} (integer), \code{"hydroStorage"} (double) and \code{"area"} (character).
+#' Each line give the amount of weekly inflow (\code{"hydroStorage"}) for \code{area} for a week (\code{"timeId"}) and a scenario (\code{"tsId"}).
+#'
 #' @export
-
-get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
+get_inflow <- function(area, opts,mcyears){
   area = tolower(area)
   suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="hourly"))
   if (nrow(inflow)==0){
     message("No inflow has been found, considering it as null")
-    inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area,time=NaN))
+    inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area))
   } else {
     inflow$week <- (inflow$timeId-1)%/%168+1
     inflow <- dplyr::summarise(dplyr::group_by(inflow,.data$week,.data$tsId),
                                hydroStorage=sum(.data$hydroStorage)) %>%
       dplyr::rename("timeId"="week") %>%
-      dplyr::mutate(area=area, time=NaN)
+      dplyr::mutate(area=area)
     if (length(unique(inflow$tsId))==1){
       inflow <- inflow %>%
         dplyr::select(-("tsId")) %>%
@@ -93,25 +97,23 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
   return(data.table(inflow))
 }
 
-#' Get overall cost in a week, used in different functions
+#' Get objective values of the optimization problem of each week and each scenario for a given simulation \code{simu}, mainly used in \code{get_Reward()} to build reward functions.
 #'
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param mcyears Vector of years used to evaluate cost
-#' @param expansion Binary. True if mode expansion was used to run simulations
+#' @inheritParams get_local_reward
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @return A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"mcYear"} and \code{"ov_cost"}.
 #'
 #' @export
-
-get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
-  if (!is_api_study(opts)){
-    path <- paste0(opts$simPath)
+get_weekly_cost <- function(simu,mcyears,expansion=F){
+  if (!is_api_study(simu)){
+    path <- paste0(simu$simPath)
     all_files <- list.files(path)
     assertthat::assert_that(sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears))
   }
   if (!expansion){
     cost <- antaresRead::readAntares(districts = "water values district", mcYears = mcyears,
-                                     timeStep = "hourly", opts = opts, select=c("OV. COST"))
+                                     timeStep = "hourly", opts = simu, select=c("OV. COST"))
     cost$week <- (cost$timeId-1)%/%168+1
     cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
                              ov_cost=sum(.data$`OV. COST`)) %>%
@@ -119,18 +121,17 @@ get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
   } else {
     cost <- data.frame(tidyr::expand_grid(mcYear=mcyears,timeId=1:52))%>%
         dplyr::mutate(ov_cost=0,cost_xpansion=0)
-
     for (week in 1:52){
       for (scenario in mcyears){
-        if (is_api_study(opts)){
-          file = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,
-                    "/raw?path=output%2F",opts$simOutputName,"%2Fcriterion-",scenario,"-",week,"--optim-nb-1"),
+        if (is_api_study(simu)){
+          file = antaresRead::api_get(opts=simu,endpoint=paste0(simu$study_id,
+                    "/raw?path=output%2F",simu$simOutputName,"%2Fcriterion-",scenario,"-",week,"--optim-nb-1"),
                                                   parse_result = "text",encoding = "UTF-8")
         } else{
           path <- all_files[stringr::str_detect(all_files,paste0("criterion-",
                                                                  scenario,"-",
                                                                  week,"-"))][[1]]
-          file = utils::read.delim(paste0(opts$simPath,"/",path),
+          file = utils::read.delim(paste0(simu$simPath,"/",path),
                                    header = FALSE)
         }
         cost_xpansion <- as.numeric(strsplit(file[[1]],":")[[1]][[2]])
@@ -147,20 +148,18 @@ get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
 
 #' Convert water values to Antares format
 #'
-#' This function converts water values generated by \code{Grid_Matrix}
+#' This function converts water values generated by \code{Grid_Matrix()}
 #' to the format expected by Antares: a 365*101 matrix, where
 #' the rows are the 365 days of the year and the columns are round percentage values
 #' ranging from 0 to 100 assessing the reservoir level.
-#' Since \code{Grid_Matrix} output weekly values for an
-#' arbitrary number of reservoir levels, interpolation is performed on both scales
-#' in order to fit the desired format.
+#' Use \code{antaresEditObject::writeWaterValues()} to write water values.
 #'
-#' @param data A data.table generated by \code{Grid_Matrix}
-#' @param constant Boolean. Generate daily constant values by week. FALSE to do interpolation.
-#'
-#' @return A 365*101 numeric matrix
+#' @param data A \code{dplyr::tibble()} representing water values, output \code{aggregated_results} generated by \code{Grid_Matrix()}.
+#' @param constant Binary. Generate daily constant values by week. \code{FALSE} to do interpolation.
+#' @seealso \code{to_Antares_Format_bis()}
+#' @note Please use \code{to_Antares_Format_bis()} if you are using \code{hydro-pricing-mode=accurate} in Antares.
+#' @returns A 365*101 numeric matrix
 #' @export
-
 to_Antares_Format <- function(data,constant=T){
 
   data <- dplyr::group_by(data, .data$weeks) %>%
@@ -241,19 +240,12 @@ to_Antares_Format <- function(data,constant=T){
 return(reshaped_matrix)
 }
 
-#' Convert water values to Antares format
+#' Convert water values to Antares format with high accuracy
 #'
-#' This function converts water values generated by \code{Grid_Matrix}
-#' to the format expected by Antares: a 365*101 matrix, where
-#' the rows are the 365 days of the year and the columns are round percentage values
-#' ranging from 0 to 100 assessing the reservoir level.
-#' Since \code{Grid_Matrix} output weekly values for an
-#' arbitrary number of reservoir levels, interpolation is performed on both scales
-#' in order to fit the desired format.
-#'
-#' @param data A data.table generated by \code{Grid_Matrix}
-#'
-#' @return A 365*101 numeric matrix
+#' @inheritParams to_Antares_Format
+#' @inherit to_Antares_Format description
+#' @inherit to_Antares_Format return
+#' @seealso \code{to_Antares_Format()}
 #' @export
 to_Antares_Format_bis <- function(data){
 
@@ -346,9 +338,8 @@ convert_to_percent <- function(data){
 #' @param misc_gen Matrix with 8760 rows that contains backup misc generation for the area
 #'
 #' @return An updated list containing various information about the simulation.
-
+#' @keywords internal
 add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions(), load, misc_gen){
-
   max_hydro <- get_max_hydro(area=area,opts=opts,timeStep="hourly") %>%
     dplyr::select(-c("timeId")) %>% max()
 
@@ -368,10 +359,9 @@ add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions()
 #' @param load Matrix with 8760 rows that contains backup load for the area
 #' @param misc_gen Matrix with 8760 rows that contains backup misc generation for the area
 #' @return An updated list containing various information about the simulation.
-#'
+#' @keywords internal
 restore_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions(),
                                               load, misc_gen) {
-
   antaresEditObject::writeInputTS(data = load, type="load", area=area, opts=opts)
 
   antaresEditObject::writeMiscGen(data = misc_gen, area = area, opts=opts)

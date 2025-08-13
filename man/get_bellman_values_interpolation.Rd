@@ -22,3 +22,4 @@ List of \code{stats::approxfun} for each scenario
 Create approximation of Bellman function for next week for each scenario, used in \code{Bellman} and
 in \code{getOptimalTrend}
 }
+\keyword{internal}

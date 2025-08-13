@@ -2,18 +2,22 @@
 % Please edit documentation in R/functions.R
 \name{get_inflow}
 \alias{get_inflow}
-\title{Get inflow in a week, used in different functions}
+\title{Get weekly inflows}
 \usage{
-get_inflow(area, opts = antaresRead::simOptions(), mcyears)
+get_inflow(area, opts, mcyears)
 }
 \arguments{
-\item{area}{The area concerned by the simulation.}
+\item{area}{Character. The Antares area concerned by water values computation.}
 
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
-\item{mcyears}{Vector of years used to evaluate cost}
+\item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
+}
+\value{
+A \code{dplyr::tibble()} with 4 columns : \code{"timeId"} (integer), \code{"tsId"} (integer), \code{"hydroStorage"} (double) and \code{"area"} (character).
+Each line give the amount of weekly inflow (\code{"hydroStorage"}) for \code{area} for a week (\code{"timeId"}) and a scenario (\code{"tsId"}).
 }
 \description{
-Get inflow in a week, used in different functions
+Get weekly inflows of the given area for all weeks from 1 to 52 and for all time-series in \code{mcyears}.
+Please note that if time series index don't correspond to scenario number in scenario builder, this could generate inconsistencies.
 }

@@ -7,6 +7,28 @@
 * Removing arguments relative to district and fictive areas
 * Better deal with errors in runWaterValuesSimulation with backup data
 
+# antaresWaterValues 0.5.0
+
+## New features
+
+* Initialization of website
+* New github actions
+
+## Improvements
+
+* Unify functions parameters
+* Cleaner functions documentation
+
+# antaresWaterValues 0.4.2
+
+## New features
+
+* Use of cvar in Bellman values computation
+
+## Improvements
+
+* Simplify the scnearization of controls
+
 # antaresWaterValues 0.4.0
 
 ## Major changes

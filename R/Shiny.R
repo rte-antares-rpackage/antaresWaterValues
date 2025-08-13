@@ -1,24 +1,17 @@
-#' Open watervalues Calculator in APP Web
+#' Open web interface for computing water values
 #'
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param simulation_res
-#'   List of simulation results returned by the function
-#'   \code{watervalues::runWaterValuesSimulation}
-#' @param silent Boolean. TRUE to suppress warnings.
-#' @param ... further arguments passed to or from other methods.
+#' Open web interface for computing water values. Select the study with parameter \code{opts}.
+#'
+#' @inheritParams runWaterValuesSimulation
+#' @param silent Binary. \code{TRUE} to suppress warnings.
 #' @importFrom bsplus `%>%`
 #' @import data.table
 #' @import shinyBS
 #' @import shiny
 #' @export
-
 shiny_water_values <-
   function(opts = NULL,
-           simulation_res = NULL,
-           silent = F,
-           ...) {
+           silent = F) {
     for (p in c(
       "bsplus",
       "DT",
@@ -30,7 +23,6 @@ shiny_water_values <-
       "shinythemes",
       "spsComps",
       "spsUtil",
-      "tools",
       "shinyWidgets",
       "shiny"
     )) {

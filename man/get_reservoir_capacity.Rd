@@ -2,16 +2,18 @@
 % Please edit documentation in R/functions.R
 \name{get_reservoir_capacity}
 \alias{get_reservoir_capacity}
-\title{Get reservoir capacity for concerned area, used in different functions}
+\title{Get reservoir capacity}
 \usage{
 get_reservoir_capacity(area, opts = antaresRead::simOptions())
 }
 \arguments{
-\item{area}{The area concerned by the simulation.}
+\item{area}{Character. The Antares area concerned by water values computation.}
 
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
+}
+\value{
+Double, reservoir capacity in MWh.
 }
 \description{
-Get reservoir capacity for concerned area, used in different functions
+Get hydro reservoir capacity for the given area. Reservoir management must be on.
 }

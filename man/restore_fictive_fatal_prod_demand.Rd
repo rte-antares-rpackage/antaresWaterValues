@@ -27,3 +27,4 @@ An updated list containing various information about the simulation.
 \description{
 Restore load and misc gen time series
 }
+\keyword{internal}

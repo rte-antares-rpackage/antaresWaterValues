@@ -24,3 +24,4 @@ You can restore the original hydro storage time series with \code{restoreHydroSt
 \seealso{
 \link{restoreHydroStorage}
 }
+\keyword{internal}

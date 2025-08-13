@@ -36,3 +36,4 @@ The result of antaresRead::simOptions
 Setup a simulation before running it for calculating Water Values,
 used in \code{runWaterValuesSimulation}
 }
+\keyword{internal}

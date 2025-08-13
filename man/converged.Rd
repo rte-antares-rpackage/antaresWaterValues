@@ -14,3 +14,4 @@ converged(diff_vect, conv = 1)
 \description{
 test a difference vector convergence, used in \code{Grid_Matrix}
 }
+\keyword{internal}

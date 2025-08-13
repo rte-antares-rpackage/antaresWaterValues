@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rte-antares-rpackage/antaresWaterValues/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -77,8 +78,8 @@
 <h2 id="using-the-shiny-app">Using the Shiny app<a class="anchor" aria-label="anchor" href="#using-the-shiny-app"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">study_path</span> <span class="op">&lt;-</span> <span class="st">"your/path/to/the/antares/study"</span></span>
-<span><span class="fu"><a href="reference/shiny_water_values.html">shiny_water_values</a></span><span class="op">(</span><span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/setSimulationPath.html" class="external-link">setSimulationPath</a></span><span class="op">(</span><span class="va">study_path</span>,<span class="st">"input"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">opts</span> <span class="op">=</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/setSimulationPath.html" class="external-link">setSimulationPath</a></span><span class="op">(</span><span class="st">"your/path/to/the/antares/study"</span>,<span class="st">"input"</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="reference/shiny_water_values.html">shiny_water_values</a></span><span class="op">(</span><span class="va">opts</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/calculate_water_values.gif"></p>
 </div>
 <div class="section level2">
@@ -135,9 +136,7 @@
 <span>  reward_db <span class="op">=</span> <span class="va">reward_db</span>,</span>
 <span>  mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>  states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">20</span>, <span class="co"># discretization of states</span></span>
-<span>  method<span class="op">=</span> <span class="st">"grid-mean"</span>,</span>
 <span>  opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>  pumping<span class="op">=</span><span class="va">pumping</span>,</span>
 <span>  efficiency<span class="op">=</span><span class="va">efficiency</span>,</span>
 <span>  penalty_low <span class="op">=</span> <span class="fl">1000</span>,<span class="co">#penalty for bottom rule curve</span></span>
 <span>  penalty_high <span class="op">=</span> <span class="fl">100</span>,<span class="co">#penalty for top rule curve</span></span>
@@ -151,7 +150,7 @@
 <code class="sourceCode R"><span><span class="va">aggregated_results</span> <span class="op">&lt;-</span> <span class="va">results</span><span class="op">$</span><span class="va">aggregated_results</span></span></code></pre></div>
 <p>Water values are written to Antares thanks to the following instructions :</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reshaped_values</span> <span class="op">&lt;-</span> <span class="va">aggregated_results</span><span class="op">[</span><span class="va">aggregated_results</span><span class="op">$</span><span class="va">weeks</span><span class="op">!=</span><span class="fl">53</span>,<span class="op">]</span> <span class="op">%&gt;%</span></span>
+<code class="sourceCode R"><span><span class="va">reshaped_values</span> <span class="op">&lt;-</span> <span class="va">aggregated_results</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu"><a href="reference/to_Antares_Format_bis.html">to_Antares_Format_bis</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">antaresEditObject</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/writeWaterValues.html" class="external-link">writeWaterValues</a></span><span class="op">(</span></span>
 <span>  area <span class="op">=</span> <span class="va">area</span>,</span>
@@ -196,7 +195,15 @@
 </div>
 </div>
 
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/rte-antares-rpackage/antaresWaterValues/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/rte-antares-rpackage/antaresWaterValues/issues" class="external-link">Report a bug</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>

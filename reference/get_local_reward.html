@@ -11,7 +11,7 @@ This function is mainly used in get_Reward()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@ This function is mainly used in get_Reward()."></head><body>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rte-antares-rpackage/antaresWaterValues/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -38,7 +39,7 @@ This function is mainly used in get_Reward()."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compute reward functions based on one given simulation</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/R/get_Reward.R" class="external-link"><code>R/get_Reward.R</code></a></small>
       <div class="d-none name"><code>get_local_reward.Rd</code></div>
     </div>
 
@@ -57,7 +58,6 @@ This function is mainly used in <code><a href="get_Reward.html">get_Reward()</a>
 <span>  <span class="va">area</span>,</span>
 <span>  <span class="va">mcyears</span>,</span>
 <span>  <span class="va">u0</span>,</span>
-<span>  <span class="va">district_balance</span>,</span>
 <span>  <span class="va">efficiency</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -89,10 +89,6 @@ This function is mainly used in <code><a href="get_Reward.html">get_Reward()</a>
 <dt id="arg-u-">u0<a class="anchor" aria-label="anchor" href="#arg-u-"></a></dt>
 <dd><p>A <code><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">dplyr::tibble()</a></code> with columns <code>"week"</code>, <code>"u"</code> and <code>"mcYear"</code> (optional) that gives constraint values per week (and per scenario) used in the simulation.
 Could be extracted from the <code>simulation_values</code> output of <code><a href="runWaterValuesSimulation.html">runWaterValuesSimulation()</a></code> by filtering column <code>"sim"</code> to the corresponding simulation.</p></dd>
-
-
-<dt id="arg-district-balance">district_balance<a class="anchor" aria-label="anchor" href="#arg-district-balance"></a></dt>
-<dd><p>Character. Name of district used to evaluate controls on the stock.</p></dd>
 
 
 <dt id="arg-efficiency">efficiency<a class="anchor" aria-label="anchor" href="#arg-efficiency"></a></dt>

@@ -11,7 +11,7 @@ Mainly used in Grid_Matrix()."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +29,7 @@ Mainly used in Grid_Matrix()."></head><body>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rte-antares-rpackage/antaresWaterValues/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -38,7 +39,7 @@ Mainly used in Grid_Matrix()."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compute reward functions</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/R/get_Reward.R" class="external-link"><code>R/get_Reward.R</code></a></small>
       <div class="d-none name"><code>get_Reward.Rd</code></div>
     </div>
 
@@ -53,19 +54,15 @@ Mainly used in <code><a href="Grid_Matrix.html">Grid_Matrix()</a></code>.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_Reward</span><span class="op">(</span></span>
 <span>  simulation_values <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  simulation_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  district_cost <span class="op">=</span> <span class="st">"water values district"</span>,</span>
 <span>  <span class="va">opts</span>,</span>
 <span>  correct_monotony <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  method_old <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  possible_controls <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_hydro_hourly <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">mcyears</span>,</span>
-<span>  area <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  mcyears <span class="op">=</span> <span class="st">"all"</span>,</span>
+<span>  <span class="va">area</span>,</span>
 <span>  efficiency <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  district_balance <span class="op">=</span> <span class="st">"water values district"</span>,</span>
-<span>  expansion <span class="op">=</span> <span class="cn">F</span>,</span>
-<span>  fictive_areas <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  expansion <span class="op">=</span> <span class="cn">F</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -83,14 +80,6 @@ Correspond to <code>simulation_values</code> output of <code><a href="runWaterVa
 Correspond to <code>simulation_names</code> output of <code><a href="runWaterValuesSimulation.html">runWaterValuesSimulation()</a></code>.</p></dd>
 
 
-<dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
-<dd><p>Character. A pattern to identify simulations.</p></dd>
-
-
-<dt id="arg-district-cost">district_cost<a class="anchor" aria-label="anchor" href="#arg-district-cost"></a></dt>
-<dd><p>Character. Name of the district used to store overall costs.</p></dd>
-
-
 <dt id="arg-opts">opts<a class="anchor" aria-label="anchor" href="#arg-opts"></a></dt>
 <dd><p>List of study parameters returned by the function <code>antaresRead::setSimulationPath(simulation="input")</code> in input mode.</p></dd>
 
@@ -100,7 +89,7 @@ Correspond to <code>simulation_names</code> output of <code><a href="runWaterVal
 
 
 <dt id="arg-method-old">method_old<a class="anchor" aria-label="anchor" href="#arg-method-old"></a></dt>
-<dd><p>Binary. Method to build reward function.</p></dd>
+<dd><p>Binary. Method to build reward function. See <code><a href="../articles/Reward-interpolation.html">vignette("Reward-interpolation")</a></code>.</p></dd>
 
 
 <dt id="arg-possible-controls">possible_controls<a class="anchor" aria-label="anchor" href="#arg-possible-controls"></a></dt>
@@ -123,17 +112,9 @@ Correspond to <code>simulation_names</code> output of <code><a href="runWaterVal
 <dd><p>Double between 0 and 1. Pumping efficiency ratio. Get it with <code><a href="getPumpEfficiency.html">getPumpEfficiency()</a></code>.</p></dd>
 
 
-<dt id="arg-district-balance">district_balance<a class="anchor" aria-label="anchor" href="#arg-district-balance"></a></dt>
-<dd><p>Character. Name of district used to evaluate controls on the stock.</p></dd>
-
-
 <dt id="arg-expansion">expansion<a class="anchor" aria-label="anchor" href="#arg-expansion"></a></dt>
 <dd><p>Binary. True if mode expansion (ie linear relaxation) of Antares is used to run simulations, argument passed to <code><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/runSimulation.html" class="external-link">runSimulation</a></code>.
 It is recommended to use mode expansion, it will be faster (only one iteration is done) and results will be smoother as the cost result will correspond to the linear relaxation of the problem.</p></dd>
-
-
-<dt id="arg-fictive-areas">fictive_areas<a class="anchor" aria-label="anchor" href="#arg-fictive-areas"></a></dt>
-<dd><p>Vector of character. Fictive areas used in simulation.</p></dd>
 
 </dl></div>
     <div class="section level2">

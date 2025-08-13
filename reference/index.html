@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,6 +25,7 @@
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rte-antares-rpackage/antaresWaterValues/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -112,7 +113,7 @@
           <code><a href="get_weekly_cost.html">get_weekly_cost()</a></code>
 
         </dt>
-        <dd>Get objective values</dd>
+        <dd>Get objective values of the optimization problem of each week and each scenario for a given simulation <code>simu</code>, mainly used in <code><a href="../reference/get_Reward.html">get_Reward()</a></code> to build reward functions.</dd>
       </dl><dl><dt>
 
           <code><a href="plot_Bellman.html">plot_Bellman()</a></code>
@@ -155,12 +156,6 @@
 
         </dt>
         <dd>Post process water values</dd>
-      </dl><dl><dt>
-
-          <code><a href="resetStudy.html">resetStudy()</a></code>
-
-        </dt>
-        <dd>Reset an Antares study. In case, there is a problem when executing <code>runWaterValuesSimulation</code>, run this function to restore the study.</dd>
       </dl><dl><dt>
 
           <code><a href="reward_offset.html">reward_offset()</a></code>

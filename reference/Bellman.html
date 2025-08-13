@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,6 +25,7 @@
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rte-antares-rpackage/antaresWaterValues/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -34,7 +35,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compute Bellman values at step i from step i+1, used in <code>Grid_Matrix</code></h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/R/Bellman.R" class="external-link"><code>R/Bellman.R</code></a></small>
       <div class="d-none name"><code>Bellman.Rd</code></div>
     </div>
 
@@ -50,12 +51,8 @@
 <span>  <span class="va">decision_space</span>,</span>
 <span>  <span class="va">E_max</span>,</span>
 <span>  P_max <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  <span class="va">method</span>,</span>
 <span>  <span class="va">mcyears</span>,</span>
-<span>  cvar_value <span class="op">=</span> <span class="fl">0.75</span>,</span>
-<span>  <span class="va">counter</span>,</span>
-<span>  stop_rate <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>  debugger_feas <span class="op">=</span> <span class="cn">F</span>,</span>
+<span>  cvar_value <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">niveau_max</span>,</span>
 <span>  <span class="va">states_steps</span>,</span>
 <span>  <span class="va">penalty_level_low</span>,</span>
@@ -100,31 +97,12 @@ hydro storage over one step of time.</p></dd>
 reservoir over one step of time.</p></dd>
 
 
-<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>Character. Perform mean of grids algorithm or grid of means algorithm or
-grid of cvar algorithm.</p></dd>
-
-
 <dt id="arg-mcyears">mcyears<a class="anchor" aria-label="anchor" href="#arg-mcyears"></a></dt>
 <dd><p>Vector. Monte Carlo years</p></dd>
 
 
 <dt id="arg-cvar-value">cvar_value<a class="anchor" aria-label="anchor" href="#arg-cvar-value"></a></dt>
-<dd><p>numeric in [0,1]. the probability used in quantile algorithm.</p></dd>
-
-
-<dt id="arg-counter">counter<a class="anchor" aria-label="anchor" href="#arg-counter"></a></dt>
-<dd><p>Numeric of length 1. number of the week in calculation.</p></dd>
-
-
-<dt id="arg-stop-rate">stop_rate<a class="anchor" aria-label="anchor" href="#arg-stop-rate"></a></dt>
-<dd><p>the percent from which the calculation stop. for example
-<code>stop_rate=5</code> means the calculation stop if there is a week with less then
-5% accessibles states.</p></dd>
-
-
-<dt id="arg-debugger-feas">debugger_feas<a class="anchor" aria-label="anchor" href="#arg-debugger-feas"></a></dt>
-<dd><p>open debug mode in case there is an error of no accessible states</p></dd>
+<dd><p>numeric in [0,1]. the probability used in cvar algorithm.</p></dd>
 
 
 <dt id="arg-niveau-max">niveau_max<a class="anchor" aria-label="anchor" href="#arg-niveau-max"></a></dt>

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rte-antares-rpackage/antaresWaterValues/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -60,7 +61,7 @@
       <h1>Grid_Matrix parameters</h1>
             
       
-
+      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/vignettes/grid_Matrix-parameters.Rmd" class="external-link"><code>vignettes/grid_Matrix-parameters.Rmd</code></a></small>
       <div class="d-none name"><code>grid_Matrix-parameters.Rmd</code></div>
     </div>
 
@@ -112,7 +113,6 @@ simulations :</p>
 <p>Define default parameters :</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">states_step_ratio</span> <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">20</span></span>
-<span><span class="va">method</span> <span class="op">=</span> <span class="st">"grid-mean"</span></span>
 <span><span class="va">penalty_low</span> <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="va">penalty_high</span> <span class="op">=</span> <span class="fl">0</span></span>
 <span><span class="va">force_final_level</span> <span class="op">=</span> <span class="cn">F</span></span>
@@ -135,9 +135,7 @@ time.</p>
 <span>    reward_db <span class="op">=</span> <span class="va">reward_db</span>,</span>
 <span>    mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>    states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="va">s</span>,</span>
-<span>    method<span class="op">=</span> <span class="va">method</span>,</span>
 <span>    opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>    pumping<span class="op">=</span><span class="va">pumping</span>,</span>
 <span>    efficiency<span class="op">=</span><span class="va">efficiency</span>,</span>
 <span>    penalty_low <span class="op">=</span> <span class="va">penalty_low</span>,</span>
 <span>    penalty_high <span class="op">=</span> <span class="va">penalty_high</span>,</span>
@@ -177,38 +175,34 @@ lower because the linear interpolation of bellman values underestimates
 real bellman values.</p>
 </div>
 <div class="section level2">
-<h2 id="method">Method<a class="anchor" aria-label="anchor" href="#method"></a>
+<h2 id="cvar-value">Cvar value<a class="anchor" aria-label="anchor" href="#cvar-value"></a>
 </h2>
-<p>Bellman values can be computed with 3 different formulas :</p>
+<p>Bellman values can be computed with 2 different formulas :</p>
 <ul>
 <li>
-<code>grid-mean</code> : At the end of each week in the backward
-recursion, for each state compute the mean of Bellman values over the
-scenarios. This method computed the minimum of the expectancy of weekly
-costs with the constraint that the hazards of the following week are not
-yet known. This approach is the most accurate mathematically speaking.
-Use this method to minimize costs.</li>
+<code>cvar_value = 1</code> : At the end of each week in the
+backward recursion, for each state compute the mean of Bellman values
+over the scenarios. This method computed the minimum of the expectancy
+of weekly costs with the constraint that the hazards of the following
+week are not yet known. Use this method to minimize costs.</li>
 <li>
-<code>mean-grid</code> : Compute the mean of Bellman values at the
-end of the backward process.</li>
-<li>
-<code>cvar</code> : Similar to <code>grid-mean</code> but instead of
-the mean, take the mean over <code>cvar_value</code> percent of the
-worst scenarios for each week. Use this method to avoid years with high
-costs and in particular to minimize the unsupplied energy. The value
+<code>cvar_value &lt; 1</code> : Similar to
+<code>cvar_value = 1</code> but instead of the mean over all scenarios,
+take the mean over <code>cvar_value</code> percent of the worst
+scenarios for each week. Use this method to avoid years with high costs
+and in particular to minimize the unsupplied energy. The value
 <code>cvar_value</code> can be adapted to be more or less cautious.</li>
 </ul>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compare_method</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mean-grid"</span>,<span class="st">"grid-mean"</span>,<span class="st">"cvar"</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0.5</span>, <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
 <span>  <span class="va">compare_method</span> <span class="op">=</span> <span class="fu"><a href="../reference/Grid_Matrix.html">Grid_Matrix</a></span><span class="op">(</span></span>
 <span>    area<span class="op">=</span><span class="va">area</span>,</span>
 <span>    reward_db <span class="op">=</span> <span class="va">reward_db</span>,</span>
 <span>    mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>    states_step_ratio <span class="op">=</span> <span class="va">states_step_ratio</span>,</span>
-<span>    method<span class="op">=</span> <span class="va">m</span>,</span>
+<span>    cvar_value <span class="op">=</span> <span class="va">m</span>,</span>
 <span>    opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>    pumping<span class="op">=</span><span class="va">pumping</span>,</span>
 <span>    efficiency<span class="op">=</span><span class="va">efficiency</span>,</span>
 <span>    penalty_low <span class="op">=</span> <span class="va">penalty_low</span>,</span>
 <span>    penalty_high <span class="op">=</span> <span class="va">penalty_high</span>,</span>
@@ -218,30 +212,32 @@ costs and in particular to minimize the unsupplied energy. The value
 <span>    penalty_final_level_high <span class="op">=</span> <span class="va">penalty_final_level</span>,</span>
 <span>    nb_cycle <span class="op">=</span> <span class="va">nb_cycle</span></span>
 <span>  <span class="op">)</span><span class="op">$</span><span class="va">aggregated_results</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
-<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>method <span class="op">=</span> <span class="va">m</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cvar_value <span class="op">=</span> <span class="va">m</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">compare_method</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="grid_Matrix-parameters_files/figure-html/compare_method-1.png" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_method-2.png" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_method-3.png" width="100%"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compare_method</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cvar_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">cvar_value</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">weeks</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">12</span>,<span class="fl">22</span>,<span class="fl">32</span>,<span class="fl">42</span>,<span class="fl">52</span><span class="op">)</span>,<span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">vu</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">vu</span>, color <span class="op">=</span> <span class="va">method</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">vu</span>, color <span class="op">=</span> <span class="va">cvar_value</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">weeks</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="grid_Matrix-parameters_files/figure-html/compare_method_vu-1.png" width="100%"></p>
-<p>The <code>quantile</code> method gives higher water values and
+<p>Smaller <code>cvar_value</code> gives higher water values and
 therefore more conservative levels trajectories.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compare_method</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cvar_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">cvar_value</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">weeks</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">value_node</span>, color <span class="op">=</span> <span class="va">method</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">value_node</span>, color <span class="op">=</span> <span class="va">cvar_value</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="grid_Matrix-parameters_files/figure-html/compare_method_bellman-1.png" width="100%"></p>
-<p>Bellman values with <code>cvar</code> method are smaller as they take
-into account for each week, the worst scenarios so they overestimate the
-total cost.</p>
+<p>Bellman values with small <code>cvar_value</code> method are smaller
+as they take into account for each week, the worst scenarios so they
+overestimate the total cost.</p>
 </div>
 <div class="section level2">
 <h2 id="respect-of-rule-curves">Respect of rule curves<a class="anchor" aria-label="anchor" href="#respect-of-rule-curves"></a>
@@ -272,9 +268,7 @@ P_t(X_{t}) = \min(0, p_{low}(X_t-\underline{X}_t), p_{high}(\overline{X}_t-X_t))
 <span>    reward_db <span class="op">=</span> <span class="va">reward_db</span>,</span>
 <span>    mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>    states_step_ratio <span class="op">=</span> <span class="va">states_step_ratio</span>,</span>
-<span>    method<span class="op">=</span> <span class="va">method</span>,</span>
 <span>    opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>    pumping<span class="op">=</span><span class="va">pumping</span>,</span>
 <span>    efficiency<span class="op">=</span><span class="va">efficiency</span>,</span>
 <span>    penalty_low <span class="op">=</span> <span class="va">p</span>,</span>
 <span>    penalty_high <span class="op">=</span> <span class="va">p</span>,</span>
@@ -321,9 +315,7 @@ by <code>penalty_final_level_low</code> and
 <span>  reward_db <span class="op">=</span> <span class="va">reward_db</span>,</span>
 <span>  mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>  states_step_ratio <span class="op">=</span> <span class="va">states_step_ratio</span>,</span>
-<span>  method<span class="op">=</span> <span class="va">method</span>,</span>
 <span>  opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>  pumping<span class="op">=</span><span class="va">pumping</span>,</span>
 <span>  efficiency<span class="op">=</span><span class="va">efficiency</span>,</span>
 <span>  penalty_low <span class="op">=</span> <span class="va">penalty_low</span>,</span>
 <span>  penalty_high <span class="op">=</span> <span class="va">penalty_high</span>,</span>
@@ -354,9 +346,7 @@ Empirically, 2 iterations is enough.</p>
 <span>    reward_db <span class="op">=</span> <span class="va">reward_db</span>,</span>
 <span>    mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>    states_step_ratio <span class="op">=</span> <span class="va">states_step_ratio</span>,</span>
-<span>    method<span class="op">=</span> <span class="va">method</span>,</span>
 <span>    opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>    pumping<span class="op">=</span><span class="va">pumping</span>,</span>
 <span>    efficiency<span class="op">=</span><span class="va">efficiency</span>,</span>
 <span>    penalty_low <span class="op">=</span> <span class="va">penalty_low</span>,</span>
 <span>    penalty_high <span class="op">=</span> <span class="va">penalty_high</span>,</span>

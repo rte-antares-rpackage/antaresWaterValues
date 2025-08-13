@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,6 +25,7 @@
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/rte-antares-rpackage/antaresWaterValues/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
 
@@ -34,7 +35,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Run Antares simulations in order to compute water values for multiple areas</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/R/runWaterValuesSimulation.R" class="external-link"><code>R/runWaterValuesSimulation.R</code></a></small>
       <div class="d-none name"><code>runWaterValuesSimulationMultiStock.Rd</code></div>
     </div>
 
@@ -50,17 +51,12 @@
 <span>  <span class="va">list_efficiency</span>,</span>
 <span>  simulation_name <span class="op">=</span> <span class="st">"wv_sim_%s"</span>,</span>
 <span>  mcyears <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  binding_constraint <span class="op">=</span> <span class="st">"weekly_water_amount"</span>,</span>
 <span>  path_solver <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  wait <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  show_output_on_console <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  opts <span class="op">=</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/simOptions.html" class="external-link">simOptions</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  shiny <span class="op">=</span> <span class="cn">F</span>,</span>
-<span>  otp_dest <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">opts</span>,</span>
 <span>  file_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  launch_simulations <span class="op">=</span> <span class="cn">T</span>,</span>
-<span>  reset_hydro <span class="op">=</span> <span class="cn">T</span>,</span>
+<span>  launch_simulations <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  constraint_values <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  expansion <span class="op">=</span> <span class="cn">T</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -90,16 +86,8 @@
 <dd><p>Vector of integer. Monte Carlo years used to compute water values.</p></dd>
 
 
-<dt id="arg-binding-constraint">binding_constraint<a class="anchor" aria-label="anchor" href="#arg-binding-constraint"></a></dt>
-<dd><p>Character. Name of the binding constraint.</p></dd>
-
-
 <dt id="arg-path-solver">path_solver<a class="anchor" aria-label="anchor" href="#arg-path-solver"></a></dt>
 <dd><p>Character containing the Antares Solver path, argument passed to <code><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/runSimulation.html" class="external-link">runSimulation</a></code>.</p></dd>
-
-
-<dt id="arg-wait">wait<a class="anchor" aria-label="anchor" href="#arg-wait"></a></dt>
-<dd><p>Argument passed to <code><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/runSimulation.html" class="external-link">runSimulation</a></code>.</p></dd>
 
 
 <dt id="arg-show-output-on-console">show_output_on_console<a class="anchor" aria-label="anchor" href="#arg-show-output-on-console"></a></dt>
@@ -114,24 +102,12 @@
 <dd><p>List of study parameters returned by the function <code>antaresRead::setSimulationPath(simulation="input")</code> in input mode.</p></dd>
 
 
-<dt id="arg-shiny">shiny<a class="anchor" aria-label="anchor" href="#arg-shiny"></a></dt>
-<dd><p>Boolean. True to run the script in shiny mod.</p></dd>
-
-
-<dt id="arg-otp-dest">otp_dest<a class="anchor" aria-label="anchor" href="#arg-otp-dest"></a></dt>
-<dd><p>the path in which the script save Rdata file.</p></dd>
-
-
 <dt id="arg-file-name">file_name<a class="anchor" aria-label="anchor" href="#arg-file-name"></a></dt>
 <dd><p>the Rdata file name.</p></dd>
 
 
 <dt id="arg-launch-simulations">launch_simulations<a class="anchor" aria-label="anchor" href="#arg-launch-simulations"></a></dt>
-<dd><p>Boolean. True to to run the simulations.</p></dd>
-
-
-<dt id="arg-reset-hydro">reset_hydro<a class="anchor" aria-label="anchor" href="#arg-reset-hydro"></a></dt>
-<dd><p>Boolean. True to reset hydro inflow to 0 before the simulation.</p></dd>
+<dd><p>Boolean or vector of booleans with the same length as <code>nb_disc_stock</code>. True to to run the simulations.</p></dd>
 
 
 <dt id="arg-constraint-values">constraint_values<a class="anchor" aria-label="anchor" href="#arg-constraint-values"></a></dt>
@@ -156,20 +132,17 @@ It is recommended to use mode expansion, it will be faster (only one iteration i
 <dt>list_areas</dt>
 <dd><p>Parameter <code>list_areas</code>.</p></dd>
 
-<dt>mc_years</dt>
+<dt>mcyears</dt>
 <dd><p>Parameter <code>mcyears</code>.</p></dd>
 
-<dt>pumping</dt>
-<dd><p>Parameter <code>pumping</code>.</p></dd>
+<dt>list_pumping</dt>
+<dd><p>Parameter <code>list_pumping</code>.</p></dd>
 
-<dt>eff</dt>
-<dd><p>Parameter <code>efficiency</code>.</p></dd>
+<dt>list_efficiency</dt>
+<dd><p>Parameter <code>list_efficiency</code>.</p></dd>
 
 <dt>expansion</dt>
 <dd><p>Parameter <code>expansion</code>.</p></dd>
-
-<dt>fictive_areas</dt>
-<dd><p>Parameter <code>fictive_areas</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

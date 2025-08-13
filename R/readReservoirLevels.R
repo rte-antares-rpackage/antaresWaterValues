@@ -1,19 +1,19 @@
-#' Read Reservoir Levels
+#' Read reservoir rule curves
 #'
-#' @param area An 'antares' area.
+#' Read reservoir low and high levels of hydro object of the specified area.
+#'
+#' @inheritParams runWaterValuesSimulation
 #' @param timeStep Resolution of the data to import: weekly (default, a linear interpolation is done on the data), monthly (original data).
 #' @param byReservoirCapacity Multiply the result by the reservoir capacity (if available).
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
 #'
-#' @return a data.table
+#' @returns A \code{dplyr::tibble()} with 4 columns : \code{"timeId"} (index of the week), \code{"level_low"}, \code{"level_avg"} and \code{"level_high"}. Values are given for the end of the last hour of the end of the week.
+#'
 #' @export
 #'
 readReservoirLevels <- function(area,
                                 timeStep = "weekly",
                                 byReservoirCapacity = TRUE,
-                                opts = antaresRead::simOptions()) {
+                                opts) {
   assertthat::assert_that(class(opts) == "simOptions")
   area = tolower(area)
   if (antaresEditObject::is_antares_v7(opts = opts)) {
@@ -45,7 +45,7 @@ readReservoirLevels <- function(area,
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @return a data.table
-
+#' @keywords internal
 readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   if (!requireNamespace("zoo", quietly = TRUE)) {
     stop(
@@ -102,6 +102,7 @@ readReservoirLevelsV6 <- function(area, timeStep = "weekly", byReservoirCapacity
 #'   \code{antaresRead::setSimulationPath}
 #'
 #' @return a data.table
+#' @keywords internal
 readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity = TRUE, opts = antaresRead::simOptions()) {
   timeStep <- match.arg(arg = timeStep, choices = c("weekly", "monthly", "daily"))
   if (!area %in% antaresRead::getAreas(opts = opts))
@@ -146,14 +147,15 @@ readReservoirLevelsV7 <- function(area, timeStep = "weekly", byReservoirCapacity
   reservoir[]
 }
 
-#' Get initial level of an area
+#' Get initial level
 #'
-#' @param area An 'antares' area.
-#' @param opts List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
+#' Get initial level of hydro storage for the given area. Initial level is defined trough low and high reservoir levels for the first day.
+#'
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @returns Double. Initial level in percentage, value between 0 and 100\%.
 #'
 #' @export
-
 get_initial_level <- function(area,opts){
   area = tolower(area)
   final_level <- readReservoirLevels(area, timeStep = "daily",

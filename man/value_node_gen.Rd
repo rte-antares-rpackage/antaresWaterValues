@@ -18,3 +18,4 @@ value_node_gen(watervalues, statesdt, reservoir)
 Calculate water values from Bellman values, used in \code{Grid_Matrix} and
 \code{build_data_watervalues}
 }
+\keyword{internal}

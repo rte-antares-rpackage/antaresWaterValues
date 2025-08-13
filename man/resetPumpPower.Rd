@@ -31,3 +31,4 @@ The function makes a copy of the original hydro storage time series,
 \seealso{
 \link{restoreHydroStorage}
 }
+\keyword{internal}

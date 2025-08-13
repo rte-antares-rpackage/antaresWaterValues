@@ -27,3 +27,4 @@ a data.table
 \description{
 Read Reservoir Levels for Antares version 6.
 }
+\keyword{internal}

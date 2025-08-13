@@ -19,3 +19,4 @@ vector of corrected Bellman values
 Correct concavity of Bellman values for the given weeks to have nice monotony for water values,
 used in \code{Grid_Matrix}
 }
+\keyword{internal}

@@ -14,3 +14,4 @@ states_to_percent(data, states_step_ratio = 0.01)
 \description{
 Convert Reservoir levels from MWh to percent of reservoir.
 }
+\keyword{internal}

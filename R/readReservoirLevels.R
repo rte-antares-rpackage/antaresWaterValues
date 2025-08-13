@@ -7,8 +7,7 @@
 #'
 #' @export
 #'
-readReservoirLevels <- function(area,
-                                opts = antaresRead::simOptions()) {
+readReservoirLevels <- function(area,opts) {
   area = tolower(area)
   vars <- c("level_low", "level_avg", "level_high")
   reservoir = fread_antares(opts=opts,

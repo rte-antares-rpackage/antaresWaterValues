@@ -24,7 +24,7 @@
 #'
 #' @export
 get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern = NULL,
-                       opts = antaresRead::simOptions(), correct_monotony = FALSE,
+                       opts, correct_monotony = FALSE,
                        method_old = TRUE, possible_controls = NULL,
                        max_hydro_hourly = NULL, mcyears = "all",area=NULL,efficiency=NULL,
                        expansion=F) {

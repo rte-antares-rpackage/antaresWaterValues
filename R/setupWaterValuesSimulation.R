@@ -14,7 +14,7 @@
 #' @keywords internal
 setupWaterValuesSimulation <- function(area,
                                        overwrite = FALSE,
-                                       opts = antaresRead::simOptions(),
+                                       opts,
                                        pumping=F,
                                        efficiency,
                                        backup) {

@@ -7,7 +7,7 @@
 #' @returns Double, reservoir capacity in MWh.
 #'
 #' @export
-get_reservoir_capacity <- function(area, opts=antaresRead::simOptions()){
+get_reservoir_capacity <- function(area, opts){
   hydro_ini <- antaresRead::readIni(file.path("input", "hydro", "hydro.ini"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]])) {
     reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
@@ -339,7 +339,7 @@ convert_to_percent <- function(data){
 #'
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
-add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions(), load, misc_gen){
+add_fictive_fatal_prod_demand <- function(area, opts, load, misc_gen){
   max_hydro <- get_max_hydro(area=area,opts=opts,timeStep="hourly") %>%
     dplyr::select(-c("timeId")) %>% max()
 
@@ -360,7 +360,7 @@ add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions()
 #' @param misc_gen Matrix with 8760 rows that contains backup misc generation for the area
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
-restore_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions(),
+restore_fictive_fatal_prod_demand <- function(area, opts,
                                               load, misc_gen) {
   antaresEditObject::writeInputTS(data = load, type="load", area=area, opts=opts)
 

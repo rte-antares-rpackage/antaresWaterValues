@@ -8,7 +8,7 @@
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
 #'
-restoreHydroStorage <- function(area, opts = antaresRead::simOptions(),data) {
+restoreHydroStorage <- function(area, opts,data) {
   antaresEditObject::writeInputTS(data,
                                  area=area,
                                  type="hydroSTOR",
@@ -37,7 +37,7 @@ restoreHydroStorage <- function(area, opts = antaresRead::simOptions(),data) {
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
 #'
-resetHydroStorage <- function(area, opts = antaresRead::simOptions()) {
+resetHydroStorage <- function(area, opts) {
   antaresEditObject::writeInputTS(matrix(rep(0,365),ncol=1),
                                   area=area,
                                   type="hydroSTOR",
@@ -59,7 +59,7 @@ resetHydroStorage <- function(area, opts = antaresRead::simOptions()) {
 #' @return Double. Pumping efficiency ratio.
 #' @export
 #'
-getPumpEfficiency <- function(area, opts = antaresRead::simOptions()) {
+getPumpEfficiency <- function(area, opts) {
   area = tolower(area)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]])) {

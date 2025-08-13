@@ -12,9 +12,6 @@ Bellman(
   P_max = 0,
   mcyears,
   cvar_value = 1,
-  counter,
-  stop_rate = 5,
-  debugger_feas = F,
   niveau_max,
   states_steps,
   penalty_level_low,
@@ -48,14 +45,6 @@ reservoir over one step of time.}
 \item{mcyears}{Vector. Monte Carlo years}
 
 \item{cvar_value}{numeric in [0,1]. the probability used in cvar algorithm.}
-
-\item{counter}{Numeric of length 1. number of the week in calculation.}
-
-\item{stop_rate}{the percent from which the calculation stop. for example
-\code{stop_rate=5} means the calculation stop if there is a week with less then
-5\% accessibles states.}
-
-\item{debugger_feas}{open debug mode in case there is an error of no accessible states}
 
 \item{niveau_max}{Level max of the reservoir}
 

@@ -15,10 +15,7 @@ Grid_Matrix(
   week_53 = 0,
   states_step_ratio = 0.01,
   reservoir_capacity = NULL,
-  na_rm = FALSE,
-  only_input = FALSE,
   cvar_value = 1,
-  test_week = NULL,
   opts,
   shiny = F,
   until_convergence = F,
@@ -27,8 +24,6 @@ Grid_Matrix(
   cycle_limit = 10,
   pumping = F,
   efficiency = 1,
-  stop_rate = 0,
-  debug_week = 54,
   correct_concavity = FALSE,
   correct_monotony = FALSE,
   penalty_low = 3000,
@@ -40,8 +35,7 @@ Grid_Matrix(
   force_final_level = F,
   final_level = NULL,
   penalty_final_level_low = NULL,
-  penalty_final_level_high = NULL,
-  ...
+  penalty_final_level_high = NULL
 )
 }
 \arguments{
@@ -67,13 +61,26 @@ Correspond to \code{simulation_values} output of \code{runWaterValuesSimulation(
 \item{states_step_ratio}{Double. Discretization ratio to generate steps levels
 between the reservoir capacity and zero for which Bellman values are computed.}
 
+\item{reservoir_capacity}{Double. Reservoir capacity for the given area in MWh given by \code{get_reservoir_capacity()}.}
+
 \item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
 
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
+\item{shiny}{Binary. \code{TRUE} if the function is called from \code{shiny_water_values()}.}
+
+\item{convergence_rate}{Double from 0 to 1. Define the convergence level if \code{until_convergence=TRUE}.
+\code{1} means all values should have converged (ie identical water values between current cycle and the last one) and \code{0} means no convergence is needed to stop.}
+
+\item{convergence_criteria}{Double. Used if \code{until_convergence=TRUE}. Thereshold to consider that two different water values are identical.}
+
+\item{cycle_limit}{Integer. Used if \code{until_convergence=TRUE}. Maximum cycles to perform.}
+
 \item{pumping}{Boolean. True to take into account the pumping capacity.}
 
 \item{efficiency}{Double between 0 and 1. Pumping efficiency ratio. Get it with \code{getPumpEfficiency()}.}
+
+\item{correct_concavity}{Binary argument (default to \code{FALSE}). \code{TRUE} to correct concavity of Bellman values.}
 
 \item{correct_monotony}{Binary. True to correct monotony of rewards if \code{method_old = TRUE}.}
 
@@ -95,7 +102,9 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 
 \item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
 
-\item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.}
+\item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.
+#' @param until_convergence Binary. \code{TRUE} to repeat cycles until convergence of water values or
+ attending the limit.}
 }
 \value{
 \item{watervalues}{A \code{dplyr::tibble()} with multiple columns and detailed results.}

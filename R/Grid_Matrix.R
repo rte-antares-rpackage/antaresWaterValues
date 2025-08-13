@@ -18,6 +18,15 @@
 #' @param final_level Double. Final level (in percent between 0 and 100) if final level is constrained. If you want initial level, use \code{get_initial_level()}.
 #' @param penalty_final_level_low Double. Penalties for both bottom rule curve to constrain final level.
 #' @param penalty_final_level_high Double. Penalties for top rule curve to constrain final level.
+#' #' @param until_convergence Binary. \code{TRUE} to repeat cycles until convergence of water values or
+#'  attending the limit.
+#' @param convergence_rate Double from 0 to 1. Define the convergence level if \code{until_convergence=TRUE}.
+#' \code{1} means all values should have converged (ie identical water values between current cycle and the last one) and \code{0} means no convergence is needed to stop.
+#' @param convergence_criteria Double. Used if \code{until_convergence=TRUE}. Thereshold to consider that two different water values are identical.
+#' @param cycle_limit Integer. Used if \code{until_convergence=TRUE}. Maximum cycles to perform.
+#' @param shiny Binary. \code{TRUE} if the function is called from \code{shiny_water_values()}.
+#' @param correct_concavity Binary argument (default to \code{FALSE}). \code{TRUE} to correct concavity of Bellman values.
+#' @param reservoir_capacity Double. Reservoir capacity for the given area in MWh given by \code{get_reservoir_capacity()}.
 #'
 #' @returns
 #' \item{watervalues}{A \code{dplyr::tibble()} with multiple columns and detailed results.}
@@ -25,36 +34,31 @@
 #'
 #' @export
 Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
-                             simulation_values = NULL, nb_cycle = 1L,
-                             mcyears = NULL,
-                             week_53 = 0,
-                             states_step_ratio = 0.01,
-                             reservoir_capacity = NULL,
-                             na_rm = FALSE,
-                             only_input=FALSE,
-                             cvar_value=1,
-                             test_week=NULL,
-                             opts,
-                             shiny=F,
-                             until_convergence=F,
-                             convergence_rate=0.9,
-                             convergence_criteria=1,
-                             cycle_limit=10,
-                             pumping=F,efficiency=1,stop_rate=0,
-                             debug_week=54,
-                             correct_concavity = FALSE,
-                             correct_monotony = FALSE,
-                             penalty_low = 3000,
-                             penalty_high = 3000,
-                             method_old = F,
-                             possible_controls = NULL,
-                          max_hydro_hourly=NULL,
-                          max_hydro_weekly=NULL,
-                          force_final_level = F,
-                          final_level = NULL,
-                          penalty_final_level_low = NULL,
-                          penalty_final_level_high = NULL,
-                        ...) {
+                        simulation_values = NULL, nb_cycle = 1L,
+                        mcyears = NULL,
+                        week_53 = 0,
+                        states_step_ratio = 0.01,
+                        reservoir_capacity = NULL,
+                        cvar_value=1,
+                        opts,
+                        shiny=F,
+                        until_convergence=F,
+                        convergence_rate=0.9,
+                        convergence_criteria=1,
+                        cycle_limit=10,
+                        pumping=F,efficiency=1,
+                        correct_concavity = FALSE,
+                        correct_monotony = FALSE,
+                        penalty_low = 3000,
+                        penalty_high = 3000,
+                        method_old = F,
+                        possible_controls = NULL,
+                        max_hydro_hourly=NULL,
+                        max_hydro_weekly=NULL,
+                        force_final_level = F,
+                        final_level = NULL,
+                        penalty_final_level_low = NULL,
+                        penalty_final_level_high = NULL) {
 
 
   area = tolower(area)
@@ -312,8 +316,6 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
 
   ####
 
-  if (only_input) return(watervalues)
-
   if(!until_convergence){ # with a predefined number of cycles
     next_week_values <- rep_len(next_week_values, nrow(watervalues[watervalues$weeks==52]))
 
@@ -330,8 +332,6 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
 
         temp <- watervalues[watervalues$weeks==i]
 
-        if(debug_week==i)browser()
-
         # Bellman equation for week i
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
@@ -343,7 +343,6 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
                         cvar_value= cvar_value,
                         counter = i,
                         niveau_max=niveau_max,
-                        stop_rate=stop_rate,
                         penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
                         penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
                         lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},
@@ -416,9 +415,7 @@ Grid_Matrix <- function(area, simulation_names,expansion,reward_db=NULL,
                         states_steps=states_steps,
                         mcyears = mcyears,
                         cvar_value= cvar_value,
-                        counter = i,
                         niveau_max=niveau_max,
-                        stop_rate=stop_rate,
                         penalty_level_low=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_low}else{penalty_low},
                         penalty_level_high=if((i==52)&force_final_level&(n_cycl==1)){penalty_final_level_high}else{penalty_high},
                         lvl_high =if((i==52)&force_final_level&(n_cycl==1)){final_level}else{temp$level_high[1]},

@@ -15,8 +15,7 @@ launchSimulation(
 )
 }
 \arguments{
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
 \item{i}{Integer. Number of simulation.}
 
@@ -24,12 +23,12 @@ launchSimulation(
 
 \item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
-\item{expansion}{Binary. True if mode expansion was used to run simulations}
+\item{expansion}{Binary. True if mode expansion (ie linear relaxation) of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
+It is recommended to use mode expansion, it will be faster (only one iteration is done) and results will be smoother as the cost result will correspond to the linear relaxation of the problem.}
 
 \item{show_output_on_console}{Argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
-
-\item{constraint_value}{Data.frame {week,sim,u}}
 }
 \description{
 Launch the simulation
 }
+\keyword{internal}

@@ -7,12 +7,11 @@
 getBackupData(area, mcyears, opts)
 }
 \arguments{
-\item{area}{Character}
+\item{area}{Character. The Antares area concerned by water values computation.}
 
-\item{mcyears}{Monte Carlo years to simulate or a vector of years indexes to launch.}
+\item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
 
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 }
 \value{
 List with hydro_storage, load and misc_gen backups for area
@@ -20,3 +19,4 @@ List with hydro_storage, load and misc_gen backups for area
 \description{
 Generate backup data for area
 }
+\keyword{internal}

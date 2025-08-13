@@ -1,3 +1,15 @@
+# antaresWaterValues 0.5.0
+
+## New features
+
+* Initialization of website
+* New github actions
+
+## Improvements
+
+* Unify functions parameters
+* Cleaner functions documentation
+
 # antaresWaterValues 0.4.2
 
 ## New features

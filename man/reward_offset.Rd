@@ -4,15 +4,7 @@
 \alias{reward_offset}
 \title{Take into account overall cost in local reward}
 \usage{
-reward_offset(
-  simu,
-  df_reward,
-  u0,
-  mcyears,
-  district_cost = "water values district",
-  fictive_areas = NULL,
-  expansion = F
-)
+reward_offset(simu, df_reward, u0 = c(), mcyears, expansion = F)
 }
 \arguments{
 \item{simu}{List of simulation parameters returned by the function \code{antaresRead::setSimulationPath()} with the simulation selected.}
@@ -23,10 +15,6 @@ reward_offset(
 Could be extracted from the \code{simulation_values} output of \code{runWaterValuesSimulation()} by filtering column \code{"sim"} to the corresponding simulation.}
 
 \item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
-
-\item{district_cost}{Character. Name of the district used to store overall costs.}
-
-\item{fictive_areas}{Vector of character. Fictive areas used in simulation.}
 
 \item{expansion}{Binary. True if mode expansion (ie linear relaxation) of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 It is recommended to use mode expansion, it will be faster (only one iteration is done) and results will be smoother as the cost result will correspond to the linear relaxation of the problem.}

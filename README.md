@@ -36,8 +36,8 @@ check dependencies versions in `DESCRIPTION`.
 ## Using the Shiny app
 
 ``` r
-study_path <- "your/path/to/the/antares/study"
-shiny_water_values(antaresRead::setSimulationPath(study_path,"input"))
+opts = antaresRead::setSimulationPath("your/path/to/the/antares/study","input") 
+shiny_water_values(opts)
 ```
 
 ![](man/figures/calculate_water_values.gif)
@@ -110,9 +110,7 @@ results <- Grid_Matrix(
   reward_db = reward_db,
   mcyears = mcyears,
   states_step_ratio = 1/20, # discretization of states
-  method= "grid-mean",
   opts = opts,
-  pumping=pumping,
   efficiency=efficiency,
   penalty_low = 1000,#penalty for bottom rule curve
   penalty_high = 100,#penalty for top rule curve
@@ -133,7 +131,7 @@ Water values are written to Antares thanks to the following instructions
 :
 
 ``` r
-reshaped_values <- aggregated_results[aggregated_results$weeks!=53,] %>%
+reshaped_values <- aggregated_results %>%
   to_Antares_Format_bis()
 antaresEditObject::writeWaterValues(
   area = area,

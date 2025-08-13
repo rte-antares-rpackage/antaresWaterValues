@@ -11,7 +11,6 @@ get_local_reward(
   area,
   mcyears,
   u0,
-  district_balance,
   efficiency
 )
 }
@@ -28,8 +27,6 @@ get_local_reward(
 
 \item{u0}{A \code{dplyr::tibble()} with columns \code{"week"}, \code{"u"} and \code{"mcYear"} (optional) that gives constraint values per week (and per scenario) used in the simulation.
 Could be extracted from the \code{simulation_values} output of \code{runWaterValuesSimulation()} by filtering column \code{"sim"} to the corresponding simulation.}
-
-\item{district_balance}{Character. Name of district used to evaluate controls on the stock.}
 
 \item{efficiency}{Double between 0 and 1. Pumping efficiency ratio. Get it with \code{getPumpEfficiency()}.}
 }

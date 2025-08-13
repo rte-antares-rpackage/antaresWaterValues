@@ -95,7 +95,6 @@ Define default parameters :
 
 ```{r}
 states_step_ratio = 1/20
-method = "grid-mean"
 penalty_low = 0
 penalty_high = 0
 force_final_level = F
@@ -116,9 +115,7 @@ for (s in c(10,20,50)){
     reward_db = reward_db,
     mcyears = mcyears,
     states_step_ratio = 1/s,
-    method= method,
     opts = opts,
-    pumping=pumping,
     efficiency=efficiency,
     penalty_low = penalty_low,
     penalty_high = penalty_high,
@@ -156,25 +153,23 @@ compare_states %>%
 
 The difference between bellman values with 10 states and 20 states is quite important in this example. With 10 states, bellman values are lower because the linear interpolation of bellman values underestimates real bellman values.
 
-# Method
+# Cvar value
 
-Bellman values can be computed with 3 different formulas :
+Bellman values can be computed with 2 different formulas :
 
--   `grid-mean` : At the end of each week in the backward recursion, for each state compute the mean of Bellman values over the scenarios. This method computed the minimum of the expectancy of weekly costs with the constraint that the hazards of the following week are not yet known. This approach is the most accurate mathematically speaking. Use this method to minimize costs.
--   `mean-grid` : Compute the mean of Bellman values at the end of the backward process.
--   `cvar` : Similar to `grid-mean` but instead of the mean, take the mean over `cvar_value` percent of the worst scenarios for each week. Use this method to avoid years with high costs and in particular to minimize the unsupplied energy. The value `cvar_value` can be adapted to be more or less cautious.
+-   `cvar_value = 1` : At the end of each week in the backward recursion, for each state compute the mean of Bellman values over the scenarios. This method computed the minimum of the expectancy of weekly costs with the constraint that the hazards of the following week are not yet known. Use this method to minimize costs.
+-   `cvar_value < 1` : Similar to `cvar_value = 1` but instead of the mean over all scenarios, take the mean over `cvar_value` percent of the worst scenarios for each week. Use this method to avoid years with high costs and in particular to minimize the unsupplied energy. The value `cvar_value` can be adapted to be more or less cautious.
 
 ```{r compare_method, message=FALSE}
 compare_method = data.frame()
-for (m in c("mean-grid","grid-mean","cvar")){
+for (m in c(1, 0.5, 0.2)){
   compare_method = Grid_Matrix(
     area=area,
     reward_db = reward_db,
     mcyears = mcyears,
     states_step_ratio = states_step_ratio,
-    method= m,
+    cvar_value = m,
     opts = opts,
-    pumping=pumping,
     efficiency=efficiency,
     penalty_low = penalty_low,
     penalty_high = penalty_high,
@@ -184,31 +179,33 @@ for (m in c("mean-grid","grid-mean","cvar")){
     penalty_final_level_high = penalty_final_level,
     nb_cycle = nb_cycle
   )$aggregated_results %>% 
-    dplyr::mutate(method = m) %>%
+    dplyr::mutate(cvar_value = m) %>%
     rbind(compare_method)
 }
 ```
 
 ```{r compare_method_vu}
 compare_method %>%
+  dplyr::mutate(cvar_value = as.character(cvar_value)) %>%
   dplyr::filter(weeks %in% c(2,12,22,32,42,52),!is.na(vu)) %>%
   ggplot2::ggplot() +
-  ggplot2::aes(x = states, y = vu, color = method) +
+  ggplot2::aes(x = states, y = vu, color = cvar_value) +
   ggplot2::geom_point() +
   ggplot2::facet_wrap(ggplot2::vars(weeks))
 ```
 
-The `quantile` method gives higher water values and therefore more conservative levels trajectories.
+Smaller `cvar_value` gives higher water values and therefore more conservative levels trajectories.
 
 ```{r compare_method_bellman}
 compare_method %>%
+  dplyr::mutate(cvar_value = as.character(cvar_value)) %>%
   dplyr::filter(weeks == 1) %>%
   ggplot2::ggplot() +
-  ggplot2::aes(x = states, y = value_node, color = method) +
+  ggplot2::aes(x = states, y = value_node, color = cvar_value) +
   ggplot2::geom_line()
 ```
 
-Bellman values with `cvar` method are smaller as they take into account for each week, the worst scenarios so they overestimate the total cost.
+Bellman values with small `cvar_value` method are smaller as they take into account for each week, the worst scenarios so they overestimate the total cost.
 
 # Respect of rule curves
 
@@ -234,9 +231,7 @@ for (p in c(0,150,500)){
     reward_db = reward_db,
     mcyears = mcyears,
     states_step_ratio = states_step_ratio,
-    method= method,
     opts = opts,
-    pumping=pumping,
     efficiency=efficiency,
     penalty_low = p,
     penalty_high = p,
@@ -273,9 +268,7 @@ res = Grid_Matrix(
   reward_db = reward_db,
   mcyears = mcyears,
   states_step_ratio = states_step_ratio,
-  method= method,
   opts = opts,
-  pumping=pumping,
   efficiency=efficiency,
   penalty_low = penalty_low,
   penalty_high = penalty_high,
@@ -301,9 +294,7 @@ for (n in c(1,2)){
     reward_db = reward_db,
     mcyears = mcyears,
     states_step_ratio = states_step_ratio,
-    method= method,
     opts = opts,
-    pumping=pumping,
     efficiency=efficiency,
     penalty_low = penalty_low,
     penalty_high = penalty_high,

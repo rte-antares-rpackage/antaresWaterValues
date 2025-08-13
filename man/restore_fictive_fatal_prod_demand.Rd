@@ -4,11 +4,7 @@
 \alias{restore_fictive_fatal_prod_demand}
 \title{Restore load and misc gen time series}
 \usage{
-restore_fictive_fatal_prod_demand(
-  area,
-  opts = antaresRead::simOptions(),
-  silent = F
-)
+restore_fictive_fatal_prod_demand(area, opts, load, misc_gen)
 }
 \arguments{
 \item{area}{A valid Antares area.}
@@ -16,7 +12,9 @@ restore_fictive_fatal_prod_demand(
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
 
-\item{silent}{Boolean. True to run without messages.}
+\item{load}{Matrix with 8760 rows that contains backup load for the area}
+
+\item{misc_gen}{Matrix with 8760 rows that contains backup misc generation for the area}
 }
 \value{
 An updated list containing various information about the simulation.

@@ -4,19 +4,10 @@
 \alias{readReservoirLevels}
 \title{Read reservoir rule curves}
 \usage{
-readReservoirLevels(
-  area,
-  timeStep = "weekly",
-  byReservoirCapacity = TRUE,
-  opts
-)
+readReservoirLevels(area, opts)
 }
 \arguments{
 \item{area}{Character. The Antares area concerned by water values computation.}
-
-\item{timeStep}{Resolution of the data to import: weekly (default, a linear interpolation is done on the data), monthly (original data).}
-
-\item{byReservoirCapacity}{Multiply the result by the reservoir capacity (if available).}
 
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 }

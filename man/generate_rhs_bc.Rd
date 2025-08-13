@@ -5,12 +5,12 @@
 \title{Modify time-series of clusters in fictive_area_bc to implement the constraint value
 for each week and each MC year}
 \usage{
-generate_rhs_bc(constraint_value, name_constraint, opts)
+generate_rhs_bc(constraint_value, area, opts)
 }
 \arguments{
-\item{constraint_value}{Data.frame {week,sim,u}}
+\item{constraint_value}{Data.frame (week,sim,u)}
 
-\item{name_constraint}{the name of the constraint.}
+\item{area}{Area used to calculate watervalues}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}

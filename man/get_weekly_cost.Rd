@@ -2,21 +2,17 @@
 % Please edit documentation in R/functions.R
 \name{get_weekly_cost}
 \alias{get_weekly_cost}
-\title{Get objective values}
+\title{Get objective values of the optimization problem of each week and each scenario for a given simulation \code{simu}, mainly used in \code{get_Reward()} to build reward functions.}
 \usage{
-get_weekly_cost(district, simu, mcyears, expansion = F, fictive_areas = NULL)
+get_weekly_cost(simu, mcyears, expansion = F)
 }
 \arguments{
-\item{district}{The district concerned by the simulation.}
-
 \item{simu}{List of simulation parameters returned by the function \code{antaresRead::setSimulationPath()} with the simulation selected.}
 
 \item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
 
 \item{expansion}{Binary. True if mode expansion (ie linear relaxation) of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 It is recommended to use mode expansion, it will be faster (only one iteration is done) and results will be smoother as the cost result will correspond to the linear relaxation of the problem.}
-
-\item{fictive_areas}{Vector of chr. Fictive areas used in simulation.}
 }
 \value{
 A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"mcYear"} and \code{"ov_cost"}.

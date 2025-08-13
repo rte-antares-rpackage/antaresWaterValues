@@ -92,13 +92,6 @@ simulationUI <- function(id,opts) {
         "top"
       ),
 
-      shiny::actionButton(NS(id,"reset_sim"), "Reset"),
-      shinyBS::bsTooltip(
-        NS(id,"reset_sim"),
-        "Reset a Antares study in case something went wrong, please check your study before running an other simulation",
-        "top"
-      )
-
 
     ),
     #end sidebarPanel
@@ -147,14 +140,8 @@ simulationServer <- function(id,opts,silent) {
                                 to = input$sim_mcyears[2]
                               ),
                               path_solver = input$solver_path,
-                              binding_constraint = "weekly_water_amount",
-                              fictive_area = "fictive_watervalues",
-                              thermal_cluster = "water_value_cluster",
                               overwrite = T,
-                              link_from = input$sim_area,
                               opts = opts,
-                              shiny = T,
-                              otp_dest = input$sim_output_dir,
                               file_name = input$file_name,
                               pumping = pumping(),
                               efficiency = eff(),
@@ -168,19 +155,6 @@ simulationServer <- function(id,opts,silent) {
                         }, print_cat = F,
                         message = F, warning = silent))
 
-    shiny::observeEvent(input$reset_sim,
-
-                        spsUtil::quiet({
-                          opts_temp <- antaresRead::setSimulationPath(opts$studyPath, "input")
-                          resetStudy(
-                            opts = opts_temp,
-                            area = input$sim_area,
-                            pumping = pumping(),
-                            fictive_area = "fictive_watervalues",
-                            binding_constraint = "weekly_water_amount"
-                          )
-                        }, print_cat = F,
-                        message = F, warning = silent))
   })
 }
 

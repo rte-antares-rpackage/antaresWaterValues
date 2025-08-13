@@ -1,13 +1,14 @@
 Type: Package
 Package: antaresWaterValues
 Title: Generating water values for Antares
-Version: 0.5.0
+Version: 1.1.0
 Authors@R: c(
     person("Dhia", "Gharsallaoui", role = "aut"),
     person("Juliette", "Gerbaux", email = "juliette.gerbaux@rte-france.com",role = c("aut","cre")),
     person("Paul", "Plessiez", role = "ctb")
     )
 Description: This package aims at generating water values for Antares.
+BugReports: https://github.com/rte-antares-rpackage/antaresWaterValues/issues
 License: MIT + file LICENSE
 Depends:
     data.table (>= 1.15.0),
@@ -19,6 +20,7 @@ Imports:
     bsplus (>= 0.1.2),
     dplyr (>= 1.1.0),
     ggplot2 (>= 3.3.5),
+    jsonlite,
     shiny (>= 1.6.0),
     shinyBS (>= 0.61),
     stats (>= 4.1.0),

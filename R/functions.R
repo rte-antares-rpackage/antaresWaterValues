@@ -1,125 +1,3 @@
-#' Restore the Pumping power series, used in \code{runWaterValuesSimulation}
-#'
-#' @param area A valid Antares area.
-#' @param path_manual_backup Path to a manual backup.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#' @param silent Boolean. True to run without messages.
-#' @return An updated list containing various information about the simulation
-#' @keywords internal
-restorePumpPower <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
-  assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
-
-  # Input path
-  inputPath <- opts$inputPath
-
-  if (is.null(path_manual_backup)) {
-    path_pump_power_backup <- file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt"))
-
-    if (file.exists(path_pump_power_backup)) {
-      file.copy(
-        from = path_pump_power_backup,
-        to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
-        overwrite = TRUE
-      )
-      unlink(x = path_pump_power_backup)
-    } else {
-      if(!silent) message("No backup found")
-    }
-  } else {
-    file.copy(
-      from = path_manual_backup,
-      to = file.path(inputPath, "hydro", "common","capacity", paste0("maxpower_",area,".txt")),
-      overwrite = TRUE
-    )
-  }
-
-  # Maj simulation
-  res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
-
-  invisible(res)
-}
-
-#' Reset to 0 the pumping power, used in \code{setupWaterValuesSimulation}
-#'
-#'
-#' @param area A valid Antares area.
-#' @param path_manual_storage Optional, a path where to save the hydro storage file.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#'
-#' @note The function makes a copy of the original hydro storage time series,
-#'  you can restore these with \code{restoreHydroStorage}.
-#'
-#' @seealso \link{restoreHydroStorage}
-#'
-#' @return An updated list containing various information about the simulation.
-#' @keywords internal
-resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead::simOptions()) {
-
-  assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
-
-  # Input path
-  inputPath <- opts$inputPath
-
-  if (is.null(path_manual_storage)) {
-    restorePumpPower(area,silent=T)
-    path_pump_power <- file.path(inputPath, "hydro", "common","capacity",  paste0("maxpower_",area,".txt"))
-  } else {
-    path_pump_power <- path_manual_storage
-  }
-
-  if (file.exists(path_pump_power)) {
-
-    # file's copy
-    res_copy <- file.copy(
-      from = path_pump_power,
-      to = file.path(inputPath, "hydro", "common","capacity", paste0("backup_maxpower_",area,".txt")),
-      overwrite = FALSE
-    )
-    if (!res_copy)
-      stop("Impossible to backup pumping power file")
-
-    # read pump power and initialize at 0
-    pump_power <- utils::read.table(file = path_pump_power)
-    pump_power[,3] <- 0
-    utils::write.table(
-      x = pump_power[, , drop = FALSE],
-      file = path_pump_power,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
-
-  } else {
-
-    message("No pumping power for this area, creating one")
-    v <- rep(0, 365)
-    h <- rep(24,365)
-    utils::write.table(
-      x = data.frame(v,h,v,h),
-      file = path_pump_power,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
-
-  }
-
-  # Maj simulation
-  suppressWarnings({
-    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
-  })
-
-  invisible(res)
-}
-
 #' Get reservoir capacity
 #'
 #' Get hydro reservoir capacity for the given area. Reservoir management must be on.
@@ -130,7 +8,7 @@ resetPumpPower <- function(area, path_manual_storage = NULL, opts = antaresRead:
 #'
 #' @export
 get_reservoir_capacity <- function(area, opts){
-  hydro_ini <- antaresRead::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
+  hydro_ini <- antaresRead::readIni(file.path("input", "hydro", "hydro.ini"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]])) {
     reservoir_capacity <- hydro_ini[["reservoir capacity"]][[area]]
     if (is.null(reservoir_capacity))
@@ -154,7 +32,7 @@ get_reservoir_capacity <- function(area, opts){
 #'
 #' @export
 get_max_hydro <- function(area, opts,timeStep="hourly"){
-
+  area = tolower(area)
   #import the table "standard credits" from "Local Data/ Daily Power and energy Credits"
   max_hydro <- antaresRead::readInputTS(hydroStorageMaxPower = area, timeStep = "hourly", opts = opts)
   if (utils::hasName(max_hydro, "hstorPMaxHigh")) {
@@ -196,7 +74,7 @@ get_max_hydro <- function(area, opts,timeStep="hourly"){
 #'
 #' @export
 get_inflow <- function(area, opts,mcyears){
-
+  area = tolower(area)
   suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="hourly"))
   if (nrow(inflow)==0){
     message("No inflow has been found, considering it as null")
@@ -219,54 +97,44 @@ get_inflow <- function(area, opts,mcyears){
   return(data.table(inflow))
 }
 
-#' Get objective values
-#'
 #' Get objective values of the optimization problem of each week and each scenario for a given simulation \code{simu}, mainly used in \code{get_Reward()} to build reward functions.
 #'
 #' @inheritParams get_local_reward
 #' @inheritParams runWaterValuesSimulation
-#' @param district The district concerned by the simulation.
-#' @param fictive_areas Vector of chr. Fictive areas used in simulation.
 #'
 #' @return A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"mcYear"} and \code{"ov_cost"}.
 #'
 #' @export
-get_weekly_cost <- function(district, simu,mcyears,expansion=F,fictive_areas=NULL){
-
-  criterium_file <- FALSE
-  if (expansion){
+get_weekly_cost <- function(simu,mcyears,expansion=F){
+  if (!is_api_study(simu)){
     path <- paste0(simu$simPath)
     all_files <- list.files(path)
-    criterium_file <- sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears)
+    assertthat::assert_that(sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears))
   }
-  if (!criterium_file){
-    cost <- antaresRead::readAntares(districts = district, mcYears = mcyears,
+  if (!expansion){
+    cost <- antaresRead::readAntares(districts = "water values district", mcYears = mcyears,
                                      timeStep = "hourly", opts = simu, select=c("OV. COST"))
     cost$week <- (cost$timeId-1)%/%168+1
     cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
                              ov_cost=sum(.data$`OV. COST`)) %>%
       dplyr::rename("timeId"="week")
   } else {
-    if (is.null(fictive_areas)){
-      cost <- data.frame(tidyr::expand_grid(mcYear=mcyears,timeId=1:52))%>%
+    cost <- data.frame(tidyr::expand_grid(mcYear=mcyears,timeId=1:52))%>%
         dplyr::mutate(ov_cost=0,cost_xpansion=0)
-    } else {
-      cost <- antaresRead::readAntares(areas = fictive_areas, mcYears = mcyears,
-                                       timeStep = "hourly", opts = simu, select=c("OV. COST"))
-      cost$week <- (cost$timeId-1)%/%168+1
-      cost <- dplyr::summarise(dplyr::group_by(cost,.data$week,.data$mcYear),
-                               ov_cost=sum(.data$`OV. COST`)) %>%
-        dplyr::rename("timeId"="week") %>%
-        dplyr::mutate(cost_xpansion=0)
-    }
-
     for (week in 1:52){
       for (scenario in mcyears){
-        path <- all_files[stringr::str_detect(all_files,paste0("criterion-",
-                                                               scenario,"-",
-                                                               week,"-"))][[1]]
-        cost_xpansion <- as.numeric(strsplit(utils::read.delim(paste0(simu$simPath,"/",path),
-                                                        header = FALSE)[[1]],":")[[1]][[2]])
+        if (is_api_study(simu)){
+          file = antaresRead::api_get(opts=simu,endpoint=paste0(simu$study_id,
+                    "/raw?path=output%2F",simu$simOutputName,"%2Fcriterion-",scenario,"-",week,"--optim-nb-1"),
+                                                  parse_result = "text",encoding = "UTF-8")
+        } else{
+          path <- all_files[stringr::str_detect(all_files,paste0("criterion-",
+                                                                 scenario,"-",
+                                                                 week,"-"))][[1]]
+          file = utils::read.delim(paste0(simu$simPath,"/",path),
+                                   header = FALSE)
+        }
+        cost_xpansion <- as.numeric(strsplit(file[[1]],":")[[1]][[2]])
         cost[(cost$timeId==week)&(cost$mcYear==scenario),4] <- cost_xpansion
       }
     }
@@ -278,32 +146,22 @@ get_weekly_cost <- function(district, simu,mcyears,expansion=F,fictive_areas=NUL
   return(data.table(cost))
 }
 
-
-#' Utility function to get simulation's name
-#'
-#' @param pattern A pattern to match among the simulation.
-#' @param studyPath Path to study outputs, used if \code{setSimulationPath} is not set.
-#' @param opts
-#'   List of simulation parameters returned by the function
-#'   \code{antaresRead::setSimulationPath}
-#'
-#' @return A character vector.
-#' @examples
-#' \dontrun{
-#' getSimulationNames("eco")
-#' }
-#' @keywords internal
-getSimulationNames <- function(pattern, studyPath = NULL, opts = antaresRead::simOptions()) {
-  studyPath <- tryCatch({
-    opts$studyPath
-  }, error = function(e) {
-    studyPath
-  })
-  if (is.null(studyPath))
-    stop("Default antares options are not set, you must specify 'studyPath'.")
-  list.files(path = file.path(studyPath, "output"), pattern = pattern)
+clear_scenario_builder <- function(opts){
+  if (!is_api_study(opts)){
+    sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
+    if (length(names(sb_file))>0){
+      assertthat::assert_that(length(names(sb_file))==1,
+                              msg="There should be only one ruleset in scenario builder.")
+      name_ruleset <- names(sb_file)[[1]]
+      sb_file[[name_ruleset]] <- sb_file[[name_ruleset]][!stringr::str_detect(names(sb_file[[name_ruleset]]),"bc,watervalues")]
+      antaresEditObject::writeIni(listData = sb_file,
+                                  opts=opts,
+                                  pathIni = file.path("settings", "scenariobuilder.dat"),
+                                  overwrite = TRUE, default_ext = ".dat")
+      Sys.sleep(1)
+    }
+  }
 }
-
 
 #' Convert water values to Antares format
 #'
@@ -446,6 +304,7 @@ convert_to_percent <- function(data){
   res <- res %>%
     dplyr::mutate(state_ref = .data$states_round_percent * capa/100) %>%
     dplyr::left_join(data,by=c("weeks")) %>%
+    dplyr::mutate(states=round(.data$states,6)) %>%
     dplyr::select(c("weeks","states","value_node","state_ref",
                     "states_round_percent","level_low","level_high",
                     "penalty_low","penalty_high"))
@@ -492,130 +351,19 @@ convert_to_percent <- function(data){
 #' @param area A valid Antares area.
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
+#' @param load Matrix with 8760 rows that contains backup load for the area
+#' @param misc_gen Matrix with 8760 rows that contains backup misc generation for the area
 #'
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
-add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions()){
-
-  assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
-
+add_fictive_fatal_prod_demand <- function(area, opts, load, misc_gen){
   max_hydro <- get_max_hydro(area=area,opts=opts,timeStep="hourly") %>%
     dplyr::select(-c("timeId")) %>% max()
 
-  # Input path
-  inputPath <- opts$inputPath
+  antaresEditObject::writeInputTS(data = load + max_hydro, type="load", area=area, opts=opts)
 
-  restore_fictive_fatal_prod_demand(area=area, opts = opts,silent=T)
-  path_load <- file.path(inputPath, "load", "series", paste0("load_",area,".txt"))
-
-
-  if (file.exists(path_load)) {
-
-    # file's copy
-    res_copy <- file.copy(
-      from = path_load,
-      to = file.path(inputPath, "load", "series", paste0("loadbackup_",area,".txt")),
-      overwrite = FALSE
-    )
-    if (!res_copy)
-      stop("Impossible to backup load file")
-
-    load <- NULL
-    try (load <- utils::read.table(file = path_load),silent = T)
-    if (!is.null(load)){
-      load <- load + max_hydro
-      utils::write.table(
-        x = load[,, drop = FALSE],
-        file = path_load,
-        row.names = FALSE,
-        col.names = FALSE,
-        sep = "\t"
-      )
-    } else {
-      utils::write.table(
-        x = data.frame(x = rep(max_hydro, 8760)),
-        file = path_load,
-        row.names = FALSE,
-        col.names = FALSE,
-        sep = "\t"
-      )
-    }
-
-  } else {
-
-    message("No load series for this area, creating one")
-
-    utils::write.table(
-      x = data.frame(x = rep(max_hydro, 8760)),
-      file = path_load,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
-
-  }
-
-  path_misc <- file.path(inputPath, "misc-gen", paste0("miscgen-",area,".txt"))
-
-
-  if (file.exists(path_misc)) {
-
-    # file's copy
-    res_copy <- file.copy(
-      from = path_misc,
-      to = file.path(inputPath, "misc-gen", paste0("miscgen-backup-",area,".txt")),
-      overwrite = FALSE
-    )
-    if (!res_copy)
-      stop("Impossible to backup misc gen file")
-
-    misc <- NULL
-    try (misc <- utils::read.table(file = path_misc),silent = T)
-    if (!is.null(misc)){
-      misc[,6] <- misc[,6] + max_hydro
-      utils::write.table(
-        x = misc[,, drop = FALSE],
-        file = path_misc,
-        row.names = FALSE,
-        col.names = FALSE,
-        sep = "\t"
-      )
-    } else {
-      utils::write.table(
-        x = data.frame(x = matrix(c(rep(0, 8760*5),
-                                    rep(max_hydro, 8760),
-                                    rep(0, 8760*2)), ncol = 8)),
-        file = path_misc,
-        row.names = FALSE,
-        col.names = FALSE,
-        sep = "\t"
-      )
-    }
-
-  } else {
-
-    message("No misc series for this area, creating one")
-
-    utils::write.table(
-      x = data.frame(x = matrix(c(rep(0, 8760*5),
-                                  rep(max_hydro, 8760),
-                                  rep(0, 8760*2)), ncol = 8)),
-      file = path_misc,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
-
-  }
-
-  # Maj simulation
-  suppressWarnings({
-    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
-  })
-
-  invisible(res)
+  misc_gen[, 6] = misc_gen[, 6] + max_hydro
+  antaresEditObject::writeMiscGen(data = misc_gen, area = area, opts=opts)
 
 }
 
@@ -625,45 +373,46 @@ add_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions()
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @param silent Boolean. True to run without messages.
+#' @param load Matrix with 8760 rows that contains backup load for the area
+#' @param misc_gen Matrix with 8760 rows that contains backup misc generation for the area
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
-restore_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptions(),silent=F) {
-  assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
+restore_fictive_fatal_prod_demand <- function(area, opts,
+                                              load, misc_gen) {
+  antaresEditObject::writeInputTS(data = load, type="load", area=area, opts=opts)
 
-  # Input path
-  inputPath <- opts$inputPath
+  antaresEditObject::writeMiscGen(data = misc_gen, area = area, opts=opts)
+}
 
-  path_load <- file.path(inputPath, "load", "series", paste0("loadbackup_",area,".txt"))
+is_api_study <- function(opts) {
+  isTRUE(opts$typeLoad == "api")
+}
 
-  if (file.exists(path_load)) {
-    file.copy(
-      from = path_load,
-      to = file.path(inputPath, "load", "series", paste0("load_",area,".txt")),
-      overwrite = TRUE
+check_area_name <- function(area, opts) {
+  areaList <- antaresRead::getAreas(opts = opts)
+  if (!tolower(area) %in% areaList)
+    stop("'", area, "' is not a valid area name, possible names are: ", paste(areaList, collapse = ", "), call. = FALSE)
+}
+
+#' @importFrom utils URLencode
+#' @importFrom shiny isRunning
+fread_antares <- function(opts, file, ...) {
+  if (identical(opts$typeLoad, "api")) {
+    file <- gsub("\\.txt$", "", file)
+    response <- antaresRead::api_get(
+      opts = opts,
+      endpoint = I(file),
+      query = list(formatted = FALSE)
     )
-    unlink(x = path_load)
+    suppressWarnings(
+      tryCatch(fread(response, ...), error = function(e){
+        if(isRunning())
+          e <- as.character(e)
+        message(file)
+        message(e)
+      }))
   } else {
-    if(!silent) message("No load backup found")
+    suppressWarnings(
+      fread(file, ...))
   }
-
-  path_misc <- file.path(inputPath, "misc-gen", paste0("miscgen-backup-",area,".txt"))
-
-  if (file.exists(path_misc)) {
-    file.copy(
-      from = path_misc,
-      to = file.path(inputPath, "misc-gen", paste0("miscgen-",area,".txt")),
-      overwrite = TRUE
-    )
-    unlink(x = path_misc)
-  } else {
-    if(!silent) message("No misc gen backup found")
-  }
-
-  # Maj simulation
-  res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
-
-  invisible(res)
 }

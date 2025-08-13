@@ -1,126 +1,53 @@
 #' Restore the hydro storage time series, used in \code{runWaterValuesSimulation}
 #'
 #' @param area A valid Antares area.
-#' @param path_manual_backup Path to a manual backup.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
-#' @param silent Boolean. True to run without messages.
+#' @param data Backup hydro storage matrix
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
-restoreHydroStorage <- function(area, path_manual_backup = NULL, opts = antaresRead::simOptions(),silent=F) {
-  assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
-
-  # Input path
-  inputPath <- opts$inputPath
-
-  if (is.null(path_manual_backup)) {
-    path_hydro_storage_backup <- file.path(inputPath, "hydro", "series", area, "mod_backup.txt")
-
-    if (file.exists(path_hydro_storage_backup)) {
-      file.copy(
-        from = path_hydro_storage_backup,
-        to = file.path(inputPath, "hydro", "series", area, "mod.txt"),
-        overwrite = TRUE
-      )
-      unlink(x = path_hydro_storage_backup)
-    } else {
-      if(!silent) message("No backup found")
-    }
-  } else {
-    file.copy(
-      from = path_manual_backup,
-      to = file.path(inputPath, "hydro", "series", area, "mod.txt"),
-      overwrite = TRUE
-    )
-  }
-
-  # Maj simulation
-  res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
-
-  invisible(res)
+#'
+restoreHydroStorage <- function(area, opts,data) {
+  antaresEditObject::writeInputTS(data,
+                                 area=area,
+                                 type="hydroSTOR",
+                                 opts=opts)
+  hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
+  hydro_ini$reservoir[area]=T
+  antaresEditObject::writeIni(hydro_ini,
+                              file.path("input","hydro","hydro"),
+                              overwrite=T,
+                              opts=opts)
 }
 
 #' Reset to 0 the hydro storage time series, used in \code{setupWaterValuesSimulation}
 #'
 #'
 #' @param area A valid Antares area.
-#' @param path_manual_storage Optional, a path where to save the hydro storage file.
 #' @param opts
 #'   List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #'
-#' @note The function makes a copy of the original hydro storage time series,
-#'  you can restore these with \code{restoreHydroStorage}.
+#' @note You can restore the original hydro storage time series with \code{restoreHydroStorage}.
 #'
 #' @seealso \link{restoreHydroStorage}
 #'
 #'
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
-resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRead::simOptions()) {
-
-  assertthat::assert_that(class(opts) == "simOptions")
-  if (!area %in% opts$areaList)
-    stop(paste(area, "is not a valid area"))
-
-  # Input path
-  inputPath <- opts$inputPath
-
-  if (is.null(path_manual_storage)) {
-    restoreHydroStorage(area,silent=T)
-    path_hydro_storage <- file.path(inputPath, "hydro", "series", area, "mod.txt")
-  } else {
-    path_hydro_storage <- path_manual_storage
-  }
-
-  if (file.exists(path_hydro_storage)) {
-
-    # file's copy
-    res_copy <- file.copy(
-      from = path_hydro_storage,
-      to = file.path(inputPath, "hydro", "series", area, "mod_backup.txt"),
-      overwrite = FALSE
-    )
-    if (!res_copy)
-      stop("Impossible to backup hydro storage file")
-
-    # read hydro storage series and initialize at 0
-    hydro_storage <- NULL
-    try (hydro_storage <- utils::read.table(file = path_hydro_storage),silent = T)
-    if (!is.null(hydro_storage)){
-      hydro_storage[] <- 0
-      utils::write.table(
-        x = hydro_storage[,, drop = FALSE],
-        file = path_hydro_storage,
-        row.names = FALSE,
-        col.names = FALSE,
-        sep = "\t"
-      )
-    }
-
-  } else {
-
-    message("No hydro storage series for this area, creating one")
-
-    utils::write.table(
-      x = data.frame(x = rep(0, 12)),
-      file = path_hydro_storage,
-      row.names = FALSE,
-      col.names = FALSE,
-      sep = "\t"
-    )
-
-  }
-
-  # Maj simulation
-  suppressWarnings({
-    res <- antaresRead::setSimulationPath(path = opts$studyPath, simulation = "input")
-  })
-
-  invisible(res)
+#'
+resetHydroStorage <- function(area, opts) {
+  antaresEditObject::writeInputTS(matrix(rep(0,365),ncol=1),
+                                  area=area,
+                                  type="hydroSTOR",
+                                  opts=opts)
+  hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
+  hydro_ini$reservoir[area]=F
+  antaresEditObject::writeIni(hydro_ini,
+                              file.path("input","hydro","hydro"),
+                              overwrite=T,
+                              opts=opts)
 }
 
 #' Get pumping efficiency ratio
@@ -131,12 +58,10 @@ resetHydroStorage <- function(area, path_manual_storage = NULL, opts = antaresRe
 #'
 #' @return Double. Pumping efficiency ratio.
 #' @export
+#'
 getPumpEfficiency <- function(area, opts) {
-  assertthat::assert_that(class(opts) == "simOptions")
   area = tolower(area)
-  if (!area %in% antaresRead::getAreas(opts = opts))
-    stop("Not a valid area!")
-  hydro_ini <- antaresRead::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
+  hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
   if (isTRUE(hydro_ini$reservoir[[area]])) {
     Pump_Efficiency <- hydro_ini[["pumping efficiency"]][[area]]
   } else {
@@ -156,7 +81,7 @@ getPumpEfficiency <- function(area, opts) {
 #' @param area Character. Antares area for which to change hydro management.
 #' @export
 changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
-  hydro_ini <- antaresRead::readIniFile(file.path(opts$inputPath, "hydro", "hydro.ini"))
+  hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
   assertthat::assert_that(area %in% names(hydro_ini$reservoir),msg = "No reservoir managment for this area, check Antares study")
   assertthat::assert_that(hydro_ini$reservoir[area]==T,msg="No reservoir managment for this area, check Antares study")
   assertthat::assert_that((watervalues|heuristic)==T,msg="Watervalues or heuristic has to be selected")
@@ -172,6 +97,9 @@ changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
       hydro_ini[["use heuristic"]][[area]] <- TRUE
     }
   }
-  antaresEditObject::writeIni(hydro_ini, file.path(opts$inputPath, "hydro", "hydro.ini"),overwrite=T)
+  antaresEditObject::writeIni(hydro_ini,
+                              file.path("input","hydro","hydro"),
+                              overwrite=T,
+                              opts=opts)
 }
 

@@ -96,7 +96,7 @@ reward_simple %>%
 
 # Interpolation with marginal prices
 
-With `method_old = F`, each simulation will give one local estimation of the reward function thaks to marginal prices that is an overestimation of the real reward function. Local estimations are then combined to form only one reward function by taking the minimum of all estimations. Each local estimation is evaluated for controls listed in `possible_controls`.
+With `method_old = F`, each simulation will give one local estimation of the reward function thanks to marginal prices that is an overestimation of the real reward function. Local estimations are then combined to form only one reward function by taking the minimum of all estimations. Each local estimation is evaluated for controls listed in `possible_controls`.
 ```{r}
 reward_db <- get_Reward(
   simulation_names = simulation_res$simulation_names,

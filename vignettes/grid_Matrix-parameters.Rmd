@@ -162,11 +162,11 @@ Bellman values can be computed with 3 different formulas :
 
 -   `grid-mean` : At the end of each week in the backward recursion, for each state compute the mean of Bellman values over the scenarios. This method computed the minimum of the expectancy of weekly costs with the constraint that the hazards of the following week are not yet known. This approach is the most accurate mathematically speaking. Use this method to minimize costs.
 -   `mean-grid` : Compute the mean of Bellman values at the end of the backward process.
--   `quantile` : Similar to `grid-mean` but instead of the mean, take the quantile. Use this method to avoid years with high costs and in particular to minimize the unsupplied energy. The value `cvar_value` can be adapted to be more or less cautious.
+-   `cvar` : Similar to `grid-mean` but instead of the mean, take the mean over `cvar_value` percent of the worst scenarios for each week. Use this method to avoid years with high costs and in particular to minimize the unsupplied energy. The value `cvar_value` can be adapted to be more or less cautious.
 
 ```{r compare_method, message=FALSE}
 compare_method = data.frame()
-for (m in c("mean-grid","grid-mean","quantile")){
+for (m in c("mean-grid","grid-mean","cvar")){
   compare_method = Grid_Matrix(
     area=area,
     reward_db = reward_db,
@@ -208,7 +208,7 @@ compare_method %>%
   ggplot2::geom_line()
 ```
 
-Bellman values with `quantile` method are smaller as they take into account for each week, the worst scenarios so they overestimate the total cost.
+Bellman values with `cvar` method are smaller as they take into account for each week, the worst scenarios so they overestimate the total cost.
 
 # Respect of rule curves
 

@@ -40,7 +40,7 @@ runWaterValuesSimulation <- function(area=NULL,
                                      expansion=T){
 
   area = tolower(area)
-  antaresEditObject:::check_area_name(area = area, opts = opts)
+  check_area_name(area = area, opts = opts)
 
   backup = getBackupData(area,mcyears,opts)
 
@@ -116,7 +116,7 @@ runWaterValuesSimulation <- function(area=NULL,
       expansion = expansion
     )
 
-    if(!antaresRead:::is_api_study(opts)){
+    if(!is_api_study(opts)){
       save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
     } else {
       body = list()
@@ -167,7 +167,7 @@ setupGeneralParameters <- function(opts,
   settings_ini <- antaresRead::readIni(file.path("settings", "generaldata"),
                                         opts=opts)
   if (settings_ini$general$`thematic-trimming`){
-    if (!antaresRead:::is_api_study(opts)) {
+    if (!is_api_study(opts)) {
       for (p in list("OV. COST","MRG. PRICE","BALANCE")){
         if (p %in% settings_ini$`variables selection`){
           idx <- which(settings_ini$`variables selection`== p)
@@ -294,7 +294,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
   list_backup = list()
   for (j in 1:length(list_areas)){
     area = list_areas[[j]]
-    antaresEditObject:::check_area_name(area = area, opts = opts)
+    check_area_name(area = area, opts = opts)
 
     list_backup[[j]] = getBackupData(area,mcyears,opts)
   }
@@ -373,7 +373,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       expansion = expansion
     )
 
-    if(!antaresRead:::is_api_study(opts)){
+    if(!is_api_study(opts)){
       save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
     } else {
       body = list()
@@ -411,7 +411,7 @@ getBackupData <- function(area,
                           mcyears,
                           opts){
   backup <- list()
-  hydro_storage <- antaresRead:::fread_antares(file = file.path(opts$inputPath, "hydro", "series", area, "mod.txt"),
+  hydro_storage <- fread_antares(file = file.path(opts$inputPath, "hydro", "series", area, "mod.txt"),
                                                opts = opts)
   if (nrow(hydro_storage)==0){
     message("Hydro storage is empty")
@@ -419,7 +419,7 @@ getBackupData <- function(area,
   }
   backup$hydro_storage = hydro_storage
 
-  load <- antaresRead:::fread_antares(file = file.path(opts$inputPath,"load", "series", paste0("load_",area,".txt")),
+  load <- fread_antares(file = file.path(opts$inputPath,"load", "series", paste0("load_",area,".txt")),
                                       opts=opts)
   if (nrow(load)==0){
     message("Load is empty")
@@ -427,7 +427,7 @@ getBackupData <- function(area,
   }
   backup$load = load
 
-  misc_gen <- antaresRead:::fread_antares(file = file.path(opts$inputPath, "misc-gen", paste0("miscgen-",area,".txt")),
+  misc_gen <- fread_antares(file = file.path(opts$inputPath, "misc-gen", paste0("miscgen-",area,".txt")),
                                           opts=opts)
   if (nrow(misc_gen)==0){
     message("Misc gen is empty")
@@ -454,7 +454,7 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
   message(paste0("Running simulation: ", i, " - ", sim_name))
   message("#  ------------------------------------------------------------------------")
   # run the simulation
-  if (!antaresRead:::is_api_study(opts)){
+  if (!is_api_study(opts)){
     assertthat::assert_that(stringr::str_detect(path_solver,"solver.exe$"),
           msg = "Path solver is not the solver executable of Antares.")
   }
@@ -465,7 +465,7 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
     show_output_on_console = show_output_on_console,
     opts = opts
   )
-  if (antaresRead:::is_api_study(opts)){
+  if (is_api_study(opts)){
     assertthat::assert_that(status$status == "success")
     if (expansion){
       antaresEditObject::updateGeneralSettings(mode = "economy",opts=opts)
@@ -473,7 +473,7 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
   } else {
     assertthat::assert_that(status == 0)
   }
-  if ("mcYear" %in% colnames(constraint_value) & !antaresRead:::is_api_study(opts)){
+  if ("mcYear" %in% colnames(constraint_value) & !is_api_study(opts)){
     opts_sim = antaresRead::setSimulationPath(opts$studyPath,simulation=sim_name)
     ts_number = read.csv(paste0(opts_sim$simPath,"/ts-numbers/bindingconstraints/watervalues.txt"))
     scenarios = unique(constraint_value$mcYear)

@@ -12,11 +12,11 @@ readReservoirLevels <- function(area,
                                 opts = antaresRead::simOptions()) {
   area = tolower(area)
   vars <- c("level_low", "level_avg", "level_high")
-  reservoir = antaresRead:::fread_antares(opts=opts,
-                                          file=file.path(opts$inputPath,
-                                                        "hydro","common",
-                                                        "capacity",
-                                                        paste0("reservoir_",area,".txt")))
+  reservoir = fread_antares(opts=opts,
+                            file=file.path(opts$inputPath,
+                                          "hydro","common",
+                                          "capacity",
+                                          paste0("reservoir_",area,".txt")))
   names(reservoir) = vars
   reservoir[, "timeId" := c(0,rep(seq_len(52), each = 7))]
   reservoir <- reservoir[, lapply(.SD,utils::tail,n=1), by = c("timeId"), .SDcols = vars]

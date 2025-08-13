@@ -152,7 +152,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
   coeff = c()
   if (opts$antaresVersion<870){
     values =  matrix(data = c(rep(0, 366 * 2),equal_cst), ncol = 3)
-    if (antaresRead:::is_api_study(opts)){
+    if (is_api_study(opts)){
       bc = antaresRead::readBindingConstraints(opts)
       coeff = bc[[name_constraint]]$coefs
     }
@@ -183,7 +183,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
     new_sb <- unlist(list(values_sb))
     names(new_sb) <- names_sb
 
-    if (!antaresRead:::is_api_study(opts)){
+    if (!is_api_study(opts)){
     sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
 
     if (length(names(sb_file))>0){
@@ -222,7 +222,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 }
 
 clear_scenario_builder <- function(opts){
-  if (!antaresRead:::is_api_study(opts)){
+  if (!is_api_study(opts)){
   sb_file <- antaresRead::readIni(file.path("settings", "scenariobuilder.dat"),opts=opts,default_ext = ".dat")
 
   if (length(names(sb_file))>0){

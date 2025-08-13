@@ -42,7 +42,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL, pattern =
       X = simulation_names,
       FUN = function(i) {
         suppressWarnings({
-          if (!antaresRead:::is_api_study(opts)){
+          if (!is_api_study(opts)){
             antaresRead::setSimulationPath(path = studyPath, simulation = i)
           } else {
             antaresRead::setSimulationPathAPI(host = opts$host,

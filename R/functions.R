@@ -104,7 +104,7 @@ get_inflow <- function(area, opts=antaresRead::simOptions(),mcyears){
 #' @export
 
 get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
-  if (!antaresRead:::is_api_study(opts)){
+  if (!is_api_study(opts)){
     path <- paste0(opts$simPath)
     all_files <- list.files(path)
     assertthat::assert_that(sum(stringr::str_detect(all_files,"criterion")) >= 52*length(mcyears))
@@ -122,7 +122,7 @@ get_weekly_cost <- function(opts=antaresRead::simOptions(),mcyears,expansion=F){
 
     for (week in 1:52){
       for (scenario in mcyears){
-        if (antaresRead:::is_api_study(opts)){
+        if (is_api_study(opts)){
           file = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,
                     "/raw?path=output%2F",opts$simOutputName,"%2Fcriterion-",scenario,"-",week,"--optim-nb-1"),
                                                   parse_result = "text",encoding = "UTF-8")
@@ -375,4 +375,37 @@ restore_fictive_fatal_prod_demand <- function(area, opts = antaresRead::simOptio
   antaresEditObject::writeInputTS(data = load, type="load", area=area, opts=opts)
 
   antaresEditObject::writeMiscGen(data = misc_gen, area = area, opts=opts)
+}
+
+is_api_study <- function(opts) {
+  isTRUE(opts$typeLoad == "api")
+}
+
+check_area_name <- function(area, opts) {
+  areaList <- antaresRead::getAreas(opts = opts)
+  if (!tolower(area) %in% areaList)
+    stop("'", area, "' is not a valid area name, possible names are: ", paste(areaList, collapse = ", "), call. = FALSE)
+}
+
+#' @importFrom utils URLencode
+#' @importFrom shiny isRunning
+fread_antares <- function(opts, file, ...) {
+  if (identical(opts$typeLoad, "api")) {
+    file <- gsub("\\.txt$", "", file)
+    response <- api_get(
+      opts = opts,
+      endpoint = I(file),
+      query = list(formatted = FALSE)
+    )
+    suppressWarnings(
+      tryCatch(fread(response, ...), error = function(e){
+        if(isRunning())
+          e <- as.character(e)
+        message(file)
+        message(e)
+      }))
+  } else {
+    suppressWarnings(
+      fread(file, ...))
+  }
 }

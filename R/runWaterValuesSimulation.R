@@ -120,8 +120,8 @@ runWaterValuesSimulation <- function(area,
 
   antaresEditObject::editArea(name = area,
                               filtering =
-                                antaresEditObject::filteringOptions(filter_synthesis = c(),
-                                                 filter_year_by_year = c("hourly"))
+                                antaresEditObject::filteringOptions(filter_synthesis = c("hourly" , "weekly", "annual"),
+                                                                    filter_year_by_year = c("hourly", "weekly", "annual"))
                               ,opts = opts)
 
   #generating the fictive area parameters

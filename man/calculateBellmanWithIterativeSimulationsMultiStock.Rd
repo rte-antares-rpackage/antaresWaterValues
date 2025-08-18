@@ -24,7 +24,6 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   cvar_value = 0.5,
   test_vu = F,
   force_final_level = F,
-  final_level_egal_initial = F,
   penalty_final_level = NULL,
   initial_traj = NULL,
   df_previous_cut = NULL
@@ -67,8 +66,6 @@ less to it. (quantile(cvar_value))}
 with the latest water values}
 
 \item{force_final_level}{Binary. Whether final level should be constrained}
-
-\item{final_level_egal_initial}{Binary. Whether final level, if constrained, should be equal to initial level}
 
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 

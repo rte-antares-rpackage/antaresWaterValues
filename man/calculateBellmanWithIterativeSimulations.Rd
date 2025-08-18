@@ -24,7 +24,6 @@ calculateBellmanWithIterativeSimulations(
   cvar_value = 0.5,
   test_vu = F,
   force_final_level = F,
-  final_level_egal_initial = F,
   final_level = NULL,
   penalty_final_level = NULL,
   initial_traj = NULL,
@@ -66,8 +65,6 @@ between the reservoir capacity and zero}
 with the latest water values}
 
 \item{force_final_level}{Binary. Whether final level should be constrained}
-
-\item{final_level_egal_initial}{Binary. Whether final level, if constrained, should be equal to initial level}
 
 \item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 

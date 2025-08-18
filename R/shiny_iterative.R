@@ -216,8 +216,7 @@ iterativeServer <- function(id, opts, silent) {
                               path_solver = input$itr_solver_path,
                               study_path = opts$studyPath,
                               states_step_ratio = 1 / input$itr_nb_states,
-                              method_dp = input$method_dp,
-                              q_ratio = input$q_ratio_dp / 100
+                              method_dp = input$method_dp
                             )$results
 
                             shiny::isolate(rv$itr_results <- results)

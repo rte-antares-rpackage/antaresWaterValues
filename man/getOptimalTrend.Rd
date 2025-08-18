@@ -58,6 +58,8 @@ as \code{getOptimalTrend}}
 \item{pump_eff}{Pumping efficiency (1 if no pumping)}
 
 \item{mix_scenario}{Should scenario be mix from one week to another ?}
+
+\item{df_previous_cut}{Data frame containing previous estimations of cuts}
 }
 \value{
 Data frame with level (lev) and transition

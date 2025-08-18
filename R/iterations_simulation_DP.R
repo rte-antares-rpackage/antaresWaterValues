@@ -45,13 +45,26 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      final_level_egal_initial = F,
                                                      final_level = NULL,
                                                      penalty_final_level = NULL,
-                                                     initial_traj = NULL){
+                                                     initial_traj = NULL,
+                                                     df_previous_cut = NULL){
 
 
   # Initialization
   df_watervalues <- data.frame()
   df_rewards <- data.frame()
   df_levels <- data.frame()
+  df_current_cuts <- data.frame()
+  df_gap <- data.frame()
+  if (!is.null(df_previous_cut)){
+    max_row_per_group = df_previous_cut %>%
+      dplyr::group_by(mcYear,week,area,n) %>%
+      dplyr::summarise(n = dplyr::n_distinct(u),.groups = "drop") %>%
+      dplyr::pull(n) %>% max()
+    assertthat::assert_that(max_row_per_group==1)
+    df_previous_cut <- df_previous_cut %>%
+      dplyr::select(c("mcYear","week","u","reward","marg","area","n")) %>%
+      dplyr::mutate(n=stringr::str_c("previous_",n))
+  }
 
   max_hydro <- get_max_hydro(area)
   max_hydro_weekly <- max_hydro %>%
@@ -72,9 +85,50 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   controls <- tidyr::drop_na(controls) %>%
     dplyr::cross_join(data.frame(mcYear=mcyears))
 
-  controls_ref <- controls %>%
-    dplyr::rename("u_ref"="u") %>%
-    dplyr::select(-c("sim"))
+  if (!is.null(df_previous_cut)){
+    controls = df_previous_cut %>%
+      dplyr::select(c("week","mcYear","u")) %>%
+      dplyr::mutate(sim = "u_previous") %>%
+      rbind(controls) %>%
+      dplyr::left_join(max_hydro_weekly,by=c("week"="timeId")) %>%
+      dplyr::filter(-pump*pump_eff<=u, u<= turb) %>%
+      dplyr::select(-c("turb","pump")) %>%
+      dplyr::arrange(week,mcYear,u,sim) %>%
+      dplyr::distinct(week,mcYear,u,.keep_all = T)
+    df_rewards = controls %>%
+      dplyr::left_join(df_previous_cut, by= dplyr::join_by(mcYear,week),suffix = c("","_simu")) %>%
+      dplyr::mutate(reward = reward +marg * (u-u_simu)) %>%
+      dplyr::select(-c("u_simu","marg","sim"))
+
+    reward <- df_rewards %>%
+      dplyr::group_by(.data$mcYear,.data$week,.data$u) %>%
+      dplyr::summarise(reward=min(reward),.groups="drop")
+
+
+    results <- updateWatervalues(reward=reward,controls=controls,area=area,
+                                 mcyears=mcyears,simulation_res=simulation_res,
+                                 opts=opts,states_step_ratio=states_step_ratio,
+                                 pumping=pumping,pump_eff=pump_eff,
+                                 penalty_low=penalty_low,
+                                 penalty_high=penalty_high,
+                                 inflow=inflow,max_hydro = max_hydro,
+                                 max_hydro_weekly = max_hydro_weekly,
+                                 niveau_max=niveau_max,
+                                 method_dp = method_dp, cvar_value = cvar_value,
+                                 force_final_level = force_final_level,
+                                 final_level_egal_initial = final_level_egal_initial,
+                                 final_level = final_level,
+                                 penalty_final_level = penalty_final_level)
+
+    message(paste0("Lower bound is : ",results$lower_bound))
+
+    df_gap <- dplyr::bind_rows(df_gap,
+                               data.frame(lb=results$lower_bound,n=as.character(0)))
+
+    df_watervalues <- dplyr::bind_rows(df_watervalues,
+                                       dplyr::mutate(results$aggregated_results,n=as.character(0)))
+
+  }
 
   level_init <- get_initial_level(area,opts)*niveau_max/100
 
@@ -84,7 +138,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   i <- 1
   gap <- 1
-  df_gap <- data.frame()
 
   while(gap>1e-3&i<=nb_itr){
 
@@ -97,7 +150,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                               penalty_final_level = penalty_final_level, final_level = final_level,
                               method_fast = method_fast,
                               max_hydro_weekly=max_hydro_weekly, n=i,
-                              pump_eff = pump_eff)
+                              pump_eff = pump_eff,
+                              df_previous_cut = df_previous_cut)
 
     constraint_values <- levels %>%
       dplyr::select(c("week", "constraint","mcYear")) %>%
@@ -151,10 +205,14 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       dplyr::arrange(.data$week,.data$mcYear,.data$u) %>%
       dplyr::mutate(sim="u")
 
-    df_rewards <- updateReward(opts=opts,pumping=pumping,
+    o <- updateReward(opts=opts,pumping=pumping,
                                controls=controls,max_hydro=max_hydro,mcyears=mcyears,
                                area=area,pump_eff=pump_eff,df_rewards = df_rewards,
-                               u0=simulation_res$simulation_values,i=i)
+                               u0=simulation_res$simulation_values,i=i,
+                               df_current_cuts = df_current_cuts,
+                      df_previous_cut = df_previous_cut)
+    df_rewards = o$df_rewards
+    df_current_cuts = o$df_current_cuts
 
     reward <- df_rewards %>%
       dplyr::group_by(.data$mcYear,.data$week,.data$u) %>%
@@ -181,8 +239,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     df_gap <- dplyr::bind_rows(df_gap,
                                data.frame(lb=results$lower_bound,n=as.character(i)))
 
-    if (i>1){
-      gap = (df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]]
+    if (nrow(df_gap)>=2){
+      gap = abs((df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]])
 
 
       message(paste0("Actual gap on lower bound is : ",gap*100," %"))
@@ -228,6 +286,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   output$df_levels <- df_levels
   output$df_watervalues <- df_watervalues
   output$df_gap <- df_gap
+  output$df_current_cuts <- df_current_cuts
   output$lower_bound <- results$lower_bound
   return(output)
 
@@ -251,10 +310,12 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 #' same format as the output of \code{reward_offset} with a column (n) containing the
 #' iteration number
 #' @param i Iteration number
+#' @param df_current_cuts Data frame containing previous estimations of cuts
 #'
 #' @return Updated data frame df_rewards
 updateReward <- function(opts,pumping,controls,max_hydro,
-                         mcyears,area,pump_eff,u0,df_rewards,i){
+                         mcyears,area,pump_eff,u0,df_rewards,i,df_current_cuts,
+                         df_previous_cut){
   if (antaresRead:::is_api_study(opts)){
     opts_sim <- antaresRead::setSimulationPathAPI(study_id = opts$study_id,
                                                   host = opts$host,
@@ -278,13 +339,44 @@ updateReward <- function(opts,pumping,controls,max_hydro,
   reward <- reward_offset(opts=opts_sim,df_reward = reward,
                           u0=u[[1]][[1]],mcyears=mcyears, expansion = T)
 
+  df_current_cuts = reward %>%
+    dplyr::group_by(.data$week,.data$mcYear) %>%
+    dplyr::mutate(marg=(.data$reward-dplyr::lag(.data$reward))/(.data$u-dplyr::lag(.data$u)),
+                  marg = dplyr::if_else(is.na(marg),dplyr::lead(.data$marg),.data$marg)) %>%
+    dplyr::ungroup() %>%
+    dplyr::right_join(dplyr::select(u0,-c("sim")),by = dplyr::join_by(mcYear, week, u)) %>%
+    dplyr::mutate(n=as.character(i),
+                  area=area) %>%
+    rbind(df_current_cuts)
+
+ if (!is.null(df_previous_cut)){
+   a = area
+   invalid_previous_cuts = df_current_cuts %>%
+     dplyr::filter(n==as.character(i),.data$area == a) %>%
+     dplyr::select(-c("marg","n","area")) %>%
+     dplyr::right_join(dplyr::filter(df_previous_cut,.data$area==a), by = dplyr::join_by(mcYear,week),suffix = c("_current","_previous")) %>%
+     dplyr::mutate(reward_estimate = reward_previous + marg * (u_current - u_previous)) %>%
+     dplyr::filter(reward_estimate <= reward_current) %>%
+     dplyr::select(c("week","mcYear","n","area")) %>%
+     dplyr::mutate(to_remove = T)
+
+   df_rewards = df_rewards %>%
+     dplyr::left_join(invalid_previous_cuts,by = join_by(week, mcYear, n, area)) %>%
+     dplyr::filter(is.na(to_remove)) %>%
+     dplyr::select(-c("to_remove"))
+ }
+
+
   reward <- reward %>%
     dplyr::mutate(reward = dplyr::if_else(.data$reward>0,0,.data$reward))
 
   df_rewards <- dplyr::bind_rows(df_rewards,
                                  dplyr::mutate(reward,n=as.character(i),
                                                area=area))
-  return(df_rewards)
+  output = list()
+  output$df_rewards = df_rewards
+  output$df_current_cuts = df_current_cuts
+  return(output)
 }
 
 #' Calculate water values with \code{Grid_Matrix} from estimated reward,
@@ -411,10 +503,12 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             niveau_max,df_levels,penalty_low,penalty_high,
                             penalty_final_level, final_level,
-                            method_fast=F,max_hydro_weekly, n=0, pump_eff,mix_scenario=T){
+                            method_fast=F,max_hydro_weekly, n=0, pump_eff,mix_scenario=T,
+                            df_previous_cut = NULL){
   level_i <- data.frame(states = level_init,scenario=1:length(mcyears))
   levels <- data.frame()
 
+  if (is.null(df_previous_cut)){
   if (n==1){
       levels = max_hydro_weekly %>%
         dplyr::mutate(constraint = -.data$pump*pump_eff,
@@ -434,7 +528,8 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
       dplyr::select(-c("turb","pump")) %>%
       dplyr::rename(week=.data$timeId) %>%
       dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
-    return(levels)
+      return(levels)
+    }
   }
 
   set.seed(192*(n-1)) # just to make it reproducible
@@ -508,6 +603,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 
   }
 
+  if (nrow(df_levels)>=1){
   levels <- df_levels %>%
     dplyr::rename(previous_constraint=.data$constraint) %>%
     dplyr::select(c("week","mcYear","previous_constraint")) %>%
@@ -518,8 +614,12 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     dplyr::summarise(lev = min(.data$lev), scenario = min(.data$scenario), true_constraint = min(.data$constraint),
                      constraint = dplyr::if_else(min(.data$dis)<=min(.data$turb+.data$pump*pump_eff)/1000,
                                                  stats::runif(1,min(-.data$pump*pump_eff),min(.data$turb)),
-                                                 min(.data$constraint))) %>%
+                                                   min(.data$constraint)),.groups = "drop") %>%
     dplyr::ungroup()
+  } else {
+    levels <- levels %>%
+      dplyr::mutate(true_constraint = constraint)
+  }
 
   return(levels)
 }
@@ -568,13 +668,25 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                force_final_level = F,
                                                                final_level_egal_initial = F,
                                                                penalty_final_level = NULL,
-                                                               initial_traj = NULL){
+                                                               initial_traj = NULL,
+                                                               df_previous_cut = NULL){
 
   # Initialization
   df_watervalues <- data.frame()
   df_rewards <- data.frame()
   df_levels <- data.frame()
   df_gap <- data.frame()
+  df_current_cuts <- data.frame()
+  if (!is.null(df_previous_cut)){
+    max_row_per_group = df_previous_cut %>%
+      dplyr::group_by(mcYear,week,area,n) %>%
+      dplyr::summarise(n = dplyr::n_distinct(u),.groups = "drop") %>%
+      dplyr::pull(n) %>% max()
+    assertthat::assert_that(max_row_per_group==1)
+    df_previous_cut <- df_previous_cut %>%
+      dplyr::select(c("mcYear","week","u","reward","marg","area","n")) %>%
+      dplyr::mutate(n=stringr::str_c("previous_",n))
+  }
 
   for (area in list_areas){
     a = area
@@ -601,39 +713,61 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     controls <- tidyr::drop_na(controls) %>%
       dplyr::cross_join(data.frame(mcYear=mcyears))
 
-    controls_ref <- controls %>%
-      dplyr::rename("u_ref"="u") %>%
-      dplyr::select(-c("sim"))
-
     changeHydroManagement(watervalues = F,heuristic = T,opts = opts,area=area)
+
+    if (!is.null(df_previous_cut)){
+      controls = df_previous_cut %>%
+        dplyr::filter(.data$area == a) %>%
+        dplyr::select(c("week","mcYear","u")) %>%
+        dplyr::mutate(sim = "u_previous") %>%
+        rbind(controls) %>%
+        dplyr::left_join(max_hydro_weekly,by=c("week"="timeId")) %>%
+        dplyr::filter(-pump*pump_eff<=u, u<= turb) %>%
+        dplyr::select(-c("turb","pump")) %>%
+        dplyr::arrange(week,mcYear,u,sim) %>%
+        dplyr::distinct(week,mcYear,u,.keep_all = T)
+      df_rewards = controls %>%
+        dplyr::left_join(dplyr::filter(df_previous_cut,.data$area == a), by= dplyr::join_by(mcYear,week),suffix = c("","_simu")) %>%
+        dplyr::mutate(reward = reward +marg * (u-u_simu)) %>%
+        dplyr::select(-c("u_simu","marg","sim")) %>%
+        rbind(df_rewards)
+
+      reward <- df_rewards %>%
+        dplyr::filter(.data$area == a) %>%
+        dplyr::group_by(.data$mcYear,.data$week,.data$u) %>%
+        dplyr::summarise(reward=min(reward),.groups="drop")
+
+
+      results <- updateWatervalues(reward=reward,controls=controls,area=area,
+                                  mcyears=mcyears,simulation_res=simulation_res,
+                                  opts=opts,states_step_ratio=states_step_ratio,
+                                  pumping=pumping,pump_eff=pump_eff,
+                                  penalty_low=penalty_low,
+                                  penalty_high=penalty_high,
+                                  inflow=inflow,max_hydro = max_hydro,
+                                  max_hydro_weekly = max_hydro_weekly,
+                                  niveau_max=niveau_max,
+                                  method_dp = method_dp, cvar_value = cvar_value,
+                                  force_final_level = force_final_level,
+                                  final_level_egal_initial = final_level_egal_initial,
+                                  final_level = final_level,
+                                  penalty_final_level = penalty_final_level)
+
+      message(paste0("Lower bound is : ",results$lower_bound))
+
+      df_gap <- dplyr::bind_rows(df_gap,
+                                data.frame(lb=results$lower_bound,n=as.character(0),area=area))
+
+      df_watervalues <- dplyr::bind_rows(df_watervalues,
+                                        dplyr::mutate(results$aggregated_results,n=as.character(0),area=area))
+
+  }
 
     level_init <- get_initial_level(area,opts)*niveau_max/100
 
     states <- round(seq(from = niveau_max, to = 0, by = -niveau_max*states_step_ratio),6)
 
     reservoir <- readReservoirLevels(area, opts = opts)
-
-    if (!is.null(initial_traj)){
-      levels = initial_traj %>%
-        dplyr::filter(.data$area==a) %>%
-        dplyr::select(-c("area")) %>%
-        dplyr::rename("constraint"="u")
-      # assertthat::assert_that(names(initial_traj)==c("week","mcYear","lev","constraint","scenario"))
-    } else {
-      levels <- getInitialTrend(level_init=level_init,inflow=inflow,mcyears=mcyears,
-                                niveau_max=niveau_max,penalty_low=penalty_low,penalty_high=penalty_high,
-                                reservoir = reservoir,max_hydro=max_hydro_weekly, states=states,
-                                pump_eff = pump_eff)
-    }
-    levels <- levels %>%
-      dplyr::mutate(true_constraint = .data$constraint)
-    levels = max_hydro_weekly %>%
-      dplyr::mutate(constraint = -.data$pump*pump_eff,
-                    true_constraint = .data$constraint,
-                    lev = NA) %>%
-      dplyr::select(-c("turb","pump")) %>%
-      dplyr::rename(week=.data$timeId) %>%
-      dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
 
     i <- 1
     gap <- 1
@@ -649,7 +783,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                   penalty_final_level = penalty_final_level, final_level = final_level,
                                   method_fast = method_fast,
                                   max_hydro_weekly=max_hydro_weekly, n=i,
-                                  pump_eff = pump_eff)
+                                  pump_eff = pump_eff, df_previous_cut = df_previous_cut)
 
         constraint_values <- levels %>%
           dplyr::select(c("week", "constraint","mcYear")) %>%
@@ -711,10 +845,14 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
           dplyr::arrange(.data$week,.data$mcYear,.data$u) %>%
           dplyr::mutate(sim="u")
 
-        df_rewards <- updateReward(opts=opts,pumping=pumping,
+        o <- updateReward(opts=opts,pumping=pumping,
                                    controls=controls,max_hydro=max_hydro,mcyears=mcyears,
                                    area=area,pump_eff=pump_eff,df_rewards = df_rewards,
-                                   u0=dplyr::filter(simulation_res$simulation_values,.data$area==a),i=i)
+                         u0=dplyr::filter(simulation_res$simulation_values,.data$area==a),i=i,
+                         df_current_cuts = df_current_cuts,
+                         df_previous_cut = df_previous_cut)
+        df_rewards = o$df_rewards
+        df_current_cuts = o$df_current_cuts
 
         reward <- df_rewards %>%
           dplyr::filter(.data$area == a) %>%
@@ -742,7 +880,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         df_gap <- dplyr::bind_rows(df_gap,
                                    data.frame(lb=results$lower_bound,n=as.character(i),area=area))
 
-        if (i>1){
+        if (nrow(dplyr::filter(df_gap,.data$area==a))>=2){
           gap = (df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]]
 
 
@@ -789,6 +927,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   output$df_levels <- df_levels
   output$df_watervalues <- df_watervalues
   output$df_gap <- df_gap
+  output$df_current_cuts <- df_current_cuts
   return(output)
 
 }

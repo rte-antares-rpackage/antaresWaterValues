@@ -21,7 +21,6 @@
 #' between the reservoir capacity and zero
 #' @param method_dp Algorithm in dynamic programming part
 #' @param cvar_value from 0 to 1. the probability used in cvar method
-#' @param method_fast Method to choose evaluated controls
 #' @param test_vu Binary. If you want to run a Antares simulation between each iteration
 #' with the latest water values
 #' @param force_final_level Binary. Whether final level should be constrained
@@ -39,7 +38,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      states_step_ratio=1/50,
                                                      method_dp = "grid-mean",
                                                      cvar_value = 0.5,
-                                                     method_fast = F,
                                                      test_vu=F,
                                                      force_final_level = F,
                                                      final_level_egal_initial = F,
@@ -148,7 +146,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                               niveau_max = niveau_max,df_levels = df_levels,
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
-                              method_fast = method_fast,
                               max_hydro_weekly=max_hydro_weekly, n=i,
                               pump_eff = pump_eff,
                               df_previous_cut = df_previous_cut)
@@ -178,7 +175,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       expansion = T
     )
 
-    if (antaresRead:::is_api_study(opts)&opts$antaresVersion>=880){
+    if (is_api_study(opts)&opts$antaresVersion>=880){
       output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
       output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
       info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
@@ -188,7 +185,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      "/raw?path=output%2F",output_dir,"%2Finfo"),
                            body=body)
     }
-    if (!antaresRead:::is_api_study(opts)){
+    if (!is_api_study(opts)){
       {
         output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = F)
         output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
@@ -316,7 +313,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 updateReward <- function(opts,pumping,controls,max_hydro,
                          mcyears,area,pump_eff,u0,df_rewards,i,df_current_cuts,
                          df_previous_cut){
-  if (antaresRead:::is_api_study(opts)){
+  if (is_api_study(opts)){
     opts_sim <- antaresRead::setSimulationPathAPI(study_id = opts$study_id,
                                                   host = opts$host,
                                                   token = opts$token,
@@ -490,7 +487,6 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 #' as \code{getOptimalTrend}
 #' @param penalty_low Penalty for violating the bottom rule curve
 #' @param penalty_high Penalty for violating the top rule curve
-#' @param method_fast Method to choose evaluated controls
 #' @param max_hydro_weekly Data frame with weekly maximum pumping and generating powers
 #' @param n Iteration
 #' @param pump_eff Pumping efficiency (1 if no pumping)
@@ -503,7 +499,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             niveau_max,df_levels,penalty_low,penalty_high,
                             penalty_final_level, final_level,
-                            method_fast=F,max_hydro_weekly, n=0, pump_eff,mix_scenario=T,
+                            max_hydro_weekly, n=0, pump_eff,mix_scenario=T,
                             df_previous_cut = NULL){
   level_i <- data.frame(states = level_init,scenario=1:length(mcyears))
   levels <- data.frame()
@@ -644,7 +640,6 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param cvar_value from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which cvar_value all bellman values are equal or
 #' less to it. (quantile(cvar_value))
-#' @param method_fast Method to choose evaluated controls
 #' @param test_vu Binary. If you want to run a Antares simulation between each iteration
 #' with the latest water values
 #' @param force_final_level Binary. Whether final level should be constrained
@@ -663,7 +658,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                states_step_ratio=1/50,
                                                                method_dp = "grid-mean",
                                                                cvar_value = 0.5,
-                                                               method_fast = F,
                                                                test_vu=F,
                                                                force_final_level = F,
                                                                final_level_egal_initial = F,
@@ -781,7 +775,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                   niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
                                   penalty_low = penalty_low, penalty_high = penalty_high,
                                   penalty_final_level = penalty_final_level, final_level = final_level,
-                                  method_fast = method_fast,
                                   max_hydro_weekly=max_hydro_weekly, n=i,
                                   pump_eff = pump_eff, df_previous_cut = df_previous_cut)
 
@@ -814,7 +807,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
           load(paste0(study_path,"/user/",paste0(i, "_itr_", area),".RData"))
         }
 
-        if (antaresRead:::is_api_study(opts)&opts$antaresVersion>=880){
+        if (is_api_study(opts)&opts$antaresVersion>=880){
           output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
           output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
           info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
@@ -824,7 +817,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                           "/raw?path=output%2F",output_dir,"%2Finfo"),
                                 body=body)
         }
-        if (!antaresRead:::is_api_study(opts)){
+        if (!is_api_study(opts)){
           {
             output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = F)
             output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
@@ -906,7 +899,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                               niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
-                              method_fast = method_fast,
                               max_hydro_weekly=max_hydro_weekly, n=i,
                               pump_eff = pump_eff, mix_scenario = F)
 

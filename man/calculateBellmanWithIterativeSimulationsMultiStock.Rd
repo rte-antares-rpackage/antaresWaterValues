@@ -22,12 +22,12 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   states_step_ratio = 1/50,
   method_dp = "grid-mean",
   cvar_value = 0.5,
-  method_fast = F,
   test_vu = F,
   force_final_level = F,
   final_level_egal_initial = F,
   penalty_final_level = NULL,
-  initial_traj = NULL
+  initial_traj = NULL,
+  df_previous_cut = NULL
 )
 }
 \arguments{
@@ -62,8 +62,6 @@ between the reservoir capacity and zero}
 \item{cvar_value}{from 0 to 1. the probability used in quantile method
 to determine a bellman value which cvar_value all bellman values are equal or
 less to it. (quantile(cvar_value))}
-
-\item{method_fast}{Method to choose evaluated controls}
 
 \item{test_vu}{Binary. If you want to run a Antares simulation between each iteration
 with the latest water values}

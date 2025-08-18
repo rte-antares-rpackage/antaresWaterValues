@@ -15,7 +15,9 @@ updateReward(
   pump_eff,
   u0,
   df_rewards,
-  i
+  i,
+  df_current_cuts,
+  df_previous_cut
 )
 }
 \arguments{
@@ -43,6 +45,8 @@ same format as the output of \code{reward_offset} with a column (n) containing t
 iteration number}
 
 \item{i}{Iteration number}
+
+\item{df_current_cuts}{Data frame containing previous estimations of cuts}
 }
 \value{
 Updated data frame df_rewards

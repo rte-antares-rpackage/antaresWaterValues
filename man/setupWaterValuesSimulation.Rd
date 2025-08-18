@@ -8,7 +8,7 @@ used in \code{runWaterValuesSimulation}}
 setupWaterValuesSimulation(
   area,
   overwrite = FALSE,
-  opts = antaresRead::simOptions(),
+  opts,
   pumping = F,
   efficiency,
   backup
@@ -36,3 +36,4 @@ The result of antaresRead::simOptions
 Setup a simulation before running it for calculating Water Values,
 used in \code{runWaterValuesSimulation}
 }
+\keyword{internal}

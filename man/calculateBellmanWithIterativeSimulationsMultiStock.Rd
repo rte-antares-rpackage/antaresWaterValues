@@ -10,7 +10,7 @@ new controls to be evaluated which leads to a new simulation}
 calculateBellmanWithIterativeSimulationsMultiStock(
   list_areas,
   list_pumping,
-  list_eff,
+  list_efficiency,
   opts,
   nb_control = 10,
   nb_itr = 3,
@@ -21,20 +21,21 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   study_path,
   states_step_ratio = 1/50,
   method_dp = "grid-mean",
-  q_ratio = 0.5,
+  cvar_value = 0.5,
   method_fast = F,
   test_vu = F,
   force_final_level = F,
   final_level_egal_initial = F,
-  final_level = NULL,
   penalty_final_level = NULL,
   initial_traj = NULL
 )
 }
 \arguments{
-\item{list_areas}{List of areas concerned by the simulation.}
+\item{list_areas}{Vector of areas concerned by simulations.}
 
-\item{list_pumping}{List of bools to tell if pumping is available in areas}
+\item{list_pumping}{Named vector of binary to tell if pumping is available in areas.}
+
+\item{list_efficiency}{Named vector of pumping efficiency.}
 
 \item{opts}{List of simulation parameters returned by the function
 \code{antaresRead::setSimulationPath}}
@@ -58,9 +59,9 @@ between the reservoir capacity and zero}
 
 \item{method_dp}{Algorithm in dynamic programming part}
 
-\item{q_ratio}{from 0 to 1. the probability used in quantile method
-to determine a bellman value which q_ratio all bellman values are equal or
-less to it. (quantile(q_ratio))}
+\item{cvar_value}{from 0 to 1. the probability used in quantile method
+to determine a bellman value which cvar_value all bellman values are equal or
+less to it. (quantile(cvar_value))}
 
 \item{method_fast}{Method to choose evaluated controls}
 
@@ -71,11 +72,11 @@ with the latest water values}
 
 \item{final_level_egal_initial}{Binary. Whether final level, if constrained, should be equal to initial level}
 
-\item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
-
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 
 \item{initial_traj}{Initial trajectory}
+
+\item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 }
 \value{
 List containing aggregated water values and the data table with all years for the last iteration

@@ -2,25 +2,26 @@
 % Please edit documentation in R/get_Reward.R
 \name{reward_offset}
 \alias{reward_offset}
-\title{Modify local reward to take into account overall cost of the simulation, mainly used in \code{Get_Reward}}
+\title{Take into account overall cost in local reward}
 \usage{
-reward_offset(opts, df_reward, u0 = c(), mcyears, expansion = F)
+reward_offset(simu, df_reward, u0 = c(), mcyears, expansion = F)
 }
 \arguments{
-\item{opts}{List of simulation parameters returned by the function
-\code{antaresRead::setSimulationPath}}
+\item{simu}{List of simulation parameters returned by the function \code{antaresRead::setSimulationPath()} with the simulation selected.}
 
-\item{df_reward}{data.table computed by the function \code{get_local_reward}}
+\item{df_reward}{A \code{dplyr::tibble()} computed by the function \code{get_local_reward()}.}
 
-\item{u0}{data.table {week,u} Constraint values per week used in the simulation, empty list if none}
+\item{u0}{A \code{dplyr::tibble()} with columns \code{"week"}, \code{"u"} and \code{"mcYear"} (optional) that gives constraint values per week (and per scenario) used in the simulation.
+Could be extracted from the \code{simulation_values} output of \code{runWaterValuesSimulation()} by filtering column \code{"sim"} to the corresponding simulation.}
 
-\item{mcyears}{Vector of years used to evaluate rewards}
+\item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
 
-\item{expansion}{Binary. True if mode expansion was used to run simulations}
+\item{expansion}{Binary. True if mode expansion (ie linear relaxation) of Antares is used to run simulations, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
+It is recommended to use mode expansion, it will be faster (only one iteration is done) and results will be smoother as the cost result will correspond to the linear relaxation of the problem.}
 }
 \value{
-a data.table {mcYear,week,u,reward}
+A \code{dplyr::tibble()} with columns \code{"week"}, \code{"mcYear"}, \code{"u"} and \code{"reward"}.
 }
 \description{
-Modify local reward to take into account overall cost of the simulation, mainly used in \code{Get_Reward}
+Modify local reward to take into account overall cost of the simulation, mainly used in \code{get_Reward()}.
 }

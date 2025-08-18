@@ -4,7 +4,7 @@
 \alias{restoreHydroStorage}
 \title{Restore the hydro storage time series, used in \code{runWaterValuesSimulation}}
 \usage{
-restoreHydroStorage(area, opts = antaresRead::simOptions(), data)
+restoreHydroStorage(area, opts, data)
 }
 \arguments{
 \item{area}{A valid Antares area.}
@@ -20,3 +20,4 @@ An updated list containing various information about the simulation.
 \description{
 Restore the hydro storage time series, used in \code{runWaterValuesSimulation}
 }
+\keyword{internal}

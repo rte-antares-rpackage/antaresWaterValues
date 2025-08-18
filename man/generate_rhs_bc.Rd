@@ -8,7 +8,7 @@ for each week and each MC year}
 generate_rhs_bc(constraint_value, area, opts)
 }
 \arguments{
-\item{constraint_value}{Data.frame {week,sim,u}}
+\item{constraint_value}{Data.frame (week,sim,u)}
 
 \item{area}{Area used to calculate watervalues}
 
@@ -19,3 +19,4 @@ generate_rhs_bc(constraint_value, area, opts)
 Modify time-series of clusters in fictive_area_bc to implement the constraint value
 for each week and each MC year
 }
+\keyword{internal}

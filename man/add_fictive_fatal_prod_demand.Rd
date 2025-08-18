@@ -4,12 +4,7 @@
 \alias{add_fictive_fatal_prod_demand}
 \title{Add fictive production and fictive load to avoid infeasabilities with binding constraints}
 \usage{
-add_fictive_fatal_prod_demand(
-  area,
-  opts = antaresRead::simOptions(),
-  load,
-  misc_gen
-)
+add_fictive_fatal_prod_demand(area, opts, load, misc_gen)
 }
 \arguments{
 \item{area}{A valid Antares area.}
@@ -27,3 +22,4 @@ An updated list containing various information about the simulation.
 \description{
 Add fictive production and fictive load to avoid infeasabilities with binding constraints
 }
+\keyword{internal}

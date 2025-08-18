@@ -251,7 +251,7 @@ calculateServer <- function(id, opts, silent) {
           opts = opts,
           pumping = simulation_res()$pumping,
           nb_disc_stock = 20,
-          pumping_efficiency = simulation_res()$eff,
+          efficiency = simulation_res()$eff,
           mcyears = simulation_res()$mc_years
         ) %>%
           dplyr::cross_join(data.frame(mcYear=simulation_res()$mc_years))
@@ -262,7 +262,7 @@ calculateServer <- function(id, opts, silent) {
           opts = opts,
           pumping = simulation_res()$pumping,
           nb_disc_stock = 20,
-          pumping_efficiency = simulation_res()$eff,
+          efficiency = simulation_res()$eff,
           mcyears = simulation_res()$mc_years
         )
       }
@@ -311,7 +311,7 @@ calculateServer <- function(id, opts, silent) {
                                 opts = opts,
                                 method_old = F,
                                 possible_controls = possible_controls(),
-                                max_hydro = get_max_hydro(simulation_res()$area, opts),
+                                max_hydro_hourly = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,
                                 area = simulation_res()$area,
                                 expansion = simulation_res()$expansion
@@ -320,27 +320,19 @@ calculateServer <- function(id, opts, silent) {
                             results <-     Grid_Matrix(
                               area = simulation_res()$area,
                               reward_db = reward_db,
-                              simulation_names = simulation_res()$simulation_names,
-                              simulation_values = simulation_res()$simulation_values,
                               nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
                               opts = opts,
                               week_53 = 0,
-                              method = "grid-mean",
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mc_years,
                               shiny = T,
-                              until_convergence = F,
-                              pumping = simulation_res()$pumping,
                               efficiency = simulation_res()$eff,
-                              correct_concavity = F,
-                              correct_monotony_gain = F,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,
                               force_final_level = input$force_final_level,
                               final_level = final_lvl(),
                               penalty_final_level_low = input$penalty_final_level_low,
-                              penalty_final_level_high = input$penalty_final_level_high,
-                              expansion = simulation_res()$expansion
+                              penalty_final_level_high = input$penalty_final_level_high
                             )$aggregated_results
 
                             shiny::isolate(res$results <- results)

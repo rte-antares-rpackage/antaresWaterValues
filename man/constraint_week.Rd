@@ -5,19 +5,12 @@
 \title{Generate constraint values for a week at a time used in \code{constraint_generator}
 depending on the maximum powers for the week}
 \usage{
-constraint_week(
-  pumping,
-  pumping_efficiency,
-  nb_disc_stock,
-  res_cap,
-  hydro,
-  week
-)
+constraint_week(pumping, efficiency, nb_disc_stock, res_cap, hydro, week)
 }
 \arguments{
 \item{pumping}{Boolean. True to take into account the pumping.}
 
-\item{pumping_efficiency}{between 0 and 1. the pumping efficiency ratio.}
+\item{efficiency}{between 0 and 1. the pumping efficiency ratio.}
 
 \item{nb_disc_stock}{Number of constraint values wanted for each week}
 
@@ -34,3 +27,4 @@ List of constraint values for the week
 Generate constraint values for a week at a time used in \code{constraint_generator}
 depending on the maximum powers for the week
 }
+\keyword{internal}

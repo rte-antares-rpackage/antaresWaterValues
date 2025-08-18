@@ -6,7 +6,7 @@
 used in \code{calculateBellmanWithIterativeSimulations}}
 \usage{
 updateReward(
-  study_path,
+  opts,
   pumping,
   controls,
   max_hydro,
@@ -19,7 +19,7 @@ updateReward(
 )
 }
 \arguments{
-\item{study_path}{Path of Antares study, passed to \code{setSimulationPath}}
+\item{opts}{Path of Antares study, passed to \code{setSimulationPath}}
 
 \item{pumping}{Binary, T if pumping possible}
 

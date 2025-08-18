@@ -22,7 +22,7 @@ updateWatervalues(
   max_hydro,
   max_hydro_weekly,
   method_dp = "grid-mean",
-  q_ratio = 0.5,
+  cvar_value = 0.5,
   force_final_level = F,
   final_level_egal_initial = F,
   final_level = NULL,
@@ -69,9 +69,9 @@ powers for each week,returned by the function  \code{get_max_hydro}}
 
 \item{method_dp}{Algorithm in dynamic programming part}
 
-\item{q_ratio}{from 0 to 1. the probability used in quantile method
-to determine a bellman value which q_ratio all bellman values are equal or
-less to it. (quantile(q_ratio))}
+\item{cvar_value}{from 0 to 1. the probability used in quantile method
+to determine a bellman value which cvar_value all bellman values are equal or
+less to it. (quantile(cvar_value))}
 
 \item{force_final_level}{Binary. Whether final level should be constrained}
 

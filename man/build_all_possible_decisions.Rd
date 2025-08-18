@@ -60,3 +60,4 @@ Create a data frame with all possible transition and associated next state for
 each scenario and each state for one particular week, used in \code{Bellman}.
 For each next state, Bellman value is calculated.
 }
+\keyword{internal}

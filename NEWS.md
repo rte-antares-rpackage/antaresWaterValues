@@ -1,3 +1,24 @@
+# antaresWaterValues 1.1.0
+
+## New features
+
+* Mode expansion compatible with AntaREST
+* Possible to launch a subset of simulations with parameter launch_simulations
+
+## Improvements 
+
+* Update of documentation
+
+## Remove features 
+
+* Only one method to compute Bellman values in Grid_Matrix
+* Remove reward computation in Grid_Matrix
+
+## Bugfixes
+
+* Update of binding constraints with old versions of Antares
+* Error on non integer pumping power
+
 # antaresWaterValues 1.0.0
 
 ## Major changes
@@ -6,6 +27,28 @@
 * Simplification and factorization of runWaterValuesSimulation
 * Removing arguments relative to district and fictive areas
 * Better deal with errors in runWaterValuesSimulation with backup data
+
+# antaresWaterValues 0.5.0
+
+## New features
+
+* Initialization of website
+* New github actions
+
+## Improvements
+
+* Unify functions parameters
+* Cleaner functions documentation
+
+# antaresWaterValues 0.4.2
+
+## New features
+
+* Use of cvar in Bellman values computation
+
+## Improvements
+
+* Simplify the scnearization of controls
 
 # antaresWaterValues 0.4.0
 

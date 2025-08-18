@@ -2,18 +2,18 @@
 % Please edit documentation in R/watervaluesViz.R
 \name{waterValuesViz}
 \alias{waterValuesViz}
-\title{Visualize mean grid layer}
+\title{Plot water values}
 \usage{
 waterValuesViz(Data, filter_penalties = FALSE)
 }
 \arguments{
-\item{Data}{Output from \code{Grid_Matrix}.}
+\item{Data}{Water values result. Output \code{aggregated_results} from \code{Grid_Matrix()}.}
 
-\item{filter_penalties}{Binary paramater. If T, show only watervalues inside rule curves}
+\item{filter_penalties}{Binary. If \code{TRUE}, show only water values inside rule curves.}
 }
 \value{
-a \code{ggplot} object
+A \code{ggplot2::ggplot()} object.
 }
 \description{
-Visualize mean grid layer
+Plot water values for all weeks and all levels of stock.
 }

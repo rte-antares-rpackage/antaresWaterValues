@@ -15,16 +15,9 @@
   #'   hydro storage over one step of time.
   #' @param P_max Numeric of length 1. Maximum energy that can be pumped to
   #' reservoir over one step of time.
-  #' @param method Character. Perform mean of grids algorithm or grid of means algorithm or
-  #'  grid of cvar algorithm.
-  #' @param cvar_value numeric in [0,1]. the probability used in quantile algorithm.
-  #' @param counter Numeric of length 1. number of the week in calculation.
-  #' @param stop_rate the percent from which the calculation stop. for example
-  #' \code{stop_rate=5} means the calculation stop if there is a week with less then
-  #' 5\% accessibles states.
+  #' @param cvar_value numeric in [0,1]. the probability used in cvar algorithm.
   #' @param mcyears Vector. Monte Carlo years
   #' @param states_steps Numeric. Discretization step of reservoir.
-  #' @param debugger_feas open debug mode in case there is an error of no accessible states
   #' @param niveau_max Level max of the reservoir
   #' @param penalty_level_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy
   #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy
@@ -33,12 +26,9 @@
   #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
-
-
+  #' @keywords internal
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
-                      method,mcyears,cvar_value=0.75,
-                      counter,
-                      stop_rate=5,debugger_feas=F,niveau_max,
+                      mcyears,cvar_value=1,niveau_max,
                       states_steps,penalty_level_low,penalty_level_high,
                       lvl_high,lvl_low,overflow_cost){
 
@@ -85,23 +75,12 @@
                                                                           "transition_reward","next_bellman_value")],
                            by=c("years","states"))
 
-
-    #------ mean-grid method---------
-
-    if (method == "mean-grid") {
-      return(Data_week)
-    }
-
-    #------ grid-mean method---------
-
-    if(method=="grid-mean"){
+    if(cvar_value==1){
       # mean all values
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid, FUN=mean)
 
       return(Data_week)
-    }
-
-    if (method=="cvar"){
+    } else {
       Data_week$value_node <- stats::ave(Data_week$value_node, Data_week$statesid,
                                          FUN=function(x) mean(x[x<=stats::quantile(x,cvar_value)]))
       return(Data_week)

@@ -5,6 +5,7 @@
 #' reward database for each scenario (we suppose there is only one week at a time)
 #'
 #' @return List of \code{stats::approxfun} for each scenario
+#' @keywords internal
 get_reward_interpolation <- function(Data_week){
 
   reward <- dplyr::distinct(Data_week[,c('years','reward_db')])
@@ -23,6 +24,7 @@ get_reward_interpolation <- function(Data_week){
 #' @param mcyears Vector of monte carlo years to take into account
 #'
 #' @return List of \code{stats::approxfun} for each scenario
+#' @keywords internal
 get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears){
 
   df_next_week <- data.frame(years = Data_week$years,
@@ -63,6 +65,7 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 #' @return Data frame with same format as Data week with 3 more columns :
 #' next_state, control (transition to next state) and
 #' next value (Bellman value of next state)
+#' @keywords internal
 build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
                                          mcyears,lvl_high,lvl_low,E_max,P_max,
                                          next_week_values,niveau_max,overflow_cost,

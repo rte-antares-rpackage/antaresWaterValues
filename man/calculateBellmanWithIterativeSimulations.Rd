@@ -21,7 +21,7 @@ calculateBellmanWithIterativeSimulations(
   study_path,
   states_step_ratio = 1/50,
   method_dp = "grid-mean",
-  q_ratio = 0.5,
+  cvar_value = 0.5,
   method_fast = F,
   test_vu = F,
   force_final_level = F,
@@ -60,9 +60,7 @@ between the reservoir capacity and zero}
 
 \item{method_dp}{Algorithm in dynamic programming part}
 
-\item{q_ratio}{from 0 to 1. the probability used in quantile method
-to determine a bellman value which q_ratio all bellman values are equal or
-less to it. (quantile(q_ratio))}
+\item{cvar_value}{from 0 to 1. the probability used in cvar method}
 
 \item{method_fast}{Method to choose evaluated controls}
 

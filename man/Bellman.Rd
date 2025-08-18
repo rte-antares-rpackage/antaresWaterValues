@@ -10,12 +10,8 @@ Bellman(
   decision_space,
   E_max,
   P_max = 0,
-  method,
   mcyears,
-  cvar_value = 0.75,
-  counter,
-  stop_rate = 5,
-  debugger_feas = F,
+  cvar_value = 1,
   niveau_max,
   states_steps,
   penalty_level_low,
@@ -46,20 +42,9 @@ hydro storage over one step of time.}
 \item{P_max}{Numeric of length 1. Maximum energy that can be pumped to
 reservoir over one step of time.}
 
-\item{method}{Character. Perform mean of grids algorithm or grid of means algorithm or
-grid of cvar algorithm.}
-
 \item{mcyears}{Vector. Monte Carlo years}
 
-\item{cvar_value}{numeric in [0,1]. the probability used in quantile algorithm.}
-
-\item{counter}{Numeric of length 1. number of the week in calculation.}
-
-\item{stop_rate}{the percent from which the calculation stop. for example
-\code{stop_rate=5} means the calculation stop if there is a week with less then
-5\% accessibles states.}
-
-\item{debugger_feas}{open debug mode in case there is an error of no accessible states}
+\item{cvar_value}{numeric in [0,1]. the probability used in cvar algorithm.}
 
 \item{niveau_max}{Level max of the reservoir}
 
@@ -81,3 +66,4 @@ a \code{data.table} like Data_week with the Bellman values
 \description{
 Compute Bellman values at step i from step i+1, used in \code{Grid_Matrix}
 }
+\keyword{internal}

@@ -845,7 +845,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                    data.frame(lb=results$lower_bound,n=as.character(i),area=area))
 
         if (nrow(dplyr::filter(df_gap,.data$area==a))>=2){
-          gap = abs(df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]]
+          gap = abs((df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]])
 
 
           message(paste0("Actual gap on lower bound is : ",gap*100," %"))

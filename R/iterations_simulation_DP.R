@@ -736,9 +736,15 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
       tryCatch({
 
+        if (nrow(df_levels)>=1){
+          df_levels_area = dplyr::filter(df_levels,.data$area==a)
+        } else {
+          df_levels_area = df_levels
+        }
+
         levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
                                   mcyears=mcyears,reward=reward,controls=controls,
-                                  niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
+                                  niveau_max = niveau_max,df_levels = df_levels_area,
                                   penalty_low = penalty_low, penalty_high = penalty_high,
                                   penalty_final_level = penalty_final_level, final_level = final_level,
                                   max_hydro_weekly=max_hydro_weekly, n=i,
@@ -839,7 +845,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                    data.frame(lb=results$lower_bound,n=as.character(i),area=area))
 
         if (nrow(dplyr::filter(df_gap,.data$area==a))>=2){
-          gap = (df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]]
+          gap = abs(df_gap$lb[[nrow(df_gap)]]-df_gap$lb[[nrow(df_gap)-1]])/df_gap$lb[[nrow(df_gap)]]
 
 
           message(paste0("Actual gap on lower bound is : ",gap*100," %"))

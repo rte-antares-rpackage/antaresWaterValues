@@ -21,7 +21,7 @@ getOptimalTrend(
   max_hydro_weekly,
   n = 0,
   pump_eff,
-  mix_scenario = T,
+  mix_scenario = TRUE,
   df_previous_cut = NULL
 )
 }

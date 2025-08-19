@@ -21,7 +21,7 @@ updateWatervalues(
   max_hydro_weekly,
   method_dp = "grid-mean",
   cvar_value = 0.5,
-  force_final_level = F,
+  force_final_level = FALSE,
   final_level = NULL,
   penalty_final_level = NULL
 )

@@ -22,8 +22,8 @@ calculateBellmanWithIterativeSimulations(
   states_step_ratio = 1/50,
   method_dp = "grid-mean",
   cvar_value = 0.5,
-  test_vu = F,
-  force_final_level = F,
+  test_vu = FALSE,
+  force_final_level = FALSE,
   final_level = NULL,
   penalty_final_level = NULL,
   initial_traj = NULL,
@@ -33,7 +33,7 @@ calculateBellmanWithIterativeSimulations(
 \arguments{
 \item{area}{Area with the reservoir}
 
-\item{pumping}{Binary, T if pumping is possible}
+\item{pumping}{Binary, TRUE if pumping is possible}
 
 \item{pump_eff}{Pumping efficiency (1 if no pumping)}
 

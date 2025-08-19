@@ -7,7 +7,7 @@
 constraint_generator(
   area,
   nb_disc_stock,
-  pumping = T,
+  pumping = TRUE,
   efficiency = NULL,
   opts,
   max_hydro = NULL,

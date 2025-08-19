@@ -147,7 +147,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
   constraint_value <- as.matrix(constraint_value)
 
   equal_cst = matrix(0,nrow = 366,ncol=ncol(constraint_value))
-  equal_cst[seq.int(1,364,7),seq_along(constraint_value)] = constraint_value
+  equal_cst[seq.int(1,364,7),seq_len(ncol(constraint_value))] = constraint_value
 
   coeff = c()
   if (opts$antaresVersion<870){

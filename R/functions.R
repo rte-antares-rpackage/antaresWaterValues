@@ -56,7 +56,7 @@ get_max_hydro <- function(area, opts,timeStep="hourly"){
     } else {message("timeStep not supported, change to hourly, weekly or daily")}
 
   }
-  max_hydro <- data.frame(timeId=seq(nrow(max_hydro)))
+  max_hydro <- data.frame(timeId=seq_len(nrow(max_hydro)))
   max_hydro$pump <- max_pump
   max_hydro$turb <- max_turb
   return(max_hydro)
@@ -105,7 +105,7 @@ get_inflow <- function(area, opts,mcyears){
 #' @return A \code{dplyr::tibble()} with 3 columns : \code{"timeId"}, \code{"mcYear"} and \code{"ov_cost"}.
 #'
 #' @export
-get_weekly_cost <- function(simu,mcyears,expansion=F){
+get_weekly_cost <- function(simu,mcyears,expansion=FALSE){
   if (!is_api_study(simu)){
     path <- paste0(simu$simPath)
     all_files <- list.files(path)
@@ -177,7 +177,7 @@ clear_scenario_builder <- function(opts){
 #' @note Please use \code{to_Antares_Format_bis()} if you are using \code{hydro-pricing-mode=accurate} in Antares.
 #' @returns A 365*101 numeric matrix
 #' @export
-to_Antares_Format <- function(data,constant=T){
+to_Antares_Format <- function(data,constant=TRUE){
 
   data <- dplyr::group_by(data, .data$weeks) %>%
     dplyr::arrange(.data$states) %>%
@@ -268,7 +268,7 @@ to_Antares_Format_bis <- function(data){
 
   vb <- convert_to_percent(data)
 
-  for (i in 1:nrow(vb)){
+  for (i in seq_len(vb)){
     vb[i,4] <- ifelse(vb[i,2]!=0,2*vb[i,3]-vb[i-1,4],0)
   }
 

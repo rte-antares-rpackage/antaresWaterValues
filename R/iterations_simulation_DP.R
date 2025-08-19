@@ -1,12 +1,10 @@
-
-
 #' Calculate Bellman values throughout iterations of Antares simulation and DP
 #' Each simulation leads to a new reward estimation, which leads to new water values,
 #' which leads to the off-line calculation in R of an optimal trajectory, which leads to
 #' new controls to be evaluated which leads to a new simulation
 #'
 #' @param area Area with the reservoir
-#' @param pumping Binary, T if pumping is possible
+#' @param pumping Binary, TRUE if pumping is possible
 #' @param pump_eff Pumping efficiency (1 if no pumping)
 #' @param opts  List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
@@ -38,8 +36,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      states_step_ratio=1/50,
                                                      method_dp = "grid-mean",
                                                      cvar_value = 0.5,
-                                                     test_vu=F,
-                                                     force_final_level = F,
+                                                     test_vu=FALSE,
+                                                     force_final_level = FALSE,
                                                      final_level = NULL,
                                                      penalty_final_level = NULL,
                                                      initial_traj = NULL,
@@ -63,7 +61,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       dplyr::mutate(n=stringr::str_c("previous_",.data$n))
   }
 
-  max_hydro <- get_max_hydro(area)
+  max_hydro <- get_max_hydro(area, opts)
   max_hydro_weekly <- max_hydro %>%
     dplyr::mutate(timeId=(.data$timeId-1)%/%168+1) %>%
     dplyr::group_by(.data$timeId) %>%
@@ -71,7 +69,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   max_hydro <- dplyr::rename(max_hydro,"P_max"="pump","T_max"="turb")
 
-  niveau_max <- get_reservoir_capacity(area = area)
+  niveau_max <- get_reservoir_capacity(area = area, opts= opts)
 
   inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
 
@@ -91,9 +89,9 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       dplyr::filter(-.data$pump*pump_eff<=.data$u, .data$u<= .data$turb) %>%
       dplyr::select(-c("turb","pump")) %>%
       dplyr::arrange(.data$week,.data$mcYear,.data$u,.data$sim) %>%
-      dplyr::distinct(.data$week,.data$mcYear,.data$u,.keep_all = T)
+      dplyr::distinct(.data$week,.data$mcYear,.data$u,.keep_all = TRUE)
     df_rewards = controls %>%
-      dplyr::left_join(df_previous_cut, by= dplyr::join_by(.data$mcYear,.data$week),suffix = c("","_simu")) %>%
+      dplyr::left_join(df_previous_cut, by= dplyr::join_by("mcYear","week"),suffix = c("","_simu")) %>%
       dplyr::mutate(reward = .data$reward +.data$marg * (.data$u-.data$u_simu)) %>%
       dplyr::select(-c("u_simu","marg","sim"))
 
@@ -128,14 +126,10 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   level_init <- get_initial_level(area,opts)*niveau_max/100
 
-  states <- seq(from = niveau_max, to = 0, by = -niveau_max*states_step_ratio)
-
-  reservoir <- readReservoirLevels(area, opts = opts)
-
   i <- 1
   gap <- 1
 
-  while(gap>1e-3&i<=nb_itr){
+  while(gap > 1e-3 && i <= nb_itr){
 
     tryCatch({
 
@@ -163,14 +157,14 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       nb_disc_stock = 1,
       mcyears = mcyears,
       path_solver =  path_solver,
-      overwrite = T,
+      overwrite = TRUE,
       opts = opts,
       file_name = paste0(i, "_itr_", area),
       pumping = pumping,
       efficiency = pump_eff,
-      show_output_on_console = F,
+      show_output_on_console = FALSE,
       constraint_values = constraint_values,
-      expansion = T
+      expansion = TRUE
     )
 
     if (is_api_study(opts)&opts$antaresVersion>=880){
@@ -185,12 +179,12 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     }
     if (!is_api_study(opts)){
       {
-        output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = F)
+        output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = FALSE)
         output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
         output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
         output_info$general$mode <- "Economy"
         antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
-                                        overwrite = T)
+                                        overwrite = TRUE)
       }
     }
 
@@ -255,16 +249,16 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
         data = reshaped_values
       )
 
-      changeHydroManagement(watervalues = T,heuristic = F,opts = opts,area=area)
+      changeHydroManagement(watervalues = TRUE,heuristic = FALSE,opts = opts,area=area)
 
       antaresEditObject::runSimulation(
         name = paste0("test_vu_itr_",i),
         mode = "economy",
         path_solver = path_solver,
-        show_output_on_console = T,
+        show_output_on_console = TRUE,
         opts = opts)
 
-      changeHydroManagement(watervalues = F,heuristic = T,opts = opts,area=area)
+      changeHydroManagement(watervalues = FALSE,heuristic = TRUE,opts = opts,area=area)
 
     }
 
@@ -290,7 +284,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 #' used in \code{calculateBellmanWithIterativeSimulations}
 #'
 #' @param opts Path of Antares study, passed to \code{setSimulationPath}
-#' @param pumping Binary, T if pumping possible
+#' @param pumping Binary, TRUE if pumping possible
 #' @param controls Data frame containing possible transition for each week,
 #' generated by the function \code{constraint_generator}
 #' @param max_hydro_hourly data.frame \code{timeId,pump,turb} with maximum pumping and storing
@@ -332,14 +326,14 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
                                mcyears=mcyears,area=area,efficiency= pump_eff)
 
   reward <- reward_offset(simu=opts_sim,df_reward = reward,
-                          u0=u[[1]][[1]],mcyears=mcyears, expansion = T)
+                          u0=u[[1]][[1]],mcyears=mcyears, expansion = TRUE)
 
   df_current_cuts = reward %>%
     dplyr::group_by(.data$week,.data$mcYear) %>%
     dplyr::mutate(marg=(.data$reward-dplyr::lag(.data$reward))/(.data$u-dplyr::lag(.data$u)),
                   marg = dplyr::if_else(is.na(.data$marg),dplyr::lead(.data$marg),.data$marg)) %>%
     dplyr::ungroup() %>%
-    dplyr::right_join(dplyr::select(u0,-c("sim")),by = dplyr::join_by(.data$mcYear, .data$week, .data$u)) %>%
+    dplyr::right_join(dplyr::select(u0,-c("sim")),by = dplyr::join_by("mcYear", "week", "u")) %>%
     dplyr::mutate(n=as.character(i),
                   area=area) %>%
     rbind(df_current_cuts)
@@ -349,14 +343,14 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
    invalid_previous_cuts = df_current_cuts %>%
      dplyr::filter(.data$n==as.character(i),.data$area == a) %>%
      dplyr::select(-c("marg","n","area")) %>%
-     dplyr::right_join(dplyr::filter(df_previous_cut,.data$area==a), by = dplyr::join_by(.data$mcYear,.data$week),suffix = c("_current","_previous")) %>%
+     dplyr::right_join(dplyr::filter(df_previous_cut,.data$area==a), by = dplyr::join_by("mcYear", "week"),suffix = c("_current","_previous")) %>%
      dplyr::mutate(reward_estimate = .data$reward_previous + .data$marg * (.data$u_current - .data$u_previous)) %>%
      dplyr::filter(.data$reward_estimate <= .data$reward_current) %>%
      dplyr::select(c("week","mcYear","n","area")) %>%
-     dplyr::mutate(to_remove = T)
+     dplyr::mutate(to_remove = TRUE)
 
    df_rewards = df_rewards %>%
-     dplyr::left_join(invalid_previous_cuts,by = dplyr::join_by(.data$week, .data$mcYear, .data$n, .data$area)) %>%
+     dplyr::left_join(invalid_previous_cuts,by = dplyr::join_by("week", "mcYear", "n", "area")) %>%
      dplyr::filter(is.na(.data$to_remove)) %>%
      dplyr::select(-c("to_remove"))
  }
@@ -410,7 +404,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
                               penalty_low,penalty_high,inflow,niveau_max,
                               max_hydro_weekly, method_dp="grid-mean",
                               cvar_value = 0.5,
-                              force_final_level = F,
+                              force_final_level = FALSE,
                               final_level = NULL,
                               penalty_final_level = NULL){
 
@@ -421,8 +415,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 
   reward_db <- list()
   reward_db$reward <- reward
-  reward_db$simulation_names <- colnames(reward)[3:length(reward)]
-  reward_db$simulation_values <- controls
+  reward_db$decision_space <- controls
 
 
   results <- Grid_Matrix(
@@ -439,7 +432,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
     convergence_criteria = 1,  # GUI default value if until_convergence
     cycle_limit = 10,  # GUI default value if until_convergence
     efficiency = pump_eff,
-    correct_concavity = F,
+    correct_concavity = FALSE,
     penalty_low = penalty_low,
     penalty_high = penalty_high,
     inflow = inflow,
@@ -483,9 +476,9 @@ updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
 getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             niveau_max,df_levels,penalty_low,penalty_high,
                             penalty_final_level, final_level,
-                            max_hydro_weekly, n=0, pump_eff,mix_scenario=T,
+                            max_hydro_weekly, n=0, pump_eff,mix_scenario=TRUE,
                             df_previous_cut = NULL){
-  level_i <- data.frame(states = level_init,scenario=1:length(mcyears))
+  level_i <- data.frame(states = level_init,scenario = seq_along(mcyears))
   levels <- data.frame()
 
   if (is.null(df_previous_cut)){
@@ -496,7 +489,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                       lev = NA) %>%
         dplyr::select(-c("turb","pump")) %>%
         dplyr::rename(week=.data$timeId) %>%
-        dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
+        dplyr::cross_join(data.frame(scenario = seq_along(mcyears),mcYear=mcyears))
       return(levels)
     }
 
@@ -507,15 +500,12 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                     lev = NA) %>%
       dplyr::select(-c("turb","pump")) %>%
       dplyr::rename(week=.data$timeId) %>%
-      dplyr::cross_join(data.frame(scenario=1:length(mcyears),mcYear=mcyears))
+      dplyr::cross_join(data.frame(scenario = seq_along(mcyears),mcYear=mcyears))
       return(levels)
     }
   }
 
-  set.seed(192*(n-1)) # just to make it reproducible
-
-  states <- watervalues %>%
-    dplyr::distinct(.data$states)
+  set.seed(192 * (n - 1)) # just to make it reproducible
 
   for (w in 1:52){
 
@@ -531,9 +521,9 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     Data_week$transition_reward <- NA_real_
     Data_week$next_bellman_value <- NA_real_
     if (mix_scenario){
-      Data_week$scenario <- sample(1:length(mcyears))
+      Data_week$scenario <- sample(seq_along(mcyears))
     } else {
-      Data_week$scenario <- 1:length(mcyears)
+      Data_week$scenario <- seq_along(mcyears)
     }
     Data_week <- Data_week %>%
       dplyr::select(-c("states")) %>%
@@ -559,7 +549,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                                            max_hydro_weekly$turb[w],
                                            max_hydro_weekly$pump[w]*pump_eff,
                                            transition$value_node,niveau_max,0,
-                                           transition$states)
+                                           next_states = transition$states)
 
     control <- df_SDP %>%
       dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
@@ -572,7 +562,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
       dplyr::ungroup() %>%
       dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state","constraint"="control") %>%
       dplyr::select(c("week","mcYear","lev","constraint","scenario")) %>%
-      dplyr::distinct(.data$week,.data$mcYear,.keep_all = T)
+      dplyr::distinct(.data$week,.data$mcYear,.keep_all = TRUE)
 
     assertthat::assert_that(nrow(control)==length(mcyears),msg=paste0("Problem with optimal trend at week ",w))
 
@@ -640,8 +630,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                states_step_ratio=1/50,
                                                                method_dp = "grid-mean",
                                                                cvar_value = 0.5,
-                                                               test_vu=F,
-                                                               force_final_level = F,
+                                                               test_vu=FALSE,
+                                                               force_final_level = FALSE,
                                                                penalty_final_level = NULL,
                                                                initial_traj = NULL,
                                                                df_previous_cut = NULL){
@@ -669,7 +659,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     pump_eff <- list_efficiency[area]
     final_level <- get_initial_level(area,opts)
 
-    max_hydro <- get_max_hydro(area)
+    max_hydro <- get_max_hydro(area, opts)
     max_hydro_weekly <- max_hydro %>%
       dplyr::mutate(timeId=(.data$timeId-1)%/%168+1) %>%
       dplyr::group_by(.data$timeId) %>%
@@ -677,7 +667,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
     max_hydro <- dplyr::rename(max_hydro,"P_max"="pump","T_max"="turb")
 
-    niveau_max <- get_reservoir_capacity(area = area)
+    niveau_max <- get_reservoir_capacity(area = area, opts = opts)
 
     inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
 
@@ -688,7 +678,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     controls <- tidyr::drop_na(controls) %>%
       dplyr::cross_join(data.frame(mcYear=mcyears))
 
-    changeHydroManagement(watervalues = F,heuristic = T,opts = opts,area=area)
+    changeHydroManagement(watervalues = FALSE,heuristic = TRUE,opts = opts,area=area)
 
     if (!is.null(df_previous_cut)){
       controls = df_previous_cut %>%
@@ -700,9 +690,9 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         dplyr::filter(-.data$pump*pump_eff<=.data$u, .data$u<= .data$turb) %>%
         dplyr::select(-c("turb","pump")) %>%
         dplyr::arrange(.data$week,.data$mcYear,.data$u,.data$sim) %>%
-        dplyr::distinct(.data$week,.data$mcYear,.data$u,.keep_all = T)
+        dplyr::distinct(.data$week,.data$mcYear,.data$u,.keep_all = TRUE)
       df_rewards = controls %>%
-        dplyr::left_join(dplyr::filter(df_previous_cut,.data$area == a), by= dplyr::join_by(.data$mcYear,.data$week),suffix = c("","_simu")) %>%
+        dplyr::left_join(dplyr::filter(df_previous_cut,.data$area == a), by= dplyr::join_by("mcYear","week"),suffix = c("","_simu")) %>%
         dplyr::mutate(reward = .data$reward + .data$marg * (.data$u-.data$u_simu)) %>%
         dplyr::select(-c("u_simu","marg","sim")) %>%
         rbind(df_rewards)
@@ -739,14 +729,10 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
     level_init <- get_initial_level(area,opts)*niveau_max/100
 
-    states <- round(seq(from = niveau_max, to = 0, by = -niveau_max*states_step_ratio),6)
-
-    reservoir <- readReservoirLevels(area, opts = opts)
-
     i <- 1
     gap <- 1
 
-    while(gap>1e-3&i<=nb_itr){
+    while(gap>1e-3 && i<=nb_itr){
 
       tryCatch({
 
@@ -769,7 +755,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         df_levels <- dplyr::bind_rows(df_levels,
                                       dplyr::mutate(levels,n=as.character(i),area=area))
 
-        if (T){
+        if (TRUE){
           simulation_res <- runWaterValuesSimulationMultiStock(
             list_areas = list_areas,
             list_pumping = list_pumping,
@@ -777,11 +763,11 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
             simulation_name = paste0(i,"_weekly_water_amount_", area, "_%s"),
             mcyears = mcyears,
             path_solver =  path_solver,
-            overwrite = T,
+            overwrite = TRUE,
             opts = opts,
             file_name = paste0(i, "_itr_", area),
             constraint_values = constraint_values,
-            expansion = T
+            expansion = TRUE
           )
         } else {
           load(paste0(study_path,"/user/",paste0(i, "_itr_", area),".RData"))
@@ -799,12 +785,12 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         }
         if (!is_api_study(opts)){
           {
-            output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = F)
+            output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = FALSE)
             output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
             output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
             output_info$general$mode <- "Economy"
             antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
-                                            overwrite = T)
+                                            overwrite = TRUE)
           }
         }
 
@@ -879,7 +865,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
                               max_hydro_weekly=max_hydro_weekly, n=i,
-                              pump_eff = pump_eff, mix_scenario = F)
+                              pump_eff = pump_eff, mix_scenario = FALSE)
 
     df_levels <- dplyr::bind_rows(df_levels,
                                   dplyr::mutate(levels,n=as.character(i),area=area))

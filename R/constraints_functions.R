@@ -147,7 +147,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
   constraint_value <- as.matrix(constraint_value)
 
   equal_cst = matrix(0,nrow = 366,ncol=ncol(constraint_value))
-  equal_cst[seq.int(1,364,7),1:ncol(constraint_value)] = constraint_value
+  equal_cst[seq.int(1,364,7),seq_along(constraint_value)] = constraint_value
 
   coeff = c()
   if (opts$antaresVersion<870){
@@ -174,7 +174,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
     names_sb <- c()
     values_sb <- c()
 
-    for (i in 1:length(scenarios)){
+    for (i in seq_along(scenarios)){
       names_sb <- c(names_sb,paste("bc","watervalues",
                                    scenarios[i]-1,sep=","))
       values_sb <- c(values_sb,as.integer(i))
@@ -205,7 +205,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 
     Sys.sleep(1)
     } else {
-      new_sb = as.list(1:length(scenarios))
+      new_sb = as.list(seq_along(scenarios))
       names(new_sb) = as.character(scenarios-1)
       sb_file = list()
       sb_file$bindingConstraints$watervalues = new_sb
@@ -238,7 +238,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 #' Controls values are stored in column \code{"u"}. Column \code{"sim"} indexes control values in the form \code{"u_i"} with \code{i} the index.
 #'
 #' @export
-constraint_generator <- function(area,nb_disc_stock,pumping=T,efficiency=NULL,opts,max_hydro=NULL,
+constraint_generator <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL,opts,max_hydro=NULL,
                                  inflow=NULL,mcyears=NULL){
 
   area = tolower(area)
@@ -267,7 +267,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=T,efficiency=NULL,op
                                       nb_disc_stock,res_cap,
                                       dplyr::filter(max_hydro,
                                                     .data$timeId==w),w),
-                            simplify = F)
+                            simplify = FALSE)
 
   df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
   df_constraint <- df_constraint %>%
@@ -301,8 +301,6 @@ constraint_week <- function(pumping,efficiency,nb_disc_stock,res_cap,hydro,week)
       }
       constraint_values <- c(0)
     } else {
-      total <- maxi-mini
-
       pump_rat <- 2
       turb_rat <- 2
       if (nb_disc_stock>=4){

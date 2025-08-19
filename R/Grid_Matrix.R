@@ -42,9 +42,9 @@ Grid_Matrix <- function(area,
                         inflow = NULL,
                         cvar_value=1,
                         opts,
-                        shiny=F,
+                        shiny=FALSE,
                         efficiency = NULL,
-                        until_convergence=F,
+                        until_convergence=FALSE,
                         convergence_rate=0.9,
                         convergence_criteria=1,
                         cycle_limit=10,
@@ -52,7 +52,7 @@ Grid_Matrix <- function(area,
                         penalty_low = 3000,
                         penalty_high = 3000,
                         max_hydro_weekly=NULL,
-                        force_final_level = F,
+                        force_final_level = FALSE,
                         final_level = NULL,
                         penalty_final_level_low = NULL,
                         penalty_final_level_high = NULL) {
@@ -81,14 +81,14 @@ Grid_Matrix <- function(area,
 
 
   # Checking states_step_ratio
-  if ((!is.numeric(states_step_ratio))|(states_step_ratio<0))
+  if ((!is.numeric(states_step_ratio)) || (states_step_ratio<0))
     stop("Failed Not valid States_step_ratio, please change it between 0 and 1.")
 
   states_steps <- niveau_max*states_step_ratio
 
 
   # States matrix for all weeks plus an other week representing the end of the year
-  states <- round(matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1),6)
+  states <- round(matrix(rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1),6)
 
 
   if(is.null(efficiency))
@@ -99,14 +99,6 @@ Grid_Matrix <- function(area,
   # Getting inflow in the reservoir
   if (is.null(inflow)){
     inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
-    # inflow[with(inflow, order(inflow$tsId, inflow$timeId)),]
-    # inflow <- inflow[, c("area", "tsId" , "timeId", "hydroStorage")]
-    # # inflow[, timeId := gsub(pattern = "\\d{4}-w", replacement = "", x = time)]
-    # inflow[, "timeId" := as.numeric(inflow$timeId)]
-    # inflow <- inflow %>%
-    #   dplyr::group_by(.data$area, .data$timeId, .data$tsId) %>%
-    #   dplyr::mutate(hydroStorage = sum(.data$hydroStorage, na.rm = TRUE)) %>%
-    #   as.data.table()
   }
 
   decision_space = reward_db$decision_space
@@ -208,7 +200,7 @@ Grid_Matrix <- function(area,
 
       watervalues[watervalues$weeks==53,"value_node" :=next_week_values]
 
-      for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
+      for (i in rev(seq_len(52))) {
 
 
         temp <- watervalues[watervalues$weeks==i]
@@ -231,7 +223,7 @@ Grid_Matrix <- function(area,
 
 
 
-        if(shiny&n_cycl==1&i==52){
+        if(shiny && n_cycl == 1 && i == 52){
           for (p in c("shinybusy")){
             if (!requireNamespace(p, quietly = TRUE)) {
               stop(
@@ -267,7 +259,7 @@ Grid_Matrix <- function(area,
       }
       # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level_low,penalty_final_level_high,final_level=final_level)
+                                               force_final_level=if(n_cycl==1){force_final_level}else{FALSE},penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
     }
 
@@ -282,7 +274,7 @@ Grid_Matrix <- function(area,
 
       watervalues[watervalues$weeks==53,"value_node" :=next_week_values]
 
-      for (i in rev(seq_len(52))) { # rep(52:1, times = nb_cycle)
+      for (i in rev(seq_len(52))) {
 
 
         temp <- watervalues[watervalues$weeks==i]
@@ -303,7 +295,7 @@ Grid_Matrix <- function(area,
                         overflow_cost = overflow_cost
         )
 
-        if(shiny&n_cycl==1&i==52){
+        if(shiny && n_cycl == 1 && i == 52){
           for (p in c("shinybusy")){
             if (!requireNamespace(p, quietly = TRUE)) {
               stop(
@@ -337,7 +329,7 @@ Grid_Matrix <- function(area,
         message("Error in the calculation of Bellman values")
       }
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level=if(n_cycl==1){force_final_level}else{F},
+                                               force_final_level=if(n_cycl==1){force_final_level}else{FALSE},
                                                penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
 
@@ -430,6 +422,3 @@ Grid_Matrix <- function(area,
   class(result) <- "detailled and aggregated results of watervalues calculation"
   return(result)
 }
-
-
-

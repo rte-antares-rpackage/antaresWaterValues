@@ -27,7 +27,7 @@ iterativeUI <- function(id, opts) {
       shinyWidgets::materialSwitch(
         NS(id, "itr_pumping"),
         "Pumping",
-        value = F,
+        value = FALSE,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -168,7 +168,7 @@ iterativeUI <- function(id, opts) {
       shinyWidgets::materialSwitch(
         NS(id, "itr_filter"),
         "Filter water values",
-        value = F,
+        value = FALSE,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -228,7 +228,7 @@ iterativeServer <- function(id, opts, silent) {
                           blocking_level = "error", position = "top-center", shiny = TRUE, prefix = "")
 
                         },
-                        print_cat = F, message = F, warning = silent))
+                        print_cat = FALSE, message = FALSE, warning = silent))
 
     itr_watervalues <- shiny::eventReactive(input$itr_plot,
                                             {

@@ -81,7 +81,7 @@ calculateUI <- function(id, opts) {
       shinyWidgets::materialSwitch(
         NS(id,"force_final_level"),
         "Force final level",
-        value = F,
+        value = FALSE,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -95,7 +95,7 @@ calculateUI <- function(id, opts) {
         shinyWidgets::materialSwitch(
           NS(id,"final_level_exact"),
           "Final level should be respected for all scenarios (if not consider expectancy)",
-          value = T,
+          value = TRUE,
           status = "success"
         ) %>%
           bsplus::shinyInput_label_embed(
@@ -110,7 +110,7 @@ calculateUI <- function(id, opts) {
         shinyWidgets::materialSwitch(
           NS(id,"final_level_egal_initial"),
           "Final level should be equal to initial level",
-          value = T,
+          value = TRUE,
           status = "success"
         ) %>%
           bsplus::shinyInput_label_embed(
@@ -173,7 +173,7 @@ calculateUI <- function(id, opts) {
       shinyWidgets::materialSwitch(
         NS(id,"filter"),
         "Filter water values",
-        value = F,
+        value = FALSE,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -197,7 +197,7 @@ calculateUI <- function(id, opts) {
         outputId = NS(id,"download_wv_plot"),
         style = "unite",
         color = "primary",
-        block = T
+        block = TRUE
       ),
 
     )
@@ -309,7 +309,7 @@ calculateServer <- function(id, opts, silent) {
                                 simulation_names = simulation_res()$simulation_names,
                                 simulation_values = simulation_res()$simulation_values,
                                 opts = opts,
-                                method_old = F,
+                                method_old = FALSE,
                                 possible_controls = possible_controls(),
                                 max_hydro_hourly = get_max_hydro(simulation_res()$area, opts),
                                 mcyears = simulation_res()$mc_years,
@@ -325,7 +325,7 @@ calculateServer <- function(id, opts, silent) {
                               week_53 = 0,
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mc_years,
-                              shiny = T,
+                              shiny = TRUE,
                               efficiency = simulation_res()$eff,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,
@@ -344,7 +344,7 @@ calculateServer <- function(id, opts, silent) {
 
                           }, blocking_level = "error", position = "top-center", shiny = TRUE, prefix = "")
 
-                        }, print_cat = F, message = F, warning = silent))
+                        }, print_cat = FALSE, message = FALSE, warning = silent))
 
 
 

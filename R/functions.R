@@ -268,7 +268,7 @@ to_Antares_Format_bis <- function(data){
 
   vb <- convert_to_percent(data)
 
-  for (i in seq_len(vb)){
+  for (i in seq_len(nrow(vb))){
     vb[i,4] <- ifelse(vb[i,2]!=0,2*vb[i,3]-vb[i-1,4],0)
   }
 

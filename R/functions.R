@@ -75,7 +75,7 @@ get_max_hydro <- function(area, opts,timeStep="hourly"){
 #' @export
 get_inflow <- function(area, opts,mcyears){
   area = tolower(area)
-  suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="hourly"))
+  suppressWarnings(inflow <- antaresRead::readInputTS(hydroStorage = area , timeStep="hourly", opts=opts))
   if (nrow(inflow)==0){
     message("No inflow has been found, considering it as null")
     inflow <- data.table(expand.grid(timeId=1:52,tsId=mcyears,hydroStorage=0,area=area))

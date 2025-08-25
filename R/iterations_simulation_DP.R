@@ -61,6 +61,14 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       dplyr::mutate(n=stringr::str_c("previous_",.data$n))
   }
 
+  area = tolower(area)
+  check_area_name(area = area, opts = opts)
+
+  backup = getBackupData(area,mcyears,opts)
+
+  assertthat::assert_that(opts$antaresVersion>=870,
+                              msg = "Scenarization of rhs of binding constraints not available with the version of Antares. Update the study to 8.7.0 or don't scenarize control values.")
+
   max_hydro <- get_max_hydro(area, opts)
   max_hydro_weekly <- max_hydro %>%
     dplyr::mutate(timeId=(.data$timeId-1)%/%168+1) %>%
@@ -101,7 +109,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
 
     results <- updateWatervalues(reward=reward,controls=controls,area=area,
-                                 mcyears=mcyears,simulation_res=simulation_res,
+                                 mcyears=mcyears,
                                  opts=opts,states_step_ratio=states_step_ratio,
                                  pump_eff=pump_eff,
                                  penalty_low=penalty_low,
@@ -126,12 +134,31 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   level_init <- get_initial_level(area,opts)*niveau_max/100
 
+  setupGeneralParameters(opts,
+                        TRUE,
+                        mcyears,
+                        paste0(0, "_itr_", area),
+                        paste0(0, "_itr_", area),
+                        controls,
+                        multistock = FALSE)
+
+  opts <- setupWaterValuesSimulation(
+        area = area,
+        overwrite = TRUE,
+        opts = opts,
+        pumping=pumping,
+        efficiency=pump_eff,
+        backup = backup
+      )
+
+  opts <- setWaterValuesDistrict(opts)
+
   i <- 1
   gap <- 1
 
-  while(gap > 1e-3 && i <= nb_itr){
+  tryCatch({
 
-    tryCatch({
+  while(gap > 1e-3 && i <= nb_itr){
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
                               mcyears=mcyears,reward=reward,controls=controls,
@@ -151,25 +178,16 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     df_levels <- dplyr::bind_rows(df_levels,
                                   dplyr::mutate(levels,n=as.character(i)))
 
-    simulation_res <- runWaterValuesSimulation(
-      area = area,
-      simulation_name = paste0(i,"_weekly_water_amount_", area, "_%s"),
-      nb_disc_stock = 1,
-      mcyears = mcyears,
-      path_solver =  path_solver,
-      overwrite = TRUE,
-      opts = opts,
-      file_name = paste0(i, "_itr_", area),
-      pumping = pumping,
-      efficiency = pump_eff,
-      show_output_on_console = FALSE,
-      constraint_values = constraint_values,
-      expansion = TRUE
-    )
+    generate_rhs_bc(constraint_value=constraint_values,area=area,opts=opts)
+
+    sim_name <- paste0(i, "_itr_", area)
+    launchSimulation(opts,i,sim_name,path_solver,TRUE,FALSE,constraint_values)
+
+    clear_scenario_builder(opts)
 
     if (is_api_study(opts)&opts$antaresVersion>=880){
       output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
-      output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+      output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,sim_name)],n=1)
       info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
       info$general$mode = "Economy"
       body <- jsonlite::toJSON(info,auto_unbox = TRUE)
@@ -180,7 +198,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     if (!is_api_study(opts)){
       {
         output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = FALSE)
-        output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+        output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,sim_name)],n=1)
         output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
         output_info$general$mode <- "Economy"
         antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
@@ -188,7 +206,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       }
     }
 
-    controls <- rbind(simulation_res$simulation_values,controls) %>%
+    controls <- rbind(constraint_values,controls) %>%
       dplyr::select("week","u","mcYear") %>%
       dplyr::distinct() %>%
       dplyr::arrange(.data$week,.data$mcYear,.data$u) %>%
@@ -197,7 +215,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
     o <- updateReward(opts=opts,pumping=pumping,
                                controls=controls,max_hydro_hourly=max_hydro,mcyears=mcyears,
                                area=area,pump_eff=pump_eff,df_rewards = df_rewards,
-                               u0=simulation_res$simulation_values,i=i,
+                               u0=constraint_values,i=i,
                                df_current_cuts = df_current_cuts,
                       df_previous_cut = df_previous_cut)
     df_rewards = o$df_rewards
@@ -209,7 +227,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
 
     results <- updateWatervalues(reward=reward,controls=controls,area=area,
-                                 mcyears=mcyears,simulation_res=simulation_res,
+                                 mcyears=mcyears,
                                  opts=opts,states_step_ratio=states_step_ratio,
                                  pump_eff=pump_eff,
                                  penalty_low=penalty_low,
@@ -261,12 +279,12 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
       changeHydroManagement(watervalues = FALSE,heuristic = TRUE,opts = opts,area=area)
 
     }
-
-    },
-    error = function(err) {print(err)}
-    )
-
   }
+  },
+  finally = {
+    resetStudy(opts,area,pumping,backup)
+    clear_scenario_builder(opts)}
+  )
 
   output <- list()
   output$results <- results$aggregated_results
@@ -309,10 +327,10 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
     opts_sim <- antaresRead::setSimulationPathAPI(study_id = opts$study_id,
                                                   host = opts$host,
                                                   token = opts$token,
-                                               simulation=paste0(i,"_itr_",area,"_",i,"_weekly_water_amount_",area,"_u_1"))
+                                               simulation=paste0(i,"_itr_",area))
   } else {
   opts_sim <- antaresRead::setSimulationPath(opts$studyPath,
-                                             simulation=paste0(i,"_itr_",area,"_",i,"_weekly_water_amount_",area,"_u_1"))
+                                             simulation=paste0(i,"_itr_",area))
   }
 
   u <- u0 %>%
@@ -377,7 +395,6 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
 #' generated by the function \code{constraint_generator}
 #' @param area Area with the reservoir
 #' @param mcyears Vector of monte carlo years used to evaluate rewards
-#' @param simulation_res Generated by the function \code{runWaterValuesSimulation}
 #' @param opts List of simulation parameters returned by the function
 #'   \code{antaresRead::setSimulationPath}
 #' @param states_step_ratio Discretization ratio to generate steps levels
@@ -399,7 +416,7 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
 #' @return List containing aggregated water values and the data table with all years
-updateWatervalues <- function(reward,controls,area,mcyears,simulation_res,opts,
+updateWatervalues <- function(reward,controls,area,mcyears,opts,
                               states_step_ratio,pump_eff,
                               penalty_low,penalty_high,inflow,niveau_max,
                               max_hydro_weekly, method_dp="grid-mean",
@@ -653,6 +670,45 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       dplyr::mutate(n=stringr::str_c("previous_",.data$n))
   }
 
+  assertthat::assert_that(opts$antaresVersion>=870,
+                            msg = "Scenarization of rhs of binding constraints not available with the version of Antares. Update the study to 8.7.0 or don't scenarize control values.")
+
+  list_areas = tolower(list_areas)
+
+  list_backup = list()
+  for (j in seq_along(list_areas)){
+    area = list_areas[[j]]
+    check_area_name(area = area, opts = opts)
+
+    list_backup[[j]] = getBackupData(area,mcyears,opts)
+  }
+
+  setupGeneralParameters(opts,
+                        TRUE,
+                        mcyears,
+                        paste0(0, "_itr_", area),
+                        paste0(0, "_itr_", area),
+                        data.frame(mcYear=0,week=0,u=0,sim="",area=""),
+                        multistock = TRUE)
+  
+  for (j in seq_along(list_areas)){
+    area <- list_areas[[j]]
+
+    opts <- setupWaterValuesSimulation(
+      area = area,
+      overwrite = TRUE,
+      opts = opts,
+      pumping=list_pumping[[j]],
+      efficiency=list_efficiency[[j]],
+      backup = list_backup[[j]]
+    )
+
+  }
+
+  opts <- setWaterValuesDistrict(opts)
+
+  tryCatch({
+  
   for (area in list_areas){
     a = area
     pumping <- list_pumping[area]
@@ -704,7 +760,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
 
       results <- updateWatervalues(reward=reward,controls=controls,area=area,
-                                  mcyears=mcyears,simulation_res=simulation_res,
+                                  mcyears=mcyears,
                                   opts=opts,states_step_ratio=states_step_ratio,
                                   pump_eff=pump_eff,
                                   penalty_low=penalty_low,
@@ -725,7 +781,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       df_watervalues <- dplyr::bind_rows(df_watervalues,
                                         dplyr::mutate(results$aggregated_results,n=as.character(0),area=area))
 
-  }
+    }
 
     level_init <- get_initial_level(area,opts)*niveau_max/100
 
@@ -733,8 +789,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     gap <- 1
 
     while(gap>1e-3 && i<=nb_itr){
-
-      tryCatch({
 
         if (nrow(df_levels)>=1){
           df_levels_area = dplyr::filter(df_levels,.data$area==a)
@@ -761,27 +815,24 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         df_levels <- dplyr::bind_rows(df_levels,
                                       dplyr::mutate(levels,n=as.character(i),area=area))
 
-        if (TRUE){
-          simulation_res <- runWaterValuesSimulationMultiStock(
-            list_areas = list_areas,
-            list_pumping = list_pumping,
-            list_efficiency = list_efficiency,
-            simulation_name = paste0(i,"_weekly_water_amount_", area, "_%s"),
-            mcyears = mcyears,
-            path_solver =  path_solver,
-            overwrite = TRUE,
-            opts = opts,
-            file_name = paste0(i, "_itr_", area),
-            constraint_values = constraint_values,
-            expansion = TRUE
-          )
-        } else {
-          load(paste0(study_path,"/user/",paste0(i, "_itr_", area),".RData"))
+        name_sim <- paste0(i, "_itr_", area)
+
+        for (j in seq_along(list_areas)){
+          constraint_value <- dplyr::filter(constraint_values,
+                                            .data$area==list_areas[[j]]) %>%
+            dplyr::select(-c("area"))
+
+          generate_rhs_bc(constraint_value=constraint_value,area=list_areas[[j]],
+                          opts=opts)
         }
+        
+        launchSimulation(opts,i,name_sim,path_solver,TRUE,FALSE,constraint_value)
+
+        clear_scenario_builder(opts)
 
         if (is_api_study(opts)&opts$antaresVersion>=880){
           output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
-          output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+          output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,name_sim)],n=1)
           info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
           info$general$mode = "Economy"
           body <- jsonlite::toJSON(info,auto_unbox = TRUE)
@@ -792,7 +843,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         if (!is_api_study(opts)){
           {
             output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = FALSE)
-            output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,simulation_res$simulation_names[[1]])],n=1)
+            output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,name_sim)],n=1)
             output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
             output_info$general$mode <- "Economy"
             antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
@@ -801,7 +852,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         }
 
 
-        controls <- simulation_res$simulation_values %>%
+        controls <- constraint_values %>%
           dplyr::filter(.data$area==a)  %>%
           dplyr::select(-c(area)) %>%
           rbind(controls) %>%
@@ -813,7 +864,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         o <- updateReward(opts=opts,pumping=pumping,
                                    controls=controls,max_hydro_hourly=max_hydro,mcyears=mcyears,
                                    area=area,pump_eff=pump_eff,df_rewards = df_rewards,
-                         u0=dplyr::filter(simulation_res$simulation_values,.data$area==a),i=i,
+                         u0=dplyr::filter(constraint_values,.data$area==a),i=i,
                          df_current_cuts = df_current_cuts,
                          df_previous_cut = df_previous_cut)
         df_rewards = o$df_rewards
@@ -826,7 +877,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
 
         results <- updateWatervalues(reward=reward,controls=controls,area=area,
-                                     mcyears=mcyears,simulation_res=simulation_res,
+                                     mcyears=mcyears,
                                      opts=opts,states_step_ratio=states_step_ratio,
                                      pump_eff=pump_eff,
                                      penalty_low=penalty_low,
@@ -857,12 +908,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
         i <- i+1
 
-      },
-      error = function(err) {
-        print(err)
-      },
-      finally = {
-      })
+      }
     }
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
@@ -883,7 +929,14 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       dplyr::mutate(area = area) %>%
       rbind(dplyr::filter(initial_traj,.data$area!=a))
 
-  }
+  },
+  finally = {
+    for (j in seq_along(list_areas)){
+      area = list_areas[[j]]
+      resetStudy(opts,area,list_pumping[area],list_backup[[j]])
+    }
+    clear_scenario_builder(opts)
+  })
 
   output <- list()
   output$df_rewards <- df_rewards

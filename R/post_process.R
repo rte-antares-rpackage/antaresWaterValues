@@ -23,7 +23,7 @@ remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_met
       results <- results %>%
         dplyr::filter(.data$vu<max) %>%
         dplyr::group_by(.data$weeks) %>%
-        dplyr::summarise(max_weekly_vu=max(.data$vu,na.rm = T),.groups = "drop") %>%
+        dplyr::summarise(max_weekly_vu=max(.data$vu,na.rm = TRUE),.groups = "drop") %>%
         dplyr::right_join(results,by=c("weeks")) %>%
         dplyr::mutate(vu=dplyr::if_else(.data$vu>max,.data$max_weekly_vu,.data$vu)) %>%
         as.data.table()
@@ -37,7 +37,7 @@ remove_out <- function(results_dt,min=NULL,max=NULL,max_vu,min_vu,replace_na_met
       results <- results %>%
         dplyr::filter(.data$vu>min) %>%
         dplyr::group_by(.data$weeks) %>%
-        dplyr::summarise(min_weekly_vu=min(.data$vu,na.rm = T),.groups = "drop") %>%
+        dplyr::summarise(min_weekly_vu=min(.data$vu,na.rm = TRUE),.groups = "drop") %>%
         dplyr::right_join(results,by=c("weeks")) %>%
         dplyr::mutate(vu=dplyr::if_else(.data$vu<min,.data$min_weekly_vu,.data$vu)) %>%
         as.data.table()

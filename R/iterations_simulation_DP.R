@@ -734,8 +734,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     controls <- tidyr::drop_na(controls) %>%
       dplyr::cross_join(data.frame(mcYear=mcyears))
 
-    changeHydroManagement(watervalues = FALSE,heuristic = TRUE,opts = opts,area=area)
-
     if (!is.null(df_previous_cut)){
       controls = df_previous_cut %>%
         dplyr::filter(.data$area == a) %>%

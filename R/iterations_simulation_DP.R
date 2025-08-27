@@ -82,7 +82,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   controls <- constraint_generator(area = area,nb_disc_stock = nb_control,
                                    pumping = pumping,opts = opts,
                                    efficiency = pump_eff,
-                                   max_hydro = max_hydro_weekly,inflow = inflow)
+                                   max_hydro_weekly = max_hydro_weekly,inflow = inflow)
   controls <- tidyr::drop_na(controls) %>%
     dplyr::cross_join(data.frame(mcYear=mcyears))
 
@@ -730,8 +730,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     controls <- constraint_generator(area = area,nb_disc_stock = nb_control,
                                      pumping = pumping,opts = opts,
                                      efficiency = pump_eff,
-                                     max_hydro = max_hydro_weekly,inflow = list_inflow[[area]],
-                                     res_cap = list_capacity[[area]])
+                                     max_hydro_weekly = max_hydro_weekly,inflow = list_inflow[[area]],
+                                     reservoir_capacity = list_capacity[[area]])
     controls <- tidyr::drop_na(controls) %>%
       dplyr::cross_join(data.frame(mcYear=mcyears))
 

@@ -239,7 +239,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 #'
 #' @export
 constraint_generator <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL,opts,max_hydro=NULL,
-                                 inflow=NULL,mcyears=NULL){
+                                 inflow=NULL,mcyears=NULL, res_cap=NULL){
 
   area = tolower(area)
   if(is.null(efficiency)){
@@ -249,7 +249,9 @@ constraint_generator <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL
   if(is.null(max_hydro)){
     max_hydro <- get_max_hydro(area,opts,timeStep = "weekly")
   }
-  res_cap <- get_reservoir_capacity(area,opts)
+  if (is.null(res_cap)){
+    res_cap <- get_reservoir_capacity(area,opts)
+  }
   if (is.null(inflow)){
     assertthat::assert_that(!is.null(mcyears))
     inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)

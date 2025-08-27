@@ -12,7 +12,8 @@ constraint_generator(
   opts,
   max_hydro = NULL,
   inflow = NULL,
-  mcyears = NULL
+  mcyears = NULL,
+  res_cap = NULL
 )
 }
 \arguments{

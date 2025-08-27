@@ -65,13 +65,6 @@ iterativeUI <- function(id, opts) {
 
       shiny::h2("Bellman values calculation parameters"),
 
-      shiny::sliderInput(
-        NS(id, "itr_hours"),
-        "Number of hours to use to calculate rewards",
-        max = 168,
-        min = 1,
-        value = 10
-      ),
       shiny::numericInput(
         NS(id, "itr_controls"),
         "Number of controls to calculate",
@@ -94,37 +87,13 @@ iterativeUI <- function(id, opts) {
         "bottom"
       ),
 
-      shinyWidgets::radioGroupButtons(
-        inputId = NS(id, "method_dp"),
-        label = "Select algorithm to use",
-        choices = c("grid-mean", "mean-grid", "quantile"),
-        individual = TRUE,
-        justified = TRUE,
-        checkIcon = list(yes = shiny::icon("ok",
-                                           lib = "glyphicon"))
-      ),
-      shinyBS::bsTooltip(
-        NS(id, "method_dp"),
-        " Select the algorithm to use in calculation for more information check documentation.",
-        "bottom"
-      ),
-
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "input.method_dp=='quantile'",
-        shiny::sliderInput(
-          NS(id, "q_ratio_dp"),
-          label = NULL,
-          min = 0,
-          max = 100,
-          value = 50,
-          post  = " %"
-        ),
-      ),
-      shinyBS::bsTooltip(
-        NS(id, "q_ratio_dp"),
-        "The bellman values selected in each week  give q_ratio of all bellman values are equal or less to it.",
-        "bottom"
+      shiny::sliderInput(
+        NS(id, "itr_cvar_value"),
+        label = "Cvar value",
+        min = 0,
+        max = 100,
+        value = 100,
+        post  = " %"
       ),
 
       # penalty for violation of the bottom rule curve
@@ -216,7 +185,7 @@ iterativeServer <- function(id, opts, silent) {
                               path_solver = input$itr_solver_path,
                               study_path = opts$studyPath,
                               states_step_ratio = 1 / input$itr_nb_states,
-                              method_dp = input$method_dp
+                              cvar_value = input$itr_cvar_value
                             )$results
 
                             shiny::isolate(rv$itr_results <- results)

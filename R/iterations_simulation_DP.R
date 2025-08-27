@@ -17,7 +17,6 @@
 #' @param study_path Character containing the Antares study
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
-#' @param method_dp Algorithm in dynamic programming part
 #' @param cvar_value from 0 to 1. the probability used in cvar method
 #' @param test_vu Binary. If you want to run a Antares simulation between each iteration
 #' with the latest water values
@@ -34,8 +33,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      penalty_low,penalty_high,
                                                      path_solver,study_path,
                                                      states_step_ratio=1/50,
-                                                     method_dp = "grid-mean",
-                                                     cvar_value = 0.5,
+                                                     cvar_value = 1,
                                                      test_vu=FALSE,
                                                      force_final_level = FALSE,
                                                      final_level = NULL,
@@ -117,7 +115,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                  inflow=inflow,
                                  max_hydro_weekly = max_hydro_weekly,
                                  niveau_max=niveau_max,
-                                 method_dp = method_dp, cvar_value = cvar_value,
+                                 cvar_value = cvar_value,
                                  force_final_level = force_final_level,
                                  final_level = final_level,
                                  penalty_final_level = penalty_final_level)
@@ -235,7 +233,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                  inflow=inflow,
                                  max_hydro_weekly = max_hydro_weekly,
                                  niveau_max=niveau_max,
-                                 method_dp = method_dp, cvar_value = cvar_value,
+                                 cvar_value = cvar_value,
                                  force_final_level = force_final_level,
                                  final_level = final_level,
                                  penalty_final_level = penalty_final_level)
@@ -407,7 +405,6 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
 #' @param niveau_max Capacity of the reservoir in MWh
 #' @param max_hydro_weekly data.frame \code{timeId,pump,turb} with maximum pumping and storing
 #' powers for each week,returned by the function  \code{get_max_hydro}
-#' @param method_dp Algorithm in dynamic programming part
 #' @param cvar_value from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which cvar_value all bellman values are equal or
 #' less to it. (quantile(cvar_value))
@@ -419,8 +416,8 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
 updateWatervalues <- function(reward,controls,area,mcyears,opts,
                               states_step_ratio,pump_eff,
                               penalty_low,penalty_high,inflow,niveau_max,
-                              max_hydro_weekly, method_dp="grid-mean",
-                              cvar_value = 0.5,
+                              max_hydro_weekly,
+                              cvar_value = 1,
                               force_final_level = FALSE,
                               final_level = NULL,
                               penalty_final_level = NULL){
@@ -627,7 +624,6 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param study_path Character containing the Antares study
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
-#' @param method_dp Algorithm in dynamic programming part
 #' @param cvar_value from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which cvar_value all bellman values are equal or
 #' less to it. (quantile(cvar_value))
@@ -645,8 +641,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                penalty_low,penalty_high,
                                                                path_solver,study_path,
                                                                states_step_ratio=1/50,
-                                                               method_dp = "grid-mean",
-                                                               cvar_value = 0.5,
+                                                               cvar_value = 1,
                                                                test_vu=FALSE,
                                                                force_final_level = FALSE,
                                                                penalty_final_level = NULL,
@@ -771,7 +766,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                   inflow=list_inflow[[area]],
                                   max_hydro_weekly = max_hydro_weekly,
                                   niveau_max=list_capacity[[area]],
-                                  method_dp = method_dp, cvar_value = cvar_value,
+                                  cvar_value = cvar_value,
                                   force_final_level = force_final_level,
                                   final_level = final_level,
                                   penalty_final_level = penalty_final_level)
@@ -888,7 +883,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                      inflow=list_inflow[[area]],
                                      max_hydro_weekly = max_hydro_weekly,
                                      niveau_max=list_capacity[[area]],
-                                     method_dp = method_dp, cvar_value = cvar_value,
+                                     cvar_value = cvar_value,
                                      force_final_level = force_final_level,
                                      final_level = final_level,
                                      penalty_final_level = penalty_final_level)

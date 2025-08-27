@@ -20,8 +20,7 @@ calculateBellmanWithIterativeSimulations(
   path_solver,
   study_path,
   states_step_ratio = 1/50,
-  method_dp = "grid-mean",
-  cvar_value = 0.5,
+  cvar_value = 1,
   test_vu = FALSE,
   force_final_level = FALSE,
   final_level = NULL,
@@ -56,8 +55,6 @@ calculateBellmanWithIterativeSimulations(
 
 \item{states_step_ratio}{Discretization ratio to generate steps levels
 between the reservoir capacity and zero}
-
-\item{method_dp}{Algorithm in dynamic programming part}
 
 \item{cvar_value}{from 0 to 1. the probability used in cvar method}
 

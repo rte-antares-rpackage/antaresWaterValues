@@ -676,12 +676,21 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   list_areas = tolower(list_areas)
 
   list_backup = list()
+  list_inflow = list()
+  list_capacity = list()
   for (j in seq_along(list_areas)){
     area = list_areas[[j]]
     check_area_name(area = area, opts = opts)
 
     list_backup[[j]] = getBackupData(area,mcyears,opts)
+
+    list_capacity[[j]] <- get_reservoir_capacity(area = area, opts = opts)
+
+    list_inflow[[j]] <- get_inflow(area=area, opts=opts,mcyears=mcyears)
   }
+
+  names(list_capacity) = list_areas
+  names(list_inflow) = list_areas
 
   setupGeneralParameters(opts,
                         TRUE,
@@ -723,14 +732,10 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
     max_hydro <- dplyr::rename(max_hydro,"P_max"="pump","T_max"="turb")
 
-    niveau_max <- get_reservoir_capacity(area = area, opts = opts)
-
-    inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
-
     controls <- constraint_generator(area = area,nb_disc_stock = nb_control,
                                      pumping = pumping,opts = opts,
                                      efficiency = pump_eff,
-                                     max_hydro = max_hydro_weekly,inflow = inflow)
+                                     max_hydro = max_hydro_weekly,inflow = list_inflow[[area]])
     controls <- tidyr::drop_na(controls) %>%
       dplyr::cross_join(data.frame(mcYear=mcyears))
 
@@ -765,9 +770,9 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                   pump_eff=pump_eff,
                                   penalty_low=penalty_low,
                                   penalty_high=penalty_high,
-                                  inflow=inflow,
+                                  inflow=list_inflow[[area]],
                                   max_hydro_weekly = max_hydro_weekly,
-                                  niveau_max=niveau_max,
+                                  niveau_max=list_capacity[[area]],
                                   method_dp = method_dp, cvar_value = cvar_value,
                                   force_final_level = force_final_level,
                                   final_level = final_level,
@@ -783,7 +788,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
     }
 
-    level_init <- get_initial_level(area,opts)*niveau_max/100
+    level_init <- get_initial_level(area,opts)*list_capacity[[area]]/100
 
     i <- 1
     gap <- 1
@@ -798,7 +803,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
         levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
                                   mcyears=mcyears,reward=reward,controls=controls,
-                                  niveau_max = niveau_max,df_levels = df_levels_area,
+                                  niveau_max = list_capacity[[area]],df_levels = df_levels_area,
                                   penalty_low = penalty_low, penalty_high = penalty_high,
                                   penalty_final_level = penalty_final_level, final_level = final_level,
                                   max_hydro_weekly=max_hydro_weekly, n=i,
@@ -882,9 +887,9 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                      pump_eff=pump_eff,
                                      penalty_low=penalty_low,
                                      penalty_high=penalty_high,
-                                     inflow=inflow,
+                                     inflow=list_inflow[[area]],
                                      max_hydro_weekly = max_hydro_weekly,
-                                     niveau_max=niveau_max,
+                                     niveau_max=list_capacity[[area]],
                                      method_dp = method_dp, cvar_value = cvar_value,
                                      force_final_level = force_final_level,
                                      final_level = final_level,
@@ -913,7 +918,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
                               mcyears=mcyears,reward=reward,controls=controls,
-                              niveau_max = niveau_max,df_levels = dplyr::filter(df_levels,.data$area==a),
+                              niveau_max = list_capacity[[area]],df_levels = dplyr::filter(df_levels,.data$area==a),
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
                               max_hydro_weekly=max_hydro_weekly, n=i,

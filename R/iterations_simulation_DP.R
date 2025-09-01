@@ -908,7 +908,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         i <- i+1
 
       }
-    }
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
                               mcyears=mcyears,reward=reward,controls=controls,
@@ -927,6 +926,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       dplyr::rename("u"="true_constraint") %>%
       dplyr::mutate(area = area) %>%
       rbind(dplyr::filter(initial_traj,.data$area!=a))
+
+    }
 
   },
   finally = {

@@ -17,7 +17,7 @@ runWaterValuesSimulationMultiStock(
   file_name = NULL,
   launch_simulations = NULL,
   constraint_values = NULL,
-  expansion = T
+  expansion = TRUE
 )
 }
 \arguments{

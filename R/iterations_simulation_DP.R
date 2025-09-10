@@ -349,7 +349,7 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
     dplyr::mutate(marg=(.data$reward-dplyr::lag(.data$reward))/(.data$u-dplyr::lag(.data$u)),
                   marg = dplyr::if_else(is.na(.data$marg),dplyr::lead(.data$marg),.data$marg)) %>%
     dplyr::ungroup() %>%
-    dplyr::right_join(dplyr::select(u0,-c("sim")),by = dplyr::join_by("mcYear", "week", "u")) %>%
+    dplyr::right_join(dplyr::select(u0,-c("sim","area")),by = dplyr::join_by("mcYear", "week", "u")) %>%
     dplyr::mutate(n=as.character(i),
                   area=area) %>%
     rbind(df_current_cuts)
@@ -712,7 +712,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   opts <- setWaterValuesDistrict(opts)
 
   tryCatch({
-  
+
   for (area in list_areas){
     a = area
     pumping <- list_pumping[area]
@@ -824,7 +824,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
           generate_rhs_bc(constraint_value=constraint_value,area=list_areas[[j]],
                           opts=opts)
         }
-        
+
         launchSimulation(opts,i,name_sim,path_solver,TRUE,FALSE,constraint_value)
 
         clear_scenario_builder(opts)
@@ -915,7 +915,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
                               max_hydro_weekly=max_hydro_weekly, n=i,
-                              pump_eff = pump_eff, mix_scenario = FALSE)
+                              pump_eff = pump_eff, mix_scenario = FALSE,
+                              df_previous_cut = df_previous_cut)
 
     df_levels <- dplyr::bind_rows(df_levels,
                                   dplyr::mutate(levels,n=as.character(i),area=area))

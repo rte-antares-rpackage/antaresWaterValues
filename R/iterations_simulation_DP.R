@@ -349,7 +349,7 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
     dplyr::mutate(marg=(.data$reward-dplyr::lag(.data$reward))/(.data$u-dplyr::lag(.data$u)),
                   marg = dplyr::if_else(is.na(.data$marg),dplyr::lead(.data$marg),.data$marg)) %>%
     dplyr::ungroup() %>%
-    dplyr::right_join(dplyr::select(u0,-c("sim","area")),by = dplyr::join_by("mcYear", "week", "u")) %>%
+    dplyr::right_join(dplyr::select(u0,-c("sim")),by = dplyr::join_by("mcYear", "week", "u")) %>%
     dplyr::mutate(n=as.character(i),
                   area=area) %>%
     rbind(df_current_cuts)

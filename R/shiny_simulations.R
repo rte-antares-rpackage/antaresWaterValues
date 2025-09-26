@@ -148,7 +148,8 @@ simulationServer <- function(id,opts,silent) {
                               expansion = input$expansion
                             )
                           },
-                          prefix = "")
+                          prefix = "",
+                          blocking_level = "error")
                           shinyWidgets::show_alert(title = "Run simulations",
                                                    text = "Done !!",
                                                    type = "success")

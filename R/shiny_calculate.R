@@ -240,54 +240,19 @@ calculateServer <- function(id, opts, silent) {
     output$mcyears <- shiny::renderText({
       if(is.null(simulation_res())){"Monte Carlo years :"}
       else {
-        paste0("Monte Carlo years : from ",simulation_res()$mc_years[1], " to ",
-               utils::tail(simulation_res()$mc_years,n=1))}
+        paste0("Monte Carlo years : from ",simulation_res()$mcyears[1], " to ",
+               utils::tail(simulation_res()$mcyears,n=1))}
     })
 
     constraints <- shiny::reactive({
-      if ("mcYear" %in% names(simulation_res()$simulation_values)){
-        constraint_generator(
+      constraint_generator(
           area = simulation_res()$area,
           opts = opts,
           pumping = simulation_res()$pumping,
           nb_disc_stock = 20,
           efficiency = simulation_res()$eff,
-          mcyears = simulation_res()$mc_years
-        ) %>%
-          dplyr::cross_join(data.frame(mcYear=simulation_res()$mc_years))
-      }
-      else {
-        constraint_generator(
-          area = simulation_res()$area,
-          opts = opts,
-          pumping = simulation_res()$pumping,
-          nb_disc_stock = 20,
-          efficiency = simulation_res()$eff,
-          mcyears = simulation_res()$mc_years
+          mcyears = simulation_res()$mcyears
         )
-      }
-    })
-
-    possible_controls <- shiny::reactive({
-      if ("mcYear" %in% names(simulation_res()$simulation_values)){
-        rbind(
-          simulation_res()$simulation_values,
-          constraints()
-        ) %>%
-          dplyr::select("week", "u","mcYear") %>%
-          dplyr::distinct() %>%
-          dplyr::arrange(.data$mcYear,week, .data$u)
-      }
-      else {
-        rbind(
-          simulation_res()$simulation_values,
-          constraints()
-        ) %>%
-          dplyr::select("week", "u") %>%
-          dplyr::distinct() %>%
-          dplyr::arrange(week, .data$u)
-      }
-
     })
 
     final_lvl <- shiny::reactive({if (input$force_final_level){
@@ -309,10 +274,10 @@ calculateServer <- function(id, opts, silent) {
                                 simulation_names = simulation_res()$simulation_names,
                                 simulation_values = simulation_res()$simulation_values,
                                 opts = opts,
-                                method_old = FALSE,
-                                possible_controls = possible_controls(),
+                                method_old = F,
+                                possible_controls = constraints(),
                                 max_hydro_hourly = get_max_hydro(simulation_res()$area, opts),
-                                mcyears = simulation_res()$mc_years,
+                                mcyears = simulation_res()$mcyears,
                                 area = simulation_res()$area,
                                 expansion = simulation_res()$expansion
                               )
@@ -324,8 +289,13 @@ calculateServer <- function(id, opts, silent) {
                               opts = opts,
                               week_53 = 0,
                               states_step_ratio = (1 / input$nb_states),
+<<<<<<< HEAD
                               mcyears = simulation_res()$mc_years,
                               shiny = TRUE,
+=======
+                              mcyears = simulation_res()$mcyears,
+                              shiny = T,
+>>>>>>> main
                               efficiency = simulation_res()$eff,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,

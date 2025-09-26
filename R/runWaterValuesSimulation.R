@@ -148,6 +148,9 @@ runWaterValuesSimulation <- function(area=NULL,
     }
 
   },
+  error = function(e) {
+    stop(e)
+  },
   finally = {
     resetStudy(opts,area,pumping,backup)
     clear_scenario_builder(opts)}
@@ -397,6 +400,9 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
         body=body)
     }
   },
+  error = function(e) {
+    stop(e)
+  },
   finally = {
     for (j in seq_along(list_areas)){
       area = list_areas[[j]]
@@ -470,12 +476,14 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
     opts = opts
   )
   if (is_api_study(opts)){
-    assertthat::assert_that(status$status == "success")
+    assertthat::assert_that(status$status == "success",
+                            msg = "Antares simulation failed, check Antares logs.")
     if (expansion){
       antaresEditObject::updateGeneralSettings(mode = "economy",opts=opts)
     }
   } else {
-    assertthat::assert_that(status == 0)
+    assertthat::assert_that(status == 0,
+                            msg = "Antares simulation failed, check Antares logs.")
   }
   if ("mcYear" %in% colnames(constraint_value) && !is_api_study(opts) && 
    !expansion && opts$parameters$output$storenewset){

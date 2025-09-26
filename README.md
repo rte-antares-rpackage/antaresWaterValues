@@ -33,14 +33,16 @@ library(antaresWaterValues)
 Now we are ready to use our package. If something gets wrong, please
 check dependencies versions in `DESCRIPTION`.
 
+The package edits the Antares study and resets it at the end but it
+could be wise to make a copy of the study before using the package for
+the first time.
+
 ## Using the Shiny app
 
 ``` r
 opts = antaresRead::setSimulationPath("your/path/to/the/antares/study","input") 
 shiny_water_values(opts)
 ```
-
-![](man/figures/calculate_water_values.gif)
 
 ## Without the Shiny app
 
@@ -67,7 +69,6 @@ simulation_res <- runWaterValuesSimulation(
     mcyears = mcyears,
     path_solver = "your/path/to/antares/bin/antares-8.6-solver.exe",
     opts = opts,
-    otp_dest=paste0(opts$studyPath,"/user"),
     file_name=name, #name of the saving file
     pumping=pumping,
     efficiency=efficiency

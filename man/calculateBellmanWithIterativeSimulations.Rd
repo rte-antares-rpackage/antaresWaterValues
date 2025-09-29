@@ -25,7 +25,6 @@ calculateBellmanWithIterativeSimulations(
   force_final_level = FALSE,
   final_level = NULL,
   penalty_final_level = NULL,
-  initial_traj = NULL,
   df_previous_cut = NULL
 )
 }
@@ -66,8 +65,6 @@ with the latest water values}
 \item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
-
-\item{initial_traj}{Initial trajectory}
 
 \item{df_previous_cut}{Data frame containing previous estimations of cuts}
 }

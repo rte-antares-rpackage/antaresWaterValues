@@ -66,7 +66,7 @@ with the latest water values}
 
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 
-\item{initial_traj}{Initial trajectory}
+\item{initial_traj}{Initial trajectory (used for other storages)}
 
 \item{df_previous_cut}{Data frame containing previous estimations of cuts}
 }

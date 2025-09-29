@@ -289,13 +289,8 @@ calculateServer <- function(id, opts, silent) {
                               opts = opts,
                               week_53 = 0,
                               states_step_ratio = (1 / input$nb_states),
-<<<<<<< HEAD
-                              mcyears = simulation_res()$mc_years,
-                              shiny = TRUE,
-=======
                               mcyears = simulation_res()$mcyears,
-                              shiny = T,
->>>>>>> main
+                              shiny = TRUE,
                               efficiency = simulation_res()$eff,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,

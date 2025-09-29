@@ -23,7 +23,6 @@
 #' @param force_final_level Binary. Whether final level should be constrained
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
-#' @param initial_traj Initial trajectory
 #' @param df_previous_cut Data frame containing previous estimations of cuts
 #'
 #' @export
@@ -38,7 +37,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      force_final_level = FALSE,
                                                      final_level = NULL,
                                                      penalty_final_level = NULL,
-                                                     initial_traj = NULL,
                                                      df_previous_cut = NULL){
 
 
@@ -631,6 +629,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' with the latest water values
 #' @param force_final_level Binary. Whether final level should be constrained
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
+#' @param initial_traj Initial trajectory (used for other storages)
 #' @inheritParams runWaterValuesSimulationMultiStock
 #' @inheritParams calculateBellmanWithIterativeSimulations
 #'
@@ -694,7 +693,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                         paste0(0, "_itr_", area),
                         data.frame(mcYear=0,week=0,u=0,sim="",area=""),
                         multistock = TRUE)
-  
+
   for (j in seq_along(list_areas)){
     area <- list_areas[[j]]
 
@@ -707,6 +706,24 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       backup = list_backup[[j]]
     )
 
+  }
+
+  if (is.null(initial_traj)){
+    initial_traj = data.frame()
+    for (j in 1:length(list_areas)){
+      max_hydro <- get_max_hydro(list_areas[[j]],opts,timeStep = "weekly")
+
+      initial_traj <- list_inflow[[j]] %>%
+        dplyr::filter(.data$tsId %in% mcyears, timeId<=52) %>%
+        dplyr::left_join(max_hydro,by = join_by(timeId)) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(hydroStorage = .data$hydroStorage) %>%
+        dplyr::select(c("timeId","tsId","hydroStorage")) %>%
+        dplyr::rename("u"="hydroStorage","week"="timeId","mcYear"="tsId") %>%
+        dplyr::mutate(area=list_areas[[j]]) %>%
+        dplyr::ungroup() %>%
+        rbind(initial_traj)
+    }
   }
 
   opts <- setWaterValuesDistrict(opts)

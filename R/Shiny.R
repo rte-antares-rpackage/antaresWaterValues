@@ -11,7 +11,7 @@
 #' @export
 shiny_water_values <-
   function(opts,
-           silent = F) {
+           silent = FALSE) {
     for (p in c(
       "bsplus",
       "DT",
@@ -75,6 +75,10 @@ shiny_water_values <-
           ),
         ),
         #end navbarMenu
+        shiny::tabPanel(
+          "Iterative calculation of Bellman values",
+          iterativeUI("iterative",opts)
+        ),
 
       ) #navbar
 
@@ -93,12 +97,14 @@ shiny_water_values <-
 
       postProcessServer("post", opts, res$watervalues, res$area)
 
+      iterativeServer("iterative",opts, silent)
+
     }
 
     options(shiny.launch.browser = TRUE)
     options(shiny.sanitize.errors = FALSE)
     options(shiny.fullstacktrace = FALSE)
-    options(shiny.trace = F)
+    options(shiny.trace = FALSE)
     options(shiny.error = NULL)
     shiny::shinyApp(ui = ui, server = server)
   }

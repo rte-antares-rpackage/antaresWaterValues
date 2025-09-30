@@ -3,6 +3,7 @@
 export(Grid_Matrix)
 export(changeHydroManagement)
 export(constraint_generator)
+export(getBellmanValuesFromOneSimulationMultistock)
 export(getPumpEfficiency)
 export(get_Reward)
 export(get_inflow)

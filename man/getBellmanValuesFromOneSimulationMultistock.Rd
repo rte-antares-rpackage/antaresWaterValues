@@ -6,13 +6,14 @@
 \usage{
 getBellmanValuesFromOneSimulationMultistock(
   opts,
-  path_to_antares,
+  path_solver,
   mcyears,
   list_areas,
   list_pumping,
-  list_eff,
+  list_efficiency,
   force_final_level,
-  penalty_final_level,
+  penalty_final_level_low,
+  penalty_final_level_high,
   penalty_low,
   penalty_high,
   write_vu = F,
@@ -22,13 +23,21 @@ getBellmanValuesFromOneSimulationMultistock(
 \arguments{
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
+\item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
+
 \item{mcyears}{Vector of integer. Monte Carlo years used to compute water values.}
 
 \item{list_areas}{Vector of areas concerned by simulations.}
 
 \item{list_pumping}{Named vector of binary to tell if pumping is available in areas.}
 
+\item{list_efficiency}{Named vector of pumping efficiency.}
+
 \item{force_final_level}{Binary. Whether final level should be constrained.}
+
+\item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
+
+\item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.}
 
 \item{penalty_low}{Double. Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost.}
 

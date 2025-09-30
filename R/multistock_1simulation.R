@@ -14,13 +14,14 @@
 #' @export
 #'
 getBellmanValuesFromOneSimulationMultistock <- function(opts,
-                                                        path_to_antares,
+                                                        path_solver,
                                                         mcyears,
                                                         list_areas,
                                                         list_pumping,
-                                                        list_eff,
+                                                        list_efficiency,
                                                         force_final_level,
-                                                        penalty_final_level,
+                                                        penalty_final_level_low,
+                                                        penalty_final_level_high,
                                                         penalty_low,
                                                         penalty_high,
                                                         write_vu = F,
@@ -39,8 +40,8 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
                            mcyears = mcyears)
 
       constraint_values <- inflow %>%
-        dplyr::filter(.data$tsId %in% mcyears, timeId <= 52) %>%
-        dplyr::left_join(max_hydro, by = join_by(timeId)) %>%
+        dplyr::filter(.data$tsId %in% mcyears, .data$timeId <= 52) %>%
+        dplyr::left_join(max_hydro, by = join_by("timeId")) %>%
         dplyr::rowwise() %>%
         dplyr::mutate(hydroStorage = .data$hydroStorage) %>%
         dplyr::select(c("timeId", "tsId", "hydroStorage")) %>%
@@ -60,12 +61,12 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
       timeStep = "weekly",
       mcYears = mcyears
     ) %>%
-      dplyr::rename(week = timeId)
+      dplyr::rename(week = .data$timeId)
 
     for (a in list_areas) {
       constraint_values <- result_stock %>%
         dplyr::filter(area == a) %>%
-        dplyr::mutate(u = .data$`H. STOR` - .data$`H. PUMP` * list_eff[a]) %>%
+        dplyr::mutate(u = .data$`H. STOR` - .data$`H. PUMP` * list_efficiency[a]) %>%
         dplyr::select(c("week", "mcYear", "u")) %>%
         dplyr::mutate(sim = "u_0") %>%
         dplyr::mutate(area = a) %>%
@@ -78,9 +79,9 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
   simulation_res <- runWaterValuesSimulationMultiStock (
     list_areas = list_areas,
     list_pumping = list_pumping,
-    list_efficiency = list_eff,
-    nb_mcyears = mcyears,
-    path_solver = path_to_antares,
+    list_efficiencyiciency = list_efficiency,
+    mcyears = mcyears,
+    path_solver = path_solver,
     overwrite = T,
     opts = opts,
     file_name = paste0(prefix),
@@ -90,10 +91,8 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
 
   for (a in list_areas) {
     pumping <- list_pumping[a]
-    pump_eff <- list_eff[a]
+    pump_eff <- list_efficiency[a]
     final_level <- get_initial_level(a, opts)
-
-    load(paste0(study_path, "/user/", prefix, ".RData"))
 
     print(a)
     local_sim_values <- simulation_res$simulation_values %>%
@@ -103,7 +102,7 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
       area = a,
       nb_disc_stock = 51,
       pumping = pumping,
-      pumping_efficiency = pump_eff,
+      efficiency = pump_eff,
       opts = opts,
       mcyears = mcyears
     )
@@ -117,7 +116,7 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
       method_old = F,
       possible_controls = controls_reward_calculation,
       expansion = simulation_res$expansion,
-      pump_eff = pump_eff
+      efficiency = pump_eff
     )
 
     results <- Grid_Matrix(
@@ -128,31 +127,30 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
       opts = opts,
       week_53 = 0,
       states_step_ratio = (1 / 51),
-      pumping = pumping,
       efficiency = pump_eff,
       penalty_low = penalty_low,
       penalty_high = penalty_high,
       force_final_level = force_final_level,
       final_level = final_level,
-      penalty_final_level_low = penalty_final_level,
-      penalty_final_level_high = penalty_final_level
+      penalty_final_level_low = penalty_final_level_low,
+      penalty_final_level_high = penalty_final_level_high
     )$aggregated_results
 
 
     df_vu <- df_vu %>%
-      rbind(dplyr::mutate(results, name = name, area = area))
+      rbind(dplyr::mutate(results, area = a))
 
     if (write_vu) {
       reshaped_values <- results[results$weeks != 53, ] %>%
         to_Antares_Format_bis()
-      antaresEditObject::writeWaterValues(area = area,
+      antaresEditObject::writeWaterValues(area = a,
                                           data = reshaped_values)
 
       changeHydroManagement(
         watervalues = T,
         heuristic = F,
         opts = opts,
-        area = area
+        area = a
       )
     }
 

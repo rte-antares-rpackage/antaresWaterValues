@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -191,6 +191,11 @@
 <span>                                   scenarios_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-reward-4.png" width="100%"></p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="multi-stock">Multi stock<a class="anchor" aria-label="anchor" href="#multi-stock"></a>
+</h2>
+<p>To compute Bellman values for multiple storages, you can use <code><a href="reference/getBellmanValuesFromOneSimulationMultistock.html">getBellmanValuesFromOneSimulationMultistock()</a></code> or you can compute Bellman values storage per storage. In all cases, be sure to use the hydro heuristic of Antares for all storages when computing Bellman values.</p>
 </div>
 </div>
 

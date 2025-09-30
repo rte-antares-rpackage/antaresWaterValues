@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,18 +56,6 @@
         <dd>Compute Bellman values</dd>
       </dl><dl><dt>
 
-          <code><a href="calculateBellmanWithIterativeSimulations.html">calculateBellmanWithIterativeSimulations()</a></code>
-
-        </dt>
-        <dd>Calculate Bellman values throughout iterations of Antares simulation and DP Each simulation leads to a new reward estimation, which leads to new water values, which leads to the off-line calculation in R of an optimal trajectory, which leads to new controls to be evaluated which leads to a new simulation</dd>
-      </dl><dl><dt>
-
-          <code><a href="calculateBellmanWithIterativeSimulationsMultiStock.html">calculateBellmanWithIterativeSimulationsMultiStock()</a></code>
-
-        </dt>
-        <dd>Calculate Bellman values throughout iterations of Antares simulation and DP Each simulation leads to a new reward estimation, which leads to new water values, which leads to the off-line calculation in R of an optimal trajectory, which leads to new controls to be evaluated which leads to a new simulation</dd>
-      </dl><dl><dt>
-
           <code><a href="changeHydroManagement.html">changeHydroManagement()</a></code>
 
         </dt>
@@ -80,10 +68,10 @@
         <dd>Generate control values</dd>
       </dl><dl><dt>
 
-          <code><a href="getOptimalTrend.html">getOptimalTrend()</a></code>
+          <code><a href="getBellmanValuesFromOneSimulationMultistock.html">getBellmanValuesFromOneSimulationMultistock()</a></code>
 
         </dt>
-        <dd>Calculate an optimal trajectory for the reservoir levels based on water values taking into account the mean inflow, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
+        <dd>Compute Bellman values for several storage based on one simulation</dd>
       </dl><dl><dt>
 
           <code><a href="getPumpEfficiency.html">getPumpEfficiency()</a></code>
@@ -210,18 +198,6 @@
 
         </dt>
         <dd>Convert water values to Antares format with high accuracy</dd>
-      </dl><dl><dt>
-
-          <code><a href="updateReward.html">updateReward()</a></code>
-
-        </dt>
-        <dd>Update df_rewards with latest simulation run, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
-      </dl><dl><dt>
-
-          <code><a href="updateWatervalues.html">updateWatervalues()</a></code>
-
-        </dt>
-        <dd>Calculate water values with <code>Grid_Matrix</code> from estimated reward, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
       </dl><dl><dt>
 
           <code><a href="waterValuesViz.html">waterValuesViz()</a></code>

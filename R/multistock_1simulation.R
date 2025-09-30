@@ -41,9 +41,9 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
 
       constraint_values <- inflow %>%
         dplyr::filter(.data$tsId %in% mcyears, .data$timeId <= 52) %>%
-        dplyr::left_join(max_hydro, by = join_by("timeId")) %>%
+        dplyr::left_join(max_hydro, by = dplyr::join_by("timeId")) %>%
         dplyr::rowwise() %>%
-        dplyr::mutate(hydroStorage = .data$hydroStorage) %>%
+        dplyr::mutate(hydroStorage = dplyr::if_else(.data$hydroStorage>.data$turb,.data$turb,.data$hydroStorage)) %>%
         dplyr::select(c("timeId", "tsId", "hydroStorage")) %>%
         dplyr::rename("u" = "hydroStorage",
                       "week" = "timeId",
@@ -79,13 +79,13 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
   simulation_res <- runWaterValuesSimulationMultiStock (
     list_areas = list_areas,
     list_pumping = list_pumping,
-    list_efficiencyiciency = list_efficiency,
+    list_efficiency = list_efficiency,
     mcyears = mcyears,
     path_solver = path_solver,
     overwrite = T,
     opts = opts,
     file_name = paste0(prefix),
-    show_output_on_console = TRUE,
+    show_output_on_console = F,
     constraint_values = constraint_values
   )
 
@@ -96,7 +96,8 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
 
     print(a)
     local_sim_values <- simulation_res$simulation_values %>%
-      dplyr::filter(.data$area == a)
+      dplyr::filter(.data$area == a) %>%
+      dplyr::select(-c("area"))
 
     controls_reward_calculation <- constraint_generator(
       area = a,

@@ -25,7 +25,7 @@ bellmanUI <- function(id,opts) {
         outputId = NS(id,"download_Bellman_plot"),
         style = "unite",
         color = "primary",
-        block = T
+        block = TRUE
       ),
 
     )

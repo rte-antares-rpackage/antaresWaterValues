@@ -48,7 +48,7 @@ rewardUI <- function(id,opts) {
         outputId = NS(id,"download_reward_base"),
         style = "unite",
         color = "primary",
-        block = T
+        block = TRUE
       )
     ),
 
@@ -58,7 +58,7 @@ rewardUI <- function(id,opts) {
         outputId = NS(id,"download_reward_plot"),
         style = "unite",
         color = "primary",
-        block = T
+        block = TRUE
       ),
 
       DT::dataTableOutput(NS(id,"reward_table"))
@@ -97,26 +97,7 @@ rewardServer <- function(id, opts, reward_db) {
       }
     })
 
-    reward_var_plot <- shiny::reactive({
-      week_id_rew <- input$week_id_rew[1]:input$week_id_rew[2]
-      Mc_year <- input$Mc_year[1]:input$Mc_year[2]
-
-      if (input$param_rew == "r1")
-      {
-        plot_reward_variation_mc(reward_db()$reward, week_id_rew,
-                                 Mc_year)
-      } else{
-        plot_reward_variation(reward_db()$reward, week_id_rew)
-      }
-
-
-    })
-
-
-
-
     output$rewardplot <- shiny::renderPlot(rewardplot()$graph)
-    # output$reward_second_plot <- shiny::renderPlot(reward_var_plot()$graph)
     output$reward_table <- DT::renderDataTable(rewardplot()$table)
     output$download_reward_plot <- shiny::downloadHandler(
       filename = function() {
@@ -150,4 +131,3 @@ rewardServer <- function(id, opts, reward_db) {
 
   })
 }
-

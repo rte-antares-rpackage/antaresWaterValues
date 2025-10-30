@@ -17,7 +17,7 @@
 #' @keywords internal
 build_data_watervalues <- function(watervalues,statesdt,reservoir,
                                    penalty_level_high,penalty_level_low,
-                                   force_final_level=F,penalty_final_level_low=0,
+                                   force_final_level=FALSE,penalty_final_level_low=0,
                                    penalty_final_level_high=0,final_level=NULL){
   # calculate derivative of Bellman values (ie watervalues not yet penalized)
   value_nodes_dt <- value_node_gen(watervalues,statesdt,reservoir)
@@ -108,7 +108,7 @@ value_node_gen <- function(watervalues,statesdt,reservoir){
 converged <- function(diff_vect,conv=1){
   t <- abs(diff_vect)
   t2 <- is.nan(t)
-  nan_values <- length(t2[t2==T])
+  nan_values <- length(t2[t2==TRUE])
   numeric_values <- length(t)-nan_values
 
   converged_values <- length(t[t<conv]) - nan_values
@@ -168,7 +168,6 @@ correct_concavity <- function(df_value_node, weeks){
     df_week <- dplyr::filter(df_week,is.finite(df_week$value_node))
     df_week <- unique(df_week)
     df_week <- dplyr::arrange(df_week,.data$states,.data$years)
-    n <- nrow(df_week)
     # Initialize corrected values
     df_week$new_value <- df_week$value_node
     # Getting all possible states

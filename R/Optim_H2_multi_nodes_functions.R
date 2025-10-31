@@ -887,9 +887,11 @@ calculateRewards5Simulations_MultiStock <- function(area,
     #   dplyr::select(-c("sim")) %>%
     #   dplyr::distinct() %>%
     #   dplyr::arrange(.data$week,.data$u)
-    
+
+    area_here <- area
+   
     constraint_values <- constraint_values %>% 
-      dplyr::filter(area==area) %>%
+      dplyr::filter(area==area_here) %>%
       dplyr::select(-c("area"))
     
     reward_db <- antaresWaterValues::get_Reward(simulation_values = constraint_values,

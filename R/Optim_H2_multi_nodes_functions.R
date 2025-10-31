@@ -37,6 +37,8 @@
 #' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
 #' 
 #' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
+#'
+#' @export
 MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          max_ite,
                                                          storage_bounds,

@@ -443,9 +443,6 @@ calculateRewardsSimulations <- function(area,
                                          step_number = 51,
                                          sim_number = 5,
                                          control_indices) {
-  settings_ini <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "generaldata.ini"))
-  settings_ini$`other preferences`$`hydro-pricing-mode` <- "accurate"
-  antaresEditObject::writeIni(settings_ini, file.path(opts$studyPath, "settings", "generaldata.ini"),overwrite=T)
 
   control_names <- c()
   for (i in control_indices) {control_names <- c(control_names,
@@ -593,10 +590,6 @@ calculateRewards5Simulations_MultiStock <- function(area,
                                                         sim_number = 5,
                                                         df_previous_cuts = NULL,
                                                         control_indices)  {
-  settings_ini <- antaresRead::readIniFile(file.path(opts$studyPath, "settings", "generaldata.ini"))
-  settings_ini$`other preferences`$`hydro-pricing-mode` <- "accurate"
-  antaresEditObject::writeIni(settings_ini, file.path(opts$studyPath, "settings", "generaldata.ini"),overwrite=T)
-
   list_areas <- list_areas[1:length(list_areas)-1]
 
   # compute list of inflows

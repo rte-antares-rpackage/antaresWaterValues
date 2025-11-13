@@ -2,10 +2,9 @@
 
 export(Grid_Matrix)
 export(MultiStock_H2_Investment_reward_compute_once)
-export(calculateBellmanWithIterativeSimulations)
-export(calculateBellmanWithIterativeSimulationsMultiStock)
 export(changeHydroManagement)
 export(constraint_generator)
+export(getBellmanValuesFromOneSimulationMultistock)
 export(getPumpEfficiency)
 export(get_Reward)
 export(get_inflow)

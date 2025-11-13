@@ -1,3 +1,18 @@
+# antaresWaterValues 1.2.0
+
+## New features 
+
+* Method to compute Bellman values for multiple storages based on one simulation
+
+## Improvements
+
+* Better handling of errors in runWaterValuesSimulation
+* Better README
+
+## Bugfixes
+
+* Errors in shiny_calculate
+
 # antaresWaterValues 1.1.0
 
 ## New features

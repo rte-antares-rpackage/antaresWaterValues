@@ -7,7 +7,7 @@ postProcessUI <- function(id,opts) {
       shiny::h3("Remove extreme values"),
       shinyWidgets::switchInput(
         NS(id,"Run_remove_out"),
-        value = FALSE,
+        value = F,
         offStatus = "danger",
         onStatus = "success"
       ) %>%
@@ -102,7 +102,7 @@ postProcessUI <- function(id,opts) {
         outputId = NS(id,"download_vu"),
         style = "unite",
         color = "primary",
-        block = TRUE
+        block = T
       )
 
     ),
@@ -121,7 +121,7 @@ postProcessUI <- function(id,opts) {
         outputId = NS(id,"download_pp_plot"),
         style = "unite",
         color = "primary",
-        block = TRUE
+        block = T
       ),
 
     )

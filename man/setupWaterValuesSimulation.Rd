@@ -9,7 +9,7 @@ setupWaterValuesSimulation(
   area,
   overwrite = FALSE,
   opts,
-  pumping = FALSE,
+  pumping = F,
   efficiency,
   backup
 )

@@ -14,10 +14,10 @@ restoreHydroStorage <- function(area, opts,data) {
                                  type="hydroSTOR",
                                  opts=opts)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
-  hydro_ini$reservoir[area]=TRUE
+  hydro_ini$reservoir[area]=T
   antaresEditObject::writeIni(hydro_ini,
                               file.path("input","hydro","hydro"),
-                              overwrite=TRUE,
+                              overwrite=T,
                               opts=opts)
 }
 
@@ -43,10 +43,10 @@ resetHydroStorage <- function(area, opts) {
                                   type="hydroSTOR",
                                   opts=opts)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
-  hydro_ini$reservoir[area]=FALSE
+  hydro_ini$reservoir[area]=F
   antaresEditObject::writeIni(hydro_ini,
                               file.path("input","hydro","hydro"),
-                              overwrite=TRUE,
+                              overwrite=T,
                               opts=opts)
 }
 
@@ -75,16 +75,16 @@ getPumpEfficiency <- function(area, opts) {
 #' For the given area, choose if hydro storage is managed with water values and/or heuristic.
 #' It is not possible to have neither water values nor heuristic.
 #'
-#' @param watervalues Binary. TRUE if use water values.
-#' @param heuristic Binary. TRUE if use heuristic.
+#' @param watervalues Binary. T if use water values.
+#' @param heuristic Binary. T if use heuristic.
 #' @inheritParams runWaterValuesSimulation
 #' @param area Character. Antares area for which to change hydro management.
 #' @export
-changeHydroManagement <- function(watervalues=FALSE,heuristic=TRUE,opts,area){
+changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
   assertthat::assert_that(area %in% names(hydro_ini$reservoir),msg = "No reservoir managment for this area, check Antares study")
-  assertthat::assert_that(hydro_ini$reservoir[area]==TRUE,msg="No reservoir managment for this area, check Antares study")
-  assertthat::assert_that((watervalues|heuristic)==TRUE,msg="Watervalues or heuristic has to be selected")
+  assertthat::assert_that(hydro_ini$reservoir[area]==T,msg="No reservoir managment for this area, check Antares study")
+  assertthat::assert_that((watervalues|heuristic)==T,msg="Watervalues or heuristic has to be selected")
 
   if (watervalues){
     hydro_ini[["use water"]][[area]] <- TRUE
@@ -99,6 +99,7 @@ changeHydroManagement <- function(watervalues=FALSE,heuristic=TRUE,opts,area){
   }
   antaresEditObject::writeIni(hydro_ini,
                               file.path("input","hydro","hydro"),
-                              overwrite=TRUE,
+                              overwrite=T,
                               opts=opts)
 }
+

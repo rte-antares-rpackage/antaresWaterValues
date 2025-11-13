@@ -4,7 +4,7 @@
 \alias{shiny_water_values}
 \title{Open web interface for computing water values}
 \usage{
-shiny_water_values(opts, silent = FALSE)
+shiny_water_values(opts, silent = F)
 }
 \arguments{
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}

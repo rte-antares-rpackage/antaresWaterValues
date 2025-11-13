@@ -81,7 +81,7 @@ calculateUI <- function(id, opts) {
       shinyWidgets::materialSwitch(
         NS(id,"force_final_level"),
         "Force final level",
-        value = FALSE,
+        value = F,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -95,7 +95,7 @@ calculateUI <- function(id, opts) {
         shinyWidgets::materialSwitch(
           NS(id,"final_level_exact"),
           "Final level should be respected for all scenarios (if not consider expectancy)",
-          value = TRUE,
+          value = T,
           status = "success"
         ) %>%
           bsplus::shinyInput_label_embed(
@@ -110,7 +110,7 @@ calculateUI <- function(id, opts) {
         shinyWidgets::materialSwitch(
           NS(id,"final_level_egal_initial"),
           "Final level should be equal to initial level",
-          value = TRUE,
+          value = T,
           status = "success"
         ) %>%
           bsplus::shinyInput_label_embed(
@@ -173,7 +173,7 @@ calculateUI <- function(id, opts) {
       shinyWidgets::materialSwitch(
         NS(id,"filter"),
         "Filter water values",
-        value = FALSE,
+        value = F,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -197,7 +197,7 @@ calculateUI <- function(id, opts) {
         outputId = NS(id,"download_wv_plot"),
         style = "unite",
         color = "primary",
-        block = TRUE
+        block = T
       ),
 
     )
@@ -290,7 +290,7 @@ calculateServer <- function(id, opts, silent) {
                               week_53 = 0,
                               states_step_ratio = (1 / input$nb_states),
                               mcyears = simulation_res()$mcyears,
-                              shiny = TRUE,
+                              shiny = T,
                               efficiency = simulation_res()$eff,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,
@@ -309,7 +309,7 @@ calculateServer <- function(id, opts, silent) {
 
                           }, blocking_level = "error", position = "top-center", shiny = TRUE, prefix = "")
 
-                        }, print_cat = FALSE, message = FALSE, warning = silent))
+                        }, print_cat = F, message = F, warning = silent))
 
 
 

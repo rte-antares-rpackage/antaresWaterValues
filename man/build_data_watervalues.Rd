@@ -11,7 +11,7 @@ build_data_watervalues(
   reservoir,
   penalty_level_high,
   penalty_level_low,
-  force_final_level = FALSE,
+  force_final_level = F,
   penalty_final_level_low = 0,
   penalty_final_level_high = 0,
   final_level = NULL

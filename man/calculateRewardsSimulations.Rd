@@ -8,13 +8,13 @@ Called for each area of \code{MultiStock_H2_Investment_reward_compute_once}}
 calculateRewardsSimulations(
   area,
   opts,
-  pumping = F,
-  pump_eff = 1,
+  pumping,
+  pump_eff,
   mcyears,
   path_to_antares,
   study_path,
   prefix,
-  launch_sims = T,
+  launch_sims,
   sim_number
 )
 }

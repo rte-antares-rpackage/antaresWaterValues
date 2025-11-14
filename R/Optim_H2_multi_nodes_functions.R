@@ -63,7 +63,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
   list_pumping <- c()
   list_efficiency <- c()
-  browser()
   for (i in 1:length(areas_invest)){
     pumping = max(get_max_hydro(area=areas_invest[i],opts=opts,timeStep = "weekly")$pump)>0
     list_pumping <- c(list_pumping,pumping)
@@ -147,25 +146,22 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                      sim_number = nb_sims)
     }
 
+    df_current_cuts <- simulation_point_res$reward
+    df_current_cuts <- dplyr::mutate(df_current_cuts, area=node)
+    df_current_cuts <- df_current_cuts %>%
+      dplyr::rename("week"="timeId", "u"="control") %>%
+      dplyr::group_by(.data$week,.data$mcYear) %>%
+      dplyr::mutate(marg=(.data$reward-dplyr::lag(.data$reward))/(.data$u-dplyr::lag(.data$u)))
     if (is.null(df_previous_cuts)) {
-      df_previous_cuts <- simulation_point_res$reward
-      df_previous_cuts <- dplyr::mutate(df_previous_cuts, area=node)
-      df_previous_cuts <- df_previous_cuts %>% dplyr::rename("week"="timeId", "u"="control")
-      df_previous_cuts <- df_previous_cuts %>%
-        dplyr::group_by(.data$week,.data$mcYear) %>%
-        dplyr::mutate(marg=(.data$reward-dplyr::lag(.data$reward))/(.data$u-dplyr::lag(.data$u)))
+      df_previous_cuts <- df_current_cuts
     } else {
-      df_current_cuts <- simulation_point_res$reward
-      df_current_cuts <- dplyr::mutate(df_current_cuts, area=node)
-      df_current_cuts <- df_current_cuts %>%
-        dplyr::rename("week"="timeId", "u"="control") %>%
-        dplyr::group_by(.data$week,.data$mcYear) %>%
-        dplyr::mutate(marg=(.data$reward-dplyr::lag(.data$reward))/(.data$u-dplyr::lag(.data$u)))
       df_previous_cuts <- rbind(df_previous_cuts, df_current_cuts)
     }
 
     # store results edited by area index
     list_rewards[[as.character(nb_node)]] <- simulation_point_res
+
+    final_level <- get_initial_level(node,opts)
 
     # loop on the candidates grids
     while (nb_ite < max_ite) {
@@ -378,13 +374,13 @@ grid_other_candidates <- function(candidates_data) {
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
 calculateRewardsSimulations <- function(area,
                                          opts,
-                                         pumping = F,
-                                         pump_eff = 1,
+                                         pumping,
+                                         pump_eff,
                                          mcyears,
                                          path_to_antares,
                                          study_path,
                                          prefix,
-                                         launch_sims=T,
+                                         launch_sims,
                                          sim_number) {
 
   constraint_values <- antaresWaterValues::constraint_generator(area=area,
@@ -428,11 +424,6 @@ calculateRewardsSimulations <- function(area,
                                       overwrite = T)
     }
   }
-
-  computing_time <- data.frame()
-  df_vu <- data.frame()
-  df_reward <- data.frame()
-
 
   {start.time <- Sys.time()
     opts <- antaresRead::setSimulationPath(study_path, "input")
@@ -772,11 +763,6 @@ calculateRewards5Simulations_MultiStock <- function(area,
                                       overwrite = T)
     }
   }
-
-  computing_time <- data.frame()
-  df_vu <- data.frame()
-  df_reward <- data.frame()
-
 
   {start.time <- Sys.time()
     opts <- antaresRead::setSimulationPath(study_path, "input")

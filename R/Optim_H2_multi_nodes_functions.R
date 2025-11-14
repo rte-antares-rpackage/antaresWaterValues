@@ -78,7 +78,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       new_cluster <- c(length(candidates_types_gen$index)+1, paste0(candidates_types_gen$name[cl], "_fixe"), "cluster bande",
                        candidates_types_gen$TOTEX[cl], candidates_types_gen$Prix_fixe[cl], 0, 0,0,0,0,candidates_types_gen$Zone[cl])
       candidates_types_gen <- rbind(candidates_types_gen, new_cluster)
-      }
+    }
   }
 
   # edit unsupplied energy cost
@@ -109,8 +109,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     candidates_data <- c()
     for (can in 1:length(candidates_types$index)) {
       if (!grepl("_fixe", candidates_types$name[can])) {
-      candidates_data[[can]] <- c(as.numeric(candidates_types$Borne_min[can]), as.numeric(candidates_types$Borne_max[can]),
-                                  as.numeric(candidates_types$Points_nb[can]))
+        candidates_data[[can]] <- c(as.numeric(candidates_types$Borne_min[can]), as.numeric(candidates_types$Borne_max[can]),
+                                    as.numeric(candidates_types$Points_nb[can]))
       }
     }
 
@@ -135,15 +135,15 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     } else {
       simulation_point_res <-
         calculateRewardsSimulations(area=node,
-                                     opts=opts,
-                                     pumping = list_pumping[[node]],
-                                     pump_eff = list_efficiency[[node]],
-                                     mcyears = mc_years_optim,
-                                     path_to_antares =  path_to_antares,
-                                     study_path = study_path,
-                                     prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
-                                     launch_sims=launch_sims,
-                                     sim_number = nb_sims)
+                                    opts=opts,
+                                    pumping = list_pumping[[node]],
+                                    pump_eff = list_efficiency[[node]],
+                                    mcyears = mc_years_optim,
+                                    path_to_antares =  path_to_antares,
+                                    study_path = study_path,
+                                    prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
+                                    launch_sims=launch_sims,
+                                    sim_number = nb_sims)
     }
 
     df_current_cuts <- simulation_point_res$reward
@@ -230,23 +230,23 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
             # calculate total cost
             if (new_candidate_grid[[candidate_index]] != "not necessary") {
               total_cost_can <- total_cost_loop(area = node,
-                                              mc_years = mc_years_optim,
-                                              candidate_pool = new_candidate_grid[[candidate_index]],
-                                              candidates_types = candidates_types,
-                                              storage_vol = storage_vol,
-                                              df_reward = list_rewards[[as.character(nb_node)]],
-                                              cvar = cvar,
-                                              opts = opts,
-                                              penalty_low = penalty_low,
-                                              penalty_high = penalty_high,
-                                              penalty_final_level = penalty_final_level,
-                                              storage_annual_cost = storage_annual_cost,
-                                              final_level = final_level)
+                                                mc_years = mc_years_optim,
+                                                candidate_pool = new_candidate_grid[[candidate_index]],
+                                                candidates_types = candidates_types,
+                                                storage_vol = storage_vol,
+                                                df_reward = list_rewards[[as.character(nb_node)]],
+                                                cvar = cvar,
+                                                opts = opts,
+                                                penalty_low = penalty_low,
+                                                penalty_high = penalty_high,
+                                                penalty_final_level = penalty_final_level,
+                                                storage_annual_cost = storage_annual_cost,
+                                                final_level = final_level)
               print(storage_vol)
               print(new_candidate_grid[[candidate_index]])
               print(total_cost_can)
               grid_costs <- rbind(grid_costs,
-                                c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can))
+                                  c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can))
             }
           }
         }
@@ -286,34 +286,34 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
     # add best clusters to node in the study and edit storage size
     if (edit_study) {
-    l_old_clusters <- c()
-    l_read_clusters <- antaresRead::readClusterDesc(opts=opts)
-    l_all_clusters <- as.character(l_read_clusters$cluster)
+      l_old_clusters <- c()
+      l_read_clusters <- antaresRead::readClusterDesc(opts=opts)
+      l_all_clusters <- as.character(l_read_clusters$cluster)
 
-    antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = output_node[[node]][["best"]][["Storage"]]), opts = opts)
+      antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = output_node[[node]][["best"]][["Storage"]]), opts = opts)
 
-    for (i in 1:length(l_all_clusters)) {if (l_read_clusters$area[i]==node) {l_old_clusters <- c(l_old_clusters, l_all_clusters[i])}}
+      for (i in 1:length(l_all_clusters)) {if (l_read_clusters$area[i]==node) {l_old_clusters <- c(l_old_clusters, l_all_clusters[i])}}
 
-    for (can in 1:length(candidates_types$index) ){
-      power <- output_node[[node]][["best"]][[candidates_types$name[can]]]
-      ts_avail <- matrix(power, nrow = 8760, ncol = 1)
+      for (can in 1:length(candidates_types$index) ){
+        power <- output_node[[node]][["best"]][[candidates_types$name[can]]]
+        ts_avail <- matrix(power, nrow = 8760, ncol = 1)
 
-      if (paste0(node, "_", candidates_types$name[can]) %in% l_old_clusters) {
-        old_power <- subset(antaresRead::readClusterDesc(opts), .data$cluster == paste0(node, "_", candidates_types$name[can]))$nominalcapacity
-        antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], nominalcapacity = old_power + power, time_series = ts_avail)
-      } else {
-        antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can],
-                                         unitcount = 1L, nominalcapacity = power,
-                                         marginal_cost = as.integer(candidates_types$Marg_price[can]),
-                                         market_bid_cost = as.integer(candidates_types$Marg_price[can]), must_run = T,
-                                         time_series = ts_avail)
-        if (candidates_types$type[can] == "cluster flexible") {
-          antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], must_run = F)
+        if (paste0(node, "_", candidates_types$name[can]) %in% l_old_clusters) {
+          old_power <- subset(antaresRead::readClusterDesc(opts), .data$cluster == paste0(node, "_", candidates_types$name[can]))$nominalcapacity
+          antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], nominalcapacity = old_power + power, time_series = ts_avail)
+        } else {
+          antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can],
+                                           unitcount = 1L, nominalcapacity = power,
+                                           marginal_cost = as.integer(candidates_types$Marg_price[can]),
+                                           market_bid_cost = as.integer(candidates_types$Marg_price[can]), must_run = T,
+                                           time_series = ts_avail)
+          if (candidates_types$type[can] == "cluster flexible") {
+            antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], must_run = F)
+          }
         }
       }
     }
-    }
-    }
+  }
   return(output_node)
 }
 
@@ -373,15 +373,15 @@ grid_other_candidates <- function(candidates_data) {
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
 calculateRewardsSimulations <- function(area,
-                                         opts,
-                                         pumping,
-                                         pump_eff,
-                                         mcyears,
-                                         path_to_antares,
-                                         study_path,
-                                         prefix,
-                                         launch_sims,
-                                         sim_number) {
+                                        opts,
+                                        pumping,
+                                        pump_eff,
+                                        mcyears,
+                                        path_to_antares,
+                                        study_path,
+                                        prefix,
+                                        launch_sims,
+                                        sim_number) {
 
   constraint_values <- antaresWaterValues::constraint_generator(area=area,
                                                                 nb_disc_stock = sim_number,
@@ -492,21 +492,21 @@ calculateRewardsSimulations <- function(area,
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
 calculateRewards5Simulations_MultiStock <- function(area,
-                                                        list_areas,
-                                                        list_pumping,
-                                                        list_efficiency,
-                                                        opts,
-                                                        mcyears,
-                                                        path_to_antares,
-                                                        study_path,
-                                                        prefix,
-                                                        launch_sims=T,
-                                                        penalty_low,
-                                                        penalty_high,
-                                                        penalty_final_level,
-                                                        cvar,
-                                                        sim_number = 5,
-                                                        df_previous_cuts = NULL)  {
+                                                    list_areas,
+                                                    list_pumping,
+                                                    list_efficiency,
+                                                    opts,
+                                                    mcyears,
+                                                    path_to_antares,
+                                                    study_path,
+                                                    prefix,
+                                                    launch_sims=T,
+                                                    penalty_low,
+                                                    penalty_high,
+                                                    penalty_final_level,
+                                                    cvar,
+                                                    sim_number = 5,
+                                                    df_previous_cuts = NULL)  {
 
   # compute list of inflows
   list_inflow = list()
@@ -597,18 +597,18 @@ calculateRewards5Simulations_MultiStock <- function(area,
         level_init <- final_level*list_capacity[[a]]/100
 
         results <- updateWatervalues(reward=reward,controls=controls,area=a,
-                                          mcyears=mcyears,
-                                          opts=opts,states_step_ratio=(1/51),
-                                          pump_eff=pump_eff,
-                                          penalty_low=penalty_low,
-                                          penalty_high=penalty_high,
-                                          inflow=list_inflow[[a]],
-                                          max_hydro_weekly = max_hydro_weekly,
-                                          niveau_max=list_capacity[[a]],
-                                          cvar_value = cvar,
-                                          force_final_level = T,
-                                          final_level = final_level,
-                                          penalty_final_level = penalty_final_level)
+                                     mcyears=mcyears,
+                                     opts=opts,states_step_ratio=(1/51),
+                                     pump_eff=pump_eff,
+                                     penalty_low=penalty_low,
+                                     penalty_high=penalty_high,
+                                     inflow=list_inflow[[a]],
+                                     max_hydro_weekly = max_hydro_weekly,
+                                     niveau_max=list_capacity[[a]],
+                                     cvar_value = cvar,
+                                     force_final_level = T,
+                                     final_level = final_level,
+                                     penalty_final_level = penalty_final_level)
 
         # Compute optimal trend levels
 
@@ -881,18 +881,18 @@ total_cost_loop <- function(area,
 
   # call grid_matrix to compute lb
   res <- antaresWaterValues::Grid_Matrix(area = area,
-                        reward_db = new_rewards,
-                        mcyears = mc_years,
-                        states_step_ratio = 1/51,
-                        reservoir_capacity = storage_vol,
-                        cvar_value = cvar,
-                        opts = opts,
-                        penalty_low = penalty_low,
-                        penalty_high = penalty_high,
-                        force_final_level = T,
-                        final_level = final_level,
-                        penalty_final_level_high = penalty_final_level,
-                        penalty_final_level_low = penalty_final_level)
+                                         reward_db = new_rewards,
+                                         mcyears = mc_years,
+                                         states_step_ratio = 1/51,
+                                         reservoir_capacity = storage_vol,
+                                         cvar_value = cvar,
+                                         opts = opts,
+                                         penalty_low = penalty_low,
+                                         penalty_high = penalty_high,
+                                         force_final_level = T,
+                                         final_level = final_level,
+                                         penalty_final_level_high = penalty_final_level,
+                                         penalty_final_level_low = penalty_final_level)
 
   op_cost <- res$lower_bound
 
@@ -1014,7 +1014,7 @@ update_reward_cluster_flexible <- function(power, marg_cost, reward_init, mcYear
           }else {
             if (pj<pmax & pi>1) {
               diff_reward_week[pj] <- (old_diff_reward_week[pi+1]*poids_last + old_diff_reward_week[pi]*(delta-poids_last))/delta
-                pi <- pi - 1
+              pi <- pi - 1
             } else {
               diff_reward_week[pj] <- old_diff_reward_week[pi]
               pi <- pi - 1
@@ -1170,7 +1170,7 @@ total_cost_parallel_version <- function(candidate_index,
     print(new_candidate_grid[[candidate_index]])
     print(total_cost_can)
     new_grid_costs <- rbind(new_grid_costs,
-                        c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can))
+                            c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can))
   }
   colnames(new_grid_costs) <- c("Storage", candidates_types$name, "Total_cost")
   return(new_grid_costs)
@@ -1203,9 +1203,9 @@ total_cost_parallel_version <- function(candidate_index,
 #' @return Data frame with level (lev) and transition
 #' to evaluate (constraint) for each week (w)
 getOptimalTrend_var <- function(level_init,watervalues,mcyears,controls,
-                            niveau_max,penalty_low,penalty_high,
-                            penalty_final_level, final_level,
-                            max_hydro_weekly, pump_eff,mix_scenario=TRUE){
+                                niveau_max,penalty_low,penalty_high,
+                                penalty_final_level, final_level,
+                                max_hydro_weekly, pump_eff,mix_scenario=TRUE){
   level_i <- data.frame(states = level_init,scenario = seq_along(mcyears))
   levels <- data.frame()
 

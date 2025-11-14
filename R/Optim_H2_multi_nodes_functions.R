@@ -26,7 +26,6 @@
 #' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
 #' @param storage_annual_cost Numeric. Annual cost of storage in eur/MWh.
 #' @param launch_sims Boolean. True to launch simulations at each iterations. False if simulations already run.
-#' @param storage_final_level Numeric in [0, 100]. Final and initial level in percentage of H2 storage.
 #' @param step_number Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.
 #' @param parallelprocess Boolean. True to compute Water values with parallel processing.
 #' @param nb_sockets Integer. Number of sockets for parallel processing
@@ -56,7 +55,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          cvar=1,
                                                          storage_annual_cost,
                                                          launch_sims=T,
-                                                         storage_final_level = 60,
                                                          step_number = 51,
                                                          parallelprocess = F,
                                                          nb_sockets = 0,
@@ -270,7 +268,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                         penalty_high,
                                         penalty_final_level,
                                         storage_annual_cost,
-                                        storage_final_level,
+                                        final_level,
                                         step_number)
           })
           parallel::stopCluster(cl)
@@ -294,7 +292,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                               penalty_high = penalty_high,
                                               penalty_final_level = penalty_final_level,
                                               storage_annual_cost = storage_annual_cost,
-                                              final_level = storage_final_level,
+                                              final_level = final_level,
                                               states_step_ratio = (1/step_number))
               print(storage_vol)
               print(new_candidate_grid[[candidate_index]])

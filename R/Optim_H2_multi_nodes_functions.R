@@ -212,9 +212,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       nb_ite <- nb_ite + 1
 
       # compute storage volumes to evaluate
-      if (nb_ite>1) {
-        old_storage_points <- new_storage_points
-      } else {old_storage_points <-  c()}
       new_storage_points <- c(seq(storage_bounds[1], storage_bounds[2], length.out = storage_points_nb))
       for (sto in 1:length(new_storage_points)) {new_storage_points[sto] <- as.integer(new_storage_points[sto])}
 

@@ -125,7 +125,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   # main loop on areas
   for (node in areas_invest) {
     time1 <- Sys.time()
-    criteria <- F
     nb_ite <- 0
     nb_node <- nb_node +1
     if (nb_node == length(areas_invest) & !back_to_first_node & nb_node>1) {return(output_node)}
@@ -209,7 +208,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     list_rewards[[as.character(nb_node)]] <- simulation_point_res
 
     # loop on the candidates grids
-    while (criteria | (nb_ite < max_ite)) {
+    while (nb_ite < max_ite) {
       nb_ite <- nb_ite + 1
 
       # compute storage volumes to evaluate

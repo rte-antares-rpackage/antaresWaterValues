@@ -21,8 +21,7 @@ total_cost_parallel_version(
   penalty_high,
   penalty_final_level,
   storage_annual_cost,
-  storage_final_level,
-  step_number
+  storage_final_level
 )
 }
 \arguments{
@@ -56,9 +55,7 @@ Rewards and decision spaces are given for each area marked by their number.}
 
 \item{storage_annual_cost}{Numeric. Total annual cost of the storage candidate in eur/MWh}
 
-\item{storage_final_level}{Numeric in [0, 100]. Final and initial level in percentage of H2 storage.}
-
-\item{step_number}{Integer. Step number for reward functions.
+\item{storage_final_level}{Numeric in [0, 100]. Final and initial level in percentage of H2 storage.
 Must be in adequacy with the step number if the reward function.}
 }
 \value{

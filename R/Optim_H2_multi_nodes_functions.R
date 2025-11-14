@@ -24,12 +24,10 @@
 #' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
 #' @param storage_annual_cost Numeric. Annual cost of storage in eur/MWh.
 #' @param launch_sims Boolean. True to launch simulations at each iterations. False if simulations already run.
-#' @param step_number Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.
 #' @param parallelprocess Boolean. True to compute Water values with parallel processing.
 #' @param nb_sockets Integer. Number of sockets for parallel processing
 #' @param unspil_cost Numeric. Unspilled energy cost in eur/MW for all concerned areas.
 #' @param edit_study Boolean. True to edit study with optimal candidates.
-#' @param control_indices Vector of integers. Control points to compute
 #' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
 #'
 #' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
@@ -51,12 +49,11 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          cvar=1,
                                                          storage_annual_cost,
                                                          launch_sims=T,
-                                                         step_number = 51,
+                                                         nb_sims = 51,
                                                          parallelprocess = F,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
                                                          edit_study = F,
-                                                         control_indices = NULL,
                                                          back_to_first_node = F) {
 
   # initialization
@@ -65,8 +62,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   storage_bounds_init <- storage_bounds
   nb_node <- 0
   df_previous_cuts <- NULL
-  if (is.null(control_indices)) {control_indices <- c(seq(1, step_number-1))}
-  nb_sims <- length(control_indices)
 
   # add fixed part of flexible cluster if necessary
   n <- length(candidates_types_gen$index)
@@ -125,14 +120,12 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                 study_path = study_path,
                                                 prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
                                                 launch_sims=launch_sims,
-                                                step_number = step_number,
                                                 penalty_low=penalty_low,
                                                 penalty_high=penalty_high,
                                                 penalty_final_level=penalty_final_level,
                                                 cvar=cvar,
                                                 sim_number = nb_sims,
-                                                df_previous_cuts = df_previous_cuts,
-                                                control_indices = control_indices)
+                                                df_previous_cuts = df_previous_cuts)
     } else {
       simulation_point_res <-
         calculateRewardsSimulations(area=node,
@@ -144,9 +137,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                      study_path = study_path,
                                      prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
                                      launch_sims=launch_sims,
-                                     step_number = step_number,
-                                     sim_number = nb_sims,
-                                     control_indices = control_indices)
+                                     sim_number = nb_sims)
     }
 
     if (is.null(df_previous_cuts)) {
@@ -224,8 +215,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                         penalty_high,
                                         penalty_final_level,
                                         storage_annual_cost,
-                                        final_level,
-                                        step_number)
+                                        final_level)
           })
           parallel::stopCluster(cl)
 
@@ -248,8 +238,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                               penalty_high = penalty_high,
                                               penalty_final_level = penalty_final_level,
                                               storage_annual_cost = storage_annual_cost,
-                                              final_level = final_level,
-                                              states_step_ratio = (1/step_number))
+                                              final_level = final_level)
               print(storage_vol)
               print(new_candidate_grid[[candidate_index]])
               print(total_cost_can)
@@ -377,9 +366,7 @@ grid_other_candidates <- function(candidates_data) {
 #' @param study_path Character. Path to the simulation, argument passed to \code{antaresRead::setSimulationPath}.
 #' @param prefix Character. Prefix of the simulation.
 #' @param launch_sims Boolean. True to launch simulations, false if simulations already run.
-#' @param step_number Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.
-#' @param sim_number Integer. Number of simulations (must be the length of control_indices)
-#' @param control_indices Vector of integers. Control points to compute
+#' @param sim_number Integer. Number of simulations.
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
 calculateRewardsSimulations <- function(area,
@@ -391,20 +378,13 @@ calculateRewardsSimulations <- function(area,
                                          study_path,
                                          prefix,
                                          launch_sims=T,
-                                         step_number = 51,
-                                         sim_number = 5,
-                                         control_indices) {
-  control_names <- c()
-  for (i in control_indices) {control_names <- c(control_names,
-                                              paste0("u_", as.character(i)))}
+                                         sim_number) {
 
   constraint_values <- antaresWaterValues::constraint_generator(area=area,
-                                                                nb_disc_stock = step_number,
+                                                                nb_disc_stock = sim_number,
                                                                 pumping = pumping,
                                                                 efficiency = pump_eff,
-                                                                opts=opts,mcyears=mcyears) %>%
-    dplyr::filter(.data$sim %in% control_names)
-
+                                                                opts=opts,mcyears=mcyears)
 
 
   ### SIMULATIONS
@@ -453,7 +433,7 @@ calculateRewardsSimulations <- function(area,
 
     max_hydro <- antaresWaterValues::get_max_hydro(area,opts,timeStep = "hourly")
     controls_reward_calculation <- antaresWaterValues::constraint_generator(area=area,
-                                                                            nb_disc_stock = step_number,
+                                                                            nb_disc_stock = 51,
                                                                             pumping = pumping,
                                                                             efficiency = pump_eff,
                                                                             opts=opts,mcyears=mcyears)
@@ -508,14 +488,12 @@ calculateRewardsSimulations <- function(area,
 #' @param study_path Character. Path to the simulation, argument passed to \code{antaresRead::setSimulationPath}.
 #' @param prefix Character. Prefix of the simulation.
 #' @param launch_sims Boolean. True to launch simulations, false if simulations already run.
-#' @param step_number Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.
 #' @param penalty_low Integer. Penalty for lower guide curve.
 #' @param penalty_high Integer. Penalty for higher guide curve.
 #' @param penalty_final_level Integer. Penalty for higher and lower final level.
 #' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
-#' @param sim_number Integer. Number of simulations (must be the length of control_indices)
+#' @param sim_number Integer. Number of simulations.
 #' @param df_previous_cuts Data frame containing previous estimations of cuts
-#' @param control_indices Vector of integers. Control points to compute
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
 calculateRewards5Simulations_MultiStock <- function(area,
@@ -530,14 +508,12 @@ calculateRewards5Simulations_MultiStock <- function(area,
                                                         study_path,
                                                         prefix,
                                                         launch_sims=T,
-                                                        step_number = 51,
                                                         penalty_low,
                                                         penalty_high,
                                                         penalty_final_level,
                                                         cvar,
                                                         sim_number = 5,
-                                                        df_previous_cuts = NULL,
-                                                        control_indices)  {
+                                                        df_previous_cuts = NULL)  {
 
   list_areas <- list_areas[1:length(list_areas)-1]
 
@@ -555,9 +531,6 @@ calculateRewards5Simulations_MultiStock <- function(area,
   names(list_inflow) = list_areas
   names(list_capacity) = list_areas
 
-  control_names <- c()
-  for (i in control_indices) {control_names <- c(control_names,
-                                                 paste0("u_", as.character(i)))}
   constraint_values <- data.frame()
   for (j in 1:length(list_areas)){
     initial_traj = data.frame()
@@ -580,7 +553,7 @@ calculateRewards5Simulations_MultiStock <- function(area,
 
         # initialize controls
         max_hydro <- dplyr::rename(max_hydro,"P_max"="pump","T_max"="turb")
-        controls <- antaresWaterValues::constraint_generator(area = area,nb_disc_stock = step_number,
+        controls <- antaresWaterValues::constraint_generator(area = area,nb_disc_stock = 51,
                                                              pumping = list_pumping[j],opts = opts,
                                                              efficiency = pump_eff,
                                                              max_hydro_weekly = max_hydro_weekly,inflow = list_inflow[[area]],
@@ -634,7 +607,7 @@ calculateRewards5Simulations_MultiStock <- function(area,
 
         results <- updateWatervalues(reward=reward,controls=controls,area=a,
                                           mcyears=mcyears,
-                                          opts=opts,states_step_ratio=(1/step_number),
+                                          opts=opts,states_step_ratio=(1/51),
                                           pump_eff=pump_eff,
                                           penalty_low=penalty_low,
                                           penalty_high=penalty_high,
@@ -686,9 +659,9 @@ calculateRewards5Simulations_MultiStock <- function(area,
       }
 
       levels_with_sim <- data.frame()
-      for (simname in control_names) {
+      for (simname in 1:sim_number) {
         levels_with_val <- levels %>%
-          dplyr::mutate(sim = simname)
+          dplyr::mutate(sim = stringr::str_c("u_",simname))
         levels_with_sim <- dplyr::bind_rows(levels_with_sim, levels_with_val)
       }
       levels <- levels_with_sim
@@ -698,11 +671,10 @@ calculateRewards5Simulations_MultiStock <- function(area,
   }
 
   cplus <- antaresWaterValues::constraint_generator(area=area,
-                                                    nb_disc_stock = step_number,
+                                                    nb_disc_stock = sim_number,
                                                     pumping = pumping,
                                                     efficiency = pump_eff,
                                                     opts=opts,mcyears=mcyears) %>%
-    dplyr::filter(.data$sim %in% control_names) %>%
     dplyr::mutate(area = area)
 
   constraint_values <- rbind(constraint_values,cplus)
@@ -730,12 +702,12 @@ calculateRewards5Simulations_MultiStock <- function(area,
     simulation_names <- vector(mode = "character", length = sim_number)
 
     for (ite in 1:sim_number) {
-      name_sim <- paste0(prefix, "_",area, "_wv_sim_", as.character(control_names[ite]))
+      name_sim <- paste0(prefix, "_",area, "_wv_sim_u", as.character(ite))
       for (j in seq_along(list_areas)){
         constraint_value <- dplyr::filter(constraint_values,
                                           .data$area==list_areas[[j]]) %>%
           dplyr::select(-c("area")) %>%
-          dplyr::filter(.data$sim == control_names[ite])
+          dplyr::filter(.data$sim == stringr::str_c("u_",ite))
         generate_rhs_bc(constraint_value=constraint_value,area=list_areas[[j]],
                         opts=opts)
       }
@@ -815,7 +787,7 @@ calculateRewards5Simulations_MultiStock <- function(area,
 
     max_hydro <- antaresWaterValues::get_max_hydro(area,opts,timeStep = "hourly")
     controls_reward_calculation <- antaresWaterValues::constraint_generator(area=area,
-                                                                            nb_disc_stock = step_number,
+                                                                            nb_disc_stock = 51,
                                                                             pumping = pumping,
                                                                             efficiency = pump_eff,
                                                                             opts=opts,mcyears=mcyears)
@@ -873,7 +845,6 @@ calculateRewards5Simulations_MultiStock <- function(area,
 #' @param penalty_final_level Integer. Penalty for higher and lower final level.
 #' @param storage_annual_cost Numeric. Total annual cost of the storage candidate in eur/MWh
 #' @param final_level Numeric in [0, 100]. Final and initial level in percentage of H2 storage.
-#' @param states_step_ratio Numeric. Step number for reward functions. Must be in adequacy with step ratio from \code{df_reward}.
 #'
 #' @returns The total reward for the specified candidates in euros. Because of the Bellman values it is usually negative and large
 total_cost_loop <- function(area,
@@ -888,8 +859,7 @@ total_cost_loop <- function(area,
                             penalty_high,
                             penalty_final_level,
                             storage_annual_cost,
-                            final_level,
-                            states_step_ratio) {
+                            final_level) {
 
   for (can in 1:length(candidate_pool)) {candidate_pool[can] <- as.integer(candidate_pool[can])}
 
@@ -930,7 +900,7 @@ total_cost_loop <- function(area,
   res <- antaresWaterValues::Grid_Matrix(area = area,
                         reward_db = new_rewards,
                         mcyears = mc_years,
-                        states_step_ratio = states_step_ratio,
+                        states_step_ratio = 1/51,
                         reservoir_capacity = storage_vol,
                         cvar_value = cvar,
                         opts = opts,
@@ -1178,7 +1148,6 @@ new_bounds <- function(best_candidate, candidates_data, storage_points) {
 #' @param penalty_final_level Integer. Penalty for higher and lower final level.
 #' @param storage_annual_cost Numeric. Total annual cost of the storage candidate in eur/MWh
 #' @param storage_final_level Numeric in [0, 100]. Final and initial level in percentage of H2 storage.
-#' @param step_number Integer. Step number for reward functions.
 #' Must be in adequacy with the step number if the reward function.
 #'
 #' @returns The total reward for the specified candidates in euros. Because of the Bellman values it is usually negative and large
@@ -1196,8 +1165,7 @@ total_cost_parallel_version <- function(candidate_index,
                                         penalty_high,
                                         penalty_final_level,
                                         storage_annual_cost,
-                                        storage_final_level,
-                                        step_number) {
+                                        storage_final_level) {
 
   # calculate total cost
   new_grid_costs <- data.frame(matrix(ncol = 2+length(candidates_types$index), nrow=0))
@@ -1214,8 +1182,7 @@ total_cost_parallel_version <- function(candidate_index,
                                       penalty_high = penalty_high,
                                       penalty_final_level = penalty_final_level,
                                       storage_annual_cost = storage_annual_cost,
-                                      final_level = storage_final_level,
-                                      states_step_ratio = (1/step_number))
+                                      final_level = storage_final_level)
     print(storage_vol)
     print(new_candidate_grid[[candidate_index]])
     print(total_cost_can)

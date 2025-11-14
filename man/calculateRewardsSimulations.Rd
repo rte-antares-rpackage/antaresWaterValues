@@ -15,9 +15,7 @@ calculateRewardsSimulations(
   study_path,
   prefix,
   launch_sims = T,
-  step_number = 51,
-  sim_number = 5,
-  control_indices
+  sim_number
 )
 }
 \arguments{
@@ -40,11 +38,7 @@ Get it with \code{antaresWaterValues::getPumpEfficiency()}.}
 
 \item{launch_sims}{Boolean. True to launch simulations, false if simulations already run.}
 
-\item{step_number}{Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.}
-
-\item{sim_number}{Integer. Number of simulations (must be the length of control_indices)}
-
-\item{control_indices}{Vector of integers. Control points to compute}
+\item{sim_number}{Integer. Number of simulations.}
 }
 \value{
 a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}

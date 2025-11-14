@@ -17,8 +17,7 @@ total_cost_loop(
   penalty_high,
   penalty_final_level,
   storage_annual_cost,
-  final_level,
-  states_step_ratio
+  final_level
 )
 }
 \arguments{
@@ -48,8 +47,6 @@ It is a parameter of \code{MultiStock_H2_Investment_reward_compute_once}.}
 \item{storage_annual_cost}{Numeric. Total annual cost of the storage candidate in eur/MWh}
 
 \item{final_level}{Numeric in [0, 100]. Final and initial level in percentage of H2 storage.}
-
-\item{states_step_ratio}{Numeric. Step number for reward functions. Must be in adequacy with step ratio from \code{df_reward}.}
 }
 \value{
 The total reward for the specified candidates in euros. Because of the Bellman values it is usually negative and large

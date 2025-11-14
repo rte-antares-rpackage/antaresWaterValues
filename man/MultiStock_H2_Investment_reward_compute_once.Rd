@@ -14,8 +14,6 @@ MultiStock_H2_Investment_reward_compute_once(
   penalty_low = 5000,
   penalty_high = 5000,
   penalty_final_level = 5000,
-  P_soutir,
-  P_inject,
   opts,
   mc_years_optim,
   path_to_antares,
@@ -23,14 +21,11 @@ MultiStock_H2_Investment_reward_compute_once(
   cvar = 1,
   storage_annual_cost,
   launch_sims = T,
-  storage_final_level = 60,
-  step_number = 51,
+  nb_sims = 51,
   parallelprocess = F,
   nb_sockets = 0,
   unspil_cost = 3000,
   edit_study = F,
-  force_final_level,
-  control_indices = NULL,
   back_to_first_node = F
 )
 }
@@ -59,10 +54,6 @@ Zone is a character containing the name of the area where to propose the candida
 
 \item{penalty_final_level}{Integer. Penalty for higher and lower final level.}
 
-\item{P_soutir}{List of numeric. Max hydro generating power in MW for each area. NULL to leave it unchanged}
-
-\item{P_inject}{List of numeric. Hydro inflow in MW for each area. NULL to leave it unchanged}
-
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
 \item{mc_years_optim}{Vector of integers. Monte Carlo years to perform the optimization.}
@@ -77,10 +68,6 @@ Zone is a character containing the name of the area where to propose the candida
 
 \item{launch_sims}{Boolean. True to launch simulations at each iterations. False if simulations already run.}
 
-\item{storage_final_level}{Numeric in [0, 100]. Final and initial level in percentage of H2 storage.}
-
-\item{step_number}{Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.}
-
 \item{parallelprocess}{Boolean. True to compute Water values with parallel processing.}
 
 \item{nb_sockets}{Integer. Number of sockets for parallel processing}
@@ -88,10 +75,6 @@ Zone is a character containing the name of the area where to propose the candida
 \item{unspil_cost}{Numeric. Unspilled energy cost in eur/MW for all concerned areas.}
 
 \item{edit_study}{Boolean. True to edit study with optimal candidates.}
-
-\item{force_final_level}{Binary. Whether final level should be constrained}
-
-\item{control_indices}{Vector of integers. Control points to compute}
 
 \item{back_to_first_node}{Boolean. True to play again first node at the end. There is no possibility to go uninvest.}
 }

@@ -19,15 +19,12 @@ calculateRewards5Simulations_MultiStock(
   study_path,
   prefix,
   launch_sims = T,
-  step_number = 51,
   penalty_low,
   penalty_high,
   penalty_final_level,
-  force_final_level,
   cvar,
   sim_number = 5,
-  df_previous_cuts = NULL,
-  control_indices
+  df_previous_cuts = NULL
 )
 }
 \arguments{
@@ -56,23 +53,17 @@ Get it with \code{antaresWaterValues::getPumpEfficiency()}.}
 
 \item{launch_sims}{Boolean. True to launch simulations, false if simulations already run.}
 
-\item{step_number}{Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.}
-
 \item{penalty_low}{Integer. Penalty for lower guide curve.}
 
 \item{penalty_high}{Integer. Penalty for higher guide curve.}
 
 \item{penalty_final_level}{Integer. Penalty for higher and lower final level.}
 
-\item{force_final_level}{Boolean. True if final level is forced.}
-
 \item{cvar}{Numeric in [0,1]. The probability used in cvar algorithm.}
 
-\item{sim_number}{Integer. Number of simulations (must be the length of control_indices)}
+\item{sim_number}{Integer. Number of simulations.}
 
 \item{df_previous_cuts}{Data frame containing previous estimations of cuts}
-
-\item{control_indices}{Vector of integers. Control points to compute}
 }
 \value{
 a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}

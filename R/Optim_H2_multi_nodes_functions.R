@@ -34,7 +34,6 @@
 #' @param edit_study Boolean. True to edit study with optimal candidates.
 #' @param control_indices Vector of integers. Control points to compute
 #' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
-#' @param force_final_level Binary. Whether final level should be constrained
 #'
 #' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
 #'
@@ -63,7 +62,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
                                                          edit_study = F,
-                                                         force_final_level,
                                                          control_indices = NULL,
                                                          back_to_first_node = F) {
 
@@ -172,7 +170,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                 penalty_low=penalty_low,
                                                 penalty_high=penalty_high,
                                                 penalty_final_level=penalty_final_level,
-                                                force_final_level=force_final_level,
                                                 cvar=cvar,
                                                 sim_number = nb_sims,
                                                 df_previous_cuts = df_previous_cuts,
@@ -561,7 +558,6 @@ calculateRewardsSimulations <- function(area,
 #' @param penalty_low Integer. Penalty for lower guide curve.
 #' @param penalty_high Integer. Penalty for higher guide curve.
 #' @param penalty_final_level Integer. Penalty for higher and lower final level.
-#' @param force_final_level Boolean. True if final level is forced.
 #' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
 #' @param sim_number Integer. Number of simulations (must be the length of control_indices)
 #' @param df_previous_cuts Data frame containing previous estimations of cuts
@@ -584,7 +580,6 @@ calculateRewards5Simulations_MultiStock <- function(area,
                                                         penalty_low,
                                                         penalty_high,
                                                         penalty_final_level,
-                                                        force_final_level,
                                                         cvar,
                                                         sim_number = 5,
                                                         df_previous_cuts = NULL,
@@ -693,7 +688,7 @@ calculateRewards5Simulations_MultiStock <- function(area,
                                           max_hydro_weekly = max_hydro_weekly,
                                           niveau_max=list_capacity[[a]],
                                           cvar_value = cvar,
-                                          force_final_level = force_final_level,
+                                          force_final_level = T,
                                           final_level = final_level,
                                           penalty_final_level = penalty_final_level)
 
@@ -975,9 +970,6 @@ total_cost_loop <- function(area,
     return(total_cost)
   }
 
-  force_final_level <- T
-  if (penalty_final_level == 0) {force_final_level <- F}
-
   if (all(new_rewards$reward$control == 0)) {print("cluster bande trop grand")}
 
   # call grid_matrix to compute lb
@@ -990,7 +982,7 @@ total_cost_loop <- function(area,
                         opts = opts,
                         penalty_low = penalty_low,
                         penalty_high = penalty_high,
-                        force_final_level = force_final_level,
+                        force_final_level = T,
                         final_level = final_level,
                         penalty_final_level_high = penalty_final_level,
                         penalty_final_level_low = penalty_final_level)

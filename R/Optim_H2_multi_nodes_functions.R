@@ -17,8 +17,6 @@
 #' @param penalty_low Integer. Penalty for lower guide curve.
 #' @param penalty_high Integer. Penalty for higher guide curve.
 #' @param penalty_final_level Integer. Penalty for higher and lower final level.
-#' @param P_soutir List of numeric. Max hydro generating power in MW for each area. NULL to leave it unchanged
-#' @param P_inject List of numeric. Hydro inflow in MW for each area. NULL to leave it unchanged
 #' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
 #' @param mc_years_optim Vector of integers. Monte Carlo years to perform the optimization.
 #' @param path_to_antares Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
@@ -46,8 +44,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          penalty_low=5000,
                                                          penalty_high=5000,
                                                          penalty_final_level=5000,
-                                                         P_soutir,
-                                                         P_inject,
                                                          opts,
                                                          mc_years_optim,
                                                          path_to_antares,
@@ -87,40 +83,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   df_econ_options <- data.frame(areas_unsp, c(seq(unspil_cost, unspil_cost, length.out = length(areas_unsp))))
   colnames(df_econ_options) <- c("area", "average_unsupplied_energy_cost")
   antaresEditObject::writeEconomicOptions(df_econ_options, opts)
-
-  for (node in areas_invest) {
-    # Edit reservoir size
-    antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = storage_bounds[2]), opts = opts)
-
-    # Edit max turbine power
-    if (!is.null(P_soutir[[node]])) {
-    maxpower <- matrix((24), nrow = 365, ncol=4)
-    maxpower[,1] <- c(rep(P_soutir[[node]], length.out = 365))
-    maxpower[,3] <- c(rep(0, length.out = 365))
-    antaresEditObject::writeHydroValues(area=node, type = "maxpower", data = maxpower, opts = opts)}
-
-    # edit max pumping power
-    if (!is.null(P_inject[[node]])) {
-    hydrostorageINI <- antaresRead::readInputTS(hydroStorage = node, opts=opts, timeStep = "daily")
-    hydrostorageINI_hour <- antaresRead::readInputTS(hydroStorage = node, opts=opts, timeStep = "hourly")
-
-    loadINI <- antaresRead::readInputTS(load = node, opts=opts, timeStep = "hourly")
-    loadINI$load <- loadINI$load - hydrostorageINI_hour$hydroStorage + P_inject[[node]]
-    loadFIN <- list()
-    for (id in unique(loadINI$tsId)) {loadFIN[[id]] <- dplyr::select(dplyr::filter(loadINI, .data$tsId == id), "load")}
-    loadFIN <- as.matrix(do.call(cbind, loadFIN))
-    if (NROW(loadFIN)<8760) {loadFIN <- rbind(loadFIN, matrix(loadFIN[1,1], nrow = 8760-NROW(loadFIN), ncol = ncol(loadFIN)))}
-    antaresEditObject::writeInputTS(data=loadFIN, type = "load", area=node, opts = opts)
-
-    hydrostorageINI$hydroStorage <- c(rep(P_inject[[node]]*24, length.out = length(hydrostorageINI$hydroStorage)))
-    hydrostoFIN <- list()
-    for (id in unique(hydrostorageINI$tsId)) {hydrostoFIN[[id]] <- dplyr::select(dplyr::filter(hydrostorageINI, .data$tsId == id), "hydroStorage")}
-    hydrostoFIN <- as.matrix(do.call(cbind, hydrostoFIN))
-    if (NROW(hydrostoFIN)<365) {hydrostoFIN <- rbind(hydrostoFIN, matrix(P_inject[[node]]*24, nrow = 365-NROW(hydrostoFIN), ncol = ncol(hydrostoFIN)))}
-    antaresEditObject::writeInputTS(data=hydrostoFIN, type = "hydroSTOR", area=node, opts = opts)
-    }
-  }
-
 
   # main loop on areas
   for (node in areas_invest) {
@@ -226,8 +188,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       }
 
       new_candidate_grid <- second_candidate_grid
-
-      candidate_grid <- second_candidate_grid
 
       # loop on the storage candidates
       for (storage_vol in new_storage_points) {

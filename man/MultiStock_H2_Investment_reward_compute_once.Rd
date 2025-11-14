@@ -10,7 +10,6 @@ MultiStock_H2_Investment_reward_compute_once(
   storage_bounds,
   storage_points_nb,
   candidates_types_gen,
-  pumping = F,
   penalty_low = 5000,
   penalty_high = 5000,
   penalty_final_level = 5000,
@@ -45,8 +44,6 @@ The name is a character, the type is either \code{"cluster_flexible"} or \code{"
 Part_fixe is the fixed part for a variable cluster between 0 and 1, Prix_fixe in eur/MWh is its price.
 Borne_min and Borne_max are in MW, Points_nb is an integer (number of candidates tested at each iteration, it should be at least 4).
 Zone is a character containing the name of the area where to propose the candidate.}
-
-\item{pumping}{Boolean. True to take into account the pumping capacity.}
 
 \item{penalty_low}{Integer. Penalty for lower guide curve.}
 

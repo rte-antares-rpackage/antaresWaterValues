@@ -12,8 +12,6 @@ calculateRewards5Simulations_MultiStock(
   list_pumping,
   list_efficiency,
   opts,
-  pumping = F,
-  pump_eff = 1,
   mcyears,
   path_to_antares,
   study_path,
@@ -37,11 +35,6 @@ calculateRewards5Simulations_MultiStock(
 \item{list_efficiency}{Vector of numeric with pumping efficiency for the area with corresponding index in \code{list_areas}.}
 
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
-
-\item{pumping}{Boolean. True to take into account the pumping capacity.}
-
-\item{pump_eff}{Double between 0 and 1. Pumping efficiency ratio.
-Get it with \code{antaresWaterValues::getPumpEfficiency()}.}
 
 \item{mcyears}{Vector of integers. Monte Carlo years to run simulations}
 

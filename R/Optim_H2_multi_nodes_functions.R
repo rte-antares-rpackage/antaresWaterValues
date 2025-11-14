@@ -13,7 +13,6 @@
 #' Part_fixe is the fixed part for a variable cluster between 0 and 1, Prix_fixe in eur/MWh is its price.
 #' Borne_min and Borne_max are in MW, Points_nb is an integer (number of candidates tested at each iteration, it should be at least 4).
 #' Zone is a character containing the name of the area where to propose the candidate.
-#' @param pumping Boolean. True to take into account the pumping capacity.
 #' @param penalty_low Integer. Penalty for lower guide curve.
 #' @param penalty_high Integer. Penalty for higher guide curve.
 #' @param penalty_final_level Integer. Penalty for higher and lower final level.
@@ -38,7 +37,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          storage_bounds,
                                                          storage_points_nb,
                                                          candidates_types_gen,
-                                                         pumping=F,
                                                          penalty_low=5000,
                                                          penalty_high=5000,
                                                          penalty_final_level=5000,
@@ -63,6 +61,17 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   nb_node <- 0
   df_previous_cuts <- NULL
 
+  list_pumping <- c()
+  list_efficiency <- c()
+  browser()
+  for (i in 1:length(areas_invest)){
+    pumping = max(get_max_hydro(area=areas_invest[i],opts=opts,timeStep = "weekly")$pump)>0
+    list_pumping <- c(list_pumping,pumping)
+    list_efficiency <- c(list_efficiency,getPumpEfficiency(area=areas_invest[i],opts=opts))
+  }
+  names(list_efficiency) <- areas_invest
+  names(list_pumping) <- areas_invest
+
   # add fixed part of flexible cluster if necessary
   n <- length(candidates_types_gen$index)
   for (cl in 1:n) {
@@ -80,14 +89,14 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   antaresEditObject::writeEconomicOptions(df_econ_options, opts)
 
   # main loop on areas
-  for (node in areas_invest) {
+  areas_loop = areas_invest
+  if (back_to_first_node){
+    areas_loop = c(areas_loop,areas_invest[[1]])
+  }
+  for (node in areas_loop) {
     time1 <- Sys.time()
     nb_ite <- 0
     nb_node <- nb_node +1
-    if (nb_node == length(areas_invest) & !back_to_first_node & nb_node>1) {return(output_node)}
-
-    pump_eff <- antaresWaterValues::getPumpEfficiency(node,opts=opts)
-    final_level <-antaresWaterValues::get_initial_level(node,opts)
 
     candidates_types <- subset(candidates_types_gen, .data$Zone == node)
 
@@ -110,11 +119,9 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       simulation_point_res <-
         calculateRewards5Simulations_MultiStock(area =node,
                                                 list_areas = areas_invest,
-                                                list_pumping = c(rep(pumping, length.out = length(areas_invest)-1)),
-                                                list_efficiency = c(rep(pump_eff, length.out = length(areas_invest)-1)),
+                                                list_pumping = list_pumping,
+                                                list_efficiency = list_efficiency,
                                                 opts = opts,
-                                                pumping = pumping,
-                                                pump_eff = pump_eff,
                                                 mcyears = mc_years_optim,
                                                 path_to_antares = path_to_antares,
                                                 study_path = study_path,
@@ -130,8 +137,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       simulation_point_res <-
         calculateRewardsSimulations(area=node,
                                      opts=opts,
-                                     pumping = pumping,
-                                     pump_eff = pump_eff,
+                                     pumping = list_pumping[[node]],
+                                     pump_eff = list_efficiency[[node]],
                                      mcyears = mc_years_optim,
                                      path_to_antares =  path_to_antares,
                                      study_path = study_path,
@@ -480,9 +487,6 @@ calculateRewardsSimulations <- function(area,
 #' @param list_pumping Vector of boolean. True if pumping for the area with corresponding index in \code{list_areas}.
 #' @param list_efficiency Vector of numeric with pumping efficiency for the area with corresponding index in \code{list_areas}.
 #' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
-#' @param pumping Boolean. True to take into account the pumping capacity.
-#' @param pump_eff Double between 0 and 1. Pumping efficiency ratio.
-#' Get it with \code{antaresWaterValues::getPumpEfficiency()}.
 #' @param mcyears Vector of integers. Monte Carlo years to run simulations
 #' @param path_to_antares Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param study_path Character. Path to the simulation, argument passed to \code{antaresRead::setSimulationPath}.
@@ -501,8 +505,6 @@ calculateRewards5Simulations_MultiStock <- function(area,
                                                         list_pumping,
                                                         list_efficiency,
                                                         opts,
-                                                        pumping = F,
-                                                        pump_eff = 1,
                                                         mcyears,
                                                         path_to_antares,
                                                         study_path,
@@ -514,8 +516,6 @@ calculateRewards5Simulations_MultiStock <- function(area,
                                                         cvar,
                                                         sim_number = 5,
                                                         df_previous_cuts = NULL)  {
-
-  list_areas <- list_areas[1:length(list_areas)-1]
 
   # compute list of inflows
   list_inflow = list()
@@ -554,8 +554,8 @@ calculateRewards5Simulations_MultiStock <- function(area,
         # initialize controls
         max_hydro <- dplyr::rename(max_hydro,"P_max"="pump","T_max"="turb")
         controls <- antaresWaterValues::constraint_generator(area = area,nb_disc_stock = 51,
-                                                             pumping = list_pumping[j],opts = opts,
-                                                             efficiency = pump_eff,
+                                                             pumping = list_pumping[[j]],opts = opts,
+                                                             efficiency = list_efficiency[[j]],
                                                              max_hydro_weekly = max_hydro_weekly,inflow = list_inflow[[area]],
                                                              reservoir_capacity = list_capacity[[area]])
         controls <- tidyr::drop_na(controls) %>%
@@ -672,8 +672,8 @@ calculateRewards5Simulations_MultiStock <- function(area,
 
   cplus <- antaresWaterValues::constraint_generator(area=area,
                                                     nb_disc_stock = sim_number,
-                                                    pumping = pumping,
-                                                    efficiency = pump_eff,
+                                                    pumping = list_pumping[[area]],
+                                                    efficiency = list_efficiency[[area]],
                                                     opts=opts,mcyears=mcyears) %>%
     dplyr::mutate(area = area)
 
@@ -720,7 +720,7 @@ calculateRewards5Simulations_MultiStock <- function(area,
 
     for (j in seq_along(list_areas)){
       a = list_areas[[j]]
-      resetStudy(opts,a,list_pumping[j],list_backup[[j]])
+      resetStudy(opts,a,list_pumping[[j]],list_backup[[j]])
     }
 
     clear_scenario_builder(opts)
@@ -730,8 +730,8 @@ calculateRewards5Simulations_MultiStock <- function(area,
       simulation_values = constraint_values,
       area = area,
       mcyears = mcyears,
-      pumping = pumping,
-      efficiency = pump_eff,
+      pumping = list_pumping[[area]],
+      efficiency = list_efficiency[[area]],
       expansion = T
     )
     save(simulation_res,file=paste0(study_path,"/user/",prefix, "_", area, "_",".RData"))
@@ -739,17 +739,14 @@ calculateRewards5Simulations_MultiStock <- function(area,
 
     for (j in seq_along(list_areas)){
       a = list_areas[[j]]
-      resetStudy(opts,a,list_pumping[j],list_backup[[j]])
+      resetStudy(opts,a,list_pumping[[j]],list_backup[[j]])
     }
 
     opts <- antaresRead::setSimulationPath(study_path, "input")
 
-    list_pumping_prime <- c(list_pumping)
-    names(list_pumping_prime) <- list_areas
-
     simulation_res <- antaresWaterValues::runWaterValuesSimulationMultiStock(
       list_areas = list_areas,
-      list_pumping = list_pumping_prime,
+      list_pumping = list_pumping,
       list_efficiency = list_efficiency,
       constraint_values = constraint_values,
       mcyears = mcyears,
@@ -788,8 +785,8 @@ calculateRewards5Simulations_MultiStock <- function(area,
     max_hydro <- antaresWaterValues::get_max_hydro(area,opts,timeStep = "hourly")
     controls_reward_calculation <- antaresWaterValues::constraint_generator(area=area,
                                                                             nb_disc_stock = 51,
-                                                                            pumping = pumping,
-                                                                            efficiency = pump_eff,
+                                                                            pumping = list_pumping[[area]],
+                                                                            efficiency = list_efficiency[[area]],
                                                                             opts=opts,mcyears=mcyears)
     if (("mcYear" %in% names(constraint_values))&!("mcYear" %in% names(controls_reward_calculation))){
       controls_reward_calculation <- dplyr::cross_join(controls_reward_calculation,

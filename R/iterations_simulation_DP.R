@@ -18,8 +18,6 @@
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
 #' @param cvar_value from 0 to 1. the probability used in cvar method
-#' @param test_vu Binary. If you want to run a Antares simulation between each iteration
-#' with the latest water values
 #' @param force_final_level Binary. Whether final level should be constrained
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
@@ -33,7 +31,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      path_solver,study_path,
                                                      states_step_ratio=1/50,
                                                      cvar_value = 1,
-                                                     test_vu=FALSE,
                                                      force_final_level = FALSE,
                                                      final_level = NULL,
                                                      penalty_final_level = NULL,
@@ -253,28 +250,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                        dplyr::mutate(results$aggregated_results,n=as.character(i)))
 
     i <- i+1
-
-    if (test_vu){
-      wv <- results$aggregated_results
-      reshaped_values <- wv[wv$weeks!=53,] %>%
-        to_Antares_Format_bis()
-      antaresEditObject::writeWaterValues(
-        area = area,
-        data = reshaped_values
-      )
-
-      changeHydroManagement(watervalues = TRUE,heuristic = FALSE,opts = opts,area=area)
-
-      antaresEditObject::runSimulation(
-        name = paste0("test_vu_itr_",i),
-        mode = "economy",
-        path_solver = path_solver,
-        show_output_on_console = TRUE,
-        opts = opts)
-
-      changeHydroManagement(watervalues = FALSE,heuristic = TRUE,opts = opts,area=area)
-
-    }
   }
   },
   finally = {
@@ -624,8 +599,6 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param cvar_value from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which cvar_value all bellman values are equal or
 #' less to it. (quantile(cvar_value))
-#' @param test_vu Binary. If you want to run a Antares simulation between each iteration
-#' with the latest water values
 #' @param force_final_level Binary. Whether final level should be constrained
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #' @param initial_traj Initial trajectory (used for other storages)
@@ -640,7 +613,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                path_solver,study_path,
                                                                states_step_ratio=1/50,
                                                                cvar_value = 1,
-                                                               test_vu=FALSE,
                                                                force_final_level = FALSE,
                                                                penalty_final_level = NULL,
                                                                initial_traj = NULL,

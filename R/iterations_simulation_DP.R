@@ -686,7 +686,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
       initial_traj <- list_inflow[[j]] %>%
         dplyr::filter(.data$tsId %in% mcyears, timeId<=52) %>%
-        dplyr::left_join(max_hydro,by = join_by(timeId)) %>%
+        dplyr::left_join(max_hydro,by = dplyr::join_by(timeId)) %>%
         dplyr::rowwise() %>%
         dplyr::mutate(hydroStorage = .data$hydroStorage) %>%
         dplyr::select(c("timeId","tsId","hydroStorage")) %>%

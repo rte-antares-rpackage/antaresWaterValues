@@ -402,7 +402,8 @@ fread_antares <- function(opts, file, ...) {
     response <- antaresRead::api_get(
       opts = opts,
       endpoint = I(file),
-      query = list(formatted = FALSE)
+      query = list(formatted = FALSE),
+      parse_result = "text"
     )
     suppressWarnings(
       tryCatch(fread(response, ...), error = function(e){

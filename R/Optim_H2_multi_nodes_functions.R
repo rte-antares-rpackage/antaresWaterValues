@@ -181,7 +181,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                         "total_cost_loop",
                                         "update_reward_cluster_bande",
                                         "update_reward_cluster_flexible",
-                                        "storage_annual_cost"),
+                                        "storage_annual_cost",
+                                        "Grid_Matrix"),
                                   envir=environment())
 
 

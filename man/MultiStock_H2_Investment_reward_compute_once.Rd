@@ -65,6 +65,8 @@ Zone is a character containing the name of the area where to propose the candida
 
 \item{launch_sims}{Boolean. True to launch simulations at each iterations. False if simulations already run.}
 
+\item{nb_sims}{Integer. Number of simulations to launch to evaluate reward.}
+
 \item{parallelprocess}{Boolean. True to compute Water values with parallel processing.}
 
 \item{nb_sockets}{Integer. Number of sockets for parallel processing}

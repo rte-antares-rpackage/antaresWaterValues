@@ -17,7 +17,8 @@ total_cost_loop(
   penalty_high,
   penalty_final_level,
   storage_annual_cost,
-  final_level
+  final_level,
+  compute_optimal_traj = F
 )
 }
 \arguments{
@@ -47,6 +48,8 @@ It is a parameter of \code{MultiStock_H2_Investment_reward_compute_once}.}
 \item{storage_annual_cost}{Numeric. Total annual cost of the storage candidate in eur/MWh}
 
 \item{final_level}{Numeric in [0, 100]. Final and initial level in percentage of H2 storage.}
+
+\item{compute_optimal_traj}{Boolean.}
 }
 \value{
 The total reward for the specified candidates in euros. Because of the Bellman values it is usually negative and large

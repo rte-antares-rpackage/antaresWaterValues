@@ -516,6 +516,8 @@ total_cost_loop <- function(area,
   if (length(df_reward$reward$control) == 0) {
     print("No flexibility or additional energy required for the system")}
 
+  max_hydro_weekly = get_max_hydro(area, opts, timeStep = "weekly")
+
   # change reward function to include other candidates
   if (!is.null(candidates_types)) {
     for (can in 1:length(candidates_types$index)) {
@@ -524,7 +526,7 @@ total_cost_loop <- function(area,
 
       # update reward function following the type of the candidate
       if (type == "cluster bande" & length(new_rewards$reward$timeId) > 0 & candidate_pool[can] > 0) {
-        new_rewards <- update_reward_cluster_bande(candidate_pool[can], new_rewards, mc_years)
+        new_rewards <- update_reward_cluster_bande(candidate_pool[can], new_rewards, mc_years, max_hydro_weekly)
         print(paste0(candidates_types$name[can], " updated"))
       }
       if (type == "cluster flexible"  & length(new_rewards$reward$timeId) > 0 & candidate_pool[can] > 0) {
@@ -609,37 +611,22 @@ total_cost_loop <- function(area,
 #' @param mc_years Vector of integers. Monte Carlo years of the rewards.
 #'
 #' @returns a \code{list} of rewards and decision space, like \code{reward_init}.
-update_reward_cluster_bande <- function(power, reward_init, mc_years) {
-  new_reward <- reward_init$reward
-  new_decision <- reward_init$decision_space
+update_reward_cluster_bande <- function(power, reward_init, mc_years, max_hydro_weekly) {
   volume_change <- 168*power
-  to_delete <- c()
 
-  # update control points
-  n <- length(new_decision$u)
-  for (point in 1:n) {
-    new_u <- new_decision$u[point] - volume_change
-    if (new_u >= 0) {
-      for (y in 1:length(mc_years)) {new_reward$control[n*(y-1)+point] <- new_u}
-      new_decision$u[point] <- new_u
-    }
-    else {
-      for (y in 1:length(mc_years)) {
-        to_delete <- c(to_delete, n*(y-1)+point)
-      }
-    }
-  }
+  reward_init$reward = reward_init$reward %>%
+    dplyr::mutate(control = .data$control - volume_change) %>%
+    dplyr::left_join(max_hydro_weekly, by = dplyr::join_by("timeId")) %>%
+    dplyr::filter(.data$control >= -.data$pump)  %>%
+    dplyr::select(c("timeId","mcYear","control","reward"))
 
-  # delete non positive control points
-  if (length(to_delete)>0) {
-    new_reward <- new_reward[-to_delete,]
-    new_decision <- new_decision[-to_delete,]
-  }
+  reward_init$decision_space = reward_init$decision_space %>%
+    dplyr::mutate(u = .data$u - volume_change) %>%
+    dplyr::left_join(max_hydro_weekly, by = dplyr::join_by("week"=="timeId")) %>%
+    dplyr::filter(.data$u >= -.data$pump)  %>%
+    dplyr::select(c("week","mcYear","u"))
 
-  reward_fin <- list()
-  reward_fin$decision_space <- new_decision
-  reward_fin$reward <- new_reward
-  return(reward_fin)
+  return(reward_init)
 }
 
 

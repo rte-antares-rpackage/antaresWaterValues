@@ -18,7 +18,6 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   penalty_low,
   penalty_high,
   path_solver,
-  study_path,
   states_step_ratio = 1/50,
   cvar_value = 1,
   force_final_level = FALSE,
@@ -48,8 +47,6 @@ calculateBellmanWithIterativeSimulationsMultiStock(
 \item{penalty_high}{Penalty for violating the top rule curve, comparable to the spilled energy cost}
 
 \item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
-
-\item{study_path}{Character containing the Antares study}
 
 \item{states_step_ratio}{Discretization ratio to generate steps levels
 between the reservoir capacity and zero}

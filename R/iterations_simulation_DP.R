@@ -14,7 +14,6 @@
 #' @param penalty_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
 #' @param penalty_high Penalty for violating the top rule curve, comparable to the spilled energy cost
 #' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
-#' @param study_path Character containing the Antares study
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
 #' @param cvar_value from 0 to 1. the probability used in cvar method
@@ -28,7 +27,7 @@
 calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,opts,
                                                      nb_control=10,nb_itr=3,mcyears,
                                                      penalty_low,penalty_high,
-                                                     path_solver,study_path,
+                                                     path_solver,
                                                      states_step_ratio=1/50,
                                                      cvar_value = 1,
                                                      force_final_level = FALSE,
@@ -593,7 +592,6 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param penalty_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost
 #' @param penalty_high Penalty for violating the top rule curve, comparable to the spilled energy cost
 #' @param path_solver Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
-#' @param study_path Character containing the Antares study
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
 #' @param cvar_value from 0 to 1. the probability used in quantile method
@@ -610,7 +608,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_pumping, list_efficiency,opts,
                                                                nb_control=10,nb_itr=3,mcyears,
                                                                penalty_low,penalty_high,
-                                                               path_solver,study_path,
+                                                               path_solver,
                                                                states_step_ratio=1/50,
                                                                cvar_value = 1,
                                                                force_final_level = FALSE,

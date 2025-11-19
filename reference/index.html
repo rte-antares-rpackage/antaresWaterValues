@@ -42,8 +42,7 @@
 
 
 
-
-    </div><div class="section level2">
+      <dl></dl></div><div class="section level2">
 
 
 
@@ -54,151 +53,211 @@
 
         </dt>
         <dd>Compute Bellman values</dd>
-      </dl><dl><dt>
+
+        <dt>
+
+          <code><a href="calculateBellmanWithIterativeSimulations.html">calculateBellmanWithIterativeSimulations()</a></code>
+
+        </dt>
+        <dd>Calculate Bellman values throughout iterations of Antares simulation and DP Each simulation leads to a new reward estimation, which leads to new water values, which leads to the off-line calculation in R of an optimal trajectory, which leads to new controls to be evaluated which leads to a new simulation</dd>
+
+        <dt>
+
+          <code><a href="calculateBellmanWithIterativeSimulationsMultiStock.html">calculateBellmanWithIterativeSimulationsMultiStock()</a></code>
+
+        </dt>
+        <dd>Calculate Bellman values throughout iterations of Antares simulation and DP Each simulation leads to a new reward estimation, which leads to new water values, which leads to the off-line calculation in R of an optimal trajectory, which leads to new controls to be evaluated which leads to a new simulation</dd>
+
+        <dt>
 
           <code><a href="changeHydroManagement.html">changeHydroManagement()</a></code>
 
         </dt>
         <dd>Change hydro management</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="constraint_generator.html">constraint_generator()</a></code>
 
         </dt>
         <dd>Generate control values</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="getBellmanValuesFromOneSimulationMultistock.html">getBellmanValuesFromOneSimulationMultistock()</a></code>
 
         </dt>
         <dd>Compute Bellman values for several storage based on one simulation</dd>
-      </dl><dl><dt>
+
+        <dt>
+
+          <code><a href="getOptimalTrend.html">getOptimalTrend()</a></code>
+
+        </dt>
+        <dd>Calculate an optimal trajectory for the reservoir levels based on water values taking into account the mean inflow, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
+
+        <dt>
 
           <code><a href="getPumpEfficiency.html">getPumpEfficiency()</a></code>
 
         </dt>
         <dd>Get pumping efficiency ratio</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="get_Reward.html">get_Reward()</a></code>
 
         </dt>
         <dd>Compute reward functions</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="get_inflow.html">get_inflow()</a></code>
 
         </dt>
         <dd>Get weekly inflows</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="get_initial_level.html">get_initial_level()</a></code>
 
         </dt>
         <dd>Get initial level</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="get_local_reward.html">get_local_reward()</a></code>
 
         </dt>
         <dd>Compute reward functions based on one given simulation</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="get_max_hydro.html">get_max_hydro()</a></code>
 
         </dt>
         <dd>Get pumping and generating hydro power</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="get_reservoir_capacity.html">get_reservoir_capacity()</a></code>
 
         </dt>
         <dd>Get reservoir capacity</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="get_weekly_cost.html">get_weekly_cost()</a></code>
 
         </dt>
         <dd>Get objective values of the optimization problem of each week and each scenario for a given simulation <code>simu</code>, mainly used in <code><a href="../reference/get_Reward.html">get_Reward()</a></code> to build reward functions.</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="plot_Bellman.html">plot_Bellman()</a></code>
 
         </dt>
         <dd>Plot Bellman and water values</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="plot_reward.html">plot_reward()</a></code>
 
         </dt>
         <dd>Plot mean reward</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="plot_reward_mc.html">plot_reward_mc()</a></code>
 
         </dt>
         <dd>Plot reward</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="plot_reward_variation.html">plot_reward_variation()</a></code>
 
         </dt>
         <dd>Plot mean reward variation</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="plot_reward_variation_mc.html">plot_reward_variation_mc()</a></code>
 
         </dt>
         <dd>Plot reward variation</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="readReservoirLevels.html">readReservoirLevels()</a></code>
 
         </dt>
         <dd>Read reservoir rule curves</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="remove_out.html">remove_out()</a></code>
 
         </dt>
         <dd>Post process water values</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="reward_offset.html">reward_offset()</a></code>
 
         </dt>
         <dd>Take into account overall cost in local reward</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="runWaterValuesSimulation.html">runWaterValuesSimulation()</a></code>
 
         </dt>
         <dd>Run Antares simulations in order to compute water values for a specific area</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="runWaterValuesSimulationMultiStock.html">runWaterValuesSimulationMultiStock()</a></code>
 
         </dt>
         <dd>Run Antares simulations in order to compute water values for multiple areas</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="shiny_water_values.html">shiny_water_values()</a></code>
 
         </dt>
         <dd>Open web interface for computing water values</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="to_Antares_Format.html">to_Antares_Format()</a></code>
 
         </dt>
         <dd>Convert water values to Antares format</dd>
-      </dl><dl><dt>
+
+        <dt>
 
           <code><a href="to_Antares_Format_bis.html">to_Antares_Format_bis()</a></code>
 
         </dt>
         <dd>Convert water values to Antares format with high accuracy</dd>
-      </dl><dl><dt>
+
+        <dt>
+
+          <code><a href="updateReward.html">updateReward()</a></code>
+
+        </dt>
+        <dd>Update df_rewards with latest simulation run, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
+
+        <dt>
+
+          <code><a href="updateWatervalues.html">updateWatervalues()</a></code>
+
+        </dt>
+        <dd>Calculate water values with <code>Grid_Matrix</code> from estimated reward, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
+
+        <dt>
 
           <code><a href="waterValuesViz.html">waterValuesViz()</a></code>
 
@@ -213,7 +272,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

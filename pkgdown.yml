@@ -1,11 +1,11 @@
 pandoc: 3.1.11
-pkgdown: 2.1.3
+pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   computation_watervalues: computation_watervalues.html
   grid_Matrix-parameters: grid_Matrix-parameters.html
   Reward-interpolation: Reward-interpolation.html
-last_built: 2025-09-30T14:16Z
+last_built: 2025-11-19T08:12Z
 urls:
   reference: https://rte-antares-rpackage.github.io/antaresWaterValues/reference
   article: https://rte-antares-rpackage.github.io/antaresWaterValues/articles

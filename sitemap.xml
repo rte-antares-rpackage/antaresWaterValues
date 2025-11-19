@@ -14,6 +14,8 @@
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/add_fictive_fatal_prod_demand.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/build_all_possible_decisions.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/build_data_watervalues.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateBellmanWithIterativeSimulations.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateBellmanWithIterativeSimulationsMultiStock.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/changeHydroManagement.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/constraint_generator.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/constraint_week.html</loc></url>
@@ -25,6 +27,7 @@
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/generate_rhs_bc.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBackupData.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesFromOneSimulationMultistock.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getOptimalTrend.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getPumpEfficiency.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_Reward.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_bellman_values_interpolation.html</loc></url>
@@ -56,6 +59,8 @@
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/states_to_percent.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/to_Antares_Format.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/to_Antares_Format_bis.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/updateReward.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/updateWatervalues.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/value_node_gen.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/waterValuesViz.html</loc></url>
 </urlset>

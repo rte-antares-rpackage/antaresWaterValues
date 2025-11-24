@@ -19,7 +19,6 @@
 #' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
 #' @param mc_years_optim Vector of integers. Monte Carlo years to perform the optimization.
 #' @param path_to_antares Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
-#' @param study_path Character. Path to the simulation, argument passed to \code{antaresRead::setSimulationPath}.
 #' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
 #' @param storage_annual_cost Numeric. Annual cost of storage in eur/MWh.
 #' @param launch_sims Boolean. True to launch simulations at each iterations. False if simulations already run.
@@ -44,7 +43,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          opts,
                                                          mc_years_optim,
                                                          path_to_antares,
-                                                         study_path,
                                                          cvar=1,
                                                          storage_annual_cost,
                                                          launch_sims=T,
@@ -110,6 +108,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       rbind(optimal_traj)
   }
 
+  browser()
+
   for (node in areas_loop) {
     time1 <- Sys.time()
     nb_ite <- 0
@@ -138,7 +138,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                   opts = opts,
                                   mcyears = mc_years_optim,
                                   path_to_antares = path_to_antares,
-                                  study_path = study_path,
                                   prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
                                   launch_sims=launch_sims,
                                   sim_number = nb_sims,
@@ -191,7 +190,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
           print(storage_vol)
           # compute WV with parallel processing
           new_grid_costs <- parallel::parLapply(cl, list_index, function(x) {
-            opts <- antaresRead::setSimulationPath(study_path,"input")
             total_cost_parallel_version(x,
                                         new_candidate_grid,
                                         node,
@@ -264,11 +262,11 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
     # store rewards and costs in a file
     to_save <- output_node[[node]]$last_rewards[[as.character(nb_node)]]$reward
-    save(to_save,
-         file=paste0(study_path, "/user/Reward_", node, "_", nb_node, ".RData"))
+    # save(to_save,
+    #      file=paste0(study_path, "/user/Reward_", node, "_", nb_node, ".RData"))
 
     to_save <- output_node[[node]]$all_costs
-    save(to_save, file=paste0(study_path, "/user/All_objectives_", node, "_", unspil_cost, ".RData"))
+    # save(to_save, file=paste0(study_path, "/user/All_objectives_", node, "_", unspil_cost, ".RData"))
     res = total_cost_loop(area = node,
                           mc_years = mc_years_optim,
                           candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
@@ -371,7 +369,6 @@ grid_other_candidates <- function(candidates_data) {
 #' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
 #' @param mcyears Vector of integers. Monte Carlo years to run simulations
 #' @param path_to_antares Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
-#' @param study_path Character. Path to the simulation, argument passed to \code{antaresRead::setSimulationPath}.
 #' @param prefix Character. Prefix of the simulation.
 #' @param launch_sims Boolean. True to launch simulations, false if simulations already run.
 #' @param sim_number Integer. Number of simulations.
@@ -385,7 +382,6 @@ calculateRewardsSimulations <- function(area,
                                         opts,
                                         mcyears,
                                         path_to_antares,
-                                        study_path,
                                         prefix,
                                         launch_sims=T,
                                         sim_number = 5,
@@ -422,19 +418,31 @@ calculateRewardsSimulations <- function(area,
     launch_simulations = c(rep(launch_sims, sim_number)),
     expansion = T)
 
-  {
-    output_dir <- list.dirs(paste0(study_path,"/output"),recursive = F)
-    for (s in simulation_res$simulation_names){
-      dir_sim = utils::tail(output_dir[stringr::str_detect(output_dir,paste0(s,"$"))],n=1)
-      output_info = antaresRead::readIniFile(paste0(dir_sim,"/info.antares-output"))
-      output_info$general$mode <- "Economy"
-      antaresEditObject::writeIniFile(output_info,paste0(dir_sim,"/info.antares-output"),
-                                      overwrite = T)
+  for (name_sim in simulation_res$simulation_names){
+    if (is_api_study(opts)&opts$antaresVersion>=880){
+      output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
+      output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,stringr::str_c(name_sim,"$"))],n=1)
+      info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
+      info$general$mode = "Economy"
+      body <- jsonlite::toJSON(info,auto_unbox = TRUE)
+      antaresRead::api_post(opts=opts,endpoint=paste0(opts$study_id,
+                                                      "/raw?path=output%2F",output_dir,"%2Finfo"),
+                            body=body)
+    }
+    if (!is_api_study(opts)){
+      {
+        output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = FALSE)
+        output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,stringr::str_c(name_sim,"$"))],n=1)
+        output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
+        output_info$general$mode <- "Economy"
+        antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
+                                        overwrite = TRUE)
+      }
     }
   }
 
+
   {start.time <- Sys.time()
-    opts <- antaresRead::setSimulationPath(study_path, "input")
 
     max_hydro <- get_max_hydro(area,opts,timeStep = "hourly")
     controls_reward_calculation <- constraint_generator(area=area,

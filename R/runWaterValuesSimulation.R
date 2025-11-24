@@ -389,16 +389,16 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       expansion = expansion
     )
 
-    if(!is_api_study(opts)){
-      save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
-    } else {
-      body = list()
-      body$file <- jsonlite::toJSON(simulation_res,
-                               auto_unbox = TRUE)
-      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-        "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
-        body=body)
-    }
+    # if(!is_api_study(opts)){
+    #   save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
+    # } else {
+    #   body = list()
+    #   body$file <- jsonlite::toJSON(simulation_res,
+    #                            auto_unbox = TRUE)
+    #   antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
+    #     "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
+    #     body=body)
+    # }
   },
   error = function(e) {
     stop(e)
@@ -485,7 +485,7 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
     assertthat::assert_that(status == 0,
                             msg = "Antares simulation failed, check Antares logs.")
   }
-  if ("mcYear" %in% colnames(constraint_value) && !is_api_study(opts) && 
+  if ("mcYear" %in% colnames(constraint_value) && !is_api_study(opts) &&
    !expansion && opts$parameters$output$storenewset){
     opts_sim = antaresRead::setSimulationPath(opts$studyPath,simulation=sim_name)
     ts_number = utils::read.csv(paste0(opts_sim$simPath,"/ts-numbers/bindingconstraints/watervalues.txt"))

@@ -124,7 +124,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
 
   }
 
-  level_init <- get_initial_level(area,opts)*niveau_max/100
+  level_init <- get_initial_level_year_per_year(area,opts)*niveau_max/100
 
   setupGeneralParameters(opts,
                         TRUE,
@@ -464,7 +464,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                             penalty_final_level, final_level,
                             max_hydro_weekly, n=0, pump_eff,mix_scenario=TRUE,
                             df_previous_cut = NULL){
-  level_i <- data.frame(states = level_init,scenario = seq_along(mcyears))
+  level_i <- data.frame(states = level_init[mcyears],scenario = seq_along(mcyears))
   levels <- data.frame()
 
   if (is.null(df_previous_cut)){
@@ -768,7 +768,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
     }
 
-    level_init <- get_initial_level(area,opts)*list_capacity[[area]]/100
+    level_init <- get_initial_level_year_per_year(area,opts)*list_capacity[[area]]/100
 
     i <- 1
     gap <- 1

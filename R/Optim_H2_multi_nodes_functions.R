@@ -109,8 +109,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       rbind(optimal_traj)
   }
 
-  browser()
-
   # getting reward functions
   list_rewards <- list()
 
@@ -183,7 +181,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       # loop on the storage candidates
       for (storage_vol in new_storage_points) {
 
-        if (node != "v_me_h2_fr") {
+        if (parallelprocess == T) {
           # with parallel processing
           # create clusters
           cl <- parallel::makeCluster(nb_sockets)
@@ -562,7 +560,10 @@ total_cost_loop <- function(area,
     for (can in 1:length(candidates_types$index)) {
       total_cost <- total_cost - as.numeric(candidates_types$TOTEX[can])*candidate_pool[can]
     }
-    return(total_cost)
+    output = list()
+    output$total_cost = total_cost
+    output$optimal_traj = data.frame()
+    return(output)
   }
 
   if (all(new_rewards$reward$control == 0)) {print("cluster bande trop grand")}

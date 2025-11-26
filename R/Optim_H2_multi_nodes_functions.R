@@ -51,6 +51,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
                                                          edit_study = F,
+                                                         file_intermediate_results,
                                                          back_to_first_node = F) {
 
   # initialization
@@ -110,6 +111,13 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
   browser()
 
+  # getting reward functions
+  list_rewards <- list()
+
+  if (file.exists(file_intermediate_results)){
+    load(file = file_intermediate_results)
+  }
+
   for (node in areas_loop) {
     time1 <- Sys.time()
     nb_ite <- 0
@@ -121,31 +129,34 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
     storage_bounds <- storage_bounds_init
 
-    # getting reward functions
-    list_rewards <- list()
-
     candidates_data <- c()
     for (can in 1:length(candidates_types$index)) {
       candidates_data[[can]] <- c(as.numeric(candidates_types$Borne_min[can]), as.numeric(candidates_types$Borne_max[can]),
                                   as.numeric(candidates_types$Points_nb[can]))
     }
 
-    simulation_point_res <-
-      calculateRewardsSimulations(area =node,
-                                  list_areas = areas_invest,
-                                  list_pumping = list_pumping,
-                                  list_efficiency = list_efficiency,
-                                  opts = opts,
-                                  mcyears = mc_years_optim,
-                                  path_to_antares = path_to_antares,
-                                  prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
-                                  launch_sims=launch_sims,
-                                  sim_number = nb_sims,
-                                  optimal_traj = optimal_traj)
+    if (as.character(nb_node) %in% names(list_rewards)){
+      simulation_res = list_rewards[[as.character(nb_node)]]
+    } else {
+      simulation_point_res <-
+        calculateRewardsSimulations(area =node,
+                                    list_areas = areas_invest,
+                                    list_pumping = list_pumping,
+                                    list_efficiency = list_efficiency,
+                                    opts = opts,
+                                    mcyears = mc_years_optim,
+                                    path_to_antares = path_to_antares,
+                                    prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
+                                    launch_sims=launch_sims,
+                                    sim_number = nb_sims,
+                                    optimal_traj = optimal_traj)
 
 
-    # store results edited by area index
-    list_rewards[[as.character(nb_node)]] <- simulation_point_res
+      # store results edited by area index
+      list_rewards[[as.character(nb_node)]] <- simulation_point_res
+
+      save(list_rewards,file=file_intermediate_results)
+    }
 
     final_level <- get_initial_level(node,opts)
 
@@ -172,7 +183,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       # loop on the storage candidates
       for (storage_vol in new_storage_points) {
 
-        if (parallelprocess == T) {
+        if (node != "v_me_h2_fr") {
           # with parallel processing
           # create clusters
           cl <- parallel::makeCluster(nb_sockets)

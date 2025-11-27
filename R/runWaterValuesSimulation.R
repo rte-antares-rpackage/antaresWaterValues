@@ -389,16 +389,16 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       expansion = expansion
     )
 
-    # if(!is_api_study(opts)){
-    #   save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
-    # } else {
-    #   body = list()
-    #   body$file <- jsonlite::toJSON(simulation_res,
-    #                            auto_unbox = TRUE)
-    #   antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-    #     "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
-    #     body=body)
-    # }
+    if(!is_api_study(opts)){
+      save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
+    } else {
+      body = list()
+      body$file <- jsonlite::toJSON(simulation_res,
+                               auto_unbox = TRUE)
+      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
+        "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
+        body=body)
+    }
   },
   error = function(e) {
     stop(e)

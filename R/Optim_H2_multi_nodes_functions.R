@@ -581,7 +581,8 @@ total_cost_loop <- function(area,
                      force_final_level = T,
                      final_level = final_level,
                      penalty_final_level_high = penalty_final_level,
-                     penalty_final_level_low = penalty_final_level)
+                     penalty_final_level_low = penalty_final_level,
+                     plot_watervalues = F)
 
   op_cost <- res$lower_bound
 

@@ -588,7 +588,7 @@ total_cost_loop <- function(area,
       dplyr::group_by(.data$timeId) %>%
       dplyr::summarise(pump=sum(.data$pump),turb=sum(.data$turb),.groups = "drop")
 
-    level_init <- get_initial_level(area,opts)*storage_vol/100
+    level_init <- get_initial_level_year_per_year(area,opts)*storage_vol/100
 
     pump_eff = getPumpEfficiency(area,opts)
     levels <- getOptimalTrend(level_init=level_init,watervalues=res$watervalues,

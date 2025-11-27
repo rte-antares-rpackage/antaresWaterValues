@@ -18,10 +18,8 @@ calculateBellmanWithIterativeSimulations(
   penalty_low,
   penalty_high,
   path_solver,
-  study_path,
   states_step_ratio = 1/50,
   cvar_value = 1,
-  test_vu = FALSE,
   force_final_level = FALSE,
   final_level = NULL,
   penalty_final_level = NULL,
@@ -50,15 +48,10 @@ calculateBellmanWithIterativeSimulations(
 
 \item{path_solver}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
-\item{study_path}{Character containing the Antares study}
-
 \item{states_step_ratio}{Discretization ratio to generate steps levels
 between the reservoir capacity and zero}
 
 \item{cvar_value}{from 0 to 1. the probability used in cvar method}
-
-\item{test_vu}{Binary. If you want to run a Antares simulation between each iteration
-with the latest water values}
 
 \item{force_final_level}{Binary. Whether final level should be constrained}
 

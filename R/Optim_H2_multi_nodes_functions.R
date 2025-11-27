@@ -28,6 +28,7 @@
 #' @param edit_study Boolean. True to edit study with optimal candidates.
 #' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
 #' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
+#' @param file_intermediate_results Character. Local path to save intermediate results.
 #'
 #' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
 #'
@@ -58,7 +59,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
   output_node <- list()
   storage_bounds_init <- storage_bounds
-  nb_node <- 0
 
   list_pumping <- c()
   list_efficiency <- c()
@@ -109,9 +109,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       rbind(optimal_traj)
   }
 
-  # getting reward functions
-  list_rewards <- list()
-
   if (file.exists(file_intermediate_results)){
     load(file = file_intermediate_results)
   }
@@ -119,7 +116,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   for (node in areas_loop) {
     time1 <- Sys.time()
     nb_ite <- 0
-    nb_node <- nb_node +1
+
+    output_node[[node]] <- list()
 
     candidates_types <- candidates_types_gen%>% dplyr::filter(.data$Zone==node)
 
@@ -133,10 +131,10 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                   as.numeric(candidates_types$Points_nb[can]))
     }
 
-    if (as.character(nb_node) %in% names(list_rewards)){
-      simulation_res = list_rewards[[as.character(nb_node)]]
+    if (node %in% names(output_node)){
+      reward_db = output_node[[node]]$reward
     } else {
-      simulation_point_res <-
+      reward_db <-
         calculateRewardsSimulations(area =node,
                                     list_areas = areas_invest,
                                     list_pumping = list_pumping,
@@ -144,16 +142,16 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                     opts = opts,
                                     mcyears = mc_years_optim,
                                     path_to_antares = path_to_antares,
-                                    prefix=paste0("unsp", as.character(unspil_cost), "_", nb_node),
+                                    prefix=paste0("unsp", as.character(unspil_cost)),
                                     launch_sims=launch_sims,
                                     sim_number = nb_sims,
                                     optimal_traj = optimal_traj)
 
 
       # store results edited by area index
-      list_rewards[[as.character(nb_node)]] <- simulation_point_res
+      output_node[[node]]$reward <- reward_db
 
-      save(list_rewards,file=file_intermediate_results)
+      save(output_node,file=file_intermediate_results)
     }
 
     final_level <- get_initial_level(node,opts)
@@ -205,8 +203,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                         mc_years_optim,
                                         candidates_types,
                                         storage_vol,
-                                        list_rewards,
-                                        nb_node,
+                                        reward_db,
                                         cvar,
                                         opts,
                                         penalty_low,
@@ -228,7 +225,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                               candidate_pool = new_candidate_grid[[candidate_index]],
                                               candidates_types = candidates_types,
                                               storage_vol = storage_vol,
-                                              df_reward = list_rewards[[as.character(nb_node)]],
+                                              df_reward = reward_db,
                                               cvar = cvar,
                                               opts = opts,
                                               penalty_low = penalty_low,
@@ -256,12 +253,10 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     }
 
     # store output
-    output_node[[node]] <- list()
     output_node[[node]]$all_costs <- grid_costs
     output_node[[node]]$best <- max_candidate(grid_costs)
     output_node[[node]]$last_storage_points <- new_storage_points
     output_node[[node]]$last_candidates_data <- candidates_data
-    output_node[[node]]$last_rewards <- list_rewards
 
     time2 <- Sys.time()
     output_node[[node]]$optim_time <- time2-time1
@@ -270,18 +265,14 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     print(output_node[[node]]$best)
 
     # store rewards and costs in a file
-    to_save <- output_node[[node]]$last_rewards[[as.character(nb_node)]]$reward
-    # save(to_save,
-    #      file=paste0(study_path, "/user/Reward_", node, "_", nb_node, ".RData"))
+    save(output_node,file=file_intermediate_results)
 
-    to_save <- output_node[[node]]$all_costs
-    # save(to_save, file=paste0(study_path, "/user/All_objectives_", node, "_", unspil_cost, ".RData"))
     res = total_cost_loop(area = node,
                           mc_years = mc_years_optim,
                           candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
                           candidates_types = candidates_types,
                           storage_vol = unlist(dplyr::select(output_node[[node]]$best,c("Storage")),use.names = F),
-                          df_reward = list_rewards[[as.character(nb_node)]],
+                          df_reward = reward_db,
                           cvar = cvar,
                           opts = opts,
                           penalty_low = penalty_low,
@@ -464,11 +455,6 @@ calculateRewardsSimulations <- function(area,
                                                        data.frame(mcYear=mcyears))
     }
 
-    # controls_reward_calculation <- rbind(constraint_values,controls_reward_calculation) %>%
-    #   dplyr::select(-c("sim")) %>%
-    #   dplyr::distinct() %>%
-    #   dplyr::arrange(.data$week,.data$u)
-
     area_here <- area
 
     constraint_values <- constraint_values %>%
@@ -631,6 +617,7 @@ total_cost_loop <- function(area,
 #' @param power Integer. Capacity of the cluster.
 #' @param reward_init List. Rewards and decision space from the output of the function \code{antaresWaterValues::get_Reward()}.
 #' @param mc_years Vector of integers. Monte Carlo years of the rewards.
+#' @param max_hydro_weekly Maximum weekly pumping and generating power generated by the function \code{get_max_hydro()} with \code{timeStep="weekly"}.
 #'
 #' @returns a \code{list} of rewards and decision space, like \code{reward_init}.
 update_reward_cluster_bande <- function(power, reward_init, mc_years, max_hydro_weekly) {
@@ -823,9 +810,8 @@ new_bounds <- function(best_candidate, candidates_data, storage_points) {
 #' @param candidates_types Data_frame with column names : c("index", "name", "type", "TOTEX", "Marg_price").
 #' It is a parameter of \code{MultiStock_H2_Investment_reward_compute_once}.
 #' @param storage_vol Integer. Volume of the storage candidate
-#' @param list_rewards List. List of rewards and decision space from the output of the function \code{antaresWaterValues::get_Reward()}.
+#' @param reward_db List. List of rewards and decision space from the output of the function \code{antaresWaterValues::get_Reward()}.
 #' Rewards and decision spaces are given for each area marked by their number.
-#' @param nb_node Integer. Number of the specific area to get corresponding reward from \code{list_rewards}
 #' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
 #' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
 #' @param penalty_low Integer. Penalty for lower guide curve.
@@ -842,8 +828,7 @@ total_cost_parallel_version <- function(candidate_index,
                                         mc_years_optim,
                                         candidates_types,
                                         storage_vol,
-                                        list_rewards,
-                                        nb_node,
+                                        reward_db,
                                         cvar,
                                         opts,
                                         penalty_low,
@@ -858,7 +843,7 @@ total_cost_parallel_version <- function(candidate_index,
                                     candidate_pool = new_candidate_grid[[candidate_index]],
                                     candidates_types = candidates_types,
                                     storage_vol = storage_vol,
-                                    df_reward = list_rewards[[as.character(nb_node)]],
+                                    df_reward = reward_db,
                                     cvar = cvar,
                                     opts = opts,
                                     penalty_low = penalty_low,

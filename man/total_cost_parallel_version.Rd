@@ -13,8 +13,7 @@ total_cost_parallel_version(
   mc_years_optim,
   candidates_types,
   storage_vol,
-  list_rewards,
-  nb_node,
+  reward_db,
   cvar,
   opts,
   penalty_low,
@@ -38,10 +37,8 @@ It is a parameter of \code{MultiStock_H2_Investment_reward_compute_once}.}
 
 \item{storage_vol}{Integer. Volume of the storage candidate}
 
-\item{list_rewards}{List. List of rewards and decision space from the output of the function \code{antaresWaterValues::get_Reward()}.
+\item{reward_db}{List. List of rewards and decision space from the output of the function \code{antaresWaterValues::get_Reward()}.
 Rewards and decision spaces are given for each area marked by their number.}
-
-\item{nb_node}{Integer. Number of the specific area to get corresponding reward from \code{list_rewards}}
 
 \item{cvar}{Numeric in [0,1]. The probability used in cvar algorithm.}
 

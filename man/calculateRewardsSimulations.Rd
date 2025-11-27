@@ -14,7 +14,6 @@ calculateRewardsSimulations(
   opts,
   mcyears,
   path_to_antares,
-  study_path,
   prefix,
   launch_sims = T,
   sim_number = 5,
@@ -35,8 +34,6 @@ calculateRewardsSimulations(
 \item{mcyears}{Vector of integers. Monte Carlo years to run simulations}
 
 \item{path_to_antares}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
-
-\item{study_path}{Character. Path to the simulation, argument passed to \code{antaresRead::setSimulationPath}.}
 
 \item{prefix}{Character. Prefix of the simulation.}
 

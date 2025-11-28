@@ -3,53 +3,51 @@
 \name{calculateRewardsSimulations}
 \alias{calculateRewardsSimulations}
 \title{Compute reward function with the 5 simulations method.
-Called for each area of \code{MultiStock_H2_Investment_reward_compute_once}}
+Called for each area of \code{MultiStock_H2_Investment_reward_compute_once}.
+If they are several areas, the trajectories of the other storage are fixed on their optimal trend.}
 \usage{
 calculateRewardsSimulations(
   area,
+  list_areas,
+  list_pumping,
+  list_efficiency,
   opts,
-  pumping = F,
-  pump_eff = 1,
   mcyears,
   path_to_antares,
-  study_path,
   prefix,
   launch_sims = T,
-  step_number = 51,
   sim_number = 5,
-  control_indices
+  optimal_traj
 )
 }
 \arguments{
 \item{area}{Character. Name of the area where the reward is computed}
 
+\item{list_areas}{Vector of characters of the names of areas to optimize.}
+
+\item{list_pumping}{Vector of boolean. True if pumping for the area with corresponding index in \code{list_areas}.}
+
+\item{list_efficiency}{Vector of numeric with pumping efficiency for the area with corresponding index in \code{list_areas}.}
+
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
-
-\item{pumping}{Boolean. True to take into account the pumping capacity.}
-
-\item{pump_eff}{Double between 0 and 1. Pumping efficiency ratio.
-Get it with \code{antaresWaterValues::getPumpEfficiency()}.}
 
 \item{mcyears}{Vector of integers. Monte Carlo years to run simulations}
 
 \item{path_to_antares}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
-\item{study_path}{Character. Path to the simulation, argument passed to \code{antaresRead::setSimulationPath}.}
-
 \item{prefix}{Character. Prefix of the simulation.}
 
 \item{launch_sims}{Boolean. True to launch simulations, false if simulations already run.}
 
-\item{step_number}{Integer. Step number for reward functions. If \code{launch_sims==F}, must be in adequacy with previous step number.}
+\item{sim_number}{Integer. Number of simulations.}
 
-\item{sim_number}{Integer. Number of simulations (must be the length of control_indices)}
-
-\item{control_indices}{Vector of integers. Control points to compute}
+\item{optimal_traj}{Data frame containing optimal trajectory for all areas}
 }
 \value{
 a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
 }
 \description{
 Compute reward function with the 5 simulations method.
-Called for each area of \code{MultiStock_H2_Investment_reward_compute_once}
+Called for each area of \code{MultiStock_H2_Investment_reward_compute_once}.
+If they are several areas, the trajectories of the other storage are fixed on their optimal trend.
 }

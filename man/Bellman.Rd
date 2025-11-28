@@ -13,7 +13,6 @@ Bellman(
   mcyears,
   cvar_value = 1,
   niveau_max,
-  states_steps,
   penalty_level_low,
   penalty_level_high,
   lvl_high,
@@ -47,8 +46,6 @@ reservoir over one step of time.}
 \item{cvar_value}{numeric in [0,1]. the probability used in cvar algorithm.}
 
 \item{niveau_max}{Level max of the reservoir}
-
-\item{states_steps}{Numeric. Discretization step of reservoir.}
 
 \item{penalty_level_low}{Penalty for violating the bottom rule curve, comparable to the unsupplied energy}
 

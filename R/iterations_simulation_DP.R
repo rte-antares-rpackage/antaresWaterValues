@@ -543,7 +543,8 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                     penalty_high = dplyr::if_else(.data$next_state>=l_high,pen_high*(l_high-.data$next_state),0),
                     sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(.data$years) %>%
-      dplyr::slice_max(data.frame(.data$sum,.data$next_state)) %>%
+      dplyr::filter(.data$sum==max(.data$sum)) %>%
+      dplyr::slice_max(.data$next_state) %>%
       dplyr::ungroup() %>%
       dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state","constraint"="control") %>%
       dplyr::select(c("week","mcYear","lev","constraint","scenario")) %>%

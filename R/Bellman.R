@@ -17,7 +17,6 @@
   #' reservoir over one step of time.
   #' @param cvar_value numeric in [0,1]. the probability used in cvar algorithm.
   #' @param mcyears Vector. Monte Carlo years
-  #' @param states_steps Numeric. Discretization step of reservoir.
   #' @param niveau_max Level max of the reservoir
   #' @param penalty_level_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy
   #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy
@@ -29,7 +28,7 @@
   #' @keywords internal
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       mcyears,cvar_value=1,niveau_max,
-                      states_steps,penalty_level_low,penalty_level_high,
+                      penalty_level_low,penalty_level_high,
                       lvl_high,lvl_low,overflow_cost){
 
     # Getting all possible transitions between a state for the current week and a state for the next week
@@ -38,10 +37,6 @@
       decision_space <- decision_space %>%
         dplyr::cross_join(data.frame(mcYear=mcyears))
     }
-
-    # Possible next states
-    states_next <- Data_week$states_next[[1]]
-    states_next <- unlist(states_next, use.names = FALSE)
 
     # Get interpolation function of rewards for each possible transition for each MC year
     f_reward_year <- get_reward_interpolation(Data_week)
@@ -63,11 +58,14 @@
              penalty_high = dplyr::if_else(.data$next_state>=lvl_high,penalty_level_high*(lvl_high-.data$next_state),0),
              sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(.data$years,.data$states) %>%
-      dplyr::slice(which.max(.data$sum)) %>%
+      dplyr::filter(.data$sum==max(.data$sum)) %>%
+      dplyr::slice_max(.data$next_state) %>%
       dplyr::select(-c("value_node","transition","transition_reward",
                 "next_bellman_value")) %>%
       dplyr::rename("value_node"="sum","transition"="control","transition_reward"="gain",
              "next_bellman_value"="next_value")
+
+    assertthat::assert_that(nrow(df_SDP)==nrow(Data_week),msg=paste0("Problem with Bellman at week ",w))
 
     # reorder df_SDP as Data_week and then replacing values for the week
     Data_week <- dplyr::left_join(Data_week[,-c("value_node","transition","transition_reward",

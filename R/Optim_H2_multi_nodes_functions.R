@@ -56,8 +56,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          back_to_first_node = F) {
 
   # initialization
-
-  output_node <- list()
   storage_bounds_init <- storage_bounds
 
   list_pumping <- c()
@@ -111,13 +109,17 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
   if (file.exists(file_intermediate_results)){
     load(file = file_intermediate_results)
+  } else {
+    output_node <- list()
   }
 
   for (node in areas_loop) {
     time1 <- Sys.time()
     nb_ite <- 0
 
-    output_node[[node]] <- list()
+    if (!(node %in% names(output_node))){
+      output_node[[node]] <- list()
+    }
 
     candidates_types <- candidates_types_gen%>% dplyr::filter(.data$Zone==node)
 
@@ -131,7 +133,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                   as.numeric(candidates_types$Points_nb[can]))
     }
 
-    if (node %in% names(output_node)){
+    if ("reward" %in% names(output_node[[node]])){
       reward_db = output_node[[node]]$reward
     } else {
       reward_db <-
@@ -188,8 +190,28 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                         "update_reward_cluster_bande",
                                         "update_reward_cluster_flexible",
                                         "storage_annual_cost",
-                                        "Grid_Matrix"),
-                                  envir=environment())
+                                        "Grid_Matrix",
+                                        "get_max_hydro",
+                                        "getPumpEfficiency",
+                                        "get_inflow",
+                                        "%>%",
+                                        "data.table",
+                                        "readReservoirLevels",
+                                        "fread_antares",
+                                        "isRunning",
+                                        "fread",
+                                        "as.data.table",
+                                        "melt",
+                                        "copy",
+                                        "Bellman",
+                                        "get_reward_interpolation",
+                                        "get_bellman_values_interpolation",
+                                        "build_all_possible_decisions",
+                                        "build_data_watervalues",
+                                        "value_node_gen",
+                                        "get_initial_level",
+                                        "get_initial_level_year_per_year",
+                                        "getOptimalTrend"))
 
 
           list_index <- c(seq(1, length(new_candidate_grid)))

@@ -59,13 +59,13 @@
              sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(.data$years,.data$states) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
-      dplyr::slice_max(.data$next_state) %>%
+      dplyr::slice_max(.data$next_state, with_ties = F) %>%
       dplyr::select(-c("value_node","transition","transition_reward",
                 "next_bellman_value")) %>%
       dplyr::rename("value_node"="sum","transition"="control","transition_reward"="gain",
              "next_bellman_value"="next_value")
 
-    assertthat::assert_that(nrow(df_SDP)==nrow(Data_week),msg=paste0("Problem with Bellman at week ",w))
+    assertthat::assert_that(nrow(df_SDP)==nrow(Data_week),msg=paste0("Problem with Bellman"))
 
     # reorder df_SDP as Data_week and then replacing values for the week
     Data_week <- dplyr::left_join(Data_week[,-c("value_node","transition","transition_reward",

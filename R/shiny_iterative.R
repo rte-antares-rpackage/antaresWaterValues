@@ -183,7 +183,6 @@ iterativeServer <- function(id, opts, silent) {
                               penalty_low = input$itr_penalty_low,
                               penalty_high = input$itr_penalty_high,
                               path_solver = input$itr_solver_path,
-                              study_path = opts$studyPath,
                               states_step_ratio = 1 / input$itr_nb_states,
                               cvar_value = input$itr_cvar_value
                             )$results

@@ -537,7 +537,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     interp_reward <- reward_week[
       , .(interp_fun = list({
         ctrl <- sort(unique(control))
-        rew  <- reward_week[order(control)][match(ctrl, sort(control))]
+        rew  <- reward[order(control)][match(ctrl, sort(control))]
         approxfun(ctrl, rew)
       })),
       by = mcYear

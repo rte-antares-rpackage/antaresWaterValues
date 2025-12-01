@@ -96,7 +96,7 @@ build_all_possible_decisions <- function(Data_week,
       next_state = pmin(tmp_next_state, niveau_max),
       next_value = f_list[as.character(years)] %>% purrr::map2_dbl(next_state, ~ .x(.y)) + overflow * overflow_cost
     ) %>%
-    dplyr::select(-tmp_next_state)
+    dplyr::select(c("years","states","next_state","control","hydroStorage","next_value"))
 
   # 3) control_min
   control_min <- Data_week %>%

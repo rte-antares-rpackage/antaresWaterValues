@@ -128,20 +128,12 @@ Grid_Matrix <- function(area,
     statesdt <- melt(data = statesdt, measure.vars = seq_len(ncol(states)), variable.name = "weeks", value.name = "states")
     statesdt[, "weeks" := as.numeric(gsub("V", "", statesdt$weeks))] #turn weeks to numbers V1==> 1
     statesdt[, "statesid" := seq_along(states), by = c("weeks")] # add id to refer to the state
-  }
-
-  # add states plus 1 (ie states for the following week)
-  {
-    statesplus1 <- copy(statesdt)
-    statesplus1[, "weeks" := statesplus1$weeks - 1]
-    statesplus1 <- statesplus1[, list(states_next = list(unlist(states))), by = c("weeks")]
-    statesplus1 <- dplyr::left_join(x = statesdt, y = statesplus1, by = c("weeks"))
-    watervalues <- dplyr::right_join(x = watervalues, y = statesplus1, by = c("weeks","statesid"))
+    watervalues <- dplyr::right_join(x = watervalues, y = statesdt, by = c("weeks","statesid"))
   }
 
   # add inflow
   watervalues <- dplyr::left_join(x = watervalues, y = inflow[, list(weeks = inflow$timeId, years = inflow$tsId, hydroStorage=inflow$hydroStorage)], by = c("weeks", "years"))
-  #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
+  #at this point water values is the table containing (weeks,year,states,statesid,hydroStorage)
 
   #at this point we added the rewards for each weekly_amount
 

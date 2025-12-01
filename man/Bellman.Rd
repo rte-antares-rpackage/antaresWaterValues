@@ -28,8 +28,7 @@ that contains:
  * value_inflow Numeric. Inflow values for each Monte-Carlo year.
  * Rewards for each simulation value and each Monte-Carlo year.
  * level_high Numeric. Highest possible reservoir value.
- * level_low Numeric. Lowest possible reservoir value.
- * states_next List of vectors enumerating all reachable states}
+ * level_low Numeric. Lowest possible reservoir value.}
 
 \item{next_week_values_l}{Numeric. Bellman values at step i+1.}
 

@@ -547,12 +547,14 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     control <- df_SDP %>%
       dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=l_low,pen_low*(.data$next_state-l_low),0),
                     penalty_high = dplyr::if_else(.data$next_state>=l_high,pen_high*(l_high-.data$next_state),0),
-                    sum=.data$reward+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
+                    sum=.data$reward+.data$next_value+.data$penalty_low+.data$penalty_high,
+                    week=w) %>%
       dplyr::group_by(.data$mcYear) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
       dplyr::slice_max(.data$next_state, with_ties = F) %>%
       dplyr::ungroup() %>%
-      dplyr::rename("week"="weeks","lev"="next_state","constraint"="control") %>%
+      dplyr::rename("lev"="next_state","constraint"="control") %>%
+      dplyr::left_join(dplyr::select(Data_week,c("years","scenario")),by=c("mcYear"="years")) %>%
       dplyr::select(c("week","mcYear","lev","constraint","scenario")) %>%
       dplyr::distinct(.data$week,.data$mcYear,.keep_all = TRUE)
 

@@ -544,7 +544,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                     sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(.data$years) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
-      dplyr::slice_max(.data$next_state) %>%
+      dplyr::slice_max(.data$next_state, with_ties=F) %>%
       dplyr::ungroup() %>%
       dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state","constraint"="control") %>%
       dplyr::select(c("week","mcYear","lev","constraint","scenario")) %>%
@@ -684,8 +684,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       max_hydro <- get_max_hydro(list_areas[[j]],opts,timeStep = "weekly")
 
       initial_traj <- list_inflow[[j]] %>%
-        dplyr::filter(.data$tsId %in% mcyears, timeId<=52) %>%
-        dplyr::left_join(max_hydro,by = dplyr::join_by(timeId)) %>%
+        dplyr::filter(.data$tsId %in% mcyears, .data$timeId<=52) %>%
+        dplyr::left_join(max_hydro,by = dplyr::join_by("timeId")) %>%
         dplyr::rowwise() %>%
         dplyr::mutate(hydroStorage = .data$hydroStorage) %>%
         dplyr::select(c("timeId","tsId","hydroStorage")) %>%

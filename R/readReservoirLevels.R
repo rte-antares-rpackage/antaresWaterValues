@@ -56,6 +56,10 @@ get_initial_level_year_per_year <- function(area,opts){
     opts = opts
   )$hl[area, ]*100
 
+  if (length(sb_hl)==0){
+    return(rep(initial_level,opts$parameters$general$nbyears))
+  }
+
   sb_hl[is.na(sb_hl)] = initial_level
   return(sb_hl)
 }

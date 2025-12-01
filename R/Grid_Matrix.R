@@ -104,7 +104,6 @@ Grid_Matrix <- function(area,
   }
 
   reward = reward_db$reward
-  reward_db = reward_db$reward
 
   # Reservoir (rule curves)
   {
@@ -143,10 +142,6 @@ Grid_Matrix <- function(area,
   # add inflow
   watervalues <- dplyr::left_join(x = watervalues, y = inflow[, list(weeks = inflow$timeId, years = inflow$tsId, hydroStorage=inflow$hydroStorage)], by = c("weeks", "years"))
   #at this point water values is the table containing (weeks,year,states,statesid;states_next,hydroStorage)
-
-  #add reward
-  watervalues <- dplyr::nest_join(x = watervalues, y = reward_db, by = c("weeks"="timeId","years"="mcYear"))
-
 
   #at this point we added the rewards for each weekly_amount
 

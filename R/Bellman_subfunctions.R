@@ -1,20 +1,3 @@
-
-#' Create approximation of reward function for each scenario, used in \code{Bellman}
-#'
-#' @param Data_week Data frame generated in \code{Grid_Matrix} code containing
-#' reward database for each scenario (we suppose there is only one week at a time)
-#'
-#' @return List of \code{stats::approxfun} for each scenario
-#' @keywords internal
-get_reward_interpolation <- function(Data_week){
-
-  reward <- dplyr::distinct(Data_week[,c('years','reward_db')])
-
-  f_reward_year <- sapply(reward$reward_db,FUN = function(df) stats::approxfun(df$control,df$reward))
-
-  return(f_reward_year)
-}
-
 #' Create approximation of Bellman function for next week for each scenario, used in \code{Bellman} and
 #' in \code{getOptimalTrend}
 #'

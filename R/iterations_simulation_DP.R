@@ -496,6 +496,8 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     transition <- watervalues %>%
       dplyr::filter(.data$weeks==w+1)
 
+    reward_week = dplyr::filter(reward,.data$timeId==w)
+
     # Rule curves at the end of the current week (and beginning of the next one)
     Data_week <- watervalues %>%
       dplyr::filter(.data$weeks==w) %>%
@@ -517,16 +519,10 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     pen_high <- ifelse(w<52,penalty_high,penalty_final_level)
     pen_low <- ifelse(w<52,penalty_low,penalty_final_level)
 
-    # Get interpolation function of rewards for each possible transition for each MC year
-    f_reward_year <- get_reward_interpolation(Data_week)
-
     #Get interpolation function of next Bellman values
     f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
 
-    decision_space <-  dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
-      tidyr::unnest(c("reward_db")) %>%
-      dplyr::select(c("years","control")) %>%
-      dplyr::rename("mcYear"="years","u"="control")
+    decision_space <- dplyr::select(reward_week,-c("timeId","reward"))
 
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
                                            mcyears,l_high,l_low,
@@ -535,16 +531,28 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                                            transition$value_node,niveau_max,0,
                                            next_states = transition$states)
 
+    # Reward interpolation
+    setDT(df_SDP)
+    setDT(reward_week)
+    interp_reward <- reward_week[
+      , .(interp_fun = list({
+        ctrl <- sort(unique(control))
+        rew  <- reward_week[order(control)][match(ctrl, sort(control))]
+        approxfun(ctrl, rew)
+      })),
+      by = mcYear
+    ]
+    df_SDP <- interp_reward[df_SDP, on = .(mcYear = years)][, reward := interp_fun[[1]](control), by = mcYear][, interp_fun := NULL]
+
     control <- df_SDP %>%
-      dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
-                    penalty_low = dplyr::if_else(.data$next_state<=l_low,pen_low*(.data$next_state-l_low),0),
+      dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=l_low,pen_low*(.data$next_state-l_low),0),
                     penalty_high = dplyr::if_else(.data$next_state>=l_high,pen_high*(l_high-.data$next_state),0),
-                    sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
+                    sum=.data$reward+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
       dplyr::group_by(.data$years) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
       dplyr::slice_max(.data$next_state, with_ties = F) %>%
       dplyr::ungroup() %>%
-      dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state","constraint"="control") %>%
+      dplyr::rename("week"="weeks","lev"="next_state","constraint"="control") %>%
       dplyr::select(c("week","mcYear","lev","constraint","scenario")) %>%
       dplyr::distinct(.data$week,.data$mcYear,.keep_all = TRUE)
 

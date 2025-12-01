@@ -34,9 +34,6 @@
     # Getting all possible transitions between a state for the current week and a state for the next week
     decision_space <- dplyr::select(reward,-c("timeId","reward"))
 
-    # Get interpolation function of rewards for each possible transition for each MC year
-    f_reward_year <- get_reward_interpolation(Data_week)
-
     #Get interpolation function of next Bellman values
     f_next_value <- get_bellman_values_interpolation(Data_week,next_week_values_l,mcyears)
 
@@ -45,21 +42,33 @@
                                            mcyears,lvl_high,lvl_low,E_max,P_max,
                                            next_week_values_l,niveau_max,overflow_cost)
 
+    # Reward interpolation
+    setDT(df_SDP)
+    setDT(reward)
+    interp_reward <- reward[
+      , .(interp_fun = list({
+        ctrl <- sort(unique(control))
+        rew  <- reward[order(control)][match(ctrl, sort(control))]
+        approxfun(ctrl, rew)
+      })),
+      by = mcYear
+    ]
+    df_SDP <- interp_reward[df_SDP, on = .(mcYear = years)][, reward := interp_fun[[1]](control), by = mcYear][, interp_fun := NULL]
+
     # For each transition (control), find the associated reward and for each next state,
     # calculate penalties for violating rule curves. Then, find for each MC year and each state,
     # the maximum sum of reward, next bellman value and penalties
     df_SDP <- df_SDP %>%
-      dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
-             penalty_low = dplyr::if_else(.data$next_state<=lvl_low,penalty_level_low*(.data$next_state-lvl_low),0),
+      dplyr::mutate(penalty_low = dplyr::if_else(.data$next_state<=lvl_low,penalty_level_low*(.data$next_state-lvl_low),0),
              penalty_high = dplyr::if_else(.data$next_state>=lvl_high,penalty_level_high*(lvl_high-.data$next_state),0),
-             sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
-      dplyr::group_by(.data$years,.data$states) %>%
+             sum=.data$reward+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
+      dplyr::group_by(.data$mcYear,.data$states) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
       dplyr::slice_max(.data$next_state, with_ties = F) %>%
       dplyr::select(-c("value_node","transition","transition_reward",
                 "next_bellman_value")) %>%
-      dplyr::rename("value_node"="sum","transition"="control","transition_reward"="gain",
-             "next_bellman_value"="next_value")
+      dplyr::rename("value_node"="sum","transition"="control","transition_reward"="reward",
+             "next_bellman_value"="next_value","years"="mcYear")
 
     assertthat::assert_that(nrow(df_SDP)==nrow(Data_week),msg=paste0("Problem with Bellman"))
 

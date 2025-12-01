@@ -68,7 +68,7 @@ build_all_possible_decisions <- function(Data_week,
   f_list <- setNames(f_next_value, mcyears)
 
   # 1) future_states
-  df_next_week <- tibble::tibble(
+  df_next_week <- data.frame(
     years = Data_week$years,
     next_state = next_states,
     next_value = next_week_values

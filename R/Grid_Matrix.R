@@ -103,7 +103,7 @@ Grid_Matrix <- function(area,
     inflow <- get_inflow(area=area, opts=opts,mcyears=mcyears)
   }
 
-  decision_space = reward_db$decision_space
+  reward = reward_db$reward
   reward_db = reward_db$reward
 
   # Reservoir (rule curves)
@@ -210,7 +210,7 @@ Grid_Matrix <- function(area,
         # Bellman equation for week i
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=dplyr::filter(decision_space,week==i),
+                        reward=dplyr::filter(reward,timeId==i),
                         E_max=E_max[i],
                         P_max=P_max[i],
                         mcyears = mcyears,
@@ -283,7 +283,7 @@ Grid_Matrix <- function(area,
 
         temp <- Bellman(Data_week=temp,
                         next_week_values_l = next_week_values,
-                        decision_space=dplyr::filter(decision_space,week==i),
+                        reward=dplyr::filter(reward,timeId==i),
                         E_max=E_max[i],
                         P_max=P_max[i],
                         mcyears = mcyears,

@@ -401,8 +401,6 @@ updateWatervalues <- function(reward,controls,area,mcyears,opts,
 
   reward_db <- list()
   reward_db$reward <- reward
-  reward_db$decision_space <- controls
-
 
   results <- Grid_Matrix(
     reward_db = reward_db,

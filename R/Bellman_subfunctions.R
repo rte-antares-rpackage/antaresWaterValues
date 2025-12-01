@@ -108,13 +108,12 @@ build_all_possible_decisions <- function(Data_week,
     by = c("years" = "mcYear")
   ) %>%
     dplyr::mutate(
-      control = u,
       tmp_next_state = states + hydroStorage - control,
       overflow = pmax(tmp_next_state - niveau_max, 0),
       next_state = pmin(tmp_next_state, niveau_max),
       next_value = f_list[as.character(years)] %>% purrr::map2_dbl(next_state, ~ .x(.y)) + overflow * overflow_cost
     ) %>%
-    dplyr::select(-u, -tmp_next_state)
+    dplyr::select(-tmp_next_state)
 
   # 3) control_min
   control_min <- Data_week %>%

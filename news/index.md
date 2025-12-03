@@ -1,5 +1,11 @@
 # Changelog
 
+## antaresWaterValues 1.2.2
+
+### New features
+
+- Build on release github action
+
 ## antaresWaterValues 1.2.1
 
 ### New features

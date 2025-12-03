@@ -21,7 +21,7 @@ get_Reward(
   mcyears = "all",
   area,
   efficiency = NULL,
-  expansion = F
+  expansion = FALSE
 )
 ```
 

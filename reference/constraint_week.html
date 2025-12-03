@@ -37,7 +37,7 @@ depending on the maximum powers for the week"></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Generate constraint values for a week at a time used in <code>constraint_generator</code> depending on the maximum powers for the week</h1>
-      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/v1.2.2/R/constraints_functions.R" class="external-link"><code>R/constraints_functions.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/iterative_method/R/constraints_functions.R" class="external-link"><code>R/constraints_functions.R</code></a></small>
       <div class="d-none name"><code>constraint_week.Rd</code></div>
     </div>
 
@@ -48,7 +48,14 @@ depending on the maximum powers for the week</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">constraint_week</span><span class="op">(</span><span class="va">pumping</span>, <span class="va">efficiency</span>, <span class="va">nb_disc_stock</span>, <span class="va">res_cap</span>, <span class="va">hydro</span>, <span class="va">week</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">constraint_week</span><span class="op">(</span></span>
+<span>  <span class="va">pumping</span>,</span>
+<span>  <span class="va">efficiency</span>,</span>
+<span>  <span class="va">nb_disc_stock</span>,</span>
+<span>  <span class="va">reservoir_capacity</span>,</span>
+<span>  <span class="va">hydro</span>,</span>
+<span>  <span class="va">week</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -67,7 +74,7 @@ depending on the maximum powers for the week</p>
 <dd><p>Number of constraint values wanted for each week</p></dd>
 
 
-<dt id="arg-res-cap">res_cap<a class="anchor" aria-label="anchor" href="#arg-res-cap"></a></dt>
+<dt id="arg-reservoir-capacity">reservoir_capacity<a class="anchor" aria-label="anchor" href="#arg-reservoir-capacity"></a></dt>
 <dd><p>Double, reservoir capacity</p></dd>
 
 

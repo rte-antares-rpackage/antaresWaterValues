@@ -7,18 +7,18 @@ heuristic.
 ## Usage
 
 ``` r
-changeHydroManagement(watervalues = F, heuristic = T, opts, area)
+changeHydroManagement(watervalues = FALSE, heuristic = TRUE, opts, area)
 ```
 
 ## Arguments
 
 - watervalues:
 
-  Binary. T if use water values.
+  Binary. TRUE if use water values.
 
 - heuristic:
 
-  Binary. T if use heuristic.
+  Binary. TRUE if use heuristic.
 
 - opts:
 

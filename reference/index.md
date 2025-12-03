@@ -5,6 +5,20 @@
 - [`Grid_Matrix()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/Grid_Matrix.md)
   : Compute Bellman values
 
+- [`calculateBellmanWithIterativeSimulations()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateBellmanWithIterativeSimulations.md)
+  : Calculate Bellman values throughout iterations of Antares simulation
+  and DP Each simulation leads to a new reward estimation, which leads
+  to new water values, which leads to the off-line calculation in R of
+  an optimal trajectory, which leads to new controls to be evaluated
+  which leads to a new simulation
+
+- [`calculateBellmanWithIterativeSimulationsMultiStock()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateBellmanWithIterativeSimulationsMultiStock.md)
+  : Calculate Bellman values throughout iterations of Antares simulation
+  and DP Each simulation leads to a new reward estimation, which leads
+  to new water values, which leads to the off-line calculation in R of
+  an optimal trajectory, which leads to new controls to be evaluated
+  which leads to a new simulation
+
 - [`changeHydroManagement()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/changeHydroManagement.md)
   : Change hydro management
 
@@ -13,6 +27,13 @@
 
 - [`getBellmanValuesFromOneSimulationMultistock()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesFromOneSimulationMultistock.md)
   : Compute Bellman values for several storage based on one simulation
+
+- [`getOptimalTrend()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getOptimalTrend.md)
+  :
+
+  Calculate an optimal trajectory for the reservoir levels based on
+  water values taking into account the mean inflow, used in
+  `calculateBellmanWithIterativeSimulations`
 
 - [`getPumpEfficiency()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getPumpEfficiency.md)
   : Get pumping efficiency ratio
@@ -25,6 +46,9 @@
 
 - [`get_initial_level()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level.md)
   : Get initial level
+
+- [`get_initial_level_year_per_year()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level_year_per_year.md)
+  : Get initial level year per year
 
 - [`get_local_reward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_local_reward.md)
   : Compute reward functions based on one given simulation
@@ -83,6 +107,18 @@
 
 - [`to_Antares_Format_bis()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/to_Antares_Format_bis.md)
   : Convert water values to Antares format with high accuracy
+
+- [`updateReward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/updateReward.md)
+  :
+
+  Update df_rewards with latest simulation run, used in
+  `calculateBellmanWithIterativeSimulations`
+
+- [`updateWatervalues()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/updateWatervalues.md)
+  :
+
+  Calculate water values with `Grid_Matrix` from estimated reward, used
+  in `calculateBellmanWithIterativeSimulations`
 
 - [`waterValuesViz()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/waterValuesViz.md)
   : Plot water values

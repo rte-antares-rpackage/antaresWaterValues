@@ -6,7 +6,7 @@ parameter `opts`.
 ## Usage
 
 ``` r
-shiny_water_values(opts, silent = F)
+shiny_water_values(opts, silent = FALSE)
 ```
 
 ## Arguments

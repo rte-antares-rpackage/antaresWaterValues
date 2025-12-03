@@ -123,7 +123,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
     candidates_types <- candidates_types_gen%>% dplyr::filter(.data$Zone==node)
 
-    grid_costs <- data.frame(matrix(ncol = 2+length(candidates_types$index), nrow=0))
+    grid_costs <- data.frame(matrix(ncol = 3+length(candidates_types$index), nrow=0))
 
     storage_bounds <- storage_bounds_init
 
@@ -258,14 +258,15 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
             print(storage_vol)
             print(new_candidate_grid[[candidate_index]])
             print(total_cost_can$total_cost)
+            print(total_cost_can$op_cost)
             grid_costs <- rbind(grid_costs,
-                                c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost))
+                                c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost, total_cost_can$op_cost))
           }
         }
       }
 
       # find the best candidate at this iteration
-      colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost")
+      colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
       best_candidates <- max_candidate(grid_costs)
 
       # update bounds
@@ -560,18 +561,6 @@ total_cost_loop <- function(area,
     }
   }
 
-  if (length(new_rewards$reward$control) == 0) {
-    print("The must-run clusters are sufficient for the system")
-    total_cost <- - storage_annual_cost*storage_vol
-    for (can in 1:length(candidates_types$index)) {
-      total_cost <- total_cost - as.numeric(candidates_types$TOTEX[can])*candidate_pool[can]
-    }
-    output = list()
-    output$total_cost = total_cost
-    output$optimal_traj = data.frame()
-    return(output)
-  }
-
   # call grid_matrix to compute lb
   res <- Grid_Matrix(area = area,
                      reward_db = new_rewards,
@@ -624,6 +613,7 @@ total_cost_loop <- function(area,
   }
   output = list()
   output$total_cost = total_cost
+  output$op_cost = op_cost
   output$optimal_traj = levels
   return(output)
 }
@@ -767,7 +757,7 @@ max_candidate <- function(grid_costs) {
       best <- grid_costs$Total_cost[i]
     }
   }
-  return(dplyr::select(grid_costs[best_index,],-c("Total_cost")))
+  return(dplyr::select(grid_costs[best_index,],-c("Total_cost","op_cost")))
 }
 
 
@@ -862,7 +852,7 @@ total_cost_parallel_version <- function(candidate_index,
   print(new_candidate_grid[[candidate_index]])
   print(total_cost_can$total_cost)
   new_grid_costs <- rbind(new_grid_costs,
-                          c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost))
-  colnames(new_grid_costs) <- c("Storage", candidates_types$name, "Total_cost")
+                          c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost,total_cost_can$op_cost))
+  colnames(new_grid_costs) <- c("Storage", candidates_types$name, "Total_cost", "op_cost")
   return(new_grid_costs)
 }

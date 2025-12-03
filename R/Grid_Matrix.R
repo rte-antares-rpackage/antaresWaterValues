@@ -30,6 +30,7 @@
 #' @returns
 #' \item{watervalues}{A \code{dplyr::tibble()} with multiple columns and detailed results.}
 #' \item{aggregated_results}{A \code{dplyr::tibble()} with multiple columns and summarized results.}
+#' \item{lower_bound}{Double. Lower bound.}
 #'
 #' @export
 Grid_Matrix <- function(area,
@@ -394,10 +395,40 @@ Grid_Matrix <- function(area,
 
   }
 
+  initial_level <- get_initial_level(area,opts)
+
+  res <- watervalues %>%
+    dplyr::filter(.data$weeks==1) %>%
+    dplyr::group_by(.data$weeks, .data$states) %>%
+    dplyr::summarise(value_node=mean(.data$value_node),.groups = "drop") %>%
+    dplyr::mutate(value_node=dplyr::if_else(!is.finite(.data$value_node),
+                                            NaN,.data$value_node))
+
+
+  top <- res %>%
+    dplyr::filter(states >= initial_level*niveau_max/100) %>%
+    dplyr::filter(states==min(states)) %>%
+    dplyr::select(c("states","value_node"))
+
+  bottom <- res %>%
+    dplyr::filter(states <= initial_level*niveau_max/100) %>%
+    dplyr::filter(states==max(states))%>%
+    dplyr::select(c("states","value_node"))
+
+  if (top$states == bottom$states){
+    lb <- top$value_node
+  } else {
+    lb <- (top$value_node-bottom$value_node)/(
+      top$states-bottom$states)*(initial_level*niveau_max/100-
+                                   bottom$states)+
+      bottom$value_node
+  }
+
   # Prepare output
   result <- list()
   result$watervalues <- watervalues
   result$aggregated_results <- value_nodes_dt
+  result$lower_bound <- lb
   class(result) <- "detailled and aggregated results of watervalues calculation"
   return(result)
 }

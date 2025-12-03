@@ -33,11 +33,8 @@
     # Getting all possible transitions between a state for the current week and a state for the next week
     decision_space <- dplyr::select(reward,-c("timeId","reward"))
 
-    #Get interpolation function of next Bellman values
-    f_next_value <- get_bellman_values_interpolation(Data_week,next_week_values_l,mcyears)
-
     # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
-    df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
+    df_SDP <- build_all_possible_decisions(Data_week,decision_space,
                                            mcyears,lvl_high,lvl_low,E_max,P_max,
                                            next_week_values_l,niveau_max,overflow_cost)
 

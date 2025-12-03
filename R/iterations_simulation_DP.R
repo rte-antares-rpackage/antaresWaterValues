@@ -551,7 +551,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
                     week=w) %>%
       dplyr::group_by(.data$mcYear) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
-      dplyr::slice_max(.data$next_state, with_ties = F) %>%
+      dplyr::slice_max(.data$next_state, with_ties=F) %>%
       dplyr::ungroup() %>%
       dplyr::rename("lev"="next_state","constraint"="control") %>%
       dplyr::left_join(dplyr::select(Data_week,c("years","scenario")),by=c("mcYear"="years")) %>%

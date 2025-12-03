@@ -31,6 +31,7 @@
 #' @returns
 #' \item{watervalues}{A \code{dplyr::tibble()} with multiple columns and detailed results.}
 #' \item{aggregated_results}{A \code{dplyr::tibble()} with multiple columns and summarized results.}
+#' \item{lower_bound}{Double. Lower bound.}
 #'
 #' @export
 Grid_Matrix <- function(area,

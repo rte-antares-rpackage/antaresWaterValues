@@ -1,5 +1,11 @@
 # Changelog
 
+## antaresWaterValues 1.2.1
+
+### New features
+
+- New test on lower bound
+
 ## antaresWaterValues 1.2.0
 
 ### New features

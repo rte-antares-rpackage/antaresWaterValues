@@ -169,3 +169,7 @@ Grid_Matrix(
   A
   [`dplyr::tibble()`](https://tibble.tidyverse.org/reference/tibble.html)
   with multiple columns and summarized results.
+
+- lower_bound:
+
+  Double. Lower bound.

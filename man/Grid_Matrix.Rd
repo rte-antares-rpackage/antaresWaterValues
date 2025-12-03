@@ -89,6 +89,7 @@ attending the limit.}
 \value{
 \item{watervalues}{A \code{dplyr::tibble()} with multiple columns and detailed results.}
 \item{aggregated_results}{A \code{dplyr::tibble()} with multiple columns and summarized results.}
+\item{lower_bound}{Double. Lower bound.}
 }
 \description{
 Compute Bellman values and water values with dynamic programming based on reward functions computed with \code{get_Reward()}.

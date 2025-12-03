@@ -1,0 +1,41 @@
+name: Build R package on release
+
+on:
+  release:
+    types: [published, prereleased]
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installe R
+      - uses: r-lib/actions/setup-r@v2
+
+      # Installe les dépendances (imports, suggests, remotes…)
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: rcmdcheck
+
+      # Build du package (sort un *.tar.gz)
+      - name: Build source package
+        run: |
+          R CMD build .
+          ls -l
+
+      # Check complet
+      - name: Check package
+        run: |
+          PKG_TARBALL=$(ls -1t *.tar.gz | head -n 1)
+          echo "Checking: $PKG_TARBALL"
+          R CMD check "$PKG_TARBALL" --as-cran
+        # Déclenche une erreur si le check échoue
+        continue-on-error: false
+
+      # Upload dans la release GitHub
+      - name: Upload built package to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.tar.gz"

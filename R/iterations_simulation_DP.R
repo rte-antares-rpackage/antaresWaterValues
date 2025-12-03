@@ -850,7 +850,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         o <- updateReward(opts=opts,pumping=pumping,
                                    controls=controls,max_hydro_hourly=max_hydro,mcyears=mcyears,
                                    area=area,pump_eff=pump_eff,df_rewards = df_rewards,
-                         u0=dplyr::filter(constraint_values,.data$area==a),i=i,
+                         u0=dplyr::select(dplyr::filter(constraint_values,.data$area==a),-c("area")),i=i,
                          df_current_cuts = df_current_cuts,
                          df_previous_cut = df_previous_cut)
         df_rewards = o$df_rewards

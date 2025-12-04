@@ -286,9 +286,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     print("Best for this node is :")
     print(output_node[[node]]$best)
 
-    # store rewards and costs in a file
-    save(output_node,file=file_intermediate_results)
-
     res = total_cost_loop(area = node,
                           mc_years = mc_years_optim,
                           candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
@@ -308,6 +305,10 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       rbind(res$optimal_traj)
 
     output_node[[node]]$optimal_traj = res$optimal_traj
+    output_node[[node]]$watervalues = to_Antares_Format(res$watervalues)
+
+    # store rewards and costs in a file
+    save(output_node,file=file_intermediate_results)
 
     # add best clusters to node in the study and edit storage size
     if (edit_study) {
@@ -316,6 +317,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       l_all_clusters <- as.character(l_read_clusters$cluster)
 
       antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = output_node[[node]][["best"]][["Storage"]]), opts = opts)
+
+      antaresEditObject::writeWaterValues(area = node, data = output_node[[node]]$watervalues, opts=opts)
 
       for (i in 1:length(l_all_clusters)) {if (l_read_clusters$area[i]==node) {l_old_clusters <- c(l_old_clusters, l_all_clusters[i])}}
 
@@ -616,6 +619,7 @@ total_cost_loop <- function(area,
   output$total_cost = total_cost
   output$op_cost = op_cost
   output$optimal_traj = levels
+  output$watervalues = res$aggregated_results
   return(output)
 }
 

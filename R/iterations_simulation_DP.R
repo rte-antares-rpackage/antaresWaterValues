@@ -519,12 +519,9 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     pen_high <- ifelse(w<52,penalty_high,penalty_final_level)
     pen_low <- ifelse(w<52,penalty_low,penalty_final_level)
 
-    #Get interpolation function of next Bellman values
-    f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
-
     decision_space <- dplyr::select(reward_week,-c("timeId","reward"))
 
-    df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
+    df_SDP <- build_all_possible_decisions(Data_week,decision_space,
                                            mcyears,l_high,l_low,
                                            max_hydro_weekly$turb[w],
                                            max_hydro_weekly$pump[w]*pump_eff,

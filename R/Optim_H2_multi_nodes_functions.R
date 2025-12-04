@@ -205,7 +205,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                         "copy",
                                         "Bellman",
                                         "setDT",
-                                        "get_bellman_values_interpolation",
                                         "build_all_possible_decisions",
                                         "build_data_watervalues",
                                         "value_node_gen",
@@ -307,6 +306,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     optimal_traj <- optimal_traj %>%
       dplyr::filter(.data$area != node) %>%
       rbind(res$optimal_traj)
+
+    output_node[[node]]$optimal_traj = res$optimal_traj
 
     # add best clusters to node in the study and edit storage size
     if (edit_study) {

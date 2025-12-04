@@ -601,6 +601,7 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param force_final_level Binary. Whether final level should be constrained
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #' @param initial_traj Initial trajectory (used for other storages)
+#' @param list_areas_to_compute Vector of character. Areas for which to compute Bellman values. If \code{NULL}, all areas in \code{list_areas} are used.
 #' @inheritParams runWaterValuesSimulationMultiStock
 #' @inheritParams calculateBellmanWithIterativeSimulations
 #'
@@ -615,7 +616,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                force_final_level = FALSE,
                                                                penalty_final_level = NULL,
                                                                initial_traj = NULL,
-                                                               df_previous_cut = NULL){
+                                                               df_previous_cut = NULL,
+                                                               list_areas_to_compute = NULL){
 
   # Initialization
   df_watervalues <- data.frame()
@@ -698,9 +700,13 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
 
   opts <- setWaterValuesDistrict(opts)
 
+  if (is.null(list_areas_to_compute)){
+    list_areas_to_compute = list_areas
+  }
+
   tryCatch({
 
-  for (area in list_areas){
+  for (area in list_areas_to_compute){
     a = area
     pumping <- list_pumping[area]
     pump_eff <- list_efficiency[area]

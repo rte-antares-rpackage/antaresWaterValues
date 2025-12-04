@@ -23,7 +23,8 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   force_final_level = FALSE,
   penalty_final_level = NULL,
   initial_traj = NULL,
-  df_previous_cut = NULL
+  df_previous_cut = NULL,
+  list_areas_to_compute = NULL
 )
 }
 \arguments{
@@ -62,6 +63,8 @@ less to it. (quantile(cvar_value))}
 \item{initial_traj}{Initial trajectory (used for other storages)}
 
 \item{df_previous_cut}{Data frame containing previous estimations of cuts}
+
+\item{list_areas_to_compute}{Vector of character. Areas for which to compute Bellman values. If \code{NULL}, all areas in \code{list_areas} are used.}
 }
 \value{
 List containing aggregated water values and the data table with all years for the last iteration

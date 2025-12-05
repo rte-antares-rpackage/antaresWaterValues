@@ -29,6 +29,7 @@ Imports:
     utils (>= 2.1.0),
     viridis (>= 0.6.1)
 Suggests: 
+    cli,
     DT (>= 0.18),
     grDevices (>= 4.1.0),
     knitr,

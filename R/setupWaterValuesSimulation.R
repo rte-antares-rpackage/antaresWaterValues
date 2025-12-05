@@ -102,38 +102,35 @@ setupWaterValuesSimulation <- function(area,
 
   }#end fictive areas loop
 
-  if (!paste0("district_balance_",area) %in% opts$districtsDef$district){
-    opts <- antaresEditObject::createDistrict(
-      name = paste0("district_balance_",area),
-      apply_filter = "add-all",
-      remove_area = fictive_areas,
-      output = TRUE,
-      overwrite = TRUE,
-      opts = opts
-    )
-  }
-
   generate_constraints(pumping=pumping,efficiency=efficiency,
                        opts=opts,area = area)
 
   return(opts)
 }
 
-setWaterValuesDistrict <- function(opts){
+setWaterValuesDistrict <- function(opts, list_areas){
   remove_area <- antaresRead::getAreas("watervalue_",opts=opts)
-  if (!"water values district" %in% opts$districtsDef$district){
-    opts <- antaresEditObject::createDistrict(
-      name = "water values district",
-      caption = "water values district",
-      comments = "Used for calculate water values",
+
+  opts <- createDistrict(
+    name = "water values district",
+    caption = "water values district",
+    comments = "Used for calculate water values",
+    apply_filter = "add-all",
+    remove_area = remove_area,
+    output = TRUE,
+    overwrite = TRUE,
+    opts = opts
+  )
+
+  for (area in list_areas){
+    opts <- createDistrict(
+      name = paste0("district_balance_",area),
       apply_filter = "add-all",
-      remove_area = remove_area,
+      remove_area = remove_area[stringr::str_detect(remove_area,area)],
       output = TRUE,
       overwrite = TRUE,
       opts = opts
     )
-  } else {
-    message("Water values district already exists, this could be a problem. If so, try to remove it manually.")
   }
 
   return(opts)

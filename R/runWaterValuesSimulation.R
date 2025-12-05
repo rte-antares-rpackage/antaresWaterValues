@@ -97,7 +97,7 @@ runWaterValuesSimulation <- function(area=NULL,
       backup = backup
     )
 
-    opts <- setWaterValuesDistrict(opts)
+    opts <- setWaterValuesDistrict(opts, c(area))
 
     # Start the simulations
 
@@ -152,7 +152,7 @@ runWaterValuesSimulation <- function(area=NULL,
     stop(e)
   },
   finally = {
-    resetStudy(opts,area,pumping,backup)
+    opts = resetStudy(opts,area,pumping,backup)
     clear_scenario_builder(opts)}
   )
 
@@ -236,6 +236,9 @@ setupGeneralParameters <- function(opts,
   }
   nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 
+  assertthat::assert_that(!("water values district" %in% opts$districtList), msg = "Water values district already exists.")
+  assertthat::assert_that(sum(stringr::str_detect(opts$districtList,"district_balance"))==0, msg = "Balance district already exists.")
+
   return(list(simulation_name,file_name,constraint_values,nb_disc_stock))
 }
 
@@ -269,6 +272,14 @@ resetStudy <- function(opts, area, pumping,
   restoreHydroStorage(area = area, opts = opts, data=backup$hydro_storage)
   restore_fictive_fatal_prod_demand(area = area, opts = opts, load = backup$load,
                                     misc_gen = backup$misc_gen)
+
+  if ("water values district" %in% opts$districtList){
+    opts = antaresEditObject::removeDistrict("water values district", opts=opts)
+  }
+  if (paste0("district_balance_",area) %in% opts$districtList){
+    opts = antaresEditObject::removeDistrict(paste0("district_balance_",area), opts=opts)
+  }
+  return(opts)
 }
 
 #' Run Antares simulations in order to compute water values for multiple areas
@@ -344,7 +355,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
 
     }
 
-    opts <- setWaterValuesDistrict(opts)
+    opts <- setWaterValuesDistrict(opts, list_areas)
 
     # Start the simulations
 
@@ -406,7 +417,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
   finally = {
     for (j in 1:length(list_areas)){
       area = list_areas[[j]]
-      resetStudy(opts,area,list_pumping[area],list_backup[[j]])
+      opts = resetStudy(opts,area,list_pumping[area],list_backup[[j]])
     }
     clear_scenario_builder(opts)
   }

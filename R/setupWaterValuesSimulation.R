@@ -38,8 +38,6 @@ setupWaterValuesSimulation <- function(area,
   fictive_area_name <- paste0("watervalue_", area)
   thermal_cluster <- "water_value_cluster"
 
-  changeHydroManagement(opts=opts,watervalues = FALSE, heuristic = TRUE, area=area)
-
   add_fictive_fatal_prod_demand(area = area, opts = opts, load = backup$load,
                                 misc_gen = backup$misc_gen)
 
@@ -51,7 +49,7 @@ setupWaterValuesSimulation <- function(area,
   # Prepare thermal Cluster parameters
   time_series = c(hydro_storage_max$turb, rep(0,24))
   nominalcapacity_turb <- max(hydro_storage_max$turb)
-  
+
   fictive_areas <- c(paste0(fictive_area_name,"_turb"))
   if(pumping){
     fictive_areas <- c(fictive_areas,paste0(fictive_area_name,"_pump"))

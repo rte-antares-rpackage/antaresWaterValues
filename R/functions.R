@@ -383,36 +383,3 @@ restore_fictive_fatal_prod_demand <- function(area, opts,
 
   antaresEditObject::writeMiscGen(data = misc_gen, area = area, opts=opts)
 }
-
-is_api_study <- function(opts) {
-  isTRUE(opts$typeLoad == "api")
-}
-
-check_area_name <- function(area, opts) {
-  areaList <- antaresRead::getAreas(opts = opts)
-  if (!tolower(area) %in% areaList)
-    stop("'", area, "' is not a valid area name, possible names are: ", paste(areaList, collapse = ", "), call. = FALSE)
-}
-
-#' @importFrom utils URLencode
-#' @importFrom shiny isRunning
-fread_antares <- function(opts, file, ...) {
-  if (identical(opts$typeLoad, "api")) {
-    file <- gsub("\\.txt$", "", file)
-    response <- antaresRead::api_get(
-      opts = opts,
-      endpoint = I(file),
-      query = list(formatted = FALSE)
-    )
-    suppressWarnings(
-      tryCatch(fread(response, ...), error = function(e){
-        if(isRunning())
-          e <- as.character(e)
-        message(file)
-        message(e)
-      }))
-  } else {
-    suppressWarnings(
-      fread(file, ...))
-  }
-}

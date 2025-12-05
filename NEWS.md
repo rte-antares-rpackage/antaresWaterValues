@@ -1,3 +1,9 @@
+# antaresWaterValues 1.2.3
+
+## Bugfixes
+
+* Creation of districts for API study (temporary)
+
 # antaresWaterValues 1.2.2
 
 ## New features

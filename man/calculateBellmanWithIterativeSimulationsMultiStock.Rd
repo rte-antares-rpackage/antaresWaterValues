@@ -20,7 +20,6 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   path_solver,
   states_step_ratio = 1/50,
   cvar_value = 1,
-  force_final_level = FALSE,
   penalty_final_level = NULL,
   initial_traj = NULL,
   df_previous_cut = NULL,
@@ -55,8 +54,6 @@ between the reservoir capacity and zero}
 \item{cvar_value}{from 0 to 1. the probability used in quantile method
 to determine a bellman value which cvar_value all bellman values are equal or
 less to it. (quantile(cvar_value))}
-
-\item{force_final_level}{Binary. Whether final level should be constrained}
 
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 

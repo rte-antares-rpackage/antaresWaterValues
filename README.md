@@ -115,10 +115,8 @@ results <- Grid_Matrix(
   efficiency=efficiency,
   penalty_low = 1000,#penalty for bottom rule curve
   penalty_high = 100,#penalty for top rule curve
-  force_final_level = T, # T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)
-  final_level = get_initial_level(area=area,opts=opts), # wanted final level (between 0 and 100%)
-  penalty_final_level_low = 2000,
-  penalty_final_level_high = 2000
+  penalty_final_level_low = 2000, # penalty for last week
+  penalty_final_level_high = 2000 # penalty for last week
 )
 ```
 

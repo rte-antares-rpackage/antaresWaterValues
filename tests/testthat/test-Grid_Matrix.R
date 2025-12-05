@@ -37,9 +37,7 @@ test_that("Lower bound Grid_Matrix", {
   states_step_ratio = 1/21
   penalty_low = 0
   penalty_high = 0
-  force_final_level = F
   penalty_final_level = 0
-  final_level = get_initial_level(area=area,opts=opts)
   nb_cycle = 1
 
   lb = Grid_Matrix(
@@ -51,8 +49,6 @@ test_that("Lower bound Grid_Matrix", {
     efficiency=efficiency,
     penalty_low = penalty_low,
     penalty_high = penalty_high,
-    force_final_level = force_final_level,
-    final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level,
     nb_cycle = nb_cycle

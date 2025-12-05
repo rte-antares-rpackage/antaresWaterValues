@@ -38,8 +38,6 @@ setupWaterValuesSimulation <- function(area,
   fictive_area_name <- paste0("watervalue_", area)
   thermal_cluster <- "water_value_cluster"
 
-  changeHydroManagement(opts=opts,watervalues = F, heuristic = T, area=area)
-
   add_fictive_fatal_prod_demand(area = area, opts = opts, load = backup$load,
                                 misc_gen = backup$misc_gen)
 

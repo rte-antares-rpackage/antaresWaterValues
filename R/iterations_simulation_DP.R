@@ -143,7 +143,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
         backup = backup
       )
 
-  opts <- setWaterValuesDistrict(opts)
+  opts <- setWaterValuesDistrict(opts, c(area))
 
   i <- 1
   gap <- 1
@@ -252,7 +252,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   }
   },
   finally = {
-    resetStudy(opts,area,pumping,backup)
+    opts = resetStudy(opts,area,pumping,backup)
     clear_scenario_builder(opts)}
   )
 
@@ -698,7 +698,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     }
   }
 
-  opts <- setWaterValuesDistrict(opts)
+  opts <- setWaterValuesDistrict(opts, list_areas)
 
   if (is.null(list_areas_to_compute)){
     list_areas_to_compute = list_areas
@@ -927,7 +927,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   finally = {
     for (j in seq_along(list_areas)){
       area = list_areas[[j]]
-      resetStudy(opts,area,list_pumping[area],list_backup[[j]])
+      opts = resetStudy(opts,area,list_pumping[area],list_backup[[j]])
     }
     clear_scenario_builder(opts)
   })

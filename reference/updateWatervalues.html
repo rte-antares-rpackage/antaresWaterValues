@@ -9,7 +9,7 @@ used in calculateBellmanWithIterativeSimulations"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,8 +62,7 @@ used in <code>calculateBellmanWithIterativeSimulations</code></p>
 <span>  <span class="va">niveau_max</span>,</span>
 <span>  <span class="va">max_hydro_weekly</span>,</span>
 <span>  cvar_value <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  force_final_level <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">final_level</span>,</span>
 <span>  penalty_final_level <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -130,10 +129,6 @@ powers for each week,returned by the function  <code>get_max_hydro</code></p></d
 <dd><p>from 0 to 1. the probability used in quantile method
 to determine a bellman value which cvar_value all bellman values are equal or
 less to it. (quantile(cvar_value))</p></dd>
-
-
-<dt id="arg-force-final-level">force_final_level<a class="anchor" aria-label="anchor" href="#arg-force-final-level"></a></dt>
-<dd><p>Binary. Whether final level should be constrained</p></dd>
 
 
 <dt id="arg-final-level">final_level<a class="anchor" aria-label="anchor" href="#arg-final-level"></a></dt>

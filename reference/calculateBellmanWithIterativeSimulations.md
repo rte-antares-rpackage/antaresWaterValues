@@ -22,8 +22,6 @@ calculateBellmanWithIterativeSimulations(
   path_solver,
   states_step_ratio = 1/50,
   cvar_value = 1,
-  force_final_level = FALSE,
-  final_level = NULL,
   penalty_final_level = NULL,
   df_previous_cut = NULL
 )
@@ -83,15 +81,6 @@ calculateBellmanWithIterativeSimulations(
 - cvar_value:
 
   from 0 to 1. the probability used in cvar method
-
-- force_final_level:
-
-  Binary. Whether final level should be constrained
-
-- final_level:
-
-  Final level (in percent between 0 and 100) if final level is
-  constrained but different from initial level
 
 - penalty_final_level:
 

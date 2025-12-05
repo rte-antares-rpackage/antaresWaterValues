@@ -22,10 +22,10 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   path_solver,
   states_step_ratio = 1/50,
   cvar_value = 1,
-  force_final_level = FALSE,
   penalty_final_level = NULL,
   initial_traj = NULL,
-  df_previous_cut = NULL
+  df_previous_cut = NULL,
+  list_areas_to_compute = NULL
 )
 ```
 
@@ -86,10 +86,6 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   bellman value which cvar_value all bellman values are equal or less to
   it. (quantile(cvar_value))
 
-- force_final_level:
-
-  Binary. Whether final level should be constrained
-
 - penalty_final_level:
 
   Penalties (for both bottom and top rule curves) to constrain final
@@ -102,6 +98,11 @@ calculateBellmanWithIterativeSimulationsMultiStock(
 - df_previous_cut:
 
   Data frame containing previous estimations of cuts
+
+- list_areas_to_compute:
+
+  Vector of character. Areas for which to compute Bellman values. If
+  `NULL`, all areas in `list_areas` are used.
 
 ## Value
 

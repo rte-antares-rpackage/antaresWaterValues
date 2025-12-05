@@ -35,7 +35,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compute Bellman values at step i from step i+1, used in <code>Grid_Matrix</code></h1>
-      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/v1.2.3/R/Bellman.R" class="external-link"><code>R/Bellman.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/blob/iterative_method/R/Bellman.R" class="external-link"><code>R/Bellman.R</code></a></small>
       <div class="d-none name"><code>Bellman.Rd</code></div>
     </div>
 
@@ -54,7 +54,6 @@
 <span>  <span class="va">mcyears</span>,</span>
 <span>  cvar_value <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">niveau_max</span>,</span>
-<span>  <span class="va">states_steps</span>,</span>
 <span>  <span class="va">penalty_level_low</span>,</span>
 <span>  <span class="va">penalty_level_high</span>,</span>
 <span>  <span class="va">lvl_high</span>,</span>
@@ -107,10 +106,6 @@ reservoir over one step of time.</p></dd>
 
 <dt id="arg-niveau-max">niveau_max<a class="anchor" aria-label="anchor" href="#arg-niveau-max"></a></dt>
 <dd><p>Level max of the reservoir</p></dd>
-
-
-<dt id="arg-states-steps">states_steps<a class="anchor" aria-label="anchor" href="#arg-states-steps"></a></dt>
-<dd><p>Numeric. Discretization step of reservoir.</p></dd>
 
 
 <dt id="arg-penalty-level-low">penalty_level_low<a class="anchor" aria-label="anchor" href="#arg-penalty-level-low"></a></dt>

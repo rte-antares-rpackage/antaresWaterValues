@@ -13,7 +13,7 @@ new controls to be evaluated which leads to a new simulation"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,10 +67,10 @@ new controls to be evaluated which leads to a new simulation</p>
 <span>  <span class="va">path_solver</span>,</span>
 <span>  states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,</span>
 <span>  cvar_value <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  force_final_level <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  penalty_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  initial_traj <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  df_previous_cut <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  df_previous_cut <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  list_areas_to_compute <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -130,10 +130,6 @@ to determine a bellman value which cvar_value all bellman values are equal or
 less to it. (quantile(cvar_value))</p></dd>
 
 
-<dt id="arg-force-final-level">force_final_level<a class="anchor" aria-label="anchor" href="#arg-force-final-level"></a></dt>
-<dd><p>Binary. Whether final level should be constrained</p></dd>
-
-
 <dt id="arg-penalty-final-level">penalty_final_level<a class="anchor" aria-label="anchor" href="#arg-penalty-final-level"></a></dt>
 <dd><p>Penalties (for both bottom and top rule curves) to constrain final level</p></dd>
 
@@ -144,6 +140,10 @@ less to it. (quantile(cvar_value))</p></dd>
 
 <dt id="arg-df-previous-cut">df_previous_cut<a class="anchor" aria-label="anchor" href="#arg-df-previous-cut"></a></dt>
 <dd><p>Data frame containing previous estimations of cuts</p></dd>
+
+
+<dt id="arg-list-areas-to-compute">list_areas_to_compute<a class="anchor" aria-label="anchor" href="#arg-list-areas-to-compute"></a></dt>
+<dd><p>Vector of character. Areas for which to compute Bellman values. If <code>NULL</code>, all areas in <code>list_areas</code> are used.</p></dd>
 
 </dl></div>
     <div class="section level2">

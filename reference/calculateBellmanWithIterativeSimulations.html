@@ -13,7 +13,7 @@ new controls to be evaluated which leads to a new simulation"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,8 +67,6 @@ new controls to be evaluated which leads to a new simulation</p>
 <span>  <span class="va">path_solver</span>,</span>
 <span>  states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,</span>
 <span>  cvar_value <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  force_final_level <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  penalty_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  df_previous_cut <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -126,14 +124,6 @@ between the reservoir capacity and zero</p></dd>
 
 <dt id="arg-cvar-value">cvar_value<a class="anchor" aria-label="anchor" href="#arg-cvar-value"></a></dt>
 <dd><p>from 0 to 1. the probability used in cvar method</p></dd>
-
-
-<dt id="arg-force-final-level">force_final_level<a class="anchor" aria-label="anchor" href="#arg-force-final-level"></a></dt>
-<dd><p>Binary. Whether final level should be constrained</p></dd>
-
-
-<dt id="arg-final-level">final_level<a class="anchor" aria-label="anchor" href="#arg-final-level"></a></dt>
-<dd><p>Final level (in percent between 0 and 100) if final level is constrained but different from initial level</p></dd>
 
 
 <dt id="arg-penalty-final-level">penalty_final_level<a class="anchor" aria-label="anchor" href="#arg-penalty-final-level"></a></dt>

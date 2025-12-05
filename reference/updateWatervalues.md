@@ -20,8 +20,7 @@ updateWatervalues(
   niveau_max,
   max_hydro_weekly,
   cvar_value = 1,
-  force_final_level = FALSE,
-  final_level = NULL,
+  final_level,
   penalty_final_level = NULL
 )
 ```
@@ -88,10 +87,6 @@ updateWatervalues(
   from 0 to 1. the probability used in quantile method to determine a
   bellman value which cvar_value all bellman values are equal or less to
   it. (quantile(cvar_value))
-
-- force_final_level:
-
-  Binary. Whether final level should be constrained
 
 - final_level:
 

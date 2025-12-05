@@ -11,16 +11,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/rte-antares-rpackage/antaresWaterValues/blob/iterative_method/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/DESCRIPTION)
 
 Gharsallaoui D, Gerbaux J (2025). *antaresWaterValues: Generating water
-values for Antares*. R package version 1.2.2,
+values for Antares*. R package version 1.2.3,
 <https://rte-antares-rpackage.github.io/antaresWaterValues/>.
 
     @Manual{,
       title = {antaresWaterValues: Generating water values for Antares},
       author = {Dhia Gharsallaoui and Juliette Gerbaux},
       year = {2025},
-      note = {R package version 1.2.2},
+      note = {R package version 1.2.3},
       url = {https://rte-antares-rpackage.github.io/antaresWaterValues/},
     }

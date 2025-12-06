@@ -19,7 +19,6 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
                                                         list_areas,
                                                         list_pumping,
                                                         list_efficiency,
-                                                        force_final_level,
                                                         penalty_final_level_low,
                                                         penalty_final_level_high,
                                                         penalty_low,
@@ -92,7 +91,6 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
   for (a in list_areas) {
     pumping <- list_pumping[a]
     pump_eff <- list_efficiency[a]
-    final_level <- get_initial_level(a, opts)
 
     print(a)
     local_sim_values <- simulation_res$simulation_values %>%
@@ -131,8 +129,6 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
       efficiency = pump_eff,
       penalty_low = penalty_low,
       penalty_high = penalty_high,
-      force_final_level = force_final_level,
-      final_level = final_level,
       penalty_final_level_low = penalty_final_level_low,
       penalty_final_level_high = penalty_final_level_high
     )$aggregated_results

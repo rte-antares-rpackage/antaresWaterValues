@@ -97,9 +97,7 @@ Define default parameters :
 states_step_ratio = 1/20
 penalty_low = 0
 penalty_high = 0
-force_final_level = F
 penalty_final_level = 0
-final_level = get_initial_level(area=area,opts=opts)
 nb_cycle = 1
 ```
 
@@ -119,8 +117,6 @@ for (s in c(10,20,50)){
     efficiency=efficiency,
     penalty_low = penalty_low,
     penalty_high = penalty_high,
-    force_final_level = force_final_level,
-    final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level,
     nb_cycle = nb_cycle
@@ -173,8 +169,6 @@ for (m in c(1, 0.5, 0.2)){
     efficiency=efficiency,
     penalty_low = penalty_low,
     penalty_high = penalty_high,
-    force_final_level = force_final_level,
-    final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level,
     nb_cycle = nb_cycle
@@ -235,8 +229,6 @@ for (p in c(0,150,500)){
     efficiency=efficiency,
     penalty_low = p,
     penalty_high = p,
-    force_final_level = force_final_level,
-    final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level,
     nb_cycle = nb_cycle
@@ -260,7 +252,7 @@ Higher the penalty on rule curves are, higher the water values are below the low
 
 # Respect of final level
 
-As for the respect of rule curves, it is possible to encourage the storage to end the year at a specific level thanks to penalties. The option `force_final_level` must be `TRUE`. The wanted final level is specified with parameter `final_level`. Specific values of penalties are used for the final week and are given by `penalty_final_level_low` and `penalty_final_level_high`.
+As for the respect of rule curves, it is possible to encourage the storage to end the year at a specific level or between specific values thanks to penalties. The wanted range for final level is specified within rule curves. Specific values of penalties are used for the final week and are given by `penalty_final_level_low` and `penalty_final_level_high`.
 
 ```{r compare_finallevel, message=FALSE}
 res = Grid_Matrix(
@@ -272,8 +264,6 @@ res = Grid_Matrix(
   efficiency=efficiency,
   penalty_low = penalty_low,
   penalty_high = penalty_high,
-  force_final_level = T,
-  final_level = final_level,
   penalty_final_level_low = 3000,
   penalty_final_level_high = 1000,
   nb_cycle = nb_cycle
@@ -298,8 +288,6 @@ for (n in c(1,2)){
     efficiency=efficiency,
     penalty_low = penalty_low,
     penalty_high = penalty_high,
-    force_final_level = force_final_level,
-    final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level,
     nb_cycle = n

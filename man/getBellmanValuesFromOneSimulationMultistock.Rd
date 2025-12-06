@@ -11,7 +11,6 @@ getBellmanValuesFromOneSimulationMultistock(
   list_areas,
   list_pumping,
   list_efficiency,
-  force_final_level,
   penalty_final_level_low,
   penalty_final_level_high,
   penalty_low,
@@ -32,8 +31,6 @@ getBellmanValuesFromOneSimulationMultistock(
 \item{list_pumping}{Named vector of binary to tell if pumping is available in areas.}
 
 \item{list_efficiency}{Named vector of pumping efficiency.}
-
-\item{force_final_level}{Binary. Whether final level should be constrained.}
 
 \item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
 

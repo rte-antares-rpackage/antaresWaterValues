@@ -79,53 +79,25 @@ calculateUI <- function(id, opts) {
       ),
 
       shinyWidgets::materialSwitch(
-        NS(id,"force_final_level"),
-        "Force final level",
-        value = F,
+        NS(id,"final_level_exact"),
+        "Final level should be respected for all scenarios (if not consider expectancy)",
+        value = T,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
           bsplus::shiny_iconlink() %>%
-            bsplus::bs_embed_popover(title = "This option modifies rule curves in the calculation to force the final level to be egal to the initial level. There is no hard constraint in simulation, only penalties as defined below.")
-        ),
+            bsplus::bs_embed_popover(
+              title ="If true, penalties ensure that the final level is met, if not the expectancy of final levels should be equal to the objective and there is no hard constraint.")),
 
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "input.force_final_level",
-        shinyWidgets::materialSwitch(
-          NS(id,"final_level_exact"),
-          "Final level should be respected for all scenarios (if not consider expectancy)",
-          value = T,
-          status = "success"
-        ) %>%
-          bsplus::shinyInput_label_embed(
-            bsplus::shiny_iconlink() %>%
-              bsplus::bs_embed_popover(
-                title ="If true, penalties ensure that the final level is met, if not the expectancy of final levels should be equal to the objective and there is no hard constraint.")),
-        ),
-
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "input.force_final_level",
-        shinyWidgets::materialSwitch(
-          NS(id,"final_level_egal_initial"),
-          "Final level should be equal to initial level",
-          value = T,
-          status = "success"
-        ) %>%
-          bsplus::shinyInput_label_embed(
-            bsplus::shiny_iconlink() %>%
-              bsplus::bs_embed_popover(title ="If the final level should be equal to the initial level. There could be a deviation of the final level to the closest integer due to the implementation of penalties through water values.")),
-        shiny::numericInput(
-          NS(id,"penalty_final_level_high"),
-          "Penalty for final level (top rule curve)",
-          value = 3001
-        ),
-        shiny::numericInput(
-          NS(id,"penalty_final_level_low"),
-          "Penalty for final level (bottom rule curve)",
-          value = 3001
-        ),
+      shiny::numericInput(
+        NS(id,"penalty_final_level_high"),
+        "Penalty for final level (top rule curve)",
+        value = 3001
+      ),
+      shiny::numericInput(
+        NS(id,"penalty_final_level_low"),
+        "Penalty for final level (bottom rule curve)",
+        value = 3001
       ),
 
       shinyBS::bsTooltip(
@@ -139,23 +111,6 @@ calculateUI <- function(id, opts) {
         "Penalty will be added proportionally to the distance from the expected final level.",
         "bottom"
       ),
-
-      shiny::conditionalPanel(
-        ns = NS(id),
-        condition = "!input.final_level_egal_initial",
-        shiny::numericInput(
-          NS(id,"final_level"),
-          "Final level (%)",
-          value = 0
-        ),
-      ),
-
-      shinyBS::bsTooltip(
-        NS(id,"final_level"),
-        "There could be a deviation of the final level to the closest integer.",
-        "bottom"
-      ),
-
 
       shiny::actionButton(
         NS(id,"Calculate"),
@@ -255,16 +210,6 @@ calculateServer <- function(id, opts, silent) {
         )
     })
 
-    final_lvl <- shiny::reactive({if (input$force_final_level){
-      if (input$final_level_egal_initial|is.null(input$final_level)){
-        final_lvl <- get_initial_level(area = simulation_res()$area,
-                                       opts = opts)
-      } else {
-        input$final_level
-      }
-    }
-  })
-
     shiny::observeEvent(input$Calculate,
 
                         spsUtil::quiet({
@@ -285,7 +230,7 @@ calculateServer <- function(id, opts, silent) {
                             results <-     Grid_Matrix(
                               area = simulation_res()$area,
                               reward_db = reward_db,
-                              nb_cycle = if(!input$final_level_exact|!input$force_final_level){2}else{1},
+                              nb_cycle = if(input$final_level_exact){1}else{2},
                               opts = opts,
                               week_53 = 0,
                               states_step_ratio = (1 / input$nb_states),
@@ -294,8 +239,6 @@ calculateServer <- function(id, opts, silent) {
                               efficiency = simulation_res()$eff,
                               penalty_low = input$penalty_low,
                               penalty_high = input$penalty_high,
-                              force_final_level = input$force_final_level,
-                              final_level = final_lvl(),
                               penalty_final_level_low = input$penalty_final_level_low,
                               penalty_final_level_high = input$penalty_final_level_high
                             )$aggregated_results

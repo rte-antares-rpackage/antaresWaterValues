@@ -170,16 +170,21 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       for (sto in 1:length(new_storage_points)) {new_storage_points[sto] <- as.integer(new_storage_points[sto])}
 
       # compute grid of the other candidates
-      second_candidate_grid <- grid_other_candidates(candidates_data)
+      new_candidate_grid <- grid_other_candidates(candidates_data)
+
+      previous_candidate = as.matrix(grid_costs)[,2:(ncol(grid_costs)-2)]
+      to_remove = rep(F,length(new_candidate_grid))
       # add fixed part of flexible cluster to candidates
-      for (i in 1:length(second_candidate_grid)) {
+      for (i in 1:length(new_candidate_grid)) {
         for (j in 1:length(candidates_types$index)) {
           if (candidates_types$Part_fixe[j] > 0) {
-            second_candidate_grid[[i]] <- c(second_candidate_grid[[i]], second_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
+            new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
+        }
+        if (all(new_candidate_grid[[i]] %in% previous_candidate)){
+          to_remove[[i]] = TRUE
         }
       }
-
-      new_candidate_grid <- second_candidate_grid
+      new_candidate_grid = new_candidate_grid[!to_remove]
 
       # loop on the storage candidates
       for (storage_vol in new_storage_points) {

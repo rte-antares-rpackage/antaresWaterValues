@@ -15,7 +15,6 @@ MultiStock_H2_Investment_reward_compute_once(
   penalty_final_level = 5000,
   opts,
   mc_years_optim,
-  path_to_antares,
   cvar = 1,
   storage_annual_cost,
   launch_sims = T,
@@ -54,8 +53,6 @@ Zone is a character containing the name of the area where to propose the candida
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 
 \item{mc_years_optim}{Vector of integers. Monte Carlo years to perform the optimization.}
-
-\item{path_to_antares}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
 
 \item{cvar}{Numeric in [0,1]. The probability used in cvar algorithm.}
 

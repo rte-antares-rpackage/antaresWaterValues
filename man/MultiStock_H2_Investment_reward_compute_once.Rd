@@ -17,7 +17,6 @@ MultiStock_H2_Investment_reward_compute_once(
   mc_years_optim,
   cvar = 1,
   storage_annual_cost,
-  launch_sims = T,
   nb_sims = 51,
   parallelprocess = F,
   nb_sockets = 0,
@@ -57,8 +56,6 @@ Zone is a character containing the name of the area where to propose the candida
 \item{cvar}{Numeric in [0,1]. The probability used in cvar algorithm.}
 
 \item{storage_annual_cost}{Numeric. Annual cost of storage in eur/MWh.}
-
-\item{launch_sims}{Boolean. True to launch simulations at each iterations. False if simulations already run.}
 
 \item{nb_sims}{Integer. Number of simulations to launch to evaluate reward.}
 

@@ -538,8 +538,8 @@ calculateRewardsSimulations <- function(node,
                                                       endpoint = export_res$file$id,
                                                       default_endpoint = "v1/downloads")},
                  silent = TRUE)
-      sys.sleep(10)
       if (!inherits(res, "try-error") || i >= max_try) break
+      Sys.sleep(10)
     }
 
     if (i==max_try){ assertthat::assert_that(1==0)}

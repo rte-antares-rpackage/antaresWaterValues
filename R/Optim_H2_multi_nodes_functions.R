@@ -217,7 +217,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                         "value_node_gen",
                                         "get_initial_level",
                                         "get_initial_level_year_per_year",
-                                        "getOptimalTrend"))
+                                        "getOptimalTrend"),
+                                  envir = asNamespace("antaresWaterValues"))
 
 
           list_index <- c(seq(1, length(new_candidate_grid)))

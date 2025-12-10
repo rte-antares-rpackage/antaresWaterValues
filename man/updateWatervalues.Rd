@@ -19,8 +19,7 @@ updateWatervalues(
   niveau_max,
   max_hydro_weekly,
   cvar_value = 1,
-  force_final_level = FALSE,
-  final_level = NULL,
+  final_level,
   penalty_final_level = NULL
 )
 }
@@ -58,8 +57,6 @@ powers for each week,returned by the function  \code{get_max_hydro}}
 \item{cvar_value}{from 0 to 1. the probability used in quantile method
 to determine a bellman value which cvar_value all bellman values are equal or
 less to it. (quantile(cvar_value))}
-
-\item{force_final_level}{Binary. Whether final level should be constrained}
 
 \item{final_level}{Final level (in percent between 0 and 100) if final level is constrained but different from initial level}
 

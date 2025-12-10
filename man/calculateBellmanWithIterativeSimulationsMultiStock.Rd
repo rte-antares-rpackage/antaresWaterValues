@@ -20,10 +20,10 @@ calculateBellmanWithIterativeSimulationsMultiStock(
   path_solver,
   states_step_ratio = 1/50,
   cvar_value = 1,
-  force_final_level = FALSE,
   penalty_final_level = NULL,
   initial_traj = NULL,
-  df_previous_cut = NULL
+  df_previous_cut = NULL,
+  list_areas_to_compute = NULL
 )
 }
 \arguments{
@@ -55,13 +55,13 @@ between the reservoir capacity and zero}
 to determine a bellman value which cvar_value all bellman values are equal or
 less to it. (quantile(cvar_value))}
 
-\item{force_final_level}{Binary. Whether final level should be constrained}
-
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to constrain final level}
 
 \item{initial_traj}{Initial trajectory (used for other storages)}
 
 \item{df_previous_cut}{Data frame containing previous estimations of cuts}
+
+\item{list_areas_to_compute}{Vector of character. Areas for which to compute Bellman values. If \code{NULL}, all areas in \code{list_areas} are used.}
 }
 \value{
 List containing aggregated water values and the data table with all years for the last iteration

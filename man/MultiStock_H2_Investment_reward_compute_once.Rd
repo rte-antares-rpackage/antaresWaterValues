@@ -21,7 +21,6 @@ MultiStock_H2_Investment_reward_compute_once(
   parallelprocess = F,
   nb_sockets = 0,
   unspil_cost = 3000,
-  edit_study = F,
   file_intermediate_results,
   back_to_first_node = F
 )
@@ -64,8 +63,6 @@ Zone is a character containing the name of the area where to propose the candida
 \item{nb_sockets}{Integer. Number of sockets for parallel processing}
 
 \item{unspil_cost}{Numeric. Unspilled energy cost in eur/MW for all concerned areas.}
-
-\item{edit_study}{Boolean. True to edit study with optimal candidates.}
 
 \item{file_intermediate_results}{Character. Local path to save intermediate results.}
 

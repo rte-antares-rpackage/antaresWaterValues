@@ -23,7 +23,6 @@
 #' @param parallelprocess Boolean. True to compute Water values with parallel processing.
 #' @param nb_sockets Integer. Number of sockets for parallel processing
 #' @param unspil_cost Numeric. Unspilled energy cost in eur/MW for all concerned areas.
-#' @param edit_study Boolean. True to edit study with optimal candidates.
 #' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
 #' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
 #' @param file_intermediate_results Character. Local path to save intermediate results.
@@ -47,7 +46,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          parallelprocess = F,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
-                                                         edit_study = F,
                                                          file_intermediate_results,
                                                          back_to_first_node = F) {
 
@@ -149,171 +147,172 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       save(output_node,file=file_intermediate_results)
     }
 
-    final_level <- get_initial_level(node,opts)
+    if (!("optimal_traj" %in% names(output_node[[node]]))){
 
-    # loop on the candidates grids
-    while (nb_ite < max_ite) {
-      nb_ite <- nb_ite + 1
+      final_level <- get_initial_level(node,opts)
 
-      # compute storage volumes to evaluate
-      new_storage_points <- c(seq(storage_bounds[1], storage_bounds[2], length.out = storage_points_nb))
-      for (sto in 1:length(new_storage_points)) {new_storage_points[sto] <- as.integer(new_storage_points[sto])}
+      # loop on the candidates grids
+      while (nb_ite < max_ite) {
+        nb_ite <- nb_ite + 1
 
-      # compute grid of the other candidates
-      new_candidate_grid <- grid_other_candidates(candidates_data)
+        # compute storage volumes to evaluate
+        new_storage_points <- c(seq(storage_bounds[1], storage_bounds[2], length.out = storage_points_nb))
+        for (sto in 1:length(new_storage_points)) {new_storage_points[sto] <- as.integer(new_storage_points[sto])}
 
-      previous_candidate = as.matrix(grid_costs)[,2:(ncol(grid_costs)-2)]
-      to_remove = rep(F,length(new_candidate_grid))
-      # add fixed part of flexible cluster to candidates
-      for (i in 1:length(new_candidate_grid)) {
-        for (j in 1:length(candidates_types$index)) {
-          if (candidates_types$Part_fixe[j] > 0) {
-            new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
-        }
-        if (all(new_candidate_grid[[i]] %in% previous_candidate)){
-          to_remove[[i]] = TRUE
-        }
-      }
-      new_candidate_grid = new_candidate_grid[!to_remove]
+        # compute grid of the other candidates
+        new_candidate_grid <- grid_other_candidates(candidates_data)
 
-      # loop on the storage candidates
-      for (storage_vol in new_storage_points) {
-
-        if (parallelprocess == T) {
-          # with parallel processing
-          # create clusters
-          cl <- parallel::makeCluster(nb_sockets)
-          parallel::clusterExport(cl, c("total_cost_parallel_version",
-                                        "total_cost_loop",
-                                        "update_reward_cluster_bande",
-                                        "update_reward_cluster_flexible",
-                                        "storage_annual_cost",
-                                        "Grid_Matrix",
-                                        "getPumpEfficiency",
-                                        "%>%",
-                                        "data.table",
-                                        "readReservoirLevels",
-                                        "fread_antares",
-                                        "isRunning",
-                                        "fread",
-                                        "as.data.table",
-                                        "melt",
-                                        "copy",
-                                        "Bellman",
-                                        "setDT",
-                                        "build_all_possible_decisions",
-                                        "build_data_watervalues",
-                                        "value_node_gen",
-                                        "get_initial_level",
-                                        "get_initial_level_year_per_year",
-                                        "getOptimalTrend"))
-
-
-          list_index <- c(seq(1, length(new_candidate_grid)))
-          print("begin parallel processing")
-          print(storage_vol)
-          # compute WV with parallel processing
-          new_grid_costs <- parallel::parLapply(cl, list_index, function(x) {
-            total_cost_parallel_version(x,
-                                        new_candidate_grid,
-                                        node,
-                                        mc_years_optim,
-                                        candidates_types,
-                                        storage_vol,
-                                        reward_db,
-                                        cvar,
-                                        opts,
-                                        penalty_low,
-                                        penalty_high,
-                                        penalty_final_level,
-                                        storage_annual_cost,
-                                        final_level,
-                                        list_max_hydro_weekly[[node]],
-                                        list_inflow[[node]])
-          })
-          parallel::stopCluster(cl)
-
-          for (cost in new_grid_costs) {grid_costs <- rbind(grid_costs, cost)}
-        } else {
-          # without parallel processing
-          # loop on the other candidates
-          for (candidate_index in 1:length(new_candidate_grid)) {
-            # calculate total cost
-            total_cost_can <- total_cost_loop(area = node,
-                                              mc_years = mc_years_optim,
-                                              candidate_pool = new_candidate_grid[[candidate_index]],
-                                              candidates_types = candidates_types,
-                                              storage_vol = storage_vol,
-                                              df_reward = reward_db,
-                                              cvar = cvar,
-                                              opts = opts,
-                                              penalty_low = penalty_low,
-                                              penalty_high = penalty_high,
-                                              penalty_final_level = penalty_final_level,
-                                              storage_annual_cost = storage_annual_cost,
-                                              final_level = final_level,
-                                              max_hydro_weekly = list_max_hydro_weekly[[node]],
-                                              inflow = list_inflow[[node]])
-            print(storage_vol)
-            print(new_candidate_grid[[candidate_index]])
-            print(total_cost_can$total_cost)
-            print(total_cost_can$op_cost)
-            grid_costs <- rbind(grid_costs,
-                                c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost, total_cost_can$op_cost))
+        previous_candidate = as.matrix(grid_costs)[,2:(ncol(grid_costs)-2)]
+        to_remove = rep(F,length(new_candidate_grid))
+        # add fixed part of flexible cluster to candidates
+        for (i in 1:length(new_candidate_grid)) {
+          for (j in 1:length(candidates_types$index)) {
+            if (candidates_types$Part_fixe[j] > 0) {
+              new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
+          }
+          if (all(new_candidate_grid[[i]] %in% previous_candidate)){
+            to_remove[[i]] = TRUE
           }
         }
+        new_candidate_grid = new_candidate_grid[!to_remove]
+
+        # loop on the storage candidates
+        for (storage_vol in new_storage_points) {
+
+          if (parallelprocess == T) {
+            # with parallel processing
+            # create clusters
+            cl <- parallel::makeCluster(nb_sockets)
+            parallel::clusterExport(cl, c("total_cost_parallel_version",
+                                          "total_cost_loop",
+                                          "update_reward_cluster_bande",
+                                          "update_reward_cluster_flexible",
+                                          "storage_annual_cost",
+                                          "Grid_Matrix",
+                                          "getPumpEfficiency",
+                                          "%>%",
+                                          "data.table",
+                                          "readReservoirLevels",
+                                          "fread_antares",
+                                          "isRunning",
+                                          "fread",
+                                          "as.data.table",
+                                          "melt",
+                                          "copy",
+                                          "Bellman",
+                                          "setDT",
+                                          "build_all_possible_decisions",
+                                          "build_data_watervalues",
+                                          "value_node_gen",
+                                          "get_initial_level",
+                                          "get_initial_level_year_per_year",
+                                          "getOptimalTrend"))
+
+
+            list_index <- c(seq(1, length(new_candidate_grid)))
+            print("begin parallel processing")
+            print(storage_vol)
+            # compute WV with parallel processing
+            new_grid_costs <- parallel::parLapply(cl, list_index, function(x) {
+              total_cost_parallel_version(x,
+                                          new_candidate_grid,
+                                          node,
+                                          mc_years_optim,
+                                          candidates_types,
+                                          storage_vol,
+                                          reward_db,
+                                          cvar,
+                                          opts,
+                                          penalty_low,
+                                          penalty_high,
+                                          penalty_final_level,
+                                          storage_annual_cost,
+                                          final_level,
+                                          list_max_hydro_weekly[[node]],
+                                          list_inflow[[node]])
+            })
+            parallel::stopCluster(cl)
+
+            for (cost in new_grid_costs) {grid_costs <- rbind(grid_costs, cost)}
+          } else {
+            # without parallel processing
+            # loop on the other candidates
+            for (candidate_index in 1:length(new_candidate_grid)) {
+              # calculate total cost
+              total_cost_can <- total_cost_loop(area = node,
+                                                mc_years = mc_years_optim,
+                                                candidate_pool = new_candidate_grid[[candidate_index]],
+                                                candidates_types = candidates_types,
+                                                storage_vol = storage_vol,
+                                                df_reward = reward_db,
+                                                cvar = cvar,
+                                                opts = opts,
+                                                penalty_low = penalty_low,
+                                                penalty_high = penalty_high,
+                                                penalty_final_level = penalty_final_level,
+                                                storage_annual_cost = storage_annual_cost,
+                                                final_level = final_level,
+                                                max_hydro_weekly = list_max_hydro_weekly[[node]],
+                                                inflow = list_inflow[[node]])
+              print(storage_vol)
+              print(new_candidate_grid[[candidate_index]])
+              print(total_cost_can$total_cost)
+              print(total_cost_can$op_cost)
+              grid_costs <- rbind(grid_costs,
+                                  c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost, total_cost_can$op_cost))
+            }
+          }
+        }
+
+        # find the best candidate at this iteration
+        colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
+        best_candidates <- max_candidate(grid_costs)
+
+        # update bounds
+        bounds <- new_bounds(best_candidates, candidates_data, new_storage_points)
+        candidates_data <- bounds$candidates_data
+        storage_bounds <- bounds$storage_bounds
       }
 
-      # find the best candidate at this iteration
-      colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
-      best_candidates <- max_candidate(grid_costs)
+      # store output
+      output_node[[node]]$all_costs <- grid_costs
+      output_node[[node]]$best <- max_candidate(grid_costs)
+      output_node[[node]]$last_storage_points <- new_storage_points
+      output_node[[node]]$last_candidates_data <- candidates_data
 
-      # update bounds
-      bounds <- new_bounds(best_candidates, candidates_data, new_storage_points)
-      candidates_data <- bounds$candidates_data
-      storage_bounds <- bounds$storage_bounds
-    }
+      time2 <- Sys.time()
+      output_node[[node]]$optim_time <- time2-time1
 
-    # store output
-    output_node[[node]]$all_costs <- grid_costs
-    output_node[[node]]$best <- max_candidate(grid_costs)
-    output_node[[node]]$last_storage_points <- new_storage_points
-    output_node[[node]]$last_candidates_data <- candidates_data
+      print("Best for this node is :")
+      print(output_node[[node]]$best)
 
-    time2 <- Sys.time()
-    output_node[[node]]$optim_time <- time2-time1
+      res = total_cost_loop(area = node,
+                            mc_years = mc_years_optim,
+                            candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
+                            candidates_types = candidates_types,
+                            storage_vol = unlist(dplyr::select(output_node[[node]]$best,c("Storage")),use.names = F),
+                            df_reward = reward_db,
+                            cvar = cvar,
+                            opts = opts,
+                            penalty_low = penalty_low,
+                            penalty_high = penalty_high,
+                            penalty_final_level = penalty_final_level,
+                            storage_annual_cost = storage_annual_cost,
+                            final_level = final_level,
+                            compute_optimal_traj = T,
+                            max_hydro_weekly = list_max_hydro_weekly[[node]],
+                            inflow = list_inflow[[node]])
+      optimal_traj <- optimal_traj %>%
+        dplyr::filter(.data$area != node) %>%
+        rbind(res$optimal_traj)
 
-    print("Best for this node is :")
-    print(output_node[[node]]$best)
+      output_node[[node]]$optimal_traj = res$optimal_traj
+      output_node[[node]]$watervalues = to_Antares_Format(res$watervalues)
 
-    res = total_cost_loop(area = node,
-                          mc_years = mc_years_optim,
-                          candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
-                          candidates_types = candidates_types,
-                          storage_vol = unlist(dplyr::select(output_node[[node]]$best,c("Storage")),use.names = F),
-                          df_reward = reward_db,
-                          cvar = cvar,
-                          opts = opts,
-                          penalty_low = penalty_low,
-                          penalty_high = penalty_high,
-                          penalty_final_level = penalty_final_level,
-                          storage_annual_cost = storage_annual_cost,
-                          final_level = final_level,
-                          compute_optimal_traj = T,
-                          max_hydro_weekly = list_max_hydro_weekly[[node]],
-                          inflow = list_inflow[[node]])
-    optimal_traj <- optimal_traj %>%
-      dplyr::filter(.data$area != node) %>%
-      rbind(res$optimal_traj)
+      # store rewards and costs in a file
+      save(output_node,file=file_intermediate_results)
 
-    output_node[[node]]$optimal_traj = res$optimal_traj
-    output_node[[node]]$watervalues = to_Antares_Format(res$watervalues)
-
-    # store rewards and costs in a file
-    save(output_node,file=file_intermediate_results)
-
-    # add best clusters to node in the study and edit storage size
-    if (edit_study) {
+      # add best clusters to node in the study and edit storage size
       l_old_clusters <- c()
       l_read_clusters <- antaresRead::readClusterDesc(opts=opts)
       l_all_clusters <- as.character(l_read_clusters$cluster)

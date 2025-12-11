@@ -273,12 +273,6 @@ resetStudy <- function(opts, area, pumping,
   restore_fictive_fatal_prod_demand(area = area, opts = opts, load = backup$load,
                                     misc_gen = backup$misc_gen)
 
-  if ("water values district" %in% opts$districtList){
-    opts = antaresEditObject::removeDistrict("water values district", opts=opts)
-  }
-  if (paste0("district_balance_",area) %in% opts$districtList){
-    opts = antaresEditObject::removeDistrict(paste0("district_balance_",area), opts=opts)
-  }
   return(opts)
 }
 

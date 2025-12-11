@@ -8,7 +8,7 @@ to build reward functions.
 ## Usage
 
 ``` r
-get_weekly_cost(simu, mcyears, expansion = FALSE)
+get_weekly_cost(simu, mcyears, expansion = F)
 ```
 
 ## Arguments

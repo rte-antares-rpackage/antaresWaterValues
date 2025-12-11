@@ -7,7 +7,7 @@ mainly used in
 ## Usage
 
 ``` r
-reward_offset(simu, df_reward, u0 = c(), mcyears, expansion = FALSE)
+reward_offset(simu, df_reward, u0 = c(), mcyears, expansion = F)
 ```
 
 ## Arguments

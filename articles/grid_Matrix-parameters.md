@@ -20,7 +20,7 @@ opts <- antaresRead::setSimulationPath("your/path/to/the/antares/study","input")
 
 ``` r
 area <- "area"
-pumping <- TRUE #TRUE if pumping possible
+pumping <- T #T if pumping possible
 mcyears <- 1:3 # Monte Carlo years you want to use
 efficiency <- getPumpEfficiency(area,opts=opts)
 name = "3sim"
@@ -50,7 +50,7 @@ reward_db <- get_Reward(
   area = area,
   mcyears = mcyears,
   efficiency = efficiency,
-  method_old = TRUE,
+  method_old = T,
 )
 #> Warning: 'memory.limit()' is Windows-specific
 reward <- reward_db$reward
@@ -62,7 +62,7 @@ Define default parameters :
 states_step_ratio = 1/20
 penalty_low = 0
 penalty_high = 0
-force_final_level = FALSE
+force_final_level = F
 penalty_final_level = 0
 final_level = get_initial_level(area=area,opts=opts)
 nb_cycle = 1
@@ -285,7 +285,7 @@ res = Grid_Matrix(
   efficiency=efficiency,
   penalty_low = penalty_low,
   penalty_high = penalty_high,
-  force_final_level = TRUE,
+  force_final_level = T,
   final_level = final_level,
   penalty_final_level_low = 3000,
   penalty_final_level_high = 1000,

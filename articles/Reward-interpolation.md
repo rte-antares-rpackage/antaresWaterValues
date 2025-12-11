@@ -13,7 +13,7 @@ opts <- antaresRead::setSimulationPath("your/path/to/the/antares/study","input")
 
 ``` r
 area <- "area"
-pumping <- TRUE #TRUE if pumping possible
+pumping <- T #T if pumping possible
 mcyears <- 1:3 # Monte Carlo years you want to use
 efficiency <- getPumpEfficiency(area,opts=opts)
 name = "3sim"
@@ -35,7 +35,7 @@ simulation_res <- runWaterValuesSimulation(
 
 ## Simple interpolation of reward function
 
-With `method_old = TRUE`, the reward function will simply be a linear
+With `method_old = T`, the reward function will simply be a linear
 interpolation between simulated control and simulation cost with one
 control per simulation. This method gives an underestimation of the real
 reward function.
@@ -48,7 +48,7 @@ reward_db <- get_Reward(
   area = area,
   mcyears = mcyears,
   efficiency = efficiency,
-  method_old = TRUE
+  method_old = T
 )
 #> Warning: 'memory.limit()' is Windows-specific
 reward_simple <- reward_db$reward
@@ -69,11 +69,11 @@ reward_simple %>%
 
 ## Interpolation with marginal prices
 
-With `method_old = FALSE`, each simulation will give one local
-estimation of the reward function thanks to marginal prices that is an
-overestimation of the real reward function. Local estimations are then
-combined to form only one reward function by taking the minimum of all
-estimations. Each local estimation is evaluated for controls listed in
+With `method_old = F`, each simulation will give one local estimation of
+the reward function thanks to marginal prices that is an overestimation
+of the real reward function. Local estimations are then combined to form
+only one reward function by taking the minimum of all estimations. Each
+local estimation is evaluated for controls listed in
 `possible_controls`.
 
 ``` r
@@ -84,7 +84,7 @@ reward_db <- get_Reward(
   area = area,
   mcyears = mcyears,
   efficiency = efficiency,
-  method_old = FALSE,
+  method_old = F,
   possible_controls = constraint_generator(area=area,
                                            mcyears=mcyears,
                                            nb_disc_stock = 20,

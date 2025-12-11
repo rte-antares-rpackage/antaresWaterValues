@@ -18,8 +18,7 @@ build_all_possible_decisions(
   P_max,
   next_week_values,
   niveau_max,
-  overflow_cost,
-  next_states = NULL
+  overflow_cost
 )
 ```
 
@@ -72,10 +71,6 @@ build_all_possible_decisions(
 - overflow_cost:
 
   Cost for overflow (equal to spillage cost of the area)
-
-- next_states:
-
-  possible states for next week
 
 ## Value
 

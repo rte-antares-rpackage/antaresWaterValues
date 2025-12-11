@@ -11,7 +11,7 @@ to write water values.
 ## Usage
 
 ``` r
-to_Antares_Format(data, constant = TRUE)
+to_Antares_Format(data, constant = T)
 ```
 
 ## Arguments

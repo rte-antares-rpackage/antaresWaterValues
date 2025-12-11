@@ -47,6 +47,9 @@ createDistrict <- function(name,
   if (tolower(name) %in% antaresRead::getDistricts(opts = opts) & !overwrite) {
     stop(paste("District", name, "already exists!"))
   }
+  if (tolower(name) %in% antaresRead::getDistricts(opts = opts) & overwrite){
+    opts = antaresEditObject::removeDistrict(name, opts=opts)
+  }
 
   with_add_area <- !is.null(add_area)
   with_remove_area <- !is.null(remove_area)

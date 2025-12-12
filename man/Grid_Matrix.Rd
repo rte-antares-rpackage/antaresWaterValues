@@ -79,7 +79,7 @@ attending the limit.}
 
 \item{final_level}{Double. Final level (in percent between 0 and 100) if final level is constrained. If you want initial level, use \code{get_initial_level()}.}
 
-\item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
+\item{penalty_final_level_low}{Double. Penalties for bottom rule curve to constrain final level.}
 
 \item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.}
 }

@@ -15,7 +15,8 @@ build_data_watervalues(
   force_final_level = FALSE,
   penalty_final_level_low = 0,
   penalty_final_level_high = 0,
-  final_level = NULL
+  final_level = NULL,
+  plot_watervalues = T
 )
 ```
 
@@ -56,6 +57,10 @@ build_data_watervalues(
 - final_level:
 
   Double. Final level to consider
+
+- plot_watervalues:
+
+  Binary. Plot watervalues or not ?
 
 ## Value
 

@@ -449,12 +449,11 @@ calculateRewardsSimulations <- function(area,
       rbind(constraint_values)
   }
 
-  constraint_values <- constraint_generator(area=area,
+  constraint_values <- constraint_generator_flex(area=area,
                                             nb_disc_stock = sim_number,
                                             pumping = list_pumping[[area]],
                                             efficiency = list_efficiency[[area]],
-                                            opts=opts,mcyears=mcyears,
-                                            inflow = inflow) %>%
+                                            opts=opts,mcyears=mcyears) %>%
     dplyr::mutate(area = area) %>%
     dplyr::cross_join(data.frame(mcYear=mcyears))%>%
     rbind(constraint_values)
@@ -500,12 +499,11 @@ calculateRewardsSimulations <- function(area,
   {start.time <- Sys.time()
 
     max_hydro <- get_max_hydro(area,opts,timeStep = "hourly")
-    controls_reward_calculation <- constraint_generator(area=area,
+    controls_reward_calculation <- constraint_generator_flex(area=area,
                                                         nb_disc_stock = 51,
                                                         pumping = list_pumping[[area]],
                                                         efficiency = list_efficiency[[area]],
-                                                        opts=opts,mcyears=mcyears,
-                                                        inflow = inflow)
+                                                        opts=opts,mcyears=mcyears)
     if (("mcYear" %in% names(constraint_values))&!("mcYear" %in% names(controls_reward_calculation))){
       controls_reward_calculation <- dplyr::cross_join(controls_reward_calculation,
                                                        data.frame(mcYear=mcyears))
@@ -898,4 +896,34 @@ total_cost_parallel_version <- function(candidate_index,
                           c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost,total_cost_can$op_cost))
   colnames(new_grid_costs) <- c("Storage", candidates_types$name, "Total_cost", "op_cost")
   return(new_grid_costs)
+}
+
+constraint_generator_flex <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL,opts,max_hydro_weekly=NULL,
+                                 mcyears=NULL){
+
+  area = tolower(area)
+  if(is.null(efficiency)){
+    efficiency <- getPumpEfficiency(area,opts=opts)
+  }
+
+  if(is.null(max_hydro_weekly)){
+    max_hydro_weekly <- get_max_hydro(area,opts,timeStep = "weekly")
+  }
+
+  weeks <- dplyr::distinct(max_hydro_weekly,.data$timeId)$timeId
+  df_constraint <- data.frame(week=weeks)
+  df_constraint$u <- sapply(df_constraint$week,
+                            FUN = function(w) constraint_week(pumping,
+                                                              efficiency,
+                                                              nb_disc_stock,Inf,
+                                                              dplyr::filter(max_hydro_weekly,
+                                                                            .data$timeId==w),w),
+                            simplify = FALSE)
+
+  df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
+  df_constraint <- df_constraint %>%
+    tidyr::pivot_longer(cols=2:length(df_constraint),names_to="sim",values_to="u") %>%
+    dplyr::arrange(.data$week,.data$u)
+
+  return(df_constraint)
 }

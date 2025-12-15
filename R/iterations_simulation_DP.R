@@ -150,7 +150,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   while(gap > 1e-3 && i <= nb_itr){
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,reward=reward,controls=controls,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                              controls=controls,
                               niveau_max = niveau_max,df_levels = df_levels,
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
@@ -785,7 +786,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         }
 
         levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                                  mcyears=mcyears,reward=reward,controls=controls,
+                                  mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                                  controls=controls,
                                   niveau_max = list_capacity[[area]],df_levels = df_levels_area,
                                   penalty_low = penalty_low, penalty_high = penalty_high,
                                   penalty_final_level = penalty_final_level, final_level = final_level,
@@ -898,7 +900,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       }
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,reward=reward,controls=controls,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                              controls=controls,
                               niveau_max = list_capacity[[area]],df_levels = dplyr::filter(df_levels,.data$area==a),
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,

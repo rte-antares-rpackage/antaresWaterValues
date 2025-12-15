@@ -18,14 +18,11 @@
 #' @param penalty_final_level Integer. Penalty for higher and lower final level.
 #' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
 #' @param mc_years_optim Vector of integers. Monte Carlo years to perform the optimization.
-#' @param path_to_antares Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
 #' @param storage_annual_cost Numeric. Annual cost of storage in eur/MWh.
-#' @param launch_sims Boolean. True to launch simulations at each iterations. False if simulations already run.
 #' @param parallelprocess Boolean. True to compute Water values with parallel processing.
 #' @param nb_sockets Integer. Number of sockets for parallel processing
 #' @param unspil_cost Numeric. Unspilled energy cost in eur/MW for all concerned areas.
-#' @param edit_study Boolean. True to edit study with optimal candidates.
 #' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
 #' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
 #' @param file_intermediate_results Character. Local path to save intermediate results.
@@ -43,32 +40,25 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          penalty_final_level=5000,
                                                          opts,
                                                          mc_years_optim,
-                                                         path_to_antares,
                                                          cvar=1,
                                                          storage_annual_cost,
-                                                         launch_sims=T,
                                                          nb_sims = 51,
                                                          parallelprocess = F,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
-                                                         edit_study = F,
                                                          file_intermediate_results,
                                                          back_to_first_node = F) {
 
   # initialization
   storage_bounds_init <- storage_bounds
 
-  list_pumping <- c()
   list_efficiency <- c()
   list_max_hydro_weekly = list()
   for (i in 1:length(areas_invest)){
     list_max_hydro_weekly[[areas_invest[[i]]]] = get_max_hydro(areas_invest[[i]],opts,timeStep = "weekly")
-    pumping = max(list_max_hydro_weekly[[areas_invest[[i]]]]$pump)>0
-    list_pumping <- c(list_pumping,pumping)
     list_efficiency <- c(list_efficiency,getPumpEfficiency(area=areas_invest[i],opts=opts))
   }
   names(list_efficiency) <- areas_invest
-  names(list_pumping) <- areas_invest
 
   # add fixed part of flexible cluster if necessary
   n <- length(candidates_types_gen$index)
@@ -139,19 +129,16 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       reward_db = output_node[[node]]$reward
     } else {
       reward_db <-
-        calculateRewardsSimulations(area =node,
+        calculateRewardsSimulations(node =node,
                                     list_areas = areas_invest,
-                                    list_pumping = list_pumping,
                                     list_efficiency = list_efficiency,
                                     opts = opts,
                                     mcyears = mc_years_optim,
-                                    path_to_antares = path_to_antares,
                                     prefix=paste0("unsp", as.character(unspil_cost)),
-                                    launch_sims=launch_sims,
                                     sim_number = nb_sims,
                                     optimal_traj = optimal_traj,
-                                    inflow = list_inflow[[node]],
-                                    candidates_types = candidates_types)
+                                    candidates_types = candidates_types,
+                                    list_max_hydro_weekly = list_max_hydro_weekly)
 
 
       # store results edited by area index
@@ -160,172 +147,173 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       save(output_node,file=file_intermediate_results)
     }
 
-    final_level <- get_initial_level(node,opts)
+    if (!("optimal_traj" %in% names(output_node[[node]]))){
 
-    # loop on the candidates grids
-    while (nb_ite < max_ite) {
-      nb_ite <- nb_ite + 1
+      final_level <- get_initial_level(node,opts)
 
-      # compute storage volumes to evaluate
-      new_storage_points <- c(seq(storage_bounds[1], storage_bounds[2], length.out = storage_points_nb))
-      for (sto in 1:length(new_storage_points)) {new_storage_points[sto] <- as.integer(new_storage_points[sto])}
+      # loop on the candidates grids
+      while (nb_ite < max_ite) {
+        nb_ite <- nb_ite + 1
 
-      # compute grid of the other candidates
-      new_candidate_grid <- grid_other_candidates(candidates_data)
+        # compute storage volumes to evaluate
+        new_storage_points <- c(seq(storage_bounds[1], storage_bounds[2], length.out = storage_points_nb))
+        for (sto in 1:length(new_storage_points)) {new_storage_points[sto] <- as.integer(new_storage_points[sto])}
 
-      previous_candidate = as.matrix(grid_costs)[,2:(ncol(grid_costs)-2)]
-      to_remove = rep(F,length(new_candidate_grid))
-      # add fixed part of flexible cluster to candidates
-      for (i in 1:length(new_candidate_grid)) {
-        for (j in 1:length(candidates_types$index)) {
-          if (candidates_types$Part_fixe[j] > 0) {
-            new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
-        }
-        if (all(new_candidate_grid[[i]] %in% previous_candidate)){
-          to_remove[[i]] = TRUE
-        }
-      }
-      new_candidate_grid = new_candidate_grid[!to_remove]
+        # compute grid of the other candidates
+        new_candidate_grid <- grid_other_candidates(candidates_data)
 
-      # loop on the storage candidates
-      for (storage_vol in new_storage_points) {
-
-        if (parallelprocess == T) {
-          # with parallel processing
-          # create clusters
-          cl <- parallel::makeCluster(nb_sockets)
-          parallel::clusterExport(cl, c("total_cost_parallel_version",
-                                        "total_cost_loop",
-                                        "update_reward_cluster_bande",
-                                        "update_reward_cluster_flexible",
-                                        "storage_annual_cost",
-                                        "Grid_Matrix",
-                                        "getPumpEfficiency",
-                                        "%>%",
-                                        "data.table",
-                                        "readReservoirLevels",
-                                        "fread_antares",
-                                        "isRunning",
-                                        "fread",
-                                        "as.data.table",
-                                        "melt",
-                                        "copy",
-                                        "Bellman",
-                                        "setDT",
-                                        "build_all_possible_decisions",
-                                        "build_data_watervalues",
-                                        "value_node_gen",
-                                        "get_initial_level",
-                                        "get_initial_level_year_per_year",
-                                        "getOptimalTrend"),
-                                  envir = asNamespace("antaresWaterValues"))
-
-
-          list_index <- c(seq(1, length(new_candidate_grid)))
-          print("begin parallel processing")
-          print(storage_vol)
-          # compute WV with parallel processing
-          new_grid_costs <- parallel::parLapply(cl, list_index, function(x) {
-            total_cost_parallel_version(x,
-                                        new_candidate_grid,
-                                        node,
-                                        mc_years_optim,
-                                        candidates_types,
-                                        storage_vol,
-                                        reward_db,
-                                        cvar,
-                                        opts,
-                                        penalty_low,
-                                        penalty_high,
-                                        penalty_final_level,
-                                        storage_annual_cost,
-                                        final_level,
-                                        list_max_hydro_weekly[[node]],
-                                        list_inflow[[node]])
-          })
-          parallel::stopCluster(cl)
-
-          for (cost in new_grid_costs) {grid_costs <- rbind(grid_costs, cost)}
-        } else {
-          # without parallel processing
-          # loop on the other candidates
-          for (candidate_index in 1:length(new_candidate_grid)) {
-            # calculate total cost
-            total_cost_can <- total_cost_loop(area = node,
-                                              mc_years = mc_years_optim,
-                                              candidate_pool = new_candidate_grid[[candidate_index]],
-                                              candidates_types = candidates_types,
-                                              storage_vol = storage_vol,
-                                              df_reward = reward_db,
-                                              cvar = cvar,
-                                              opts = opts,
-                                              penalty_low = penalty_low,
-                                              penalty_high = penalty_high,
-                                              penalty_final_level = penalty_final_level,
-                                              storage_annual_cost = storage_annual_cost,
-                                              final_level = final_level,
-                                              max_hydro_weekly = list_max_hydro_weekly[[node]],
-                                              inflow = list_inflow[[node]])
-            print(storage_vol)
-            print(new_candidate_grid[[candidate_index]])
-            print(total_cost_can$total_cost)
-            print(total_cost_can$op_cost)
-            grid_costs <- rbind(grid_costs,
-                                c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost, total_cost_can$op_cost))
+        previous_candidate = as.matrix(grid_costs)[,2:(ncol(grid_costs)-2)]
+        to_remove = rep(F,length(new_candidate_grid))
+        # add fixed part of flexible cluster to candidates
+        for (i in 1:length(new_candidate_grid)) {
+          for (j in 1:length(candidates_types$index)) {
+            if (candidates_types$Part_fixe[j] > 0) {
+              new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
+          }
+          if (all(new_candidate_grid[[i]] %in% previous_candidate)){
+            to_remove[[i]] = TRUE
           }
         }
+        new_candidate_grid = new_candidate_grid[!to_remove]
+
+        # loop on the storage candidates
+        for (storage_vol in new_storage_points) {
+
+          if (parallelprocess == T) {
+            # with parallel processing
+            # create clusters
+            cl <- parallel::makeCluster(nb_sockets)
+            parallel::clusterExport(cl, c("total_cost_parallel_version",
+                                          "total_cost_loop",
+                                          "update_reward_cluster_bande",
+                                          "update_reward_cluster_flexible",
+                                          "storage_annual_cost",
+                                          "Grid_Matrix",
+                                          "getPumpEfficiency",
+                                          "%>%",
+                                          "data.table",
+                                          "readReservoirLevels",
+                                          "fread_antares",
+                                          "isRunning",
+                                          "fread",
+                                          "as.data.table",
+                                          "melt",
+                                          "copy",
+                                          "Bellman",
+                                          "setDT",
+                                          "build_all_possible_decisions",
+                                          "build_data_watervalues",
+                                          "value_node_gen",
+                                          "get_initial_level",
+                                          "get_initial_level_year_per_year",
+                                          "getOptimalTrend"),
+                                          envir = asNamespace("antaresWaterValues"))
+
+
+            list_index <- c(seq(1, length(new_candidate_grid)))
+            print("begin parallel processing")
+            print(storage_vol)
+            # compute WV with parallel processing
+            new_grid_costs <- parallel::parLapply(cl, list_index, function(x) {
+              total_cost_parallel_version(x,
+                                          new_candidate_grid,
+                                          node,
+                                          mc_years_optim,
+                                          candidates_types,
+                                          storage_vol,
+                                          reward_db,
+                                          cvar,
+                                          opts,
+                                          penalty_low,
+                                          penalty_high,
+                                          penalty_final_level,
+                                          storage_annual_cost,
+                                          final_level,
+                                          list_max_hydro_weekly[[node]],
+                                          list_inflow[[node]])
+            })
+            parallel::stopCluster(cl)
+
+            for (cost in new_grid_costs) {grid_costs <- rbind(grid_costs, cost)}
+          } else {
+            # without parallel processing
+            # loop on the other candidates
+            for (candidate_index in 1:length(new_candidate_grid)) {
+              # calculate total cost
+              total_cost_can <- total_cost_loop(area = node,
+                                                mc_years = mc_years_optim,
+                                                candidate_pool = new_candidate_grid[[candidate_index]],
+                                                candidates_types = candidates_types,
+                                                storage_vol = storage_vol,
+                                                df_reward = reward_db,
+                                                cvar = cvar,
+                                                opts = opts,
+                                                penalty_low = penalty_low,
+                                                penalty_high = penalty_high,
+                                                penalty_final_level = penalty_final_level,
+                                                storage_annual_cost = storage_annual_cost,
+                                                final_level = final_level,
+                                                max_hydro_weekly = list_max_hydro_weekly[[node]],
+                                                inflow = list_inflow[[node]])
+              print(storage_vol)
+              print(new_candidate_grid[[candidate_index]])
+              print(total_cost_can$total_cost)
+              print(total_cost_can$op_cost)
+              grid_costs <- rbind(grid_costs,
+                                  c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost, total_cost_can$op_cost))
+            }
+          }
+        }
+
+        # find the best candidate at this iteration
+        colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
+        best_candidates <- max_candidate(grid_costs)
+
+        # update bounds
+        bounds <- new_bounds(best_candidates, candidates_data, new_storage_points)
+        candidates_data <- bounds$candidates_data
+        storage_bounds <- bounds$storage_bounds
       }
 
-      # find the best candidate at this iteration
-      colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
-      best_candidates <- max_candidate(grid_costs)
+      # store output
+      output_node[[node]]$all_costs <- grid_costs
+      output_node[[node]]$best <- max_candidate(grid_costs)
+      output_node[[node]]$last_storage_points <- new_storage_points
+      output_node[[node]]$last_candidates_data <- candidates_data
 
-      # update bounds
-      bounds <- new_bounds(best_candidates, candidates_data, new_storage_points)
-      candidates_data <- bounds$candidates_data
-      storage_bounds <- bounds$storage_bounds
-    }
+      time2 <- Sys.time()
+      output_node[[node]]$optim_time <- time2-time1
 
-    # store output
-    output_node[[node]]$all_costs <- grid_costs
-    output_node[[node]]$best <- max_candidate(grid_costs)
-    output_node[[node]]$last_storage_points <- new_storage_points
-    output_node[[node]]$last_candidates_data <- candidates_data
+      print("Best for this node is :")
+      print(output_node[[node]]$best)
 
-    time2 <- Sys.time()
-    output_node[[node]]$optim_time <- time2-time1
+      res = total_cost_loop(area = node,
+                            mc_years = mc_years_optim,
+                            candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
+                            candidates_types = candidates_types,
+                            storage_vol = unlist(dplyr::select(output_node[[node]]$best,c("Storage")),use.names = F),
+                            df_reward = reward_db,
+                            cvar = cvar,
+                            opts = opts,
+                            penalty_low = penalty_low,
+                            penalty_high = penalty_high,
+                            penalty_final_level = penalty_final_level,
+                            storage_annual_cost = storage_annual_cost,
+                            final_level = final_level,
+                            compute_optimal_traj = T,
+                            max_hydro_weekly = list_max_hydro_weekly[[node]],
+                            inflow = list_inflow[[node]])
+      optimal_traj <- optimal_traj %>%
+        dplyr::filter(.data$area != node) %>%
+        rbind(res$optimal_traj)
 
-    print("Best for this node is :")
-    print(output_node[[node]]$best)
+      output_node[[node]]$optimal_traj = res$optimal_traj
+      output_node[[node]]$watervalues = to_Antares_Format(res$watervalues)
 
-    res = total_cost_loop(area = node,
-                          mc_years = mc_years_optim,
-                          candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
-                          candidates_types = candidates_types,
-                          storage_vol = unlist(dplyr::select(output_node[[node]]$best,c("Storage")),use.names = F),
-                          df_reward = reward_db,
-                          cvar = cvar,
-                          opts = opts,
-                          penalty_low = penalty_low,
-                          penalty_high = penalty_high,
-                          penalty_final_level = penalty_final_level,
-                          storage_annual_cost = storage_annual_cost,
-                          final_level = final_level,
-                          compute_optimal_traj = T,
-                          max_hydro_weekly = list_max_hydro_weekly[[node]],
-                          inflow = list_inflow[[node]])
-    optimal_traj <- optimal_traj %>%
-      dplyr::filter(.data$area != node) %>%
-      rbind(res$optimal_traj)
+      # store rewards and costs in a file
+      save(output_node,file=file_intermediate_results)
 
-    output_node[[node]]$optimal_traj = res$optimal_traj
-    output_node[[node]]$watervalues = to_Antares_Format(res$watervalues)
-
-    # store rewards and costs in a file
-    save(output_node,file=file_intermediate_results)
-
-    # add best clusters to node in the study and edit storage size
-    if (edit_study) {
+      # add best clusters to node in the study and edit storage size
       l_old_clusters <- c()
       l_read_clusters <- antaresRead::readClusterDesc(opts=opts)
       l_all_clusters <- as.character(l_read_clusters$cluster)
@@ -403,134 +391,193 @@ grid_other_candidates <- function(candidates_data) {
 #' Called for each area of \code{MultiStock_H2_Investment_reward_compute_once}.
 #' If they are several areas, the trajectories of the other storage are fixed on their optimal trend.
 #'
-#' @param area Character. Name of the area where the reward is computed
+#' @param node Character. Name of the area where the reward is computed
 #' @param list_areas Vector of characters of the names of areas to optimize.
-#' @param list_pumping Vector of boolean. True if pumping for the area with corresponding index in \code{list_areas}.
 #' @param list_efficiency Vector of numeric with pumping efficiency for the area with corresponding index in \code{list_areas}.
 #' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
 #' @param mcyears Vector of integers. Monte Carlo years to run simulations
-#' @param path_to_antares Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.
 #' @param prefix Character. Prefix of the simulation.
-#' @param launch_sims Boolean. True to launch simulations, false if simulations already run.
 #' @param sim_number Integer. Number of simulations.
 #' @param optimal_traj Data frame containing optimal trajectory for all areas
-#' @param inflow Generated by \code{get_inflow()}
-#' @param candidates_types Data_frame with column names : \code{c(index, name, type, TOTEX, Marg_price, Part_fixe, Prix_fixe,
-#' Borne_min, Borne_max, Points_nb, Zone)}.
+#' @param list_max_hydro_weekly List of data.frame. Generated by \code{get_max_hydro()} for each area.
+#' @param candidates_types Data_frame with column names : c("index", "name", "type", "TOTEX", "Marg_price").
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
-calculateRewardsSimulations <- function(area,
+calculateRewardsSimulations <- function(node,
                                         list_areas,
-                                        list_pumping,
                                         list_efficiency,
                                         opts,
                                         mcyears,
-                                        path_to_antares,
                                         prefix,
-                                        launch_sims=T,
                                         sim_number = 5,
                                         optimal_traj,
-                                        inflow,
-                                        candidates_types)  {
-  max_hydro_daily = fread_antares(opts, file = file.path(opts$inputPath, "hydro", "common", "capacity", paste0("maxpower_",area,".txt")))
-  data = max_hydro_daily
-  data[,1] = data[,1] + sum(as.double(candidates_types$Borne_max))
-  antaresEditObject::writeHydroValues(area,
-                                      type = "maxpower",
-                                      data=data,
-                                      opts = opts)
+                                        candidates_types,
+                                        list_max_hydro_weekly)  {
 
-  a = area
-  constraint_values <- data.frame()
-  for (simname in 1:sim_number) {
-    constraint_values <- optimal_traj %>%
-      dplyr::filter(.data$area != a) %>%
-      dplyr::mutate(sim = stringr::str_c("u_",simname)) %>%
-      rbind(constraint_values)
+  list_areas = tolower(list_areas)
+
+  list_backup = list()
+  for (j in seq_along(list_areas)){
+    area = list_areas[[j]]
+    check_area_name(area = area, opts = opts)
+
+    list_backup[[j]] = getBackupData(area,mcyears,opts)
   }
 
-  constraint_values <- constraint_generator_flex(area=area,
-                                            nb_disc_stock = sim_number,
-                                            pumping = list_pumping[[area]],
-                                            efficiency = list_efficiency[[area]],
-                                            opts=opts,mcyears=mcyears) %>%
-    dplyr::mutate(area = area) %>%
-    dplyr::cross_join(data.frame(mcYear=mcyears))%>%
-    rbind(constraint_values)
+  max_hydro_daily = fread_antares(opts, file = file.path(opts$inputPath, "hydro", "common", "capacity", paste0("maxpower_",node,".txt")))
 
-  simulation_res <- runWaterValuesSimulationMultiStock(
-    list_areas = list_areas,
-    list_pumping = list_pumping,
-    list_efficiency = list_efficiency,
-    constraint_values = constraint_values,
-    mcyears = mcyears,
-    path_solver = path_to_antares,
-    overwrite = T,
-    opts = opts,
-    file_name = paste0(prefix, "_", area),
-    show_output_on_console = FALSE,
-    launch_simulations = c(rep(launch_sims, sim_number)),
-    expansion = T)
+  year_by_year = opts$parameters$general$`year-by-year`
+  synthesis = opts$parameters$output$synthesis
+  storenewset = opts$parameters$output$storenewset
 
-  for (name_sim in simulation_res$simulation_names){
-    if (is_api_study(opts)&opts$antaresVersion>=880){
-      output_dir = names(antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output&depth=1&formatted=false")))
-      output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,stringr::str_c(name_sim,"$"))],n=1)
-      info = antaresRead::api_get(opts=opts,endpoint=paste0(opts$study_id,"/raw?path=output%2F",output_dir,"%2Finfo&depth=2&formatted=false"))
-      info$general$mode = "Economy"
-      body <- jsonlite::toJSON(info,auto_unbox = TRUE)
-      antaresRead::api_post(opts=opts,endpoint=paste0(opts$study_id,
-                                                      "/raw?path=output%2F",output_dir,"%2Finfo"),
-                            body=body)
-    }
-    if (!is_api_study(opts)){
-      {
-        output_dir <- list.dirs(paste0(opts$studyPath,"/output"),recursive = FALSE)
-        output_dir = utils::tail(output_dir[stringr::str_detect(output_dir,stringr::str_c(name_sim,"$"))],n=1)
-        output_info = antaresRead::readIniFile(paste0(output_dir,"/info.antares-output"))
-        output_info$general$mode <- "Economy"
-        antaresEditObject::writeIniFile(output_info,paste0(output_dir,"/info.antares-output"),
-                                        overwrite = TRUE)
+  assertthat::assert_that(is_api_study(opts),msg="Study must be in API mode to launch simulations.")
+
+  try(antaresRead::api_post(opts=opts,
+                          endpoint = paste0(opts$study_id,"/extensions/xpansion")),
+      silent = T)
+
+  tryCatch({
+
+    antaresEditObject::setPlaylist(playlist = mcyears,opts = opts)
+    antaresEditObject::updateGeneralSettings(year.by.year = FALSE, opts = opts)
+    antaresEditObject::updateOutputSettings(synthesis = FALSE, storenewset = FALSE, opts=opts)
+
+    for (j in seq_along(list_areas)){
+      area <- list_areas[[j]]
+
+      assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
+                              msg=paste0("Unserved cost is null in ",area,
+                                         ", unserved energy will be exported to this area in simulations launched by the package."))
+
+      suppressWarnings({mingen = antaresRead::readInputTS(mingen = area,opts=opts)})
+      if (nrow(mingen)>0){
+        assertthat::assert_that(max(dplyr::pull(mingen,"mingen"))==0,
+                                msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
       }
+
+      changeHydroManagement(opts=opts,watervalues = FALSE, heuristic = TRUE, area=area)
+
+      add_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
+                                    misc_gen = list_backup[[j]]$misc_gen)
     }
+
+    data = max_hydro_daily
+    data[,1] = data[,1] + sum(as.double(candidates_types$Borne_max))
+    antaresEditObject::writeHydroValues(node,
+                                        type = "maxpower",
+                                        data=data,
+                                        opts = opts)
+
+    grid = data.frame()
+    for (j in seq_along(list_areas)){
+      a <- list_areas[[j]]
+      if (a != node){
+        grid = optimal_traj %>%
+          dplyr::filter(.data$area == a) %>%
+          dplyr::left_join(list_max_hydro_weekly[[j]],by=c("week"="timeId")) %>%
+          dplyr::mutate(rhs = (u+pump*list_efficiency[[j]])/(turb+pump*list_efficiency[[j]])) %>%
+          dplyr::mutate(grid_id = 0,
+                        problem_name = stringr::str_c("problem-",mcYear,"-",week,"--optim-nb-1"),
+                        type = "constraint",
+                        name = "HydroPower",
+                        min = rhs,
+                        max = rhs,
+                        step = "0.1") %>%
+          dplyr::select(c("grid_id","problem_name","type","name","area","min","max","step")) %>%
+          rbind(grid)
+      } else {
+        grid = data.frame(grid_id = 0,
+                          problem_name = "all",
+                          type = "constraint",
+                          name = "HydroPower",
+                          area = a,
+                          min = 0,
+                          max = 1,
+                          step = 1/(sim_number-1)) %>%
+          rbind(grid)
+      }
+
+    }
+
+    body = list()
+    tc <- textConnection("out", "w")
+    write.csv(grid, tc, row.names = FALSE, quote = FALSE)
+    close(tc)
+
+    body$file <- paste(out, collapse = "\n")
+    antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
+                                                   "/raw?path=user%2Fwater_values%2Fgrid.csv&create_missing=true&resource_type=file"),
+                         body=body)
+
+    # Start the simulations
+
+    name_sim = paste0(prefix,"_grid_cost_function_",node)
+
+    res = antaresEditObject::runSimulation(name = name_sim,
+                                           opts=opts,
+                                           xpansion = list(enabled=T),
+                                           other_options = "grid_cost_function")
+
+    assertthat::assert_that(res$status=="success",msg = "Simulation failed.")
+
+    # Extract results
+    export_res = antaresRead::api_get(opts = opts,
+                                      endpoint = paste0(opts$study_id,
+                                                        "/outputs/",res$output_id,
+                                                        "/export"))
+    max_try <- 5
+    i <- 0
+
+    repeat {
+      i <- i + 1
+      res <- try({download_res = antaresRead::api_get(opts = opts,
+                                                      endpoint = export_res$file$id,
+                                                      default_endpoint = "v1/downloads")},
+                 silent = TRUE)
+      if (!inherits(res, "try-error") || i >= max_try) break
+      Sys.sleep(10)
+    }
+
+    assertthat::assert_that(i<max_try, msg = "Too much attempts to download results.")
+
+    zipfile <- tempfile(fileext = ".zip")
+    my_tmpdir <- tempfile("my_zip_files")
+    dir.create(my_tmpdir)
+    writeBin(download_res, zipfile)
+    unzip(zipfile, files = "gridPointsValues_0.csv", exdir = my_tmpdir)
+
+    reward = read.csv(paste0(my_tmpdir,"/gridPointsValues_0.csv"))
+
+    unlink(zipfile)
+    on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)
+
+    reward = reward %>%
+      dplyr::mutate(timeId = .data$week,
+                    mcYear = .data$scenario,
+                    control = .data[[paste0(node,"_RHSValue")]],
+                    reward = -cost) %>%
+      dplyr::select(c("timeId","mcYear","control","reward"))
+    assertthat::assert_that(sum(is.na(reward))==0)
+    reward_db = list()
+    reward_db$reward = reward
+  },
+  error = function(e) {
+    stop(e)
+  },
+  finally = {
+    for (j in seq_along(list_areas)){
+      area = list_areas[[j]]
+      restore_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
+                                        misc_gen = list_backup[[j]]$misc_gen)
+    }
+    antaresEditObject::writeHydroValues(node,
+                                        type = "maxpower",
+                                        data=max_hydro_daily,
+                                        opts = opts)
+    antaresEditObject::updateGeneralSettings(year.by.year = year_by_year, opts=opts)
+    antaresEditObject::updateOutputSettings(synthesis = synthesis, storenewset = storenewset, opts=opts)
   }
-
-
-  {start.time <- Sys.time()
-
-    max_hydro <- get_max_hydro(area,opts,timeStep = "hourly")
-    controls_reward_calculation <- constraint_generator_flex(area=area,
-                                                        nb_disc_stock = 51,
-                                                        pumping = list_pumping[[area]],
-                                                        efficiency = list_efficiency[[area]],
-                                                        opts=opts,mcyears=mcyears)
-    if (("mcYear" %in% names(constraint_values))&!("mcYear" %in% names(controls_reward_calculation))){
-      controls_reward_calculation <- dplyr::cross_join(controls_reward_calculation,
-                                                       data.frame(mcYear=mcyears))
-    }
-
-    area_here <- area
-
-    constraint_values <- constraint_values %>%
-      dplyr::filter(.data$area==area_here) %>%
-      dplyr::select(-c("area"))
-
-    reward_db <- get_Reward(simulation_values = constraint_values,
-                            simulation_names = simulation_res$simulation_names,
-                            opts=opts,
-                            area = area, mcyears = mcyears,
-                            method_old = F, max_hydro_hourly = max_hydro,
-                            possible_controls =controls_reward_calculation,
-                            expansion = T,
-                            efficiency = list_efficiency[[area]])#$reward
-    end.time <- Sys.time()
-    reward_time <- end.time - start.time
-    print(reward_time)}
-
-  antaresEditObject::writeHydroValues(area,
-                                      type = "maxpower",
-                                      data=max_hydro_daily,
-                                      opts = opts)
+  )
 
   return(reward_db)
 }
@@ -896,34 +943,4 @@ total_cost_parallel_version <- function(candidate_index,
                           c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost,total_cost_can$op_cost))
   colnames(new_grid_costs) <- c("Storage", candidates_types$name, "Total_cost", "op_cost")
   return(new_grid_costs)
-}
-
-constraint_generator_flex <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL,opts,max_hydro_weekly=NULL,
-                                 mcyears=NULL){
-
-  area = tolower(area)
-  if(is.null(efficiency)){
-    efficiency <- getPumpEfficiency(area,opts=opts)
-  }
-
-  if(is.null(max_hydro_weekly)){
-    max_hydro_weekly <- get_max_hydro(area,opts,timeStep = "weekly")
-  }
-
-  weeks <- dplyr::distinct(max_hydro_weekly,.data$timeId)$timeId
-  df_constraint <- data.frame(week=weeks)
-  df_constraint$u <- sapply(df_constraint$week,
-                            FUN = function(w) constraint_week(pumping,
-                                                              efficiency,
-                                                              nb_disc_stock,Inf,
-                                                              dplyr::filter(max_hydro_weekly,
-                                                                            .data$timeId==w),w),
-                            simplify = FALSE)
-
-  df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
-  df_constraint <- df_constraint %>%
-    tidyr::pivot_longer(cols=2:length(df_constraint),names_to="sim",values_to="u") %>%
-    dplyr::arrange(.data$week,.data$u)
-
-  return(df_constraint)
 }

@@ -15,15 +15,12 @@ MultiStock_H2_Investment_reward_compute_once(
   penalty_final_level = 5000,
   opts,
   mc_years_optim,
-  path_to_antares,
   cvar = 1,
   storage_annual_cost,
-  launch_sims = T,
   nb_sims = 51,
   parallelprocess = F,
   nb_sockets = 0,
   unspil_cost = 3000,
-  edit_study = F,
   file_intermediate_results,
   back_to_first_node = F
 )
@@ -55,13 +52,9 @@ Zone is a character containing the name of the area where to propose the candida
 
 \item{mc_years_optim}{Vector of integers. Monte Carlo years to perform the optimization.}
 
-\item{path_to_antares}{Character containing the Antares Solver path, argument passed to \code{\link[antaresEditObject]{runSimulation}}.}
-
 \item{cvar}{Numeric in [0,1]. The probability used in cvar algorithm.}
 
 \item{storage_annual_cost}{Numeric. Annual cost of storage in eur/MWh.}
-
-\item{launch_sims}{Boolean. True to launch simulations at each iterations. False if simulations already run.}
 
 \item{nb_sims}{Integer. Number of simulations to launch to evaluate reward.}
 
@@ -70,8 +63,6 @@ Zone is a character containing the name of the area where to propose the candida
 \item{nb_sockets}{Integer. Number of sockets for parallel processing}
 
 \item{unspil_cost}{Numeric. Unspilled energy cost in eur/MW for all concerned areas.}
-
-\item{edit_study}{Boolean. True to edit study with optimal candidates.}
 
 \item{file_intermediate_results}{Character. Local path to save intermediate results.}
 

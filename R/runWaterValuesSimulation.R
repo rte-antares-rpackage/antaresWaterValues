@@ -97,7 +97,7 @@ runWaterValuesSimulation <- function(area=NULL,
       backup = backup
     )
 
-    opts <- setWaterValuesDistrict(opts)
+    opts <- setWaterValuesDistrict(opts, c(area))
 
     # Start the simulations
 
@@ -152,7 +152,7 @@ runWaterValuesSimulation <- function(area=NULL,
     stop(e)
   },
   finally = {
-    resetStudy(opts,area,pumping,backup)
+    opts = resetStudy(opts,area,pumping,backup)
     clear_scenario_builder(opts)}
   )
 
@@ -269,6 +269,8 @@ resetStudy <- function(opts, area, pumping,
   restoreHydroStorage(area = area, opts = opts, data=backup$hydro_storage)
   restore_fictive_fatal_prod_demand(area = area, opts = opts, load = backup$load,
                                     misc_gen = backup$misc_gen)
+
+  return(opts)
 }
 
 #' Run Antares simulations in order to compute water values for multiple areas
@@ -344,7 +346,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
 
     }
 
-    opts <- setWaterValuesDistrict(opts)
+    opts <- setWaterValuesDistrict(opts, list_areas)
 
     # Start the simulations
 
@@ -406,7 +408,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
   finally = {
     for (j in seq_along(list_areas)){
       area = list_areas[[j]]
-      resetStudy(opts,area,list_pumping[area],list_backup[[j]])
+      opts = resetStudy(opts,area,list_pumping[area],list_backup[[j]])
     }
     clear_scenario_builder(opts)
   }

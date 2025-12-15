@@ -43,10 +43,16 @@ resetHydroStorage <- function(area, opts) {
                                   type="hydroSTOR",
                                   opts=opts)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
-  hydro_ini$reservoir[area]=FALSE
+  hydro_ini$reservoir[area]=F
+  if (area %in% names(hydro_ini[["use water"]])){
+    hydro_ini[["use water"]][[area]] <- FALSE
+  }
+  if (area %in% names(hydro_ini[["use heuristic"]])){
+    hydro_ini[["use heuristic"]][[area]] <- TRUE
+  }
   antaresEditObject::writeIni(hydro_ini,
                               file.path("input","hydro","hydro"),
-                              overwrite=TRUE,
+                              overwrite=T,
                               opts=opts)
 }
 

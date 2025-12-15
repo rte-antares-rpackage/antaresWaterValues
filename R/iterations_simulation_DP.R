@@ -17,8 +17,6 @@
 #' @param states_step_ratio Discretization ratio to generate steps levels
 #' between the reservoir capacity and zero
 #' @param cvar_value from 0 to 1. the probability used in cvar method
-#' @param force_final_level Binary. Whether final level should be constrained
-#' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #' @param df_previous_cut Data frame containing previous estimations of cuts
 #'
@@ -30,8 +28,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      path_solver,
                                                      states_step_ratio=1/50,
                                                      cvar_value = 1,
-                                                     force_final_level = FALSE,
-                                                     final_level = NULL,
                                                      penalty_final_level = NULL,
                                                      df_previous_cut = NULL){
 
@@ -80,6 +76,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   controls <- tidyr::drop_na(controls) %>%
     dplyr::cross_join(data.frame(mcYear=mcyears))
 
+  final_level = get_initial_level(area,opts)
+
   if (!is.null(df_previous_cut)){
     controls = df_previous_cut %>%
       dplyr::select(c("week","mcYear","u")) %>%
@@ -110,7 +108,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                  max_hydro_weekly = max_hydro_weekly,
                                  niveau_max=niveau_max,
                                  cvar_value = cvar_value,
-                                 force_final_level = force_final_level,
                                  final_level = final_level,
                                  penalty_final_level = penalty_final_level)
 
@@ -143,7 +140,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
         backup = backup
       )
 
-  opts <- setWaterValuesDistrict(opts)
+  opts <- setWaterValuesDistrict(opts, c(area))
 
   i <- 1
   gap <- 1
@@ -153,7 +150,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   while(gap > 1e-3 && i <= nb_itr){
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,reward=reward,controls=controls,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                              controls=controls,
                               niveau_max = niveau_max,df_levels = df_levels,
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
@@ -228,7 +226,6 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                  max_hydro_weekly = max_hydro_weekly,
                                  niveau_max=niveau_max,
                                  cvar_value = cvar_value,
-                                 force_final_level = force_final_level,
                                  final_level = final_level,
                                  penalty_final_level = penalty_final_level)
 
@@ -252,7 +249,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   }
   },
   finally = {
-    resetStudy(opts,area,pumping,backup)
+    opts = resetStudy(opts,area,pumping,backup)
     clear_scenario_builder(opts)}
   )
 
@@ -380,7 +377,6 @@ updateReward <- function(opts,pumping,controls,max_hydro_hourly,
 #' @param cvar_value from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which cvar_value all bellman values are equal or
 #' less to it. (quantile(cvar_value))
-#' @param force_final_level Binary. Whether final level should be constrained
 #' @param final_level Final level (in percent between 0 and 100) if final level is constrained but different from initial level
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #'
@@ -390,8 +386,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,opts,
                               penalty_low,penalty_high,inflow,niveau_max,
                               max_hydro_weekly,
                               cvar_value = 1,
-                              force_final_level = FALSE,
-                              final_level = NULL,
+                              final_level,
                               penalty_final_level = NULL){
 
   reward <- reward %>%
@@ -422,7 +417,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,opts,
     inflow = inflow,
     reservoir_capacity = niveau_max,
     max_hydro_weekly = max_hydro_weekly,
-    force_final_level = force_final_level,
+    force_final_level = T,
     final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level
@@ -603,9 +598,9 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
 #' @param cvar_value from 0 to 1. the probability used in quantile method
 #' to determine a bellman value which cvar_value all bellman values are equal or
 #' less to it. (quantile(cvar_value))
-#' @param force_final_level Binary. Whether final level should be constrained
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #' @param initial_traj Initial trajectory (used for other storages)
+#' @param list_areas_to_compute Vector of character. Areas for which to compute Bellman values. If \code{NULL}, all areas in \code{list_areas} are used.
 #' @inheritParams runWaterValuesSimulationMultiStock
 #' @inheritParams calculateBellmanWithIterativeSimulations
 #'
@@ -617,10 +612,10 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                path_solver,
                                                                states_step_ratio=1/50,
                                                                cvar_value = 1,
-                                                               force_final_level = FALSE,
                                                                penalty_final_level = NULL,
                                                                initial_traj = NULL,
-                                                               df_previous_cut = NULL){
+                                                               df_previous_cut = NULL,
+                                                               list_areas_to_compute = NULL){
 
   # Initialization
   df_watervalues <- data.frame()
@@ -701,11 +696,15 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     }
   }
 
-  opts <- setWaterValuesDistrict(opts)
+  opts <- setWaterValuesDistrict(opts, list_areas)
+
+  if (is.null(list_areas_to_compute)){
+    list_areas_to_compute = list_areas
+  }
 
   tryCatch({
 
-  for (area in list_areas){
+  for (area in list_areas_to_compute){
     a = area
     pumping <- list_pumping[area]
     pump_eff <- list_efficiency[area]
@@ -760,7 +759,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                   max_hydro_weekly = max_hydro_weekly,
                                   niveau_max=list_capacity[[area]],
                                   cvar_value = cvar_value,
-                                  force_final_level = force_final_level,
                                   final_level = final_level,
                                   penalty_final_level = penalty_final_level)
 
@@ -788,7 +786,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         }
 
         levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                                  mcyears=mcyears,reward=reward,controls=controls,
+                                  mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                                  controls=controls,
                                   niveau_max = list_capacity[[area]],df_levels = df_levels_area,
                                   penalty_low = penalty_low, penalty_high = penalty_high,
                                   penalty_final_level = penalty_final_level, final_level = final_level,
@@ -855,7 +854,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         o <- updateReward(opts=opts,pumping=pumping,
                                    controls=controls,max_hydro_hourly=max_hydro,mcyears=mcyears,
                                    area=area,pump_eff=pump_eff,df_rewards = df_rewards,
-                         u0=dplyr::filter(constraint_values,.data$area==a),i=i,
+                         u0=dplyr::select(dplyr::filter(constraint_values,.data$area==a),-c("area")),i=i,
                          df_current_cuts = df_current_cuts,
                          df_previous_cut = df_previous_cut)
         df_rewards = o$df_rewards
@@ -877,7 +876,6 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                      max_hydro_weekly = max_hydro_weekly,
                                      niveau_max=list_capacity[[area]],
                                      cvar_value = cvar_value,
-                                     force_final_level = force_final_level,
                                      final_level = final_level,
                                      penalty_final_level = penalty_final_level)
 
@@ -902,7 +900,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       }
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,reward=reward,controls=controls,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                              controls=controls,
                               niveau_max = list_capacity[[area]],df_levels = dplyr::filter(df_levels,.data$area==a),
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
@@ -926,7 +925,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   finally = {
     for (j in seq_along(list_areas)){
       area = list_areas[[j]]
-      resetStudy(opts,area,list_pumping[area],list_backup[[j]])
+      opts = resetStudy(opts,area,list_pumping[area],list_backup[[j]])
     }
     clear_scenario_builder(opts)
   })

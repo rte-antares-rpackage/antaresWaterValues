@@ -236,9 +236,6 @@ setupGeneralParameters <- function(opts,
   }
   nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
 
-  assertthat::assert_that(!("water values district" %in% opts$districtList), msg = "Water values district already exists.")
-  assertthat::assert_that(sum(stringr::str_detect(opts$districtList,"district_balance"))==0, msg = "Balance district already exists.")
-
   return(list(simulation_name,file_name,constraint_values,nb_disc_stock))
 }
 

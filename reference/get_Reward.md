@@ -21,7 +21,7 @@ get_Reward(
   mcyears = "all",
   area,
   efficiency = NULL,
-  expansion = F
+  expansion = FALSE
 )
 ```
 
@@ -109,11 +109,3 @@ get_Reward(
   [`get_local_reward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_local_reward.md)
   and
   [`reward_offset()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/reward_offset.md).
-
-- simulation_names:
-
-  See arguments.
-
-- simulation_values:
-
-  See arguments.

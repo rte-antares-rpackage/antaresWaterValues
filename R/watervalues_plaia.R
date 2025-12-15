@@ -140,19 +140,19 @@ getBellmanValuesWithPlaia <- function(opts,
       Sys.sleep(10)
     }
 
-    if (i==max_try){ assertthat::assert_that(1==0)}
+    assertthat::assert_that(i<max_try, msg = "Too much attempts to download results.")
 
     zipfile <- tempfile(fileext = ".zip")
-    tmpdir  <- tempdir()
+    my_tmpdir <- tempfile("my_zip_files")
     writeBin(download_res, zipfile)
     for (j in seq_along(list_areas)){
-      utils::unzip(zipfile, files = paste0("gridPointsValues_",j,".csv"), exdir = tmpdir)
-      list_watervalues[[list_areas[[j]]]] = utils::read.csv(paste0(tmpdir,"/gridPointsValues_",j,".csv"))
+      utils::unzip(zipfile, files = paste0("gridPointsValues_",j,".csv"), exdir = my_tmpdir)
+      list_watervalues[[list_areas[[j]]]] = utils::read.csv(paste0(my_tmpdir,"/gridPointsValues_",j,".csv"))
     }
 
 
     unlink(zipfile)
-    unlink(tmpdir, recursive = TRUE)
+    on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)
   },
   error = function(e) {
     stop(e)

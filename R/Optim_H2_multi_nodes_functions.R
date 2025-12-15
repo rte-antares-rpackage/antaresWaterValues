@@ -313,44 +313,60 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       # store rewards and costs in a file
       save(output_node,file=file_intermediate_results)
 
-      # add best clusters to node in the study and edit storage size
-      l_old_clusters <- c()
-      l_read_clusters <- antaresRead::readClusterDesc(opts=opts)
-      l_all_clusters <- as.character(l_read_clusters$cluster)
+      edit_study_with_results(opts,
+                              node,
+                              output_node,
+                              candidates_types)
 
-      antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = output_node[[node]][["best"]][["Storage"]]), opts = opts)
-
-      antaresEditObject::writeWaterValues(area = node, data = output_node[[node]]$watervalues, opts=opts)
-
-      for (i in 1:length(l_all_clusters)) {if (l_read_clusters$area[i]==node) {l_old_clusters <- c(l_old_clusters, l_all_clusters[i])}}
-
-      for (can in 1:length(candidates_types$index) ){
-        power <- output_node[[node]][["best"]][[candidates_types$name[can]]]
-        ts_avail <- matrix(power, nrow = 8760, ncol = 1)
-
-        if (paste0(node, "_", candidates_types$name[can]) %in% l_old_clusters) {
-          old_power <- antaresRead::readClusterDesc(opts) %>%
-            dplyr::filter(.data$cluster == paste0(node, "_", candidates_types$name[can])) %>%
-            dplyr::pull(c("nominalcapacity"))
-          antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], nominalcapacity = old_power + power, time_series = ts_avail)
-        } else {
-          antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can],
-                                           unitcount = 1L, nominalcapacity = power,
-                                           marginal_cost = as.integer(candidates_types$Marg_price[can]),
-                                           market_bid_cost = as.integer(candidates_types$Marg_price[can]), must_run = T,
-                                           time_series = ts_avail)
-          if (candidates_types$type[can] == "cluster flexible") {
-            antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], must_run = F)
-          }
-        }
-      }
     }
   }
   return(output_node)
 }
 
 
+#' Edit the study with the result from investment
+#'
+#' @param node Character. Area for which to update data.
+#' @inheritParams MultiStock_H2_Investment_reward_compute_once
+#' @param output_node List. Output of \code{MultiStock_H2_Investment_reward_compute_once}.
+#'
+#' @export
+edit_study_with_results <- function(opts,
+                                    node,
+                                    output_node,
+                                    candidates_types){
+  # add best clusters to node in the study and edit storage size
+  l_old_clusters <- c()
+  l_read_clusters <- antaresRead::readClusterDesc(opts=opts)
+  l_all_clusters <- as.character(l_read_clusters$cluster)
 
+  antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = output_node[[node]][["best"]][["Storage"]]), opts = opts)
+
+  antaresEditObject::writeWaterValues(area = node, data = output_node[[node]]$watervalues, opts=opts)
+
+  for (i in 1:length(l_all_clusters)) {if (l_read_clusters$area[i]==node) {l_old_clusters <- c(l_old_clusters, l_all_clusters[i])}}
+
+  for (can in 1:length(candidates_types$index) ){
+    power <- output_node[[node]][["best"]][[candidates_types$name[can]]]
+    ts_avail <- matrix(power, nrow = 8760, ncol = 1)
+
+    if (paste0(node, "_", candidates_types$name[can]) %in% l_old_clusters) {
+      old_power <- antaresRead::readClusterDesc(opts) %>%
+        dplyr::filter(.data$cluster == paste0(node, "_", candidates_types$name[can])) %>%
+        dplyr::pull(c("nominalcapacity"))
+      antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], nominalcapacity = power, time_series = ts_avail)
+    } else {
+      antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can],
+                                       unitcount = 1L, nominalcapacity = power,
+                                       marginal_cost = as.integer(candidates_types$Marg_price[can]),
+                                       market_bid_cost = as.integer(candidates_types$Marg_price[can]), must_run = T,
+                                       time_series = ts_avail)
+      if (candidates_types$type[can] == "cluster flexible") {
+        antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], must_run = F)
+      }
+    }
+  }
+}
 
 
 #' Compute the list of cluster candidates to study following their bounds

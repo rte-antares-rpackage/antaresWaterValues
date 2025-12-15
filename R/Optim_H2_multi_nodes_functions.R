@@ -498,19 +498,15 @@ calculateRewardsSimulations <- function(node,
 
     }
 
-    if(!is_api_study(opts)){
-      write.csv(rows,file=paste0(study_path,"/grid.csv"),row.names = F, quote = F)
-    } else {
-      body = list()
-      tc <- textConnection("out", "w")
-      write.csv(grid, tc, row.names = FALSE, quote = FALSE)
-      close(tc)
+    body = list()
+    tc <- textConnection("out", "w")
+    write.csv(grid, tc, row.names = FALSE, quote = FALSE)
+    close(tc)
 
-      body$file <- paste(out, collapse = "\n")
-      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-                                                     "/raw?path=user%2Fgrid.csv&create_missing=true&resource_type=file"),
-                           body=body)
-    }
+    body$file <- paste(out, collapse = "\n")
+    antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
+                                                   "/raw?path=user%2Fwater_values%2Fgrid.csv&create_missing=true&resource_type=file"),
+                         body=body)
 
     # Start the simulations
 
@@ -544,14 +540,15 @@ calculateRewardsSimulations <- function(node,
     if (i==max_try){ assertthat::assert_that(1==0)}
 
     zipfile <- tempfile(fileext = ".zip")
-    tmpdir  <- tempdir()
+    my_tmpdir <- tempfile("my_zip_files")
+    dir.create(my_tmpdir)
     writeBin(download_res, zipfile)
-    unzip(zipfile, files = "gridPointsValues_0.csv", exdir = tmpdir)
+    unzip(zipfile, files = "gridPointsValues_0.csv", exdir = my_tmpdir)
 
-    reward = read.csv(paste0(tmpdir,"/gridPointsValues_0.csv"))
+    reward = read.csv(paste0(my_tmpdir,"/gridPointsValues_0.csv"))
 
     unlink(zipfile)
-    unlink(tmpdir, recursive = TRUE)
+    on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)
 
     reward = reward %>%
       dplyr::mutate(timeId = .data$week,

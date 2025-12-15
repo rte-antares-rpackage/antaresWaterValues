@@ -538,7 +538,7 @@ calculateRewardsSimulations <- function(node,
       Sys.sleep(10)
     }
 
-    if (i==max_try){ assertthat::assert_that(1==0)}
+    assertthat::assert_that(i<max_try, msg = "Too much attempts to download results.")
 
     zipfile <- tempfile(fileext = ".zip")
     my_tmpdir <- tempfile("my_zip_files")

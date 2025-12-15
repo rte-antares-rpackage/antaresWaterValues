@@ -12,11 +12,10 @@ build_data_watervalues(
   reservoir,
   penalty_level_high,
   penalty_level_low,
-  force_final_level = FALSE,
+  force_final_level = F,
   penalty_final_level_low = 0,
   penalty_final_level_high = 0,
-  final_level = NULL,
-  plot_watervalues = T
+  final_level = NULL
 )
 ```
 
@@ -57,10 +56,6 @@ build_data_watervalues(
 - final_level:
 
   Double. Final level to consider
-
-- plot_watervalues:
-
-  Binary. Plot watervalues or not ?
 
 ## Value
 

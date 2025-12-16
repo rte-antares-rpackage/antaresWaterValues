@@ -116,6 +116,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     candidates_types <- candidates_types_gen%>% dplyr::filter(.data$Zone==node)
 
     grid_costs <- data.frame(matrix(ncol = 3+length(candidates_types$index), nrow=0))
+    colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
 
     storage_bounds <- storage_bounds_init
 
@@ -162,22 +163,25 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
         # compute grid of the other candidates
         new_candidate_grid <- grid_other_candidates(candidates_data)
 
-        previous_candidate = as.matrix(grid_costs)[,2:(ncol(grid_costs)-2)]
-        to_remove = rep(F,length(new_candidate_grid))
         # add fixed part of flexible cluster to candidates
         for (i in 1:length(new_candidate_grid)) {
           for (j in 1:length(candidates_types$index)) {
             if (candidates_types$Part_fixe[j] > 0) {
               new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
           }
-          if (all(new_candidate_grid[[i]] %in% previous_candidate)){
-            to_remove[[i]] = TRUE
-          }
         }
-        new_candidate_grid = new_candidate_grid[!to_remove]
 
         # loop on the storage candidates
         for (storage_vol in new_storage_points) {
+
+          previous_candidate = as.matrix(dplyr::filter(grid_costs, .data$Storage == storage_vol))[,2:(ncol(grid_costs)-2)]
+          to_remove = rep(F,length(new_candidate_grid))
+          for (i in 1:length(new_candidate_grid)) {
+            if (all(new_candidate_grid[[i]] %in% previous_candidate)){
+              to_remove[[i]] = TRUE
+            }
+          }
+          new_candidate_grid_sto = new_candidate_grid[!to_remove]
 
           if (parallelprocess == T) {
             # with parallel processing
@@ -210,13 +214,13 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                           envir = asNamespace("antaresWaterValues"))
 
 
-            list_index <- c(seq(1, length(new_candidate_grid)))
+            list_index <- c(seq(1, length(new_candidate_grid_sto)))
             print("begin parallel processing")
             print(storage_vol)
             # compute WV with parallel processing
             new_grid_costs <- parallel::parLapply(cl, list_index, function(x) {
               total_cost_parallel_version(x,
-                                          new_candidate_grid,
+                                          new_candidate_grid_sto,
                                           node,
                                           mc_years_optim,
                                           candidates_types,
@@ -238,11 +242,11 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
           } else {
             # without parallel processing
             # loop on the other candidates
-            for (candidate_index in 1:length(new_candidate_grid)) {
+            for (candidate_index in 1:length(new_candidate_grid_sto)) {
               # calculate total cost
               total_cost_can <- total_cost_loop(area = node,
                                                 mc_years = mc_years_optim,
-                                                candidate_pool = new_candidate_grid[[candidate_index]],
+                                                candidate_pool = new_candidate_grid_sto[[candidate_index]],
                                                 candidates_types = candidates_types,
                                                 storage_vol = storage_vol,
                                                 df_reward = reward_db,
@@ -256,17 +260,16 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                 max_hydro_weekly = list_max_hydro_weekly[[node]],
                                                 inflow = list_inflow[[node]])
               print(storage_vol)
-              print(new_candidate_grid[[candidate_index]])
+              print(new_candidate_grid_sto[[candidate_index]])
               print(total_cost_can$total_cost)
               print(total_cost_can$op_cost)
               grid_costs <- rbind(grid_costs,
-                                  c(storage_vol, new_candidate_grid[[candidate_index]], total_cost_can$total_cost, total_cost_can$op_cost))
+                                  c(storage_vol, new_candidate_grid_sto[[candidate_index]], total_cost_can$total_cost, total_cost_can$op_cost))
             }
           }
         }
 
         # find the best candidate at this iteration
-        colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
         best_candidates <- max_candidate(grid_costs)
 
         # update bounds

@@ -85,9 +85,23 @@ build_all_possible_decisions <- function(Data_week,
       overflow = 0
     )
 
-  # 5) concat + filtre final
+  # 5) state max
+  setDT(Data_week)
 
-  all_controls = dplyr::bind_rows(control_possible_raw, control_min, control_max)%>%
+  delta <- Data_week[, states + hydroStorage - niveau_max]
+
+  state_max <- Data_week[, .(
+    years,
+    states,
+    hydroStorage,
+    next_state = niveau_max,
+    control  = pmin(delta, E_max),
+    overflow = pmax(delta - E_max, 0)
+  )]
+
+  # 6) concat + filtre final
+
+  all_controls = dplyr::bind_rows(control_possible_raw, control_min, control_max,state_max)%>%
     dplyr::filter(next_state >= 0)
   setDT(all_controls)
   interp_next_value <- approxfun(df_next_week$next_state, df_next_week$next_value)

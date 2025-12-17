@@ -7,7 +7,7 @@
 MultiStock_H2_Investment_reward_compute_once(
   areas_invest,
   max_ite,
-  storage_bounds,
+  list_storage_bounds,
   storage_points_nb,
   candidates_types_gen,
   penalty_low = 5000,
@@ -31,7 +31,7 @@ MultiStock_H2_Investment_reward_compute_once(
 
 \item{max_ite}{Integer. Maximum number of iterations for each area.}
 
-\item{storage_bounds}{Vector of integers of length 2, with the form (min, max).}
+\item{list_storage_bounds}{List of vectors of integers of length 2, with the form (min, max) for each area.}
 
 \item{storage_points_nb}{Integer. Number of storage points to test at each iteration.
 Must be >3 to update bounds at each iterations and approach solution.}

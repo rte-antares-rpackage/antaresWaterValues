@@ -4,7 +4,7 @@
 #'
 #' @param areas_invest Vector of characters of the names of areas to optimize.
 #' @param max_ite Integer. Maximum number of iterations for each area.
-#' @param storage_bounds Vector of integers of length 2, with the form (min, max).
+#' @param list_storage_bounds List of vectors of integers of length 2, with the form (min, max) for each area.
 #' @param storage_points_nb Integer. Number of storage points to test at each iteration.
 #' Must be >3 to update bounds at each iterations and approach solution.
 #' @param candidates_types_gen Data_frame with column names : \code{c(index, name, type, TOTEX, Marg_price, Part_fixe, Prix_fixe,
@@ -33,7 +33,7 @@
 #' @export
 MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          max_ite,
-                                                         storage_bounds,
+                                                         list_storage_bounds,
                                                          storage_points_nb,
                                                          candidates_types_gen,
                                                          penalty_low=5000,
@@ -52,8 +52,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          list_ratio_max_hydro) {
 
   # initialization
-  storage_bounds_init <- storage_bounds
-
   list_efficiency <- c()
   for (i in 1:length(areas_invest)){
     list_efficiency <- c(list_efficiency,getPumpEfficiency(area=areas_invest[i],opts=opts))
@@ -118,7 +116,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     if (("optimal_max_hydro" %in% names(output_node[[a]]))){
       optimal_max_hydro[[a]] = output_node[[a]]$optimal_max_hydro
     } else {
-      optimal_max_hydro[[a]] = floor(list_ratio_max_hydro[[a]]*mean(storage_bounds))
+      optimal_max_hydro[[a]] = floor(list_ratio_max_hydro[[a]]*mean(list_storage_bounds[[node]]))
     }
   }
 
@@ -131,7 +129,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     grid_costs <- data.frame(matrix(ncol = 3+length(candidates_types$index), nrow=0))
     colnames(grid_costs) <- c("Storage", candidates_types$name, "Total_cost","op_cost")
 
-    storage_bounds <- storage_bounds_init
+    storage_bounds <- list_storage_bounds[[node]]
 
     candidates_data <- c()
     for (can in 1:length(candidates_types$index)) {
@@ -325,7 +323,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       optimal_traj <- optimal_traj %>%
         dplyr::filter(.data$area != node) %>%
         rbind(res$optimal_traj)
-      optimal_max_hydro[[a]] = floor(list_ratio_max_hydro[[node]]*storage_vol)
+      optimal_max_hydro[[node]] = floor(list_ratio_max_hydro[[node]]*storage_vol)
 
       output_node[[node]]$optimal_max_hydro = floor(list_ratio_max_hydro[[node]]*storage_vol)
       output_node[[node]]$optimal_traj = res$optimal_traj
@@ -357,9 +355,7 @@ edit_study_with_results <- function(opts,
                                     output_node,
                                     candidates_types){
   # add best clusters to node in the study and edit storage size
-  l_old_clusters <- c()
-  l_read_clusters <- antaresRead::readClusterDesc(opts=opts)
-  l_all_clusters <- as.character(l_read_clusters$cluster)
+  l_all_clusters <- as.character(antaresRead::readClusterDesc(opts=opts)$cluster)
 
   antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = output_node[[node]][["best"]][["Storage"]]), opts = opts)
 
@@ -374,27 +370,20 @@ edit_study_with_results <- function(opts,
 
   antaresEditObject::writeWaterValues(area = node, data = output_node[[node]]$watervalues, opts=opts)
 
-  for (i in 1:length(l_all_clusters)) {if (l_read_clusters$area[i]==node) {l_old_clusters <- c(l_old_clusters, l_all_clusters[i])}}
-
   for (can in 1:length(candidates_types$index) ){
     power <- output_node[[node]][["best"]][[candidates_types$name[can]]]
     ts_avail <- matrix(power, nrow = 8760, ncol = 1)
 
-    if (paste0(node, "_", candidates_types$name[can]) %in% l_old_clusters) {
-      old_power <- antaresRead::readClusterDesc(opts) %>%
-        dplyr::filter(.data$cluster == paste0(node, "_", candidates_types$name[can])) %>%
-        dplyr::pull(c("nominalcapacity"))
-      antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], nominalcapacity = power, time_series = ts_avail)
-    } else {
-      antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can],
-                                       unitcount = 1L, nominalcapacity = power,
-                                       marginal_cost = as.integer(candidates_types$Marg_price[can]),
-                                       market_bid_cost = as.integer(candidates_types$Marg_price[can]), must_run = T,
-                                       time_series = ts_avail)
-      if (candidates_types$type[can] == "cluster flexible") {
-        antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can], must_run = F)
-      }
+    if (!(paste0(node, "_", candidates_types$name[can]) %in% l_all_clusters)){
+      antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can])
     }
+    antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can],
+                                   unitcount = 1L,
+                                   nominalcapacity = power,
+                                   time_series = ts_avail,
+                                   marginal_cost = candidates_types$Marg_price[can],
+                                   market_bid_cost = candidates_types$Marg_price[can],
+                                   must_run = (candidates_types$type[can] != "cluster flexible"))
   }
 }
 
@@ -468,6 +457,9 @@ calculateRewardsSimulations <- function(node,
     check_area_name(area = area, opts = opts)
 
     list_backup[[j]] = getBackupData(area,mcyears,opts)
+
+    assertthat::assert_that(ncol(list_backup[[j]]$hydro_storage)>=max(mcyears),
+    msg = paste0("There is no enough columns for data inflow for ",area))
 
     if (area==node){
       offset = sum(as.double(candidates_types$Borne_max))

@@ -353,12 +353,15 @@ convert_to_percent <- function(data){
 #'   \code{antaresRead::setSimulationPath}
 #' @param load Matrix with 8760 rows that contains backup load for the area
 #' @param misc_gen Matrix with 8760 rows that contains backup misc generation for the area
+#' @param max_hydro Double. Maximum of maximum generating and pumping capacity.
 #'
 #' @return An updated list containing various information about the simulation.
 #' @keywords internal
-add_fictive_fatal_prod_demand <- function(area, opts, load, misc_gen){
-  max_hydro <- get_max_hydro(area=area,opts=opts,timeStep="hourly") %>%
-    dplyr::select(-c("timeId")) %>% max()
+add_fictive_fatal_prod_demand <- function(area, opts, load, misc_gen, max_hydro = NULL){
+  if (is.null(max_hydro)){
+    max_hydro <- get_max_hydro(area=area,opts=opts,timeStep="hourly") %>%
+      dplyr::select(-c("timeId")) %>% max()
+  }
 
   antaresEditObject::writeInputTS(data = load + max_hydro, type="load", area=area, opts=opts)
 

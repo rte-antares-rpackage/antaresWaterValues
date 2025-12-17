@@ -26,6 +26,7 @@
 #' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
 #' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
 #' @param file_intermediate_results Character. Local path to save intermediate results.
+#' @param list_ratio_max_hydro List of vectors. For each area, give the maximum generating (turb)/pumping (pump) capacity ratio
 #'
 #' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
 #'
@@ -47,15 +48,14 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
                                                          file_intermediate_results,
-                                                         back_to_first_node = F) {
+                                                         back_to_first_node = F,
+                                                         list_ratio_max_hydro) {
 
   # initialization
   storage_bounds_init <- storage_bounds
 
   list_efficiency <- c()
-  list_max_hydro_weekly = list()
   for (i in 1:length(areas_invest)){
-    list_max_hydro_weekly[[areas_invest[[i]]]] = get_max_hydro(areas_invest[[i]],opts,timeStep = "weekly")
     list_efficiency <- c(list_efficiency,getPumpEfficiency(area=areas_invest[i],opts=opts))
   }
   names(list_efficiency) <- areas_invest
@@ -82,23 +82,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     areas_loop = c(areas_loop,areas_invest[[1]])
   }
 
-  optimal_traj = data.frame()
-  list_inflow = list()
-  for (j in 1:length(areas_invest)){
-    list_inflow[[areas_invest[[j]]]] =  get_inflow(area=areas_invest[[j]], opts=opts,mcyears=mc_years_optim)
-
-    optimal_traj <- list_inflow[[areas_invest[[j]]]] %>%
-      dplyr::filter(.data$tsId %in% mc_years_optim, .data$timeId<=52) %>%
-      dplyr::left_join(list_max_hydro_weekly[[areas_invest[[j]]]],by = dplyr::join_by("timeId")) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(hydroStorage = .data$hydroStorage) %>%
-      dplyr::select(c("timeId","tsId","hydroStorage")) %>%
-      dplyr::rename("u"="hydroStorage","week"="timeId","mcYear"="tsId") %>%
-      dplyr::mutate(area=areas_invest[[j]]) %>%
-      dplyr::ungroup() %>%
-      rbind(optimal_traj)
-  }
-
   if (file.exists(file_intermediate_results)){
     load(file = file_intermediate_results)
   } else {
@@ -106,12 +89,42 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   }
 
   for (node in areas_loop) {
-    time1 <- Sys.time()
-    nb_ite <- 0
-
     if (!(node %in% names(output_node))){
       output_node[[node]] <- list()
     }
+  }
+
+  optimal_traj = data.frame()
+  list_inflow = list()
+  for (j in 1:length(areas_invest)){
+    list_inflow[[areas_invest[[j]]]] =  get_inflow(area=areas_invest[[j]], opts=opts,mcyears=mc_years_optim)
+
+    if (("optimal_traj" %in% names(output_node[[areas_invest[[j]]]]))){
+      optimal_traj <- output_node[[areas_invest[[j]]]]$optimal_traj %>%
+        rbind(optimal_traj)
+    } else {
+      optimal_traj <- list_inflow[[areas_invest[[j]]]] %>%
+        dplyr::filter(.data$tsId %in% mc_years_optim, .data$timeId<=52) %>%
+        dplyr::select(c("timeId","tsId","hydroStorage")) %>%
+        dplyr::rename("u"="hydroStorage","week"="timeId","mcYear"="tsId") %>%
+        dplyr::mutate(area=areas_invest[[j]]) %>%
+        dplyr::ungroup() %>%
+        rbind(optimal_traj)
+    }
+  }
+
+  optimal_max_hydro = list()
+  for (a in names(list_ratio_max_hydro)){
+    if (("optimal_max_hydro" %in% names(output_node[[a]]))){
+      optimal_max_hydro[[a]] = output_node[[a]]$optimal_max_hydro
+    } else {
+      optimal_max_hydro[[a]] = floor(list_ratio_max_hydro[[a]]*mean(storage_bounds))
+    }
+  }
+
+  for (node in areas_loop) {
+    time1 <- Sys.time()
+    nb_ite <- 0
 
     candidates_types <- candidates_types_gen%>% dplyr::filter(.data$Zone==node)
 
@@ -129,6 +142,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     if ("reward" %in% names(output_node[[node]])){
       reward_db = output_node[[node]]$reward
     } else {
+      optimal_max_hydro[[node]] = floor(list_ratio_max_hydro[[node]]*storage_bounds[2])
       reward_db <-
         calculateRewardsSimulations(node =node,
                                     list_areas = areas_invest,
@@ -139,7 +153,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                     sim_number = nb_sims,
                                     optimal_traj = optimal_traj,
                                     candidates_types = candidates_types,
-                                    list_max_hydro_weekly = list_max_hydro_weekly)
+                                    list_max_hydro = optimal_max_hydro)
 
 
       # store results edited by area index
@@ -211,7 +225,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                           "get_initial_level",
                                           "get_initial_level_year_per_year",
                                           "getOptimalTrend"),
-                                          envir = asNamespace("antaresWaterValues"))
+                                    envir = asNamespace("antaresWaterValues"))
 
 
             list_index <- c(seq(1, length(new_candidate_grid_sto)))
@@ -233,10 +247,10 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                           penalty_final_level,
                                           storage_annual_cost,
                                           final_level,
-                                          list_max_hydro_weekly[[node]],
+                                          floor(list_ratio_max_hydro[[node]]*storage_vol)*168,
                                           list_inflow[[node]])
-            })
-            parallel::stopCluster(cl)
+              })
+              parallel::stopCluster(cl)
 
             for (cost in new_grid_costs) {grid_costs <- rbind(grid_costs, cost)}
           } else {
@@ -257,7 +271,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                 penalty_final_level = penalty_final_level,
                                                 storage_annual_cost = storage_annual_cost,
                                                 final_level = final_level,
-                                                max_hydro_weekly = list_max_hydro_weekly[[node]],
+                                                max_hydro_weekly = floor(list_ratio_max_hydro[[node]]*storage_vol)*168,
                                                 inflow = list_inflow[[node]])
               print(storage_vol)
               print(new_candidate_grid_sto[[candidate_index]])
@@ -290,11 +304,13 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
       print("Best for this node is :")
       print(output_node[[node]]$best)
 
+      storage_vol = unlist(dplyr::select(output_node[[node]]$best,c("Storage")),use.names = F)
+
       res = total_cost_loop(area = node,
                             mc_years = mc_years_optim,
                             candidate_pool = unlist(dplyr::select(output_node[[node]]$best,-c("Storage")),use.names = F),
                             candidates_types = candidates_types,
-                            storage_vol = unlist(dplyr::select(output_node[[node]]$best,c("Storage")),use.names = F),
+                            storage_vol = storage_vol,
                             df_reward = reward_db,
                             cvar = cvar,
                             opts = opts,
@@ -304,12 +320,14 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                             storage_annual_cost = storage_annual_cost,
                             final_level = final_level,
                             compute_optimal_traj = T,
-                            max_hydro_weekly = list_max_hydro_weekly[[node]],
+                            max_hydro_weekly = floor(list_ratio_max_hydro[[node]]*storage_vol)*168,
                             inflow = list_inflow[[node]])
       optimal_traj <- optimal_traj %>%
         dplyr::filter(.data$area != node) %>%
         rbind(res$optimal_traj)
+      optimal_max_hydro[[a]] = floor(list_ratio_max_hydro[[node]]*storage_vol)
 
+      output_node[[node]]$optimal_max_hydro = floor(list_ratio_max_hydro[[node]]*storage_vol)
       output_node[[node]]$optimal_traj = res$optimal_traj
       output_node[[node]]$watervalues = to_Antares_Format(res$watervalues)
 
@@ -344,6 +362,15 @@ edit_study_with_results <- function(opts,
   l_all_clusters <- as.character(l_read_clusters$cluster)
 
   antaresEditObject::writeIniHydro(area = node, params = c("reservoir capacity" = output_node[[node]][["best"]][["Storage"]]), opts = opts)
+
+  antaresEditObject::writeHydroValues(node,
+                                      type = "maxpower",
+                                      data=matrix(c(rep(output_node[[node]]$optimal_max_hydro[["turb"]],365),
+                                                    rep(24,365),
+                                                    rep(output_node[[node]]$optimal_max_hydro[["pump"]],365),
+                                                    rep(24,365)),
+                                                  ncol=4),
+                                      opts = opts)
 
   antaresEditObject::writeWaterValues(area = node, data = output_node[[node]]$watervalues, opts=opts)
 
@@ -418,7 +445,7 @@ grid_other_candidates <- function(candidates_data) {
 #' @param prefix Character. Prefix of the simulation.
 #' @param sim_number Integer. Number of simulations.
 #' @param optimal_traj Data frame containing optimal trajectory for all areas
-#' @param list_max_hydro_weekly List of data.frame. Generated by \code{get_max_hydro()} for each area.
+#' @param list_max_hydro List of vectors. Giving max generating capacity and pumping capacity for each area.
 #' @param candidates_types Data_frame with column names : c("index", "name", "type", "TOTEX", "Marg_price").
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
@@ -431,7 +458,7 @@ calculateRewardsSimulations <- function(node,
                                         sim_number = 5,
                                         optimal_traj,
                                         candidates_types,
-                                        list_max_hydro_weekly)  {
+                                        list_max_hydro)  {
 
   list_areas = tolower(list_areas)
 
@@ -441,9 +468,21 @@ calculateRewardsSimulations <- function(node,
     check_area_name(area = area, opts = opts)
 
     list_backup[[j]] = getBackupData(area,mcyears,opts)
-  }
 
-  max_hydro_daily = fread_antares(opts, file = file.path(opts$inputPath, "hydro", "common", "capacity", paste0("maxpower_",node,".txt")))
+    if (area==node){
+      offset = sum(as.double(candidates_types$Borne_max))
+    } else {
+      offset = 0
+    }
+    antaresEditObject::writeHydroValues(area,
+                                        type = "maxpower",
+                                        data=matrix(c(rep(list_max_hydro[[area]][["turb"]]+offset,365),
+                                                      rep(24,365),
+                                                      rep(list_max_hydro[[area]][["pump"]],365),
+                                                      rep(24,365)),
+                                                    ncol=4),
+                                        opts = opts)
+  }
 
   year_by_year = opts$parameters$general$`year-by-year`
   synthesis = opts$parameters$output$synthesis
@@ -477,23 +516,18 @@ calculateRewardsSimulations <- function(node,
       changeHydroManagement(opts=opts,watervalues = FALSE, heuristic = TRUE, area=area)
 
       add_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
-                                    misc_gen = list_backup[[j]]$misc_gen)
+                                    misc_gen = list_backup[[j]]$misc_gen,
+                                    max_hydro = max(list_max_hydro[[area]]))
     }
-
-    data = max_hydro_daily
-    data[,1] = data[,1] + sum(as.double(candidates_types$Borne_max))
-    antaresEditObject::writeHydroValues(node,
-                                        type = "maxpower",
-                                        data=data,
-                                        opts = opts)
 
     grid = data.frame()
     for (j in seq_along(list_areas)){
       a <- list_areas[[j]]
       if (a != node){
+        pump = list_max_hydro[[a]][["pump"]]*168
+        turb = list_max_hydro[[a]][["turb"]]*168
         grid = optimal_traj %>%
           dplyr::filter(.data$area == a) %>%
-          dplyr::left_join(list_max_hydro_weekly[[j]],by=c("week"="timeId")) %>%
           dplyr::mutate(rhs = (u+pump*list_efficiency[[j]])/(turb+pump*list_efficiency[[j]])) %>%
           dplyr::mutate(grid_id = 0,
                         problem_name = stringr::str_c("problem-",mcYear,"-",week,"--optim-nb-1"),
@@ -589,10 +623,6 @@ calculateRewardsSimulations <- function(node,
       restore_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
                                         misc_gen = list_backup[[j]]$misc_gen)
     }
-    antaresEditObject::writeHydroValues(node,
-                                        type = "maxpower",
-                                        data=max_hydro_daily,
-                                        opts = opts)
     antaresEditObject::updateGeneralSettings(year.by.year = year_by_year, opts=opts)
     antaresEditObject::updateOutputSettings(synthesis = synthesis, storenewset = storenewset, opts=opts)
   }
@@ -664,6 +694,10 @@ total_cost_loop <- function(area,
       }
     }
   }
+
+  max_hydro_weekly = data.frame(timeId = 1:52,
+                                turb = max_hydro_weekly[["turb"]],
+                                pump = max_hydro_weekly[["pump"]])
 
   # call grid_matrix to compute lb
   res <- Grid_Matrix(area = area,

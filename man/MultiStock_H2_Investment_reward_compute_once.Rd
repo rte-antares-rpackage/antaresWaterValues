@@ -22,7 +22,8 @@ MultiStock_H2_Investment_reward_compute_once(
   nb_sockets = 0,
   unspil_cost = 3000,
   file_intermediate_results,
-  back_to_first_node = F
+  back_to_first_node = F,
+  list_ratio_max_hydro
 )
 }
 \arguments{
@@ -67,6 +68,8 @@ Zone is a character containing the name of the area where to propose the candida
 \item{file_intermediate_results}{Character. Local path to save intermediate results.}
 
 \item{back_to_first_node}{Boolean. True to play again first node at the end. There is no possibility to go uninvest.}
+
+\item{list_ratio_max_hydro}{List of vectors. For each area, give the maximum generating (turb)/pumping (pump) capacity ratio}
 }
 \value{
 a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)

@@ -30,11 +30,6 @@ build_all_possible_decisions <- function(Data_week,
                                          niveau_max,
                                          overflow_cost,
                                          next_states = NULL) {
-
-  if (is.null(next_states)) {
-    next_states <- Data_week$states
-  }
-
   # 1) future_states
   df_next_week <- dplyr::distinct(data.frame(
     next_state = next_states,

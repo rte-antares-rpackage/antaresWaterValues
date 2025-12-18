@@ -22,21 +22,28 @@
   #' @param lvl_high Double. Upper rule curve for the considered week.
   #' @param lvl_low Double. Bottom rule curve for the considered week.
   #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
+  #' @param next_state possible states for next week
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @keywords internal
   Bellman <- function(Data_week,next_week_values_l,reward,E_max,P_max=0,
                       mcyears,cvar_value=1,niveau_max,
                       penalty_level_low,penalty_level_high,
-                      lvl_high,lvl_low,overflow_cost){
+                      lvl_high,lvl_low,overflow_cost,
+                      next_state=NULL){
 
     # Getting all possible transitions between a state for the current week and a state for the next week
     decision_space <- dplyr::select(reward,-c("timeId","reward"))
 
+    if (is.null(next_state)){
+      next_state = Data_week$states
+    }
+
     # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,
                                            mcyears,lvl_high,lvl_low,E_max,P_max,
-                                           next_week_values_l,niveau_max,overflow_cost)
+                                           next_week_values_l,niveau_max,overflow_cost,
+                                           next_states = next_state)
 
     # Reward interpolation
     setDT(df_SDP)
@@ -69,7 +76,7 @@
     # reorder df_SDP as Data_week and then replacing values for the week
     Data_week <- dplyr::left_join(Data_week[,-c("value_node","transition","transition_reward",
                                          "next_bellman_value")],df_SDP[,c("years","states","value_node","transition",
-                                                                          "transition_reward","next_bellman_value")],
+                                                                          "transition_reward","next_bellman_value","next_state")],
                            by=c("years","states"))
 
     if(cvar_value==1){

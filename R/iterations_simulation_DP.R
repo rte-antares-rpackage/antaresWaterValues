@@ -513,34 +513,28 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     pen_high <- ifelse(w<52,penalty_high,penalty_final_level)
     pen_low <- ifelse(w<52,penalty_low,penalty_final_level)
 
-    # Get interpolation function of rewards for each possible transition for each MC year
-    f_reward_year <- get_reward_interpolation(Data_week)
-
-    #Get interpolation function of next Bellman values
-    f_next_value <- get_bellman_values_interpolation(transition,transition$value_node,mcyears)
-
     decision_space <-  dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
       tidyr::unnest(c("reward_db")) %>%
       dplyr::select(c("years","control")) %>%
-      dplyr::rename("mcYear"="years","u"="control")
+      dplyr::rename("mcYear"="years","u"="control") %>%
+      dplyr::mutate(week = w)
 
-    df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
-                                           mcyears,l_high,l_low,
-                                           max_hydro_weekly$turb[w],
-                                           max_hydro_weekly$pump[w]*pump_eff,
-                                           transition$value_node,niveau_max,0,
-                                           next_states = transition$states)
+    control = Bellman(Data_week = Data_week,
+                      next_week_values_l = transition$value_node,
+                      decision_space = decision_space,
+                      E_max = max_hydro_weekly$turb[w],
+                      P_max = max_hydro_weekly$pump[w]*pump_eff,
+                      mcyears = mcyears,
+                      niveau_max = niveau_max,
+                      penalty_level_low = pen_low,
+                      penalty_level_high = pen_high,
+                      lvl_high = l_high,
+                      lvl_low = l_low,
+                      overflow_cost = 0,
+                      next_state = transition$states)
 
-    control <- df_SDP %>%
-      dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
-                    penalty_low = dplyr::if_else(.data$next_state<=l_low,pen_low*(.data$next_state-l_low),0),
-                    penalty_high = dplyr::if_else(.data$next_state>=l_high,pen_high*(l_high-.data$next_state),0),
-                    sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
-      dplyr::group_by(.data$years) %>%
-      dplyr::filter(.data$sum==max(.data$sum)) %>%
-      dplyr::slice_max(.data$next_state, with_ties=F) %>%
-      dplyr::ungroup() %>%
-      dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state","constraint"="control") %>%
+    control <- control %>%
+      dplyr::rename("week"="weeks","mcYear"="years","lev"="next_state","constraint"="transition") %>%
       dplyr::select(c("week","mcYear","lev","constraint","scenario")) %>%
       dplyr::distinct(.data$week,.data$mcYear,.keep_all = TRUE)
 

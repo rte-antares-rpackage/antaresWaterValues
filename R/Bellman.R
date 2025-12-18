@@ -23,13 +23,15 @@
   #' @param lvl_high Double. Upper rule curve for the considered week.
   #' @param lvl_low Double. Bottom rule curve for the considered week.
   #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
+  #' @param next_state possible states for next week
   #'
   #' @return a \code{data.table} like Data_week with the Bellman values
   #' @keywords internal
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       mcyears,cvar_value=1,niveau_max,
                       penalty_level_low,penalty_level_high,
-                      lvl_high,lvl_low,overflow_cost){
+                      lvl_high,lvl_low,overflow_cost,
+                      next_state=NULL){
 
     # Getting all possible transitions between a state for the current week and a state for the next week
     decision_space <- dplyr::select(decision_space,-c("week"))
@@ -38,16 +40,21 @@
         dplyr::cross_join(data.frame(mcYear=mcyears))
     }
 
+    if (is.null(next_state)){
+      next_state = Data_week$states
+    }
+
     # Get interpolation function of rewards for each possible transition for each MC year
     f_reward_year <- get_reward_interpolation(Data_week)
 
     #Get interpolation function of next Bellman values
-    f_next_value <- get_bellman_values_interpolation(Data_week,next_week_values_l,mcyears)
+    f_next_value <- get_bellman_values_interpolation(next_state,next_week_values_l,mcyears)
 
     # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,f_next_value,
                                            mcyears,lvl_high,lvl_low,E_max,P_max,
-                                           next_week_values_l,niveau_max,overflow_cost)
+                                           next_week_values_l,niveau_max,overflow_cost,
+                                           next_states = next_state)
 
     # For each transition (control), find the associated reward and for each next state,
     # calculate penalties for violating rule curves. Then, find for each MC year and each state,
@@ -70,7 +77,7 @@
     # reorder df_SDP as Data_week and then replacing values for the week
     Data_week <- dplyr::left_join(Data_week[,-c("value_node","transition","transition_reward",
                                          "next_bellman_value")],df_SDP[,c("years","states","value_node","transition",
-                                                                          "transition_reward","next_bellman_value")],
+                                                                          "transition_reward","next_bellman_value","next_state")],
                            by=c("years","states"))
 
     if(cvar_value==1){

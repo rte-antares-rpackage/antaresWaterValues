@@ -23,7 +23,6 @@
 #' @param parallelprocess Boolean. True to compute Water values with parallel processing.
 #' @param nb_sockets Integer. Number of sockets for parallel processing
 #' @param unspil_cost Numeric. Unspilled energy cost in eur/MW for all concerned areas.
-#' @param back_to_first_node Boolean. True to play again first node at the end. There is no possibility to go uninvest.
 #' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
 #' @param file_intermediate_results Character. Local path to save intermediate results.
 #' @param list_ratio_max_hydro List of vectors. For each area, give the maximum generating (turb)/pumping (pump) capacity ratio
@@ -48,7 +47,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
                                                          file_intermediate_results,
-                                                         back_to_first_node = F,
                                                          list_ratio_max_hydro) {
 
   # initialization
@@ -75,10 +73,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   antaresEditObject::writeEconomicOptions(df_econ_options, opts)
 
   # main loop on areas
-  areas_loop = areas_invest
-  if (back_to_first_node){
-    areas_loop = c(areas_loop,areas_invest[[1]])
-  }
 
   if (file.exists(file_intermediate_results)){
     load(file = file_intermediate_results)
@@ -86,7 +80,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     output_node <- list()
   }
 
-  for (node in areas_loop) {
+  for (node in areas_invest) {
     if (!(node %in% names(output_node))){
       output_node[[node]] <- list()
     }
@@ -120,7 +114,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     }
   }
 
-  for (node in areas_loop) {
+  for (node in areas_invest) {
     time1 <- Sys.time()
     nb_ite <- 0
 

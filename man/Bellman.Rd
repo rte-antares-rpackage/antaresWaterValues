@@ -17,7 +17,8 @@ Bellman(
   penalty_level_high,
   lvl_high,
   lvl_low,
-  overflow_cost
+  overflow_cost,
+  next_state = NULL
 )
 }
 \arguments{
@@ -56,6 +57,8 @@ reservoir over one step of time.}
 \item{lvl_low}{Double. Bottom rule curve for the considered week.}
 
 \item{overflow_cost}{Cost for overflow (equal to spillage cost of the area)}
+
+\item{next_state}{possible states for next week}
 }
 \value{
 a \code{data.table} like Data_week with the Bellman values

@@ -15,7 +15,7 @@
 setupWaterValuesSimulation <- function(area,
                                        overwrite = FALSE,
                                        opts,
-                                       pumping=F,
+                                       pumping=FALSE,
                                        efficiency,
                                        backup) {
 
@@ -49,7 +49,6 @@ setupWaterValuesSimulation <- function(area,
   # Prepare thermal Cluster parameters
   time_series = c(hydro_storage_max$turb, rep(0,24))
   nominalcapacity_turb <- max(hydro_storage_max$turb)
-  nominalcapacity_pump <- max(hydro_storage_max$pump)
 
   fictive_areas <- c(paste0(fictive_area_name,"_turb"))
   if(pumping){
@@ -87,7 +86,7 @@ setupWaterValuesSimulation <- function(area,
     }
 
     # Create link
-    if(grepl("_turb$", fictive_area)|grepl("_pump$", fictive_area)){
+    if(grepl("_turb$", fictive_area)||grepl("_pump$", fictive_area)){
      opts <- antaresEditObject::createLink(
           from = area,
           to = fictive_area,

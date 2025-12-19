@@ -56,7 +56,7 @@ simulationUI <- function(id,opts) {
       shinyWidgets::materialSwitch(
         NS(id,"expansion"),
         "Mode expansion",
-        value = F,
+        value = FALSE,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -108,9 +108,9 @@ simulationServer <- function(id,opts,silent) {
     pumping <- shiny::reactive({
       max_hydro <- get_max_hydro(area = input$sim_area,opts=opts,timeStep = "hourly")
       if (min(max_hydro$pump)>0){
-        T
+        TRUE
       } else {
-        F
+        FALSE
       }
     })
 
@@ -131,7 +131,7 @@ simulationServer <- function(id,opts,silent) {
 
                         spsUtil::quiet({
                           spsComps::shinyCatch({
-                            simulation_res <-    runWaterValuesSimulation(
+                            runWaterValuesSimulation(
                               area = input$sim_area,
                               simulation_name = paste0(input$sim_area, "_wv_sim_%s"),
                               nb_disc_stock = input$sim_nb_disc_stock,
@@ -140,7 +140,7 @@ simulationServer <- function(id,opts,silent) {
                                 to = input$sim_mcyears[2]
                               ),
                               path_solver = input$solver_path,
-                              overwrite = T,
+                              overwrite = TRUE,
                               opts = opts,
                               file_name = input$file_name,
                               pumping = pumping(),
@@ -153,9 +153,8 @@ simulationServer <- function(id,opts,silent) {
                           shinyWidgets::show_alert(title = "Run simulations",
                                                    text = "Done !!",
                                                    type = "success")
-                        }, print_cat = F,
-                        message = F, warning = silent))
+                        }, print_cat = FALSE,
+                        message = FALSE, warning = silent))
 
   })
 }
-

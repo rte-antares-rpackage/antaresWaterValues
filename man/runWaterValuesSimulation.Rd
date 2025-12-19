@@ -14,11 +14,11 @@ runWaterValuesSimulation(
   overwrite = FALSE,
   opts,
   file_name = NULL,
-  pumping = T,
+  pumping = TRUE,
   efficiency,
   launch_simulations = NULL,
   constraint_values = NULL,
-  expansion = T
+  expansion = TRUE
 )
 }
 \arguments{

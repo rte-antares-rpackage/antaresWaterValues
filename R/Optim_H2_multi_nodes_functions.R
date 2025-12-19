@@ -26,7 +26,7 @@
 #' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
 #' @param file_intermediate_results Character. Local path to save intermediate results.
 #' @param list_ratio_max_hydro List of vectors. For each area, give the maximum generating (turb)/pumping (pump) capacity ratio
-#' @param remove_candidate Boolean. Should cluster candidate be removed before running the investment process
+#' @param remove_cluster Boolean. Should cluster candidate be removed before running the investment process
 #'
 #' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
 #'

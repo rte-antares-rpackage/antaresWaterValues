@@ -26,6 +26,7 @@
 #' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
 #' @param file_intermediate_results Character. Local path to save intermediate results.
 #' @param list_ratio_max_hydro List of vectors. For each area, give the maximum generating (turb)/pumping (pump) capacity ratio
+#' @param remove_candidate Boolean. Should cluster candidate be removed before running the investment process
 #'
 #' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
 #'
@@ -47,7 +48,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                                          nb_sockets = 0,
                                                          unspil_cost = 3000,
                                                          file_intermediate_results,
-                                                         list_ratio_max_hydro) {
+                                                         list_ratio_max_hydro,
+                                                         remove_cluster = F) {
 
   # initialization
   list_efficiency <- c()
@@ -55,6 +57,11 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     list_efficiency <- c(list_efficiency,getPumpEfficiency(area=areas_invest[i],opts=opts))
   }
   names(list_efficiency) <- areas_invest
+
+  if (remove_cluster){
+    remove_candidate_cluster(opts, candidates_types_gen)
+  }
+
 
   # add fixed part of flexible cluster if necessary
   n <- length(candidates_types_gen$index)
@@ -345,6 +352,26 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   return(output_node)
 }
 
+#' Remove candidate cluster from the study before running investment process
+#'
+#' @inheritParams MultiStock_H2_Investment_reward_compute_once
+#' @export
+remove_candidate_cluster <- function(opts,
+                                     candidates_types_gen){
+  l_all_clusters <- as.character(antaresRead::readClusterDesc(opts=opts)$cluster)
+
+  for (can in 1:length(candidates_types_gen$index) ){
+    node = candidates_types_gen$Zone[can]
+    for (suffix in c("","_part_fixe","_part_flex")){
+      if ((paste0(node, "_", candidates_types_gen$name[can],suffix) %in% l_all_clusters)){
+        opts = antaresEditObject::removeCluster(area = node,
+                                                cluster_name = paste0(candidates_types_gen$name[can],suffix),
+                                                opts=opts)
+      }
+    }
+  }
+}
+
 
 #' Edit the study with the result from investment
 #'
@@ -379,7 +406,7 @@ edit_study_with_results <- function(opts,
     ts_avail <- matrix(power, nrow = 8760, ncol = 1)
 
     if (!(paste0(node, "_", candidates_types$name[can]) %in% l_all_clusters)){
-      antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can])
+      antaresEditObject::createCluster(area = node, cluster_name = candidates_types$name[can],opts=opts)
     }
     antaresEditObject::editCluster(area = node, cluster_name = candidates_types$name[can],
                                    unitcount = 1L,
@@ -387,7 +414,8 @@ edit_study_with_results <- function(opts,
                                    time_series = ts_avail,
                                    marginal_cost = candidates_types$Marg_price[can],
                                    market_bid_cost = candidates_types$Marg_price[can],
-                                   must_run = (candidates_types$type[can] != "cluster flexible"))
+                                   must_run = (candidates_types$type[can] != "cluster flexible"),
+                                   opts = opts)
   }
 }
 

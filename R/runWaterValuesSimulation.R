@@ -171,6 +171,11 @@ setupGeneralParameters <- function(opts,
   #check the study is well selected
   assertthat::assert_that(class(opts) == "simOptions")
 
+  if (expansion){
+    assertthat::assert_that(opts$parameters$`adequacy patch`$`include-adq-patch` == FALSE,
+                            msg = "Adequacy Patch can only be used with Economy mode.")
+  }
+
   assertthat::assert_that(is.numeric(mcyears)==TRUE)
 
   # check the name format

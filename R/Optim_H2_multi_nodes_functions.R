@@ -511,6 +511,8 @@ calculateRewardsSimulations <- function(node,
   storenewset = opts$parameters$output$storenewset
 
   assertthat::assert_that(is_api_study(opts),msg="Study must be in API mode to launch simulations.")
+  assertthat::assert_that(opts$parameters$`adequacy patch`$`include-adq-patch` == FALSE,
+                          msg = "Adequacy Patch can only be used with Economy mode.")
 
   try(antaresRead::api_post(opts=opts,
                           endpoint = paste0(opts$study_id,"/extensions/xpansion")),

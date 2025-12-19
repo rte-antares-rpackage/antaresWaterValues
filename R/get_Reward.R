@@ -18,8 +18,6 @@
 #' \item{reward}{A \code{dplyr::tibble()} with columns \code{"timeId"}, \code{"mcYear"}, \code{"control"} and \code{"reward"}. Reward functions for all weeks (\code{timeId}) and scenarios (\code{mcYear}).}
 #' \item{local_reward}{Only if \code{method_old=FALSE}.
 #' A \code{dplyr::tibble()} with columns \code{"week"}, \code{"mcYear"}, \code{"u"}, \code{"reward"} and \code{"simulation"}. All reward functions for all different simulations computed with \code{get_local_reward()} and \code{reward_offset()}.}
-#' \item{simulation_names}{See arguments.}
-#' \item{simulation_values}{See arguments.}
 #'
 #' @export
 get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
@@ -133,7 +131,6 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
     # Prepare output
     output <- list()
     output$reward <- reward
-    output$decision_space <- simulation_values %>% dplyr::select(-c("sim"))
 
   } else {
     if(is.null(efficiency)){
@@ -207,7 +204,6 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
     output <- list()
     output$reward <- reward
     output$local_reward <- local_reward
-    output$decision_space <- possible_controls
   }
 
   class(output) <- "Reward matrix , simulation names and values"

@@ -150,7 +150,8 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   while(gap > 1e-3 && i <= nb_itr){
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,reward=reward,controls=controls,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                              controls=controls,
                               niveau_max = niveau_max,df_levels = df_levels,
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
@@ -395,8 +396,6 @@ updateWatervalues <- function(reward,controls,area,mcyears,opts,
 
   reward_db <- list()
   reward_db$reward <- reward
-  reward_db$decision_space <- controls
-
 
   results <- Grid_Matrix(
     reward_db = reward_db,
@@ -492,6 +491,8 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     transition <- watervalues %>%
       dplyr::filter(.data$weeks==w+1)
 
+    reward_week = dplyr::filter(reward,.data$timeId==w)
+
     # Rule curves at the end of the current week (and beginning of the next one)
     Data_week <- watervalues %>%
       dplyr::filter(.data$weeks==w) %>%
@@ -513,15 +514,9 @@ getOptimalTrend <- function(level_init,watervalues,mcyears,reward,controls,
     pen_high <- ifelse(w<52,penalty_high,penalty_final_level)
     pen_low <- ifelse(w<52,penalty_low,penalty_final_level)
 
-    decision_space <-  dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
-      tidyr::unnest(c("reward_db")) %>%
-      dplyr::select(c("years","control")) %>%
-      dplyr::rename("mcYear"="years","u"="control") %>%
-      dplyr::mutate(week = w)
-
     control = Bellman(Data_week = Data_week,
                       next_week_values_l = transition$value_node,
-                      decision_space = decision_space,
+                      reward = reward_week,
                       E_max = max_hydro_weekly$turb[w],
                       P_max = max_hydro_weekly$pump[w]*pump_eff,
                       mcyears = mcyears,
@@ -774,7 +769,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         }
 
         levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                                  mcyears=mcyears,reward=reward,controls=controls,
+                                  mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                                  controls=controls,
                                   niveau_max = list_capacity[[area]],df_levels = df_levels_area,
                                   penalty_low = penalty_low, penalty_high = penalty_high,
                                   penalty_final_level = penalty_final_level, final_level = final_level,
@@ -887,7 +883,8 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       }
 
     levels <- getOptimalTrend(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,reward=reward,controls=controls,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
+                              controls=controls,
                               niveau_max = list_capacity[[area]],df_levels = dplyr::filter(df_levels,.data$area==a),
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,

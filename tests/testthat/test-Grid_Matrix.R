@@ -55,7 +55,8 @@ test_that("Lower bound Grid_Matrix", {
     final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level,
-    nb_cycle = nb_cycle
+    nb_cycle = nb_cycle,
+    plot_watervalues = F
   )$lower_bound
   expect_equal(lb, -44728328320)
 })

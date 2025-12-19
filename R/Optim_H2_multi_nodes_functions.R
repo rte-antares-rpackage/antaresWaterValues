@@ -58,11 +58,6 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   }
   names(list_efficiency) <- areas_invest
 
-  if (remove_cluster){
-    remove_candidate_cluster(opts, candidates_types_gen)
-  }
-
-
   # add fixed part of flexible cluster if necessary
   n <- length(candidates_types_gen$index)
   for (cl in 1:n) {
@@ -91,6 +86,9 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
     load(file = file_intermediate_results)
   } else {
     output_node <- list()
+    if (remove_cluster){
+      remove_candidate_cluster(opts, candidates_types_gen)
+    }
   }
 
   for (node in areas_invest) {

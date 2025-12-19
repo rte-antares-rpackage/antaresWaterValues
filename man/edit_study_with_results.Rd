@@ -12,6 +12,9 @@ edit_study_with_results(opts, node, output_node, candidates_types)
 \item{node}{Character. Area for which to update data.}
 
 \item{output_node}{List. Output of \code{MultiStock_H2_Investment_reward_compute_once}.}
+
+\item{candidates_types}{Data_frame with column names : c("index", "name", "type", "TOTEX", "Marg_price").
+It is a parameter of \code{MultiStock_H2_Investment_reward_compute_once}.}
 }
 \description{
 Edit the study with the result from investment

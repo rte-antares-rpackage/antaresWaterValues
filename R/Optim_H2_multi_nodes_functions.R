@@ -60,8 +60,14 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
   n <- length(candidates_types_gen$index)
   for (cl in 1:n) {
     if (candidates_types_gen$Part_fixe[cl] > 0 & candidates_types_gen$type[cl] == "cluster flexible") {
-      new_cluster <- c(length(candidates_types_gen$index)+1, paste0(candidates_types_gen$name[cl], "_fixe"), "cluster bande",
-                       candidates_types_gen$TOTEX[cl], candidates_types_gen$Prix_fixe[cl], 0, 0,0,0,0,candidates_types_gen$Zone[cl])
+      new_cluster <- c(length(candidates_types_gen$index)+1, paste0(candidates_types_gen$name[cl], "_part_fixe"), "cluster bande",
+                       candidates_types_gen$TOTEX[cl], candidates_types_gen$Prix_fixe[cl], 0, 0,
+                       as.numeric(candidates_types_gen$Borne_min[cl])*as.numeric(candidates_types_gen$Part_fixe[cl]),
+                       as.numeric(candidates_types_gen$Borne_max[cl])*as.numeric(candidates_types_gen$Part_fixe[cl]),
+                       0,candidates_types_gen$Zone[cl])
+      candidates_types_gen$name[cl] = paste0(candidates_types_gen$name[cl], "_part_flex")
+      candidates_types_gen$Borne_max[cl] = as.numeric(candidates_types_gen$Borne_max[cl])*(1-as.numeric(candidates_types_gen$Part_fixe[cl]))
+      candidates_types_gen$Borne_min[cl] = as.numeric(candidates_types_gen$Borne_min[cl])*(1-as.numeric(candidates_types_gen$Part_fixe[cl]))
       candidates_types_gen <- rbind(candidates_types_gen, new_cluster)
     }
   }
@@ -127,8 +133,10 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 
     candidates_data <- c()
     for (can in 1:length(candidates_types$index)) {
-      candidates_data[[can]] <- c(as.numeric(candidates_types$Borne_min[can]), as.numeric(candidates_types$Borne_max[can]),
-                                  as.numeric(candidates_types$Points_nb[can]))
+      if (!grepl("_part_fixe", candidates_types$name[can])) {
+        candidates_data[[can]] <- c(as.numeric(candidates_types$Borne_min[can]), as.numeric(candidates_types$Borne_max[can]),
+                                    as.numeric(candidates_types$Points_nb[can]))
+      }
     }
 
     if ("reward" %in% names(output_node[[node]])){
@@ -144,7 +152,7 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
                                     prefix=paste0("unsp", as.character(unspil_cost)),
                                     sim_number = nb_sims,
                                     optimal_traj = optimal_traj,
-                                    candidates_types = candidates_types,
+                                    max_power_invest = sum(as.double(candidates_types$Borne_max)),
                                     list_max_hydro = optimal_max_hydro)
 
 
@@ -172,8 +180,9 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
         # add fixed part of flexible cluster to candidates
         for (i in 1:length(new_candidate_grid)) {
           for (j in 1:length(candidates_types$index)) {
-            if (candidates_types$Part_fixe[j] > 0) {
-              new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][as.integer(candidates_types$index[j])]*as.numeric(candidates_types$Part_fixe[j]))}
+            if ((candidates_types$Part_fixe[j] > 0)&(candidates_types$type[j] == "cluster flexible")) {
+              part_fixe = as.numeric(candidates_types$Part_fixe[j])
+              new_candidate_grid[[i]] <- c(new_candidate_grid[[i]], new_candidate_grid[[i]][j]*part_fixe/(1-part_fixe))}
           }
         }
 
@@ -342,7 +351,8 @@ MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,
 #' @param node Character. Area for which to update data.
 #' @inheritParams MultiStock_H2_Investment_reward_compute_once
 #' @param output_node List. Output of \code{MultiStock_H2_Investment_reward_compute_once}.
-#'
+#' @param candidates_types Data_frame with column names : c("index", "name", "type", "TOTEX", "Marg_price").
+#' It is a parameter of \code{MultiStock_H2_Investment_reward_compute_once}.
 #' @export
 edit_study_with_results <- function(opts,
                                     node,
@@ -429,7 +439,7 @@ grid_other_candidates <- function(candidates_data) {
 #' @param sim_number Integer. Number of simulations.
 #' @param optimal_traj Data frame containing optimal trajectory for all areas
 #' @param list_max_hydro List of vectors. Giving max generating capacity and pumping capacity for each area.
-#' @param candidates_types Data_frame with column names : c("index", "name", "type", "TOTEX", "Marg_price").
+#' @param max_power_invest Double. Sum of upper bounds of candidates for the node.
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{antaresWaterValues::get_Reward()}
 calculateRewardsSimulations <- function(node,
@@ -440,7 +450,7 @@ calculateRewardsSimulations <- function(node,
                                         prefix,
                                         sim_number = 5,
                                         optimal_traj,
-                                        candidates_types,
+                                        max_power_invest,
                                         list_max_hydro)  {
 
   list_areas = tolower(list_areas)
@@ -456,7 +466,7 @@ calculateRewardsSimulations <- function(node,
     msg = paste0("There is no enough columns for data inflow for ",area))
 
     if (area==node){
-      offset = sum(as.double(candidates_types$Borne_max))
+      offset = max_power_invest
     } else {
       offset = 0
     }

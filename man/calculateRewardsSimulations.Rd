@@ -15,7 +15,7 @@ calculateRewardsSimulations(
   prefix,
   sim_number = 5,
   optimal_traj,
-  candidates_types,
+  max_power_invest,
   list_max_hydro
 )
 }
@@ -36,7 +36,7 @@ calculateRewardsSimulations(
 
 \item{optimal_traj}{Data frame containing optimal trajectory for all areas}
 
-\item{candidates_types}{Data_frame with column names : c("index", "name", "type", "TOTEX", "Marg_price").}
+\item{max_power_invest}{Double. Sum of upper bounds of candidates for the node.}
 
 \item{list_max_hydro}{List of vectors. Giving max generating capacity and pumping capacity for each area.}
 }

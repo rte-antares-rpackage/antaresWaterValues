@@ -15,7 +15,7 @@
 setupWaterValuesSimulation <- function(area,
                                        overwrite = FALSE,
                                        opts,
-                                       pumping=FALSE,
+                                       pumping=F,
                                        efficiency,
                                        backup) {
 
@@ -86,7 +86,7 @@ setupWaterValuesSimulation <- function(area,
     }
 
     # Create link
-    if(grepl("_turb$", fictive_area)||grepl("_pump$", fictive_area)){
+    if(grepl("_turb$", fictive_area)|grepl("_pump$", fictive_area)){
      opts <- antaresEditObject::createLink(
           from = area,
           to = fictive_area,

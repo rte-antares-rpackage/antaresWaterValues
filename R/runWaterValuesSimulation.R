@@ -53,11 +53,11 @@ runWaterValuesSimulation <- function(area=NULL,
                                      overwrite = FALSE,
                                      opts,
                                      file_name=NULL,
-                                     pumping=TRUE,
+                                     pumping=T,
                                      efficiency,
                                      launch_simulations=NULL,
                                      constraint_values=NULL,
-                                     expansion=TRUE){
+                                     expansion=T){
 
   area = tolower(area)
   check_area_name(area = area, opts = opts)
@@ -78,7 +78,7 @@ runWaterValuesSimulation <- function(area=NULL,
                                simulation_name,
                                file_name,
                                constraint_values,
-                               multistock = FALSE)
+                               multistock = F)
   simulation_name = res[[1]]
   file_name = res[[2]]
   constraint_values = res[[3]]
@@ -212,7 +212,7 @@ setupGeneralParameters <- function(opts,
     }
     antaresEditObject::writeIni(settings_ini,
                                 file.path("settings", "generaldata"),
-                                overwrite=TRUE,
+                                overwrite=T,
                                 opts=opts)
   }
 
@@ -311,11 +311,11 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                      file_name=NULL,
                                      launch_simulations=NULL,
                                      constraint_values=NULL,
-                                     expansion=TRUE){
+                                     expansion=T){
   list_areas = tolower(list_areas)
 
   list_backup = list()
-  for (j in seq_along(list_areas)){
+  for (j in 1:length(list_areas)){
     area = list_areas[[j]]
     check_area_name(area = area, opts = opts)
 
@@ -328,7 +328,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
                                simulation_name,
                                file_name,
                                constraint_values,
-                               multistock = TRUE)
+                               multistock = T)
   simulation_name = res[[1]]
   file_name = res[[2]]
   constraint_values = res[[3]]
@@ -337,7 +337,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
   simulation_res <- list()
 
   tryCatch({
-    for (j in seq_along(list_areas)){
+    for (j in 1:length(list_areas)){
       area <- list_areas[[j]]
 
       opts <- setupWaterValuesSimulation(
@@ -361,7 +361,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
       # Prepare simulation parameters
       name_sim <- dplyr::distinct(constraint_values,.data$sim)$sim[[i]]
 
-      for (j in seq_along(list_areas)){
+      for (j in 1:length(list_areas)){
         constraint_value <- dplyr::filter(constraint_values,.data$sim==name_sim,
                                           .data$area==list_areas[[j]]) %>%
           dplyr::select(-c("area"))
@@ -411,7 +411,7 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     stop(e)
   },
   finally = {
-    for (j in seq_along(list_areas)){
+    for (j in 1:length(list_areas)){
       area = list_areas[[j]]
       opts = resetStudy(opts,area,list_pumping[area],list_backup[[j]])
     }
@@ -492,11 +492,11 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
     assertthat::assert_that(status == 0,
                             msg = "Antares simulation failed, check Antares logs.")
   }
-  if ("mcYear" %in% colnames(constraint_value) && !is_api_study(opts) && 
+  if ("mcYear" %in% colnames(constraint_value) && !is_api_study(opts) &&
    !expansion && opts$parameters$output$storenewset){
     opts_sim = antaresRead::setSimulationPath(opts$studyPath,simulation=sim_name)
     ts_number = utils::read.csv(paste0(opts_sim$simPath,"/ts-numbers/bindingconstraints/watervalues.txt"))
     scenarios = unique(constraint_value$mcYear)
-    assertthat::assert_that(all(ts_number[scenarios,1] == seq_along(scenarios)))
+    assertthat::assert_that(all(ts_number[scenarios,1] == 1:length(scenarios)))
   }
 }

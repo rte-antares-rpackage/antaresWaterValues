@@ -4,12 +4,12 @@
 \alias{changeHydroManagement}
 \title{Change hydro management}
 \usage{
-changeHydroManagement(watervalues = FALSE, heuristic = TRUE, opts, area)
+changeHydroManagement(watervalues = F, heuristic = T, opts, area)
 }
 \arguments{
-\item{watervalues}{Binary. TRUE if use water values.}
+\item{watervalues}{Binary. T if use water values.}
 
-\item{heuristic}{Binary. TRUE if use heuristic.}
+\item{heuristic}{Binary. T if use heuristic.}
 
 \item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
 

@@ -43,9 +43,9 @@ Grid_Matrix <- function(area,
                         inflow = NULL,
                         cvar_value=1,
                         opts,
-                        shiny=FALSE,
+                        shiny=F,
                         efficiency = NULL,
-                        until_convergence=FALSE,
+                        until_convergence=F,
                         convergence_rate=0.9,
                         convergence_criteria=1,
                         cycle_limit=10,
@@ -53,10 +53,11 @@ Grid_Matrix <- function(area,
                         penalty_low = 3000,
                         penalty_high = 3000,
                         max_hydro_weekly=NULL,
-                        force_final_level = FALSE,
+                        force_final_level = F,
                         final_level = NULL,
                         penalty_final_level_low = NULL,
                         penalty_final_level_high = NULL) {
+
 
   area = tolower(area)
   #----- shiny Loader
@@ -82,14 +83,14 @@ Grid_Matrix <- function(area,
 
 
   # Checking states_step_ratio
-  if ((!is.numeric(states_step_ratio)) || (states_step_ratio<0))
+  if ((!is.numeric(states_step_ratio))|(states_step_ratio<0))
     stop("Failed Not valid States_step_ratio, please change it between 0 and 1.")
 
   states_steps <- niveau_max*states_step_ratio
 
 
   # States matrix for all weeks plus an other week representing the end of the year
-  states <- round(matrix(rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1),6)
+  states <- round(matrix( rep(seq(from = niveau_max, to = 0, by = -states_steps), n_week + 1), byrow = FALSE, ncol = n_week + 1),6)
 
 
   if(is.null(efficiency))
@@ -223,7 +224,7 @@ Grid_Matrix <- function(area,
 
 
 
-        if(shiny && n_cycl == 1 && i == 52){
+        if(shiny&n_cycl==1&i==52){
           for (p in c("shinybusy")){
             if (!requireNamespace(p, quietly = TRUE)) {
               stop(
@@ -259,7 +260,7 @@ Grid_Matrix <- function(area,
       }
       # Calculate water values by derivating Bellman values and applying penalties on rules curves for the current week
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level=if(n_cycl==1){force_final_level}else{FALSE},penalty_final_level_low,penalty_final_level_high,final_level=final_level)
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
     }
 
@@ -294,7 +295,7 @@ Grid_Matrix <- function(area,
                         overflow_cost = overflow_cost
         )
 
-        if(shiny && n_cycl == 1 && i == 52){
+        if(shiny&n_cycl==1&i==52){
           for (p in c("shinybusy")){
             if (!requireNamespace(p, quietly = TRUE)) {
               stop(
@@ -328,7 +329,7 @@ Grid_Matrix <- function(area,
         message("Error in the calculation of Bellman values")
       }
       value_nodes_dt <- build_data_watervalues(watervalues,statesdt,reservoir,penalty_high,penalty_low,
-                                               force_final_level=if(n_cycl==1){force_final_level}else{FALSE},
+                                               force_final_level=if(n_cycl==1){force_final_level}else{F},
                                                penalty_final_level_low,penalty_final_level_high,final_level=final_level)
 
 
@@ -421,3 +422,6 @@ Grid_Matrix <- function(area,
   class(result) <- "detailled and aggregated results of watervalues calculation"
   return(result)
 }
+
+
+

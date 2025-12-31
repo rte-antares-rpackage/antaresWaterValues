@@ -147,7 +147,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
   constraint_value <- as.matrix(constraint_value)
 
   equal_cst = matrix(0,nrow = 366,ncol=ncol(constraint_value))
-  equal_cst[seq.int(1,364,7),seq_len(ncol(constraint_value))] = constraint_value
+  equal_cst[seq.int(1,364,7),1:ncol(constraint_value)] = constraint_value
 
   coeff = c()
   if (opts$antaresVersion<870){
@@ -174,7 +174,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
     names_sb <- c()
     values_sb <- c()
 
-    for (i in seq_along(scenarios)){
+    for (i in 1:length(scenarios)){
       names_sb <- c(names_sb,paste("bc","watervalues",
                                    scenarios[i]-1,sep=","))
       values_sb <- c(values_sb,as.integer(i))
@@ -205,7 +205,7 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 
     Sys.sleep(1)
     } else {
-      new_sb = as.list(seq_along(scenarios))
+      new_sb = as.list(1:length(scenarios))
       names(new_sb) = as.character(scenarios-1)
       sb_file = list()
       sb_file$bindingConstraints$watervalues = new_sb
@@ -268,7 +268,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL
                                       nb_disc_stock,reservoir_capacity,
                                       dplyr::filter(max_hydro_weekly,
                                                     .data$timeId==w),w),
-                            simplify = FALSE)
+                            simplify = F)
 
   df_constraint <- tidyr::unnest_wider(df_constraint,.data$u,names_sep = "_")
   df_constraint <- df_constraint %>%

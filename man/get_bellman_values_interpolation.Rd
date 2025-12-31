@@ -5,11 +5,10 @@
 \title{Create approximation of Bellman function for next week for each scenario, used in \code{Bellman} and
 in \code{getOptimalTrend}}
 \usage{
-get_bellman_values_interpolation(Data_week, next_week_values, mcyears)
+get_bellman_values_interpolation(next_state, next_week_values, mcyears)
 }
 \arguments{
-\item{Data_week}{Data frame generated in \code{Grid_Matrix} code containing
-list of states and years evaluated (we suppose there is only one week at a time)}
+\item{next_state}{possible states for next week}
 
 \item{next_week_values}{Vector of Bellman values to interpolate}
 

@@ -125,7 +125,6 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
     reward <- dplyr::filter(reward,.data$control==0) %>%
       dplyr::select("mcYear","timeId","reward") %>%
       dplyr::right_join(reward,by=c("mcYear","timeId"),suffix=c("_0","")) %>%
-      # dplyr::mutate(reward=.data$reward_0-.data$reward) %>%
       dplyr::mutate(reward=-.data$reward) %>%
       dplyr::select(-c("reward_0","simulation","sim"))
     reward <- as.data.table(reward)
@@ -199,7 +198,6 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
     #Subtracting the reward corresponding to control 0 for each year and each week
     reward <- dplyr::filter(reward,.data$u==0) %>% dplyr::select("mcYear","week","reward") %>%
       dplyr::right_join(reward,by=c("mcYear","week"),suffix=c("_0","")) %>%
-      # dplyr::mutate(reward=.data$reward-.data$reward_0) %>%
       dplyr::rename("timeId"="week","control"="u") %>%
       dplyr::select(-c("reward_0"))
     reward <- as.data.table(reward)
@@ -360,6 +358,7 @@ reward_offset <- function(simu, df_reward, u0 = c(),mcyears,
     dplyr::rename(week="timeId") %>%
     dplyr::select("mcYear","week","ov_cost") %>%
     as.data.frame()
+  assertthat::assert_that(all(cost$ov_cost>0))
   if (sum(is.na(u0))>=1){
     u0 <- c()
   }

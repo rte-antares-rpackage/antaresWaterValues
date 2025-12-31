@@ -18,17 +18,16 @@ get_reward_interpolation <- function(Data_week){
 #' Create approximation of Bellman function for next week for each scenario, used in \code{Bellman} and
 #' in \code{getOptimalTrend}
 #'
-#' @param Data_week Data frame generated in \code{Grid_Matrix} code containing
-#' list of states and years evaluated (we suppose there is only one week at a time)
+#' @param next_state possible states for next week
 #' @param next_week_values Vector of Bellman values to interpolate
 #' @param mcyears Vector of monte carlo years to take into account
 #'
 #' @return List of \code{stats::approxfun} for each scenario
 #' @keywords internal
-get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears){
+get_bellman_values_interpolation <- function(next_state,next_week_values,mcyears){
 
-  df_next_week <- data.frame(years = Data_week$years,
-                             next_state = Data_week$states,
+  df_next_week <- data.frame(years = mcyears,
+                             next_state = next_state,
                              next_value = next_week_values)
 
   f_next_value <- c()
@@ -60,6 +59,7 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 #' @param next_week_values Vector of Bellman values for the next week
 #' @param niveau_max Reservoir capacity in MWh
 #' @param overflow_cost Cost for overflow (equal to spillage cost of the area)
+#' @param next_states possible states for next week
 #'
 #' @return Data frame with same format as Data week with 3 more columns :
 #' next_state, control (transition to next state) and
@@ -67,10 +67,11 @@ get_bellman_values_interpolation <- function(Data_week,next_week_values,mcyears)
 #' @keywords internal
 build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
                                          mcyears,lvl_high,lvl_low,E_max,P_max,
-                                         next_week_values,niveau_max,overflow_cost){
+                                         next_week_values,niveau_max,overflow_cost,
+                                         next_states){
 
   df_next_week <- data.frame(years = Data_week$years,
-                             next_state = Data_week$states,
+                             next_state = next_states,
                              next_value = next_week_values)
 
   future_states <- Data_week %>%

@@ -2,12 +2,7 @@
 % Please edit documentation in R/multistock_sequential_plaia.R
 \name{getBellmanValuesSequentialMultiStockWithPlaia}
 \alias{getBellmanValuesSequentialMultiStockWithPlaia}
-\title{Calculate Bellman values for several areas area per area.
-For one area, reward functions are computed with \code{calculateRewardsSimulationsWithPlaia()} and
-Bellman values are computed with \code{Grid_Matrix()}. Finally, an optimal trajectory is computed for
-the area with \code{getOptimalTrend}. The trajectory is used when computing reward functions for the next areas.
-Initially, when Bellman values have been computed for an area, either \code{initial_traj} is used or a short-term
-trajectory is used.}
+\title{Calculate Bellman values sequentially, one area at a time.}
 \usage{
 getBellmanValuesSequentialMultiStockWithPlaia(
   list_areas,
@@ -51,10 +46,12 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 List containing aggregated water values, reward functions and optimal trajectories.
 }
 \description{
-Calculate Bellman values for several areas area per area.
-For one area, reward functions are computed with \code{calculateRewardsSimulationsWithPlaia()} and
-Bellman values are computed with \code{Grid_Matrix()}. Finally, an optimal trajectory is computed for
-the area with \code{getOptimalTrend}. The trajectory is used when computing reward functions for the next areas.
-Initially, when Bellman values have been computed for an area, either \code{initial_traj} is used or a short-term
-trajectory is used.
+For each area, reward functions are first computed using
+\code{calculateRewardsSimulationsWithPlaia()}. Bellman values are then
+computed with \code{Grid_Matrix()}, and an optimal trajectory for the area
+is derived using \code{getOptimalTrend()}.
+The resulting trajectory is subsequently used to compute reward functions
+for the next area in the sequence.
+For areas where Bellman values have not yet been computed, either
+\code{initial_traj} or a short-term trajectory is used as a fallback.
 }

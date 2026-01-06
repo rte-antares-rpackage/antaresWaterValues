@@ -5,6 +5,8 @@
 \title{Get initial level year per year}
 \usage{
 get_initial_level_year_per_year(area, opts)
+
+get_initial_level_year_per_year(area, opts)
 }
 \arguments{
 \item{area}{Character. The Antares area concerned by water values computation.}
@@ -13,7 +15,11 @@ get_initial_level_year_per_year(area, opts)
 }
 \value{
 Vector. Initial level for each MC year in percentage, value between 0 and 100\%.
+
+Vector. Initial level for each MC year in percentage, value between 0 and 100\%.
 }
 \description{
+Get initial level of hydro storage for the given area for each MC year based on the scenario builder. If random in the scenario builder, the initial level is defined trough low and high reservoir levels for the first day.
+
 Get initial level of hydro storage for the given area for each MC year based on the scenario builder. If random in the scenario builder, the initial level is defined trough low and high reservoir levels for the first day.
 }

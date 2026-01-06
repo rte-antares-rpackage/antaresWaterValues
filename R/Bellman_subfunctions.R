@@ -79,7 +79,7 @@ build_all_possible_decisions <- function(Data_week,decision_space,f_next_value,
     dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage)
 
   control_possible <- Data_week  %>%
-    dplyr::right_join(decision_space,by=c("years"="mcYear")) %>%
+    dplyr::right_join(decision_space,by=c("years"="mcYear"), relationship="many-to-many") %>%
     dplyr::rename("control"="u") %>%
     dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,niveau_max,
                                             .data$states+.data$hydroStorage-.data$control)) %>%

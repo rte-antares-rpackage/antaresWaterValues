@@ -14,7 +14,6 @@ Bellman(
   mcyears,
   cvar_value = 1,
   niveau_max,
-  states_steps,
   penalty_level_low,
   penalty_level_high,
   lvl_high,
@@ -65,10 +64,6 @@ Bellman(
 - niveau_max:
 
   Level max of the reservoir
-
-- states_steps:
-
-  Numeric. Discretization step of reservoir.
 
 - penalty_level_low:
 

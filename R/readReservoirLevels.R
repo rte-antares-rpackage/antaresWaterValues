@@ -32,11 +32,11 @@ readReservoirLevels <- function(area,opts) {
 #' @export
 get_initial_level <- function(area,opts){
   area = tolower(area)
-  final_level <- readReservoirLevels(area,
+  initial_level <- readReservoirLevels(area,
                                      opts = opts)[1,]
-  assertthat::assert_that(final_level$level_low==final_level$level_high,
+  assertthat::assert_that(initial_level$level_low==initial_level$level_high,
                           msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
-  final_level <- final_level$level_low*100
+  return(initial_level$level_low*100)
 }
 
 #' Get initial level year per year

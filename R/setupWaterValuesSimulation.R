@@ -49,7 +49,6 @@ setupWaterValuesSimulation <- function(area,
   # Prepare thermal Cluster parameters
   time_series = c(hydro_storage_max$turb, rep(0,24))
   nominalcapacity_turb <- max(hydro_storage_max$turb)
-  nominalcapacity_pump <- max(hydro_storage_max$pump)
 
   fictive_areas <- c(paste0(fictive_area_name,"_turb"))
   if(pumping){

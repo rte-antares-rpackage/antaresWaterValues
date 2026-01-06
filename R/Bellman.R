@@ -17,7 +17,6 @@
   #' reservoir over one step of time.
   #' @param cvar_value numeric in [0,1]. the probability used in cvar algorithm.
   #' @param mcyears Vector. Monte Carlo years
-  #' @param states_steps Numeric. Discretization step of reservoir.
   #' @param niveau_max Level max of the reservoir
   #' @param penalty_level_low Penalty for violating the bottom rule curve, comparable to the unsupplied energy
   #' @param penalty_level_high Penalty for violating the top rule curve, comparable to the spilled energy
@@ -30,7 +29,7 @@
   #' @keywords internal
   Bellman <- function(Data_week,next_week_values_l,decision_space,E_max,P_max=0,
                       mcyears,cvar_value=1,niveau_max,
-                      states_steps,penalty_level_low,penalty_level_high,
+                      penalty_level_low,penalty_level_high,
                       lvl_high,lvl_low,overflow_cost,
                       next_state=NULL){
 

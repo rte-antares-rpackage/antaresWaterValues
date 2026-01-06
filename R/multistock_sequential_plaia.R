@@ -72,7 +72,7 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
         rbind(initial_traj)
 
       df_levels = initial_traj %>%
-        dplyr::rename(constraint = u) %>%
+        dplyr::rename(constraint = .data$u) %>%
         dplyr::mutate(lev = NA, scenario = NA, n=0)
     }
   }

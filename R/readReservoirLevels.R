@@ -38,3 +38,28 @@ get_initial_level <- function(area,opts){
                           msg = "Initial level is not defined properly in the Antares study. Please correct it by setting level_low and level_high equals for the first day of the year.")
   final_level <- final_level$level_low*100
 }
+
+#' Get initial level year per year
+#'
+#' Get initial level of hydro storage for the given area for each MC year based on the scenario builder. If random in the scenario builder, the initial level is defined trough low and high reservoir levels for the first day.
+#'
+#' @inheritParams runWaterValuesSimulation
+#'
+#' @returns Vector. Initial level for each MC year in percentage, value between 0 and 100\%.
+#'
+#' @export
+get_initial_level_year_per_year <- function(area,opts){
+  initial_level = get_initial_level(area,opts)
+
+  sb_hl = antaresEditObject::readScenarioBuilder(
+    as_matrix = T,
+    opts = opts
+  )$hl[area, ]*100
+
+  if (length(sb_hl)==0){
+    return(rep(initial_level,opts$parameters$general$nbyears))
+  }
+
+  sb_hl[is.na(sb_hl)] = initial_level
+  return(sb_hl)
+}

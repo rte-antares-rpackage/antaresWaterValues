@@ -168,6 +168,7 @@ correct_concavity <- function(df_value_node, weeks){
     df_week <- dplyr::filter(df_week,is.finite(df_week$value_node))
     df_week <- unique(df_week)
     df_week <- dplyr::arrange(df_week,.data$states,.data$years)
+
     # Initialize corrected values
     df_week$new_value <- df_week$value_node
     # Getting all possible states

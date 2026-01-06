@@ -237,8 +237,9 @@ generate_rhs_bc <- function(constraint_value,area,opts){
 #' Controls values are stored in column \code{"u"}. Column \code{"sim"} indexes control values in the form \code{"u_i"} with \code{i} the index.
 #'
 #' @export
-constraint_generator <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL,opts,max_hydro_weekly=NULL,
-                                 inflow=NULL,mcyears=NULL, reservoir_capacity=NULL){
+constraint_generator <- function(area,nb_disc_stock,pumping=T,efficiency=NULL,opts,max_hydro_weekly=NULL,
+                                 inflow=NULL,mcyears=NULL,
+                                 reservoir_capacity=NULL){
 
   area = tolower(area)
   if(is.null(efficiency)){
@@ -248,7 +249,7 @@ constraint_generator <- function(area,nb_disc_stock,pumping=TRUE,efficiency=NULL
   if(is.null(max_hydro_weekly)){
     max_hydro_weekly <- get_max_hydro(area,opts,timeStep = "weekly")
   }
-  if (is.null(reservoir_capacity)){
+  if(is.null(reservoir_capacity)){
     reservoir_capacity <- get_reservoir_capacity(area,opts)
   }
   if (is.null(inflow)){

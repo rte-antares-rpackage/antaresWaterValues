@@ -195,8 +195,10 @@ plot_4 <- plot_reward_variation_mc(reward_base = reward,
 
 ## Multi stock
 
-To compute Bellman values for multiple storages, you can use
-[`getBellmanValuesFromOneSimulationMultistock()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesFromOneSimulationMultistock.md)
-or you can compute Bellman values storage per storage. In all cases, be
-sure to use the hydro heuristic of Antares for all storages when
-computing Bellman values.
+To compute Bellman values for multiple storages, you can either use
+[`getBellmanValuesFromOneSimulationMultistock()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesFromOneSimulationMultistock.md),
+[`getBellmanValuesSequentialMultiStockWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesSequentialMultiStockWithPlaia.md),
+or compute them one storage at a time.
+
+In all cases, make sure to use the Antares hydro heuristic for all
+storages when computing Bellman values.

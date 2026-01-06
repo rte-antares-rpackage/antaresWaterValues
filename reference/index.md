@@ -5,6 +5,16 @@
 - [`Grid_Matrix()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/Grid_Matrix.md)
   : Compute Bellman values
 
+- [`calculateRewardsSimulationsWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateRewardsSimulationsWithPlaia.md)
+  :
+
+  Compute reward function for `node` with plaia implementation. The
+  reward function of each week and each year is evaluated on
+  `nb_simulations` controls. Called for each area of
+  [`getBellmanValuesSequentialMultiStockWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesSequentialMultiStockWithPlaia.md).
+  If they are several areas, the trajectories of the other storage are
+  fixed on their `optimal_trend`.
+
 - [`changeHydroManagement()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/changeHydroManagement.md)
   : Change hydro management
 
@@ -13,6 +23,13 @@
 
 - [`getBellmanValuesFromOneSimulationMultistock()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesFromOneSimulationMultistock.md)
   : Compute Bellman values for several storage based on one simulation
+
+- [`getBellmanValuesSequentialMultiStockWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesSequentialMultiStockWithPlaia.md)
+  : Calculate Bellman values sequentially, one area at a time.
+
+- [`getOptimalTrend()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getOptimalTrend.md)
+  : Calculate an optimal trajectory for the reservoir levels based on
+  Bellman values and reward functions.
 
 - [`getPumpEfficiency()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getPumpEfficiency.md)
   : Get pumping efficiency ratio
@@ -25,6 +42,9 @@
 
 - [`get_initial_level()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level.md)
   : Get initial level
+
+- [`get_initial_level_year_per_year()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level_year_per_year.md)
+  : Get initial level year per year
 
 - [`get_local_reward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_local_reward.md)
   : Compute reward functions based on one given simulation

@@ -19,7 +19,8 @@ Bellman(
   penalty_level_high,
   lvl_high,
   lvl_low,
-  overflow_cost
+  overflow_cost,
+  next_state = NULL
 )
 ```
 
@@ -90,6 +91,10 @@ Bellman(
 - overflow_cost:
 
   Cost for overflow (equal to spillage cost of the area)
+
+- next_state:
+
+  possible states for next week
 
 ## Value
 

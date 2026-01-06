@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,6 +56,13 @@
 
         <dt>
 
+          <code><a href="calculateRewardsSimulationsWithPlaia.html">calculateRewardsSimulationsWithPlaia()</a></code>
+
+        </dt>
+        <dd>Compute reward function for <code>node</code> with plaia implementation. The reward function of each week and each year is evaluated on <code>nb_simulations</code> controls. Called for each area of <code><a href="../reference/getBellmanValuesSequentialMultiStockWithPlaia.html">getBellmanValuesSequentialMultiStockWithPlaia()</a></code>. If they are several areas, the trajectories of the other storage are fixed on their <code>optimal_trend</code>.</dd>
+
+        <dt>
+
           <code><a href="changeHydroManagement.html">changeHydroManagement()</a></code>
 
         </dt>
@@ -74,6 +81,20 @@
 
         </dt>
         <dd>Compute Bellman values for several storage based on one simulation</dd>
+
+        <dt>
+
+          <code><a href="getBellmanValuesSequentialMultiStockWithPlaia.html">getBellmanValuesSequentialMultiStockWithPlaia()</a></code>
+
+        </dt>
+        <dd>Calculate Bellman values sequentially, one area at a time.</dd>
+
+        <dt>
+
+          <code><a href="getOptimalTrend.html">getOptimalTrend()</a></code>
+
+        </dt>
+        <dd>Calculate an optimal trajectory for the reservoir levels based on Bellman values and reward functions.</dd>
 
         <dt>
 
@@ -102,6 +123,13 @@
 
         </dt>
         <dd>Get initial level</dd>
+
+        <dt>
+
+          <code><a href="get_initial_level_year_per_year.html">get_initial_level_year_per_year()</a></code>
+
+        </dt>
+        <dd>Get initial level year per year</dd>
 
         <dt>
 

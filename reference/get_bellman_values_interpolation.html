@@ -9,7 +9,7 @@ in getOptimalTrend"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,16 +48,15 @@ in <code>getOptimalTrend</code></p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_bellman_values_interpolation</span><span class="op">(</span><span class="va">Data_week</span>, <span class="va">next_week_values</span>, <span class="va">mcyears</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_bellman_values_interpolation</span><span class="op">(</span><span class="va">next_state</span>, <span class="va">next_week_values</span>, <span class="va">mcyears</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-data-week">Data_week<a class="anchor" aria-label="anchor" href="#arg-data-week"></a></dt>
-<dd><p>Data frame generated in <code>Grid_Matrix</code> code containing
-list of states and years evaluated (we suppose there is only one week at a time)</p></dd>
+<dl><dt id="arg-next-state">next_state<a class="anchor" aria-label="anchor" href="#arg-next-state"></a></dt>
+<dd><p>possible states for next week</p></dd>
 
 
 <dt id="arg-next-week-values">next_week_values<a class="anchor" aria-label="anchor" href="#arg-next-week-values"></a></dt>

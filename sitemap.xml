@@ -14,6 +14,7 @@
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/add_fictive_fatal_prod_demand.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/build_all_possible_decisions.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/build_data_watervalues.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateRewardsSimulationsWithPlaia.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/changeHydroManagement.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/constraint_generator.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/constraint_week.html</loc></url>
@@ -25,11 +26,14 @@
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/generate_rhs_bc.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBackupData.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesFromOneSimulationMultistock.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesSequentialMultiStockWithPlaia.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getOptimalTrend.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getPumpEfficiency.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_Reward.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_bellman_values_interpolation.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_inflow.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level.html</loc></url>
+<url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level_year_per_year.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_local_reward.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_max_hydro.html</loc></url>
 <url><loc>https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_reservoir_capacity.html</loc></url>

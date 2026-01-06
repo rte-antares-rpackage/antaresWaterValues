@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -148,7 +148,7 @@ time.</p>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>number_states <span class="op">=</span> <span class="va">s</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">compare_states</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_state-1.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_state-2.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_state-3.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_state-1.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_state-2.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_state-3.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compare_states</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">weeks</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">12</span>,<span class="fl">22</span>,<span class="fl">32</span>,<span class="fl">42</span>,<span class="fl">52</span><span class="op">)</span>,<span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">vu</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -157,7 +157,7 @@ time.</p>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">vu</span>, color <span class="op">=</span> <span class="va">number_states</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">weeks</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_state_vu-1.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_state_vu-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Variations of water values are more detailed with 50 states than 10.
 In this example, 20 states seem to be enough to represent the variation
 of water values.</p>
@@ -168,7 +168,7 @@ of water values.</p>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">value_node</span>, color <span class="op">=</span> <span class="va">number_states</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_state_bellman-1.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_state_bellman-1.png" class="r-plt" alt="" width="100%"></p>
 <p>The difference between bellman values with 10 states and 20 states is
 quite important in this example. With 10 states, bellman values are
 lower because the linear interpolation of bellman values underestimates
@@ -215,7 +215,7 @@ and in particular to minimize the unsupplied energy. The value
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cvar_value <span class="op">=</span> <span class="va">m</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">compare_method</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_method-1.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_method-2.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_method-3.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_method-1.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_method-2.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_method-3.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compare_method</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>cvar_value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">cvar_value</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -224,7 +224,7 @@ and in particular to minimize the unsupplied energy. The value
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">vu</span>, color <span class="op">=</span> <span class="va">cvar_value</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">weeks</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_method_vu-1.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_method_vu-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Smaller <code>cvar_value</code> gives higher water values and
 therefore more conservative levels trajectories.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -234,7 +234,7 @@ therefore more conservative levels trajectories.</p>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">value_node</span>, color <span class="op">=</span> <span class="va">cvar_value</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_method_bellman-1.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_method_bellman-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Bellman values with small <code>cvar_value</code> method are smaller
 as they take into account for each week, the worst scenarios so they
 overestimate the total cost.</p>
@@ -281,7 +281,7 @@ P_t(X_{t}) = \min(0, p_{low}(X_t-\underline{X}_t), p_{high}(\overline{X}_t-X_t))
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>penalty <span class="op">=</span> <span class="va">p</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">compare_rulecurve</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve-1.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve-2.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve-3.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve-1.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve-2.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve-3.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compare_rulecurve</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">weeks</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">12</span>,<span class="fl">22</span>,<span class="fl">32</span>,<span class="fl">42</span>,<span class="fl">52</span><span class="op">)</span>,<span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">vu</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -290,7 +290,7 @@ P_t(X_{t}) = \min(0, p_{low}(X_t-\underline{X}_t), p_{high}(\overline{X}_t-X_t))
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">vu</span>, color <span class="op">=</span> <span class="va">penalty</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">weeks</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve_vu-1.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_rulecurve_vu-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Higher the penalty on rule curves are, higher the water values are
 below the lower rule curve and lower the water values are above the
 higher rule curve. This will help the storage to remain inside rule
@@ -325,7 +325,7 @@ by <code>penalty_final_level_low</code> and
 <span>  penalty_final_level_high <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  nb_cycle <span class="op">=</span> <span class="va">nb_cycle</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_finallevel-1.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_finallevel-1.png" class="r-plt" alt="" width="100%"></p>
 <p>Water values will encourage the storage to end at the specified final
 level thanks to their cone shape.</p>
 </div>
@@ -359,7 +359,7 @@ Empirically, 2 iterations is enough.</p>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>nb_cycle <span class="op">=</span> <span class="va">n</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">compare_cycle</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_cycle-1.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_cycle-2.png" class="r-plt" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_cycle-3.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_cycle-1.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_cycle-2.png" class="r-plt" alt="" width="100%"><img src="grid_Matrix-parameters_files/figure-html/compare_cycle-3.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compare_cycle</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">weeks</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>,<span class="fl">12</span>,<span class="fl">22</span>,<span class="fl">32</span>,<span class="fl">42</span>,<span class="fl">52</span><span class="op">)</span>,<span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">vu</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -368,7 +368,7 @@ Empirically, 2 iterations is enough.</p>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">states</span>, y <span class="op">=</span> <span class="va">vu</span>, color <span class="op">=</span> <span class="va">nb_cycle</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/vars.html" class="external-link">vars</a></span><span class="op">(</span><span class="va">weeks</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="grid_Matrix-parameters_files/figure-html/compare_cycle_vu-1.png" class="r-plt" width="100%"></p>
+<p><img src="grid_Matrix-parameters_files/figure-html/compare_cycle_vu-1.png" class="r-plt" alt="" width="100%"></p>
 <p>With only one cycle, water values are lower at the end of the year
 because, with null final bellman values,the optimal solution is to use
 all the storage left. With two cycles, water values are higher. At the

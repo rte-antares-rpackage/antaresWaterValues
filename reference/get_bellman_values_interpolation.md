@@ -6,15 +6,14 @@ scenario, used in `Bellman` and in `getOptimalTrend`
 ## Usage
 
 ``` r
-get_bellman_values_interpolation(Data_week, next_week_values, mcyears)
+get_bellman_values_interpolation(next_state, next_week_values, mcyears)
 ```
 
 ## Arguments
 
-- Data_week:
+- next_state:
 
-  Data frame generated in `Grid_Matrix` code containing list of states
-  and years evaluated (we suppose there is only one week at a time)
+  possible states for next week
 
 - next_week_values:
 

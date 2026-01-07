@@ -4,7 +4,7 @@
 \alias{get_weekly_cost}
 \title{Get objective values of the optimization problem of each week and each scenario for a given simulation \code{simu}, mainly used in \code{get_Reward()} to build reward functions.}
 \usage{
-get_weekly_cost(simu, mcyears, expansion = FALSE)
+get_weekly_cost(simu, mcyears, expansion = F)
 }
 \arguments{
 \item{simu}{List of simulation parameters returned by the function \code{antaresRead::setSimulationPath()} with the simulation selected.}

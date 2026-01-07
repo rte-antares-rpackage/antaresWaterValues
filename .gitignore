@@ -2,8 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-.lintr
-.vscode
 inst/doc
 matrix.txt
 docs

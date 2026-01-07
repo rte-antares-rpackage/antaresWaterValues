@@ -56,7 +56,7 @@ simulationUI <- function(id,opts) {
       shinyWidgets::materialSwitch(
         NS(id,"expansion"),
         "Mode expansion",
-        value = FALSE,
+        value = F,
         status = "success"
       ) %>%
         bsplus::shinyInput_label_embed(
@@ -108,9 +108,9 @@ simulationServer <- function(id,opts,silent) {
     pumping <- shiny::reactive({
       max_hydro <- get_max_hydro(area = input$sim_area,opts=opts,timeStep = "hourly")
       if (min(max_hydro$pump)>0){
-        TRUE
+        T
       } else {
-        FALSE
+        F
       }
     })
 
@@ -140,7 +140,7 @@ simulationServer <- function(id,opts,silent) {
                                 to = input$sim_mcyears[2]
                               ),
                               path_solver = input$solver_path,
-                              overwrite = TRUE,
+                              overwrite = T,
                               opts = opts,
                               file_name = input$file_name,
                               pumping = pumping(),
@@ -153,8 +153,9 @@ simulationServer <- function(id,opts,silent) {
                           shinyWidgets::show_alert(title = "Run simulations",
                                                    text = "Done !!",
                                                    type = "success")
-                        }, print_cat = FALSE,
-                        message = FALSE, warning = silent))
+                        }, print_cat = F,
+                        message = F, warning = silent))
 
   })
 }
+

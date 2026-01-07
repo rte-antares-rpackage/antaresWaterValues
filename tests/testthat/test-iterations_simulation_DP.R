@@ -1,4 +1,4 @@
-test_that("getOptimalTrend", {
+test_that("getNewConstraint", {
   path0 <- tempdir()
   sourcedir <- system.file("extdata", package = "antaresWaterValues")
   studies <- list.files(
@@ -60,9 +60,9 @@ test_that("getOptimalTrend", {
 
   niveau_max = get_reservoir_capacity(area,opts)
 
-  levels <- getOptimalTrend(level_init=get_initial_level_year_per_year(area,opts)*niveau_max/100,
+  levels <- getNewConstraint(level_init=get_initial_level_year_per_year(area,opts)*niveau_max/100,
                             watervalues=results$watervalues,
-                            mcyears=mcyears,reward=reward_db$reward,controls=controls,
+                            mcyears=mcyears,reward=reward_db$reward,
                             niveau_max = niveau_max,df_levels = data.frame(),
                             penalty_low = penalty_low, penalty_high = penalty_high,
                             penalty_final_level = penalty_final_level, final_level = final_level,

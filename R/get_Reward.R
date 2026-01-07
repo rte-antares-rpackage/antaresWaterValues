@@ -24,7 +24,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
                        opts, correct_monotony = FALSE,
                        method_old = TRUE, possible_controls = NULL,
                        max_hydro_hourly = NULL, mcyears = "all",area,efficiency=NULL,
-                       expansion=FALSE) {
+                       expansion=F) {
   assertthat::assert_that(class(opts) == "simOptions")
   studyPath <- opts$studyPath
   area = tolower(area)
@@ -55,7 +55,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
   }
 
   # check that the MC years are in simulations
-  for (o in seq_along(opts_o)){
+  for (o in 1:length(opts_o)){
     assertthat::assert_that(all(mcyears %in% opts_o[[o]]$mcYears),
                             msg="Those MC years didn't have been all simulated, check your simulation.")
   }
@@ -151,7 +151,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
     }
 
     # Adding controls used in simulation to the controls used to interpolate reward
-    if (("mcYear" %in% names(simulation_values)) && !("mcYear" %in% names(possible_controls))){
+    if (("mcYear" %in% names(simulation_values))&!("mcYear" %in% names(possible_controls))){
       possible_controls <- dplyr::cross_join(possible_controls,
                                              data.frame(mcYear=mcyears))
     }
@@ -179,7 +179,7 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
       },
       o = opts_o,
       u = u,
-      SIMPLIFY = FALSE
+      SIMPLIFY = F
     )}
 
 
@@ -244,7 +244,7 @@ get_local_reward <- function(simu,possible_controls,max_hydro_hourly,area,mcyear
                   balance = dplyr::if_else(.data$balance>(.data$P_max),.data$P_max,.data$balance))
 
   price <- price %>%
-    dplyr::cross_join(data.frame(pumping=c(TRUE,FALSE))) %>%
+    dplyr::cross_join(data.frame(pumping=c(T,F))) %>%
     dplyr::mutate(price = dplyr::if_else(.data$pumping,.data$price/efficiency,.data$price)) %>%
     dplyr::mutate(gap_greater_control = dplyr::if_else(.data$pumping,
                                        dplyr::if_else(.data$balance>0,.data$balance*efficiency,0),
@@ -348,7 +348,7 @@ get_local_reward <- function(simu,possible_controls,max_hydro_hourly,area,mcyear
 #'
 #' @export
 reward_offset <- function(simu, df_reward, u0 = c(),mcyears,
-                          expansion = FALSE){
+                          expansion = F){
   cost <- get_weekly_cost(mcyears = mcyears, simu = simu,
                           expansion=expansion) %>%
     dplyr::rename(week="timeId") %>%

@@ -4,7 +4,7 @@
 \alias{reward_offset}
 \title{Take into account overall cost in local reward}
 \usage{
-reward_offset(simu, df_reward, u0 = c(), mcyears, expansion = FALSE)
+reward_offset(simu, df_reward, u0 = c(), mcyears, expansion = F)
 }
 \arguments{
 \item{simu}{List of simulation parameters returned by the function \code{antaresRead::setSimulationPath()} with the simulation selected.}

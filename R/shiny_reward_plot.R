@@ -48,7 +48,7 @@ rewardUI <- function(id,opts) {
         outputId = NS(id,"download_reward_base"),
         style = "unite",
         color = "primary",
-        block = TRUE
+        block = T
       )
     ),
 
@@ -58,7 +58,7 @@ rewardUI <- function(id,opts) {
         outputId = NS(id,"download_reward_plot"),
         style = "unite",
         color = "primary",
-        block = TRUE
+        block = T
       ),
 
       DT::dataTableOutput(NS(id,"reward_table"))
@@ -131,3 +131,4 @@ rewardServer <- function(id, opts, reward_db) {
 
   })
 }
+

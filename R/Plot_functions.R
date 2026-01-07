@@ -192,7 +192,7 @@ plot_Bellman <- function(value_nodes_dt,weeks_to_plot){
   temp <- temp %>%
       dplyr::mutate(value_node=dplyr::case_when(.data$states>.data$level_high ~ .data$value_node - .data$penalty_high*(.data$states-.data$level_high),
                                               .data$states<.data$level_low ~ .data$value_node  - .data$penalty_low*(.data$level_low-.data$states),
-                                              TRUE ~ .data$value_node))
+                                              TRUE ~ .data$value_node ))
 
   temp <- temp %>%
     dplyr::mutate(states_round_percent=.data$states/max(temp$states)*100) %>%

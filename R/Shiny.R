@@ -11,7 +11,7 @@
 #' @export
 shiny_water_values <-
   function(opts,
-           silent = FALSE) {
+           silent = F) {
     for (p in c(
       "bsplus",
       "DT",
@@ -104,7 +104,7 @@ shiny_water_values <-
     options(shiny.launch.browser = TRUE)
     options(shiny.sanitize.errors = FALSE)
     options(shiny.fullstacktrace = FALSE)
-    options(shiny.trace = FALSE)
+    options(shiny.trace = F)
     options(shiny.error = NULL)
     shiny::shinyApp(ui = ui, server = server)
   }

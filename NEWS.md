@@ -1,3 +1,9 @@
+# antaresWaterValues 2.1.0
+
+## New features
+
+* New function to compute Bellman values with iterations for multiple storages sequentially
+
 # antaresWaterValues 2.0.0
 
 ## New features

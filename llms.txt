@@ -210,6 +210,20 @@ storages when computing Bellman values.
 - [`Grid_Matrix()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/Grid_Matrix.md)
   : Compute Bellman values
 
+- [`calculateBellmanWithIterativeSimulations()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateBellmanWithIterativeSimulations.md)
+  : Calculate Bellman values throughout iterations of Antares simulation
+  and DP Each simulation leads to a new reward estimation, which leads
+  to new water values, which leads to the off-line calculation in R of
+  an optimal trajectory, which leads to new controls to be evaluated
+  which leads to a new simulation
+
+- [`calculateBellmanWithIterativeSimulationsMultiStock()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateBellmanWithIterativeSimulationsMultiStock.md)
+  : Calculate Bellman values throughout iterations of Antares simulation
+  and DP Each simulation leads to a new reward estimation, which leads
+  to new water values, which leads to the off-line calculation in R of
+  an optimal trajectory, which leads to new controls to be evaluated
+  which leads to a new simulation
+
 - [`calculateRewardsSimulationsWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateRewardsSimulationsWithPlaia.md)
   :
 
@@ -308,6 +322,18 @@ storages when computing Bellman values.
 
 - [`to_Antares_Format_bis()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/to_Antares_Format_bis.md)
   : Convert water values to Antares format with high accuracy
+
+- [`updateReward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/updateReward.md)
+  :
+
+  Update df_rewards with latest simulation run, used in
+  `calculateBellmanWithIterativeSimulations`
+
+- [`updateWatervalues()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/updateWatervalues.md)
+  :
+
+  Calculate water values with `Grid_Matrix` from estimated reward, used
+  in `calculateBellmanWithIterativeSimulations`
 
 - [`waterValuesViz()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/waterValuesViz.md)
   : Plot water values

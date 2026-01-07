@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,6 +53,20 @@
 
         </dt>
         <dd>Compute Bellman values</dd>
+
+        <dt>
+
+          <code><a href="calculateBellmanWithIterativeSimulations.html">calculateBellmanWithIterativeSimulations()</a></code>
+
+        </dt>
+        <dd>Calculate Bellman values throughout iterations of Antares simulation and DP Each simulation leads to a new reward estimation, which leads to new water values, which leads to the off-line calculation in R of an optimal trajectory, which leads to new controls to be evaluated which leads to a new simulation</dd>
+
+        <dt>
+
+          <code><a href="calculateBellmanWithIterativeSimulationsMultiStock.html">calculateBellmanWithIterativeSimulationsMultiStock()</a></code>
+
+        </dt>
+        <dd>Calculate Bellman values throughout iterations of Antares simulation and DP Each simulation leads to a new reward estimation, which leads to new water values, which leads to the off-line calculation in R of an optimal trajectory, which leads to new controls to be evaluated which leads to a new simulation</dd>
 
         <dt>
 
@@ -249,6 +263,20 @@
 
         </dt>
         <dd>Convert water values to Antares format with high accuracy</dd>
+
+        <dt>
+
+          <code><a href="updateReward.html">updateReward()</a></code>
+
+        </dt>
+        <dd>Update df_rewards with latest simulation run, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
+
+        <dt>
+
+          <code><a href="updateWatervalues.html">updateWatervalues()</a></code>
+
+        </dt>
+        <dd>Calculate water values with <code>Grid_Matrix</code> from estimated reward, used in <code>calculateBellmanWithIterativeSimulations</code></dd>
 
         <dt>
 

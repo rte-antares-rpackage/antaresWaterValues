@@ -57,12 +57,6 @@ getOptimalTrend <- function(level_init,
     pen_high <- ifelse(w<52,penalty_high,penalty_final_level)
     pen_low <- ifelse(w<52,penalty_low,penalty_final_level)
 
-    decision_space <-  dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
-      tidyr::unnest(c("reward_db")) %>%
-      dplyr::select(c("years","control")) %>%
-      dplyr::rename("mcYear"="years","u"="control") %>%
-      dplyr::mutate(week = w)
-
     control = Bellman(Data_week = Data_week,
                       next_week_values_l = transition$value_node,
                       reward = reward_week,

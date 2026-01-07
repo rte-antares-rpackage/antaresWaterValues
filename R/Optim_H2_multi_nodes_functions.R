@@ -757,12 +757,12 @@ total_cost_loop <- function(area,
 
     pump_eff = getPumpEfficiency(area,opts)
     levels <- getOptimalTrend(level_init=level_init,watervalues=res$watervalues,
-                              mcyears=mc_years,reward=new_rewards$reward,controls=new_rewards$controls,
-                              niveau_max = storage_vol,df_levels = data.frame(),
+                              mcyears=mc_years,reward=new_rewards$reward,
+                              reservoir_capacity = storage_vol,
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
-                              max_hydro_weekly=max_hydro_weekly, n=3,
-                              pump_eff = pump_eff, df_previous_cut = NULL, mix_scenario = F)
+                              max_hydro_weekly=max_hydro_weekly,
+                              efficiency = pump_eff, mix_scenario = F)
     levels <- levels %>%
       dplyr::mutate(area = area, u = .data$true_constraint) %>%
       dplyr::select(c("week","mcYear","u","area"))

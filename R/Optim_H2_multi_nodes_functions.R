@@ -764,7 +764,7 @@ total_cost_loop <- function(area,
                               max_hydro_weekly=max_hydro_weekly,
                               efficiency = pump_eff, mix_scenario = F)
     levels <- levels %>%
-      dplyr::mutate(area = area, u = .data$true_constraint) %>%
+      dplyr::mutate(area = area, u = .data$constraint) %>%
       dplyr::select(c("week","mcYear","u","area"))
   } else {
     levels = data.frame()

@@ -150,7 +150,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   while(gap > 1e-3 && i <= nb_itr){
 
     levels <- getNewConstraint(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
                               niveau_max = niveau_max,df_levels = df_levels,
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,
@@ -395,8 +395,6 @@ updateWatervalues <- function(reward,controls,area,mcyears,opts,
 
   reward_db <- list()
   reward_db$reward <- reward
-  reward_db$decision_space <- controls
-
 
   results <- Grid_Matrix(
     reward_db = reward_db,
@@ -428,7 +426,7 @@ updateWatervalues <- function(reward,controls,area,mcyears,opts,
 }
 
 
-getNewConstraint <- function(level_init,watervalues,mcyears,
+getNewConstraint <- function(level_init,watervalues,mcyears,reward,
                              niveau_max,df_levels,penalty_low,penalty_high,
                              penalty_final_level, final_level,
                              max_hydro_weekly, n=0, pump_eff,mix_scenario=TRUE,
@@ -469,7 +467,8 @@ getNewConstraint <- function(level_init,watervalues,mcyears,
                            max_hydro_weekly,
                            192 * (n - 1),
                            pump_eff,
-                           mix_scenario)
+                           mix_scenario,
+                           reward)
 
   if (nrow(df_levels)>=1){
     levels <- df_levels %>%
@@ -698,7 +697,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
         }
 
         levels <- getNewConstraint(level_init=level_init,watervalues=results$watervalues,
-                                  mcyears=mcyears,
+                                  mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
                                   niveau_max = list_capacity[[area]],df_levels = df_levels_area,
                                   penalty_low = penalty_low, penalty_high = penalty_high,
                                   penalty_final_level = penalty_final_level, final_level = final_level,
@@ -811,7 +810,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
       }
 
     levels <- getNewConstraint(level_init=level_init,watervalues=results$watervalues,
-                              mcyears=mcyears,
+                              mcyears=mcyears,reward=dplyr::rename(reward,"timeId"="week","control"="u"),
                               niveau_max = list_capacity[[area]],df_levels = dplyr::filter(df_levels,.data$area==a),
                               penalty_low = penalty_low, penalty_high = penalty_high,
                               penalty_final_level = penalty_final_level, final_level = final_level,

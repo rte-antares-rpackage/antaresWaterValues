@@ -28,7 +28,8 @@ Grid_Matrix(
   force_final_level = F,
   final_level = NULL,
   penalty_final_level_low = NULL,
-  penalty_final_level_high = NULL
+  penalty_final_level_high = NULL,
+  plot_watervalues = TRUE
 )
 }
 \arguments{
@@ -82,6 +83,8 @@ attending the limit.}
 \item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
 
 \item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.}
+
+\item{plot_watervalues}{Binary.}
 }
 \value{
 \item{watervalues}{A \code{dplyr::tibble()} with multiple columns and detailed results.}

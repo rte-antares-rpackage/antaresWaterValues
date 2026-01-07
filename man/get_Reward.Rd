@@ -48,8 +48,6 @@ It is recommended to use mode expansion, it will be faster (only one iteration i
 \item{reward}{A \code{dplyr::tibble()} with columns \code{"timeId"}, \code{"mcYear"}, \code{"control"} and \code{"reward"}. Reward functions for all weeks (\code{timeId}) and scenarios (\code{mcYear}).}
 \item{local_reward}{Only if \code{method_old=FALSE}.
 A \code{dplyr::tibble()} with columns \code{"week"}, \code{"mcYear"}, \code{"u"}, \code{"reward"} and \code{"simulation"}. All reward functions for all different simulations computed with \code{get_local_reward()} and \code{reward_offset()}.}
-\item{simulation_names}{See arguments.}
-\item{simulation_values}{See arguments.}
 }
 \description{
 Compute reward functions for all weeks from 1 to 52 and for all scenarios in \code{mcyears} for the given area from simulations listed in \code{simulation_names}.

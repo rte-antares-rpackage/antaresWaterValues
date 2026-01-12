@@ -140,7 +140,8 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                               final_level = final_level,
                               max_hydro_weekly =list_max_hydro_weekly[[area]],
                               efficiency = list_efficiency[[area]],
-                              mix_scenario = F)
+                              mix_scenario = F,
+                              reward = reward_db$reward)
 
     df_levels = levels %>%
       dplyr::mutate(area = area, n=1) %>%

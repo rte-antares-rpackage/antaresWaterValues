@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">MultiStock_H2_Investment_reward_compute_once</span><span class="op">(</span></span>
 <span>  <span class="va">areas_invest</span>,</span>
 <span>  <span class="va">max_ite</span>,</span>
-<span>  <span class="va">storage_bounds</span>,</span>
+<span>  <span class="va">list_storage_bounds</span>,</span>
 <span>  <span class="va">storage_points_nb</span>,</span>
 <span>  <span class="va">candidates_types_gen</span>,</span>
 <span>  penalty_low <span class="op">=</span> <span class="fl">5000</span>,</span>
@@ -56,17 +56,15 @@
 <span>  penalty_final_level <span class="op">=</span> <span class="fl">5000</span>,</span>
 <span>  <span class="va">opts</span>,</span>
 <span>  <span class="va">mc_years_optim</span>,</span>
-<span>  <span class="va">path_to_antares</span>,</span>
 <span>  cvar <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">storage_annual_cost</span>,</span>
-<span>  launch_sims <span class="op">=</span> <span class="cn">T</span>,</span>
 <span>  nb_sims <span class="op">=</span> <span class="fl">51</span>,</span>
 <span>  parallelprocess <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  nb_sockets <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  unspil_cost <span class="op">=</span> <span class="fl">3000</span>,</span>
-<span>  edit_study <span class="op">=</span> <span class="cn">F</span>,</span>
 <span>  <span class="va">file_intermediate_results</span>,</span>
-<span>  back_to_first_node <span class="op">=</span> <span class="cn">F</span></span>
+<span>  <span class="va">list_ratio_max_hydro</span>,</span>
+<span>  remove_cluster <span class="op">=</span> <span class="cn">F</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -82,8 +80,8 @@
 <dd><p>Integer. Maximum number of iterations for each area.</p></dd>
 
 
-<dt id="arg-storage-bounds">storage_bounds<a class="anchor" aria-label="anchor" href="#arg-storage-bounds"></a></dt>
-<dd><p>Vector of integers of length 2, with the form (min, max).</p></dd>
+<dt id="arg-list-storage-bounds">list_storage_bounds<a class="anchor" aria-label="anchor" href="#arg-list-storage-bounds"></a></dt>
+<dd><p>List of vectors of integers of length 2, with the form (min, max) for each area.</p></dd>
 
 
 <dt id="arg-storage-points-nb">storage_points_nb<a class="anchor" aria-label="anchor" href="#arg-storage-points-nb"></a></dt>
@@ -120,20 +118,12 @@ Zone is a character containing the name of the area where to propose the candida
 <dd><p>Vector of integers. Monte Carlo years to perform the optimization.</p></dd>
 
 
-<dt id="arg-path-to-antares">path_to_antares<a class="anchor" aria-label="anchor" href="#arg-path-to-antares"></a></dt>
-<dd><p>Character containing the Antares Solver path, argument passed to <code><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/runSimulation.html" class="external-link">runSimulation</a></code>.</p></dd>
-
-
 <dt id="arg-cvar">cvar<a class="anchor" aria-label="anchor" href="#arg-cvar"></a></dt>
 <dd><p>Numeric in [0,1]. The probability used in cvar algorithm.</p></dd>
 
 
 <dt id="arg-storage-annual-cost">storage_annual_cost<a class="anchor" aria-label="anchor" href="#arg-storage-annual-cost"></a></dt>
 <dd><p>Numeric. Annual cost of storage in eur/MWh.</p></dd>
-
-
-<dt id="arg-launch-sims">launch_sims<a class="anchor" aria-label="anchor" href="#arg-launch-sims"></a></dt>
-<dd><p>Boolean. True to launch simulations at each iterations. False if simulations already run.</p></dd>
 
 
 <dt id="arg-nb-sims">nb_sims<a class="anchor" aria-label="anchor" href="#arg-nb-sims"></a></dt>
@@ -152,16 +142,16 @@ Zone is a character containing the name of the area where to propose the candida
 <dd><p>Numeric. Unspilled energy cost in eur/MW for all concerned areas.</p></dd>
 
 
-<dt id="arg-edit-study">edit_study<a class="anchor" aria-label="anchor" href="#arg-edit-study"></a></dt>
-<dd><p>Boolean. True to edit study with optimal candidates.</p></dd>
-
-
 <dt id="arg-file-intermediate-results">file_intermediate_results<a class="anchor" aria-label="anchor" href="#arg-file-intermediate-results"></a></dt>
 <dd><p>Character. Local path to save intermediate results.</p></dd>
 
 
-<dt id="arg-back-to-first-node">back_to_first_node<a class="anchor" aria-label="anchor" href="#arg-back-to-first-node"></a></dt>
-<dd><p>Boolean. True to play again first node at the end. There is no possibility to go uninvest.</p></dd>
+<dt id="arg-list-ratio-max-hydro">list_ratio_max_hydro<a class="anchor" aria-label="anchor" href="#arg-list-ratio-max-hydro"></a></dt>
+<dd><p>List of vectors. For each area, give the maximum generating (turb)/pumping (pump) capacity ratio</p></dd>
+
+
+<dt id="arg-remove-cluster">remove_cluster<a class="anchor" aria-label="anchor" href="#arg-remove-cluster"></a></dt>
+<dd><p>Boolean. Should cluster candidate be removed before running the investment process</p></dd>
 
 </dl></div>
     <div class="section level2">

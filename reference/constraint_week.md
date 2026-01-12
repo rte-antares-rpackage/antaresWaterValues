@@ -6,7 +6,14 @@ Generate constraint values for a week at a time used in
 ## Usage
 
 ``` r
-constraint_week(pumping, efficiency, nb_disc_stock, res_cap, hydro, week)
+constraint_week(
+  pumping,
+  efficiency,
+  nb_disc_stock,
+  reservoir_capacity,
+  hydro,
+  week
+)
 ```
 
 ## Arguments
@@ -23,7 +30,7 @@ constraint_week(pumping, efficiency, nb_disc_stock, res_cap, hydro, week)
 
   Number of constraint values wanted for each week
 
-- res_cap:
+- reservoir_capacity:
 
   Double, reservoir capacity
 

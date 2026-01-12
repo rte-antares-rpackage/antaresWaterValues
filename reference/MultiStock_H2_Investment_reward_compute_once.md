@@ -9,7 +9,7 @@ including storage, must-run clusters and flexibles clusters.
 MultiStock_H2_Investment_reward_compute_once(
   areas_invest,
   max_ite,
-  storage_bounds,
+  list_storage_bounds,
   storage_points_nb,
   candidates_types_gen,
   penalty_low = 5000,
@@ -17,17 +17,15 @@ MultiStock_H2_Investment_reward_compute_once(
   penalty_final_level = 5000,
   opts,
   mc_years_optim,
-  path_to_antares,
   cvar = 1,
   storage_annual_cost,
-  launch_sims = T,
   nb_sims = 51,
   parallelprocess = F,
   nb_sockets = 0,
   unspil_cost = 3000,
-  edit_study = F,
   file_intermediate_results,
-  back_to_first_node = F
+  list_ratio_max_hydro,
+  remove_cluster = F
 )
 ```
 
@@ -41,9 +39,10 @@ MultiStock_H2_Investment_reward_compute_once(
 
   Integer. Maximum number of iterations for each area.
 
-- storage_bounds:
+- list_storage_bounds:
 
-  Vector of integers of length 2, with the form (min, max).
+  List of vectors of integers of length 2, with the form (min, max) for
+  each area.
 
 - storage_points_nb:
 
@@ -85,11 +84,6 @@ MultiStock_H2_Investment_reward_compute_once(
 
   Vector of integers. Monte Carlo years to perform the optimization.
 
-- path_to_antares:
-
-  Character containing the Antares Solver path, argument passed to
-  [`runSimulation`](https://rte-antares-rpackage.github.io/antaresEditObject/reference/runSimulation.html).
-
 - cvar:
 
   Numeric in \[0,1\]. The probability used in cvar algorithm.
@@ -97,11 +91,6 @@ MultiStock_H2_Investment_reward_compute_once(
 - storage_annual_cost:
 
   Numeric. Annual cost of storage in eur/MWh.
-
-- launch_sims:
-
-  Boolean. True to launch simulations at each iterations. False if
-  simulations already run.
 
 - nb_sims:
 
@@ -119,18 +108,19 @@ MultiStock_H2_Investment_reward_compute_once(
 
   Numeric. Unspilled energy cost in eur/MW for all concerned areas.
 
-- edit_study:
-
-  Boolean. True to edit study with optimal candidates.
-
 - file_intermediate_results:
 
   Character. Local path to save intermediate results.
 
-- back_to_first_node:
+- list_ratio_max_hydro:
 
-  Boolean. True to play again first node at the end. There is no
-  possibility to go uninvest.
+  List of vectors. For each area, give the maximum generating
+  (turb)/pumping (pump) capacity ratio
+
+- remove_cluster:
+
+  Boolean. Should cluster candidate be removed before running the
+  investment process
 
 ## Value
 

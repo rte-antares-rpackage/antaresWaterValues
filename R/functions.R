@@ -366,7 +366,7 @@ add_fictive_fatal_prod_demand <- function(area, opts, load, misc_gen, max_hydro 
   antaresEditObject::writeInputTS(data = load + max_hydro, type="load", area=area, opts=opts)
 
   misc_gen[, 6] = misc_gen[, 6] + max_hydro
-  antaresEditObject::writeMiscGen(data = misc_gen, area = area, opts=opts)
+  antaresEditObject::writeMiscGen(data = as.matrix(misc_gen), area = area, opts=opts)
 
 }
 
@@ -384,5 +384,5 @@ restore_fictive_fatal_prod_demand <- function(area, opts,
                                               load, misc_gen) {
   antaresEditObject::writeInputTS(data = load, type="load", area=area, opts=opts)
 
-  antaresEditObject::writeMiscGen(data = misc_gen, area = area, opts=opts)
+  antaresEditObject::writeMiscGen(data = as.matrix(misc_gen), area = area, opts=opts)
 }

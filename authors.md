@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/rte-antares-rpackage/antaresWaterValues/blob/invest_flex_method/DESCRIPTION)
 
 Gharsallaoui D, Gerbaux J (2026). *antaresWaterValues: Generating water
 values for Antares*. R package version 2.1.1,

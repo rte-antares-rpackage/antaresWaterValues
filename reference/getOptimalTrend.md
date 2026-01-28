@@ -18,7 +18,8 @@ getOptimalTrend(
   max_hydro_weekly,
   seed = 0,
   efficiency,
-  mix_scenario = TRUE
+  mix_scenario = TRUE,
+  reward
 )
 ```
 
@@ -81,6 +82,11 @@ getOptimalTrend(
 - mix_scenario:
 
   Should scenario be mix from one week to another ?
+
+- reward:
+
+  Output `reward` of
+  [`get_Reward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_Reward.md)
 
 ## Value
 

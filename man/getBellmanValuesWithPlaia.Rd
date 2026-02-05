@@ -12,6 +12,7 @@ getBellmanValuesWithPlaia(
   penalty_final_level,
   penalty_low,
   penalty_high,
+  cvar_value,
   name_sim,
   n_controls
 )
@@ -30,6 +31,8 @@ getBellmanValuesWithPlaia(
 \item{penalty_low}{Double. Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost.}
 
 \item{penalty_high}{Double. Penalty for violating the top rule curve, comparable to the spilled energy cost.}
+
+\item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
 
 \item{name_sim}{Character. Name of the simulation to launch}
 

@@ -18,6 +18,7 @@ getBellmanValuesWithPlaia <- function(opts,
                                       penalty_final_level,
                                       penalty_low,
                                       penalty_high,
+                                      cvar_value,
                                       name_sim,
                                       n_controls) {
 
@@ -100,7 +101,8 @@ getBellmanValuesWithPlaia <- function(opts,
       penalty_bottom_rule_curve = penalty_low,
       penalty_upper_rule_curve = penalty_high,
       penalty_final_level = penalty_final_level,
-      force_final_level = force_final_level
+      force_final_level = force_final_level,
+      cvar = cvar_value
     )
 
 

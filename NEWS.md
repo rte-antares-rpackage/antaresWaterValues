@@ -1,3 +1,23 @@
+# antaresWaterValues 2.1.0
+
+## New features
+
+* New function to compute Bellman values with iterations for multiple storages sequentially
+
+# antaresWaterValues 2.0.0
+
+## New features
+
+* New function to compute Bellman values sequentially based on reward functions from plaia implementation
+* New function getOptimalTrend
+* New function get_initial_level_year_per_year with scenario builder data
+
+## Improvements
+
+* Simplify arguments of Bellman functions
+* More robust changeHydroManagement
+
+
 # antaresWaterValues 1.2.3
 
 ## Bugfixes

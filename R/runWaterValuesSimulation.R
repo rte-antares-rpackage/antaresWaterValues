@@ -171,6 +171,11 @@ setupGeneralParameters <- function(opts,
   #check the study is well selected
   assertthat::assert_that(class(opts) == "simOptions")
 
+  if (expansion){
+    assertthat::assert_that(opts$parameters$`adequacy patch`$`include-adq-patch` == FALSE,
+                            msg = "Adequacy Patch can only be used with Economy mode.")
+  }
+
   assertthat::assert_that(is.numeric(mcyears)==TRUE)
 
   # check the name format
@@ -235,9 +240,6 @@ setupGeneralParameters <- function(opts,
     }
   }
   nb_disc_stock <- dplyr::n_distinct(constraint_values$sim)
-
-  assertthat::assert_that(!("water values district" %in% opts$districtList), msg = "Water values district already exists.")
-  assertthat::assert_that(sum(stringr::str_detect(opts$districtList,"district_balance"))==0, msg = "Balance district already exists.")
 
   return(list(simulation_name,file_name,constraint_values,nb_disc_stock))
 }
@@ -490,7 +492,8 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
     assertthat::assert_that(status == 0,
                             msg = "Antares simulation failed, check Antares logs.")
   }
-  if ("mcYear" %in% colnames(constraint_value) & !is_api_study(opts)){
+  if ("mcYear" %in% colnames(constraint_value) & !is_api_study(opts) &
+      !expansion & opts$parameters$output$storenewset){
     opts_sim = antaresRead::setSimulationPath(opts$studyPath,simulation=sim_name)
     ts_number = utils::read.csv(paste0(opts_sim$simPath,"/ts-numbers/bindingconstraints/watervalues.txt"))
     scenarios = unique(constraint_value$mcYear)

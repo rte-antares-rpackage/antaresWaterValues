@@ -8,12 +8,13 @@ getBellmanValuesWithPlaia(
   opts,
   mcyears,
   list_areas,
-  force_final_level,
-  penalty_final_level,
-  penalty_low,
-  penalty_high,
-  name_sim,
-  n_controls
+  force_final_level = TRUE,
+  penalty_final_level = 0,
+  penalty_low = 0,
+  penalty_high = 0,
+  cvar_value = 1,
+  name_sim = "watervalues",
+  n_controls = 51
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ getBellmanValuesWithPlaia(
 \item{penalty_low}{Double. Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost.}
 
 \item{penalty_high}{Double. Penalty for violating the top rule curve, comparable to the spilled energy cost.}
+
+\item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
 
 \item{name_sim}{Character. Name of the simulation to launch}
 

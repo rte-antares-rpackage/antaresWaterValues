@@ -14,12 +14,13 @@
 getBellmanValuesWithPlaia <- function(opts,
                                       mcyears,
                                       list_areas,
-                                      force_final_level,
-                                      penalty_final_level,
-                                      penalty_low,
-                                      penalty_high,
-                                      name_sim,
-                                      n_controls) {
+                                      force_final_level = TRUE,
+                                      penalty_final_level = 0,
+                                      penalty_low = 0,
+                                      penalty_high = 0,
+                                      cvar_value = 1,
+                                      name_sim = "watervalues",
+                                      n_controls = 51) {
 
   list_areas = tolower(list_areas)
 
@@ -44,6 +45,9 @@ getBellmanValuesWithPlaia <- function(opts,
   try(antaresRead::api_post(opts=opts,
                             endpoint = paste0(opts$study_id,"/extensions/xpansion")),
       silent = T)
+
+  df_leves = data.frame()
+  df_watervalues = data.frame()
 
   tryCatch({
 
@@ -87,10 +91,9 @@ getBellmanValuesWithPlaia <- function(opts,
     }
 
     body = list()
-    out <- character()
-    tc <- textConnection("out", "w")
-    utils::write.csv(grid, tc, row.names = FALSE, quote = FALSE)
-    close(tc)
+    out <- utils::capture.output(
+      utils::write.csv(grid, row.names = FALSE, quote = FALSE)
+    )
 
     body$file <- paste(out, collapse = "\n")
     antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
@@ -102,14 +105,13 @@ getBellmanValuesWithPlaia <- function(opts,
       penalty_bottom_rule_curve = penalty_low,
       penalty_upper_rule_curve = penalty_high,
       penalty_final_level = penalty_final_level,
-      force_final_level = force_final_level
+      force_final_level = force_final_level,
+      cvar = cvar_value
     )
 
 
     body = list()
-    tc <- textConnection("out", "w")
-    yaml::write_yaml(params, tc)
-    close(tc)
+    out <- yaml::as.yaml(params)
 
     body$file <- out
     antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
@@ -124,6 +126,7 @@ getBellmanValuesWithPlaia <- function(opts,
 
     assertthat::assert_that(res$status=="success",msg = "Simulation failed.")
 
+    # Extract results
     # Extract results
     export_res = antaresRead::api_get(opts = opts,
                                       endpoint = paste0(opts$study_id,
@@ -142,19 +145,56 @@ getBellmanValuesWithPlaia <- function(opts,
       Sys.sleep(10)
     }
 
-    if (i==max_try){ assertthat::assert_that(1==0)}
+    assertthat::assert_that(i<max_try, msg = "Too much attempts to download results.")
 
     zipfile <- tempfile(fileext = ".zip")
-    tmpdir  <- tempdir()
+    my_tmpdir <- tempfile("my_zip_files")
+    dir.create(my_tmpdir)
     writeBin(download_res, zipfile)
     for (j in seq_along(list_areas)){
-      utils::unzip(zipfile, files = paste0("gridPointsValues_",j,".csv"), exdir = tmpdir)
-      list_watervalues[[list_areas[[j]]]] = utils::read.csv(paste0(tmpdir,"/gridPointsValues_",j,".csv"))
+      utils::unzip(zipfile, files = paste0(j,"_",list_areas[[j]],"_water_values.csv"), exdir = my_tmpdir)
+      list_watervalues[[list_areas[[j]]]] = as.matrix(utils::read.csv(paste0(my_tmpdir,"/",j,"_",list_areas[[j]],"_water_values.csv"),
+                                                            sep = '\t', header = F))
+    }
+
+    for (j in seq_along(list_areas)){
+      capa = antaresWaterValues::get_reservoir_capacity(list_areas[[j]],opts)
+      utils::unzip(zipfile, files = paste0(j,"_",list_areas[[j]],"_bellman_values.csv"), exdir = my_tmpdir)
+      data = utils::read.csv(paste0(my_tmpdir,"/",j,"_",list_areas[[j]],"_bellman_values.csv"),
+                                                            sep = ' ', header = F)
+      bellman = as.data.frame(data[,1:51])
+      bellman$weeks <- rownames(bellman)
+      df_watervalues <- tidyr::pivot_longer(bellman,
+                                    cols = -weeks,
+                                    names_to = "statesid",
+                                    values_to = "value_node") %>%
+        dplyr::mutate(area = list_areas[[j]],
+                      states = (as.integer(stringr::str_remove(.data$statesid,"V"))-1)/50*capa,
+                      weeks = as.integer(weeks)-2,
+                      weeks = dplyr::if_else(weeks==-1,52,weeks)) %>%
+        dplyr::select("weeks","states","value_node","area") %>%
+        rbind(df_watervalues)
+
+      utils::unzip(zipfile, files = paste0(j,"_",list_areas[[j]],"_optimal_trajectory.csv"), exdir = my_tmpdir)
+      data = utils::read.csv(paste0(my_tmpdir,"/",j,"_",list_areas[[j]],"_optimal_trajectory.csv"),
+                             sep = ' ', header = F)
+      df = as.data.frame(data[,1:ncol(data)-1])
+      df$weeks <- rownames(df)
+      df_levels <- tidyr::pivot_longer(df,
+                                 cols = -weeks,
+                                 names_to = "mcYear",
+                                 values_to = "lev") %>%
+        dplyr::mutate(area = list_areas[[i]],
+                      n = 0,
+                      weeks = as.integer(weeks)-1,
+                      mcYear = as.integer(stringr::str_remove(.data$mcYear,"V"))) %>%
+        dplyr::filter(mcYear %in% mcyears) %>%
+        rbind(df_levels)
     }
 
 
     unlink(zipfile)
-    unlink(tmpdir, recursive = TRUE)
+    on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)
   },
   error = function(e) {
     stop(e)
@@ -170,7 +210,11 @@ getBellmanValuesWithPlaia <- function(opts,
   }
   )
 
-  return(list_watervalues)
+  output <- list()
+  output$df_levels <- df_levels
+  output$df_watervalues <- df_watervalues
+  output$list_watervalues = list_watervalues
+  return(output)
 
 }
 

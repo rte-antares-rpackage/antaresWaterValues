@@ -131,7 +131,7 @@ simulationServer <- function(id,opts,silent) {
 
                         spsUtil::quiet({
                           spsComps::shinyCatch({
-                            simulation_res <-    runWaterValuesSimulation(
+                            runWaterValuesSimulation(
                               area = input$sim_area,
                               simulation_name = paste0(input$sim_area, "_wv_sim_%s"),
                               nb_disc_stock = input$sim_nb_disc_stock,

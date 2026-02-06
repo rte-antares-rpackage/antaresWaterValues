@@ -96,12 +96,8 @@ changeHydroManagement <- function(watervalues=F,heuristic=T,opts,area){
     hydro_ini[["use water"]][[area]] <- TRUE
     hydro_ini[["use heuristic"]][[area]] <- heuristic
   } else {
-    if (area %in% names(hydro_ini[["use water"]])){
-      hydro_ini[["use water"]][[area]] <- FALSE
-    }
-    if (area %in% names(hydro_ini[["use heuristic"]])){
-      hydro_ini[["use heuristic"]][[area]] <- TRUE
-    }
+    hydro_ini[["use water"]][[area]] <- FALSE
+    hydro_ini[["use heuristic"]][[area]] <- TRUE
   }
   antaresEditObject::writeIni(hydro_ini,
                               file.path("input","hydro","hydro"),

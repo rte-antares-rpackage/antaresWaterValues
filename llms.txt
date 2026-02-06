@@ -260,6 +260,9 @@ storages when computing Bellman values.
 - [`getBellmanValuesSequentialMultiStockWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesSequentialMultiStockWithPlaia.md)
   : Calculate Bellman values sequentially, one area at a time.
 
+- [`getBellmanValuesWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesWithPlaia.md)
+  : Compute Bellman values for several storage with plaia
+
 - [`getOptimalTrend()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getOptimalTrend.md)
   : Calculate an optimal trajectory for the reservoir levels based on
   Bellman values and reward functions.

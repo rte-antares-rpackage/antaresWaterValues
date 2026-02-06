@@ -151,7 +151,7 @@ Grid_Matrix(
 
 - penalty_final_level_low:
 
-  Double. Penalties for both bottom rule curve to constrain final level.
+  Double. Penalties for bottom rule curve to constrain final level.
 
 - penalty_final_level_high:
 

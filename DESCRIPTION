@@ -42,6 +42,7 @@ Suggests:
     spsComps (>= 0.3.0),
     spsUtil,
     testthat (>= 3.0.0),
+    yaml,
     zoo
 VignetteBuilder: 
     knitr

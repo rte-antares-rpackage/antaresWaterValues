@@ -8,13 +8,13 @@ getBellmanValuesWithPlaia(
   opts,
   mcyears,
   list_areas,
-  force_final_level,
-  penalty_final_level,
-  penalty_low,
-  penalty_high,
-  cvar_value,
-  name_sim,
-  n_controls
+  force_final_level = TRUE,
+  penalty_final_level = 0,
+  penalty_low = 0,
+  penalty_high = 0,
+  cvar_value = 1,
+  name_sim = "watervalues",
+  n_controls = 51
 )
 }
 \arguments{

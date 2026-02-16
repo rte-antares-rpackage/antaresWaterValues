@@ -36,11 +36,7 @@ getBellmanValuesWithPlaia <- function(opts,
   synthesis = opts$parameters$output$synthesis
   storenewset = opts$parameters$output$storenewset
 
-  assertthat::assert_that(is_api_study(opts),msg="Study must be in API mode to launch simulations.")
-
-  try(antaresRead::api_post(opts=opts,
-                            endpoint = paste0(opts$study_id,"/extensions/xpansion")),
-      silent = T)
+  validate_api_study_for_plaia(opts)
 
   df_levels = data.frame()
   df_watervalues = data.frame()

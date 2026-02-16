@@ -94,33 +94,10 @@ getBellmanValuesWithPlaia <- function(opts,
                          body=body)
 
     # Start the simulations
-    res = antaresEditObject::runSimulation(name = name_sim,
-                                           opts=opts,
-                                           xpansion = list(enabled=T),
-                                           other_options = "watervalues")
-
-    assertthat::assert_that(res$status=="success",msg = "Simulation failed.")
+    output_id = run_plaia_simulation(opts, name_sim,"watervalues")
 
     # Extract results
-    # Extract results
-    export_res = antaresRead::api_get(opts = opts,
-                                      endpoint = paste0(opts$study_id,
-                                                        "/outputs/",res$output_id,
-                                                        "/export"))
-    max_try <- 5
-    i <- 0
-
-    repeat {
-      i <- i + 1
-      res <- try({download_res = antaresRead::api_get(opts = opts,
-                                                      endpoint = export_res$file$id,
-                                                      default_endpoint = "v1/downloads")},
-                 silent = TRUE)
-      if (!inherits(res, "try-error") || i >= max_try) break
-      Sys.sleep(10)
-    }
-
-    assertthat::assert_that(i<max_try, msg = "Too much attempts to download results.")
+    download_res = download_output_zip(opts, output_id)
 
     zipfile <- tempfile(fileext = ".zip")
     my_tmpdir <- tempfile("my_zip_files")

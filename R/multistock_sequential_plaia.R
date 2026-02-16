@@ -205,24 +205,7 @@ calculateRewardsSimulationsWithPlaia <- function(node,
     antaresEditObject::updateGeneralSettings(year.by.year = FALSE, opts = opts)
     antaresEditObject::updateOutputSettings(synthesis = FALSE, storenewset = FALSE, opts=opts)
 
-    for (j in seq_along(list_areas)){
-      area <- list_areas[[j]]
-
-      assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
-                              msg=paste0("Unserved cost is null in ",area,
-                                         ", unserved energy will be exported to this area in simulations launched by the package."))
-
-      suppressWarnings({mingen = antaresRead::readInputTS(mingen = area,opts=opts)})
-      if (nrow(mingen)>0){
-        assertthat::assert_that(max(dplyr::pull(mingen,"mingen"))==0,
-                                msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
-      }
-
-      changeHydroManagement(opts=opts,watervalues = FALSE, heuristic = TRUE, area=area)
-
-      add_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
-                                    misc_gen = list_backup[[j]]$misc_gen)
-    }
+    prepare_areas_for_simulation(list_areas, list_backup, opts)
 
     grid = data.frame()
     for (j in seq_along(list_areas)){

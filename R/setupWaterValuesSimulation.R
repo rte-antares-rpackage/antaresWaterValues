@@ -19,9 +19,7 @@ setupWaterValuesSimulation <- function(area,
                                        efficiency,
                                        backup) {
 
- assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
-                        msg=paste0("Unserved cost is null in ",area,
-                                   ", unserved energy will be exported to this area in simulations launched by the package."))
+  prepare_areas_for_simulation(c(area), c(backup), opts)
 
   #assert the weekly output of the area:
   area_filtering = antaresRead::readIni(file.path("input","areas",area,"optimization.ini"),
@@ -29,17 +27,8 @@ setupWaterValuesSimulation <- function(area,
   assertthat::assert_that(stringr::str_detect(area_filtering$filtering$`filter-year-by-year`,"hourly"),
                           msg = paste0(area," must have year by year hourly output."))
 
-  suppressWarnings({mingen = antaresRead::readInputTS(mingen = area,opts=opts)})
-  if (nrow(mingen)>0){
-    assertthat::assert_that(max(dplyr::pull(mingen,"mingen"))==0,
-                            msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
-  }
-
   fictive_area_name <- paste0("watervalue_", area)
   thermal_cluster <- "water_value_cluster"
-
-  add_fictive_fatal_prod_demand(area = area, opts = opts, load = backup$load,
-                                misc_gen = backup$misc_gen)
 
   resetHydroStorage(area = area, opts = opts)
 
@@ -131,4 +120,40 @@ setWaterValuesDistrict <- function(opts, list_areas){
   }
 
   return(opts)
+}
+
+prepare_areas_for_simulation <- function(list_areas, list_backup, opts) {
+
+  for (j in seq_along(list_areas)){
+    area <- list_areas[[j]]
+
+    assertthat::assert_that(
+      area %in% names(opts$energyCosts$unserved),
+      msg=paste0("Unserved cost is null in ",area,
+                 ", unserved energy will be exported to this area in simulations launched by the package.")
+    )
+
+    suppressWarnings({
+      mingen <- antaresRead::readInputTS(mingen = area, opts = opts)
+    })
+
+    if (nrow(mingen) > 0) {
+      assertthat::assert_that(max(mingen$mingen) == 0,
+                              msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
+    }
+
+    changeHydroManagement(
+      opts = opts,
+      watervalues = FALSE,
+      heuristic = TRUE,
+      area = area
+    )
+
+    add_fictive_fatal_prod_demand(
+      area = area,
+      opts = opts,
+      load = list_backup[[j]]$load,
+      misc_gen = list_backup[[j]]$misc_gen
+    )
+  }
 }

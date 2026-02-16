@@ -46,7 +46,7 @@ getBellmanValuesWithPlaia <- function(opts,
                             endpoint = paste0(opts$study_id,"/extensions/xpansion")),
       silent = T)
 
-  df_leves = data.frame()
+  df_levels = data.frame()
   df_watervalues = data.frame()
 
   tryCatch({
@@ -68,6 +68,9 @@ getBellmanValuesWithPlaia <- function(opts,
         assertthat::assert_that(max(dplyr::pull(mingen,"mingen"))==0,
                                 msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
       }
+
+      assertthat::assert_that(ncol(list_backup[[j]]$hydro_storage)>=max(mcyears),
+                              msg = paste0("There is no enough columns for data inflow for ",area))
 
       changeHydroManagement(opts=opts,watervalues = FALSE, heuristic = TRUE, area=area)
 
@@ -179,14 +182,14 @@ getBellmanValuesWithPlaia <- function(opts,
       data = utils::read.csv(paste0(my_tmpdir,"/",j,"_",list_areas[[j]],"_optimal_trajectory.csv"),
                              sep = ' ', header = F)
       df = as.data.frame(data[,1:ncol(data)-1])
-      df$weeks <- rownames(df)
+      df$week <- rownames(df)
       df_levels <- tidyr::pivot_longer(df,
-                                 cols = -weeks,
+                                 cols = -week,
                                  names_to = "mcYear",
                                  values_to = "lev") %>%
-        dplyr::mutate(area = list_areas[[i]],
+        dplyr::mutate(area = list_areas[[j]],
                       n = 0,
-                      weeks = as.integer(weeks)-1,
+                      week = as.integer(week)-1,
                       mcYear = as.integer(stringr::str_remove(.data$mcYear,"V"))) %>%
         dplyr::filter(mcYear %in% mcyears) %>%
         rbind(df_levels)

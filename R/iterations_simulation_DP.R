@@ -549,14 +549,13 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
   assertthat::assert_that(opts$antaresVersion>=870,
                             msg = "Scenarization of rhs of binding constraints not available with the version of Antares. Update the study to 8.7.0 or don't scenarize control values.")
 
-  list_areas = tolower(list_areas)
+  validate_and_normalize_areas(list_areas,opts)
 
   list_backup = list()
   list_inflow = list()
   list_capacity = list()
   for (j in seq_along(list_areas)){
     area = list_areas[[j]]
-    check_area_name(area = area, opts = opts)
 
     list_backup[[j]] = getBackupData(area,mcyears,opts)
 

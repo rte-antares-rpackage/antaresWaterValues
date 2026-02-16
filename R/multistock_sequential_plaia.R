@@ -39,7 +39,7 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
   assertthat::assert_that(opts$antaresVersion>=930,
                           msg = "Plaia is available since version 9.3 of Antares.")
 
-  list_areas = tolower(list_areas)
+  validate_and_normalize_areas(list_areas,opts)
 
   list_inflow = list()
   list_capacity = list()
@@ -47,7 +47,6 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
   list_max_hydro_weekly = list()
   for (j in seq_along(list_areas)){
     area = list_areas[[j]]
-    check_area_name(area = area, opts = opts)
 
     list_capacity[[j]] <- get_reservoir_capacity(area = area, opts = opts)
     list_inflow[[j]] <- get_inflow(area=area, opts=opts,mcyears=mcyears)
@@ -183,13 +182,11 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                         optimal_traj,
                                         list_max_hydro_weekly)  {
 
-  list_areas = tolower(list_areas)
+  validate_and_normalize_areas(list_areas,opts)
 
   list_backup = list()
   for (j in seq_along(list_areas)){
     area = list_areas[[j]]
-    check_area_name(area = area, opts = opts)
-
     list_backup[[j]] = getBackupData(area,mcyears,opts)
 
     assertthat::assert_that(ncol(list_backup[[j]]$hydro_storage)>=max(mcyears),

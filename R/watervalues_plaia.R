@@ -22,13 +22,11 @@ getBellmanValuesWithPlaia <- function(opts,
                                       name_sim = "watervalues",
                                       n_controls = 51) {
 
-  list_areas = tolower(list_areas)
+  validate_and_normalize_areas(list_areas,opts)
 
   list_backup = list()
   for (j in seq_along(list_areas)){
     area = list_areas[[j]]
-    check_area_name(area = area, opts = opts)
-
     list_backup[[j]] = getBackupData(area,mcyears,opts)
   }
 

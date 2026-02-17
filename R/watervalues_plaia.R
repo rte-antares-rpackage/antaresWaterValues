@@ -91,16 +91,11 @@ getBellmanValuesWithPlaia <- function(opts,
     output_id = run_plaia_simulation(opts, name_sim,"watervalues")
 
     # Extract results
-    download_res = download_output_zip(opts, output_id)
+    zip_path = download_output_zip(opts, output_id)
 
-    zipfile <- tempfile(fileext = ".zip")
-    my_tmpdir <- tempfile("my_zip_files")
-    dir.create(my_tmpdir)
-    writeBin(download_res, zipfile)
     for (j in seq_along(list_areas)){
       list_watervalues[[list_areas[[j]]]] = as.matrix(extract_from_zip(
-        zipfile,
-        my_tmpdir,
+        zip_path,
         paste0(j,"_",list_areas[[j]],"_water_values.csv"),
         sep = '\t', header = F)
       )
@@ -108,8 +103,7 @@ getBellmanValuesWithPlaia <- function(opts,
 
     for (j in seq_along(list_areas)){
       capa = antaresWaterValues::get_reservoir_capacity(list_areas[[j]],opts)
-      data = extract_from_zip(zipfile,
-                              my_tmpdir,
+      data = extract_from_zip(zip_path,
                               paste0(j,"_",list_areas[[j]],"_bellman_values.csv"),
                               sep = ' ', header = F)
       bellman = as.data.frame(data[,1:51])
@@ -125,8 +119,7 @@ getBellmanValuesWithPlaia <- function(opts,
         dplyr::select("weeks","states","value_node","area") %>%
         rbind(df_watervalues)
 
-      data = extract_from_zip(zipfile,
-                              my_tmpdir,
+      data = extract_from_zip(zip_path,
                               paste0(j,"_",list_areas[[j]],"_optimal_trajectory.csv"),
                               sep = ' ', header = F)
       df = as.data.frame(data[,1:ncol(data)-1])
@@ -143,9 +136,7 @@ getBellmanValuesWithPlaia <- function(opts,
         rbind(df_levels)
     }
 
-
-    unlink(zipfile)
-    on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)
+    on.exit(unlink(dirname(zip_path), recursive = TRUE), add = TRUE)
   },
   error = function(e) {
     stop(e)

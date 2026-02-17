@@ -252,18 +252,12 @@ calculateRewardsSimulationsWithPlaia <- function(node,
     output_id = run_plaia_simulation(opts, name_sim, "grid_cost_function")
 
     # Extract results
-    download_res = download_output_zip(opts, output_id)
+    zipinfo = download_output_zip(opts, output_id)
 
-    zipfile <- tempfile(fileext = ".zip")
-    my_tmpdir <- tempfile("my_zip_files")
-    dir.create(my_tmpdir)
-    writeBin(download_res, zipfile)
-    reward = extract_from_zip(zipfile,
-                              my_tmpdir,
+    reward = extract_from_zip(zip_path,
                               "gridPointsValues_0.csv")
 
-    unlink(zipfile)
-    on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)
+    on.exit(unlink(dirname(zip_path), recursive = TRUE), add = TRUE)
 
     reward = reward %>%
       dplyr::mutate(timeId = .data$week,

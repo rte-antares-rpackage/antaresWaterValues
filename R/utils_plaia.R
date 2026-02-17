@@ -40,7 +40,7 @@ download_output_zip <- function(opts, output_id, max_try = 5) {
   i <- 0
   repeat {
     i <- i + 1
-    res <- try(
+    download_res <- try(
       antaresRead::api_get(
         opts = opts,
         endpoint = export_res$file$id,
@@ -54,12 +54,18 @@ download_output_zip <- function(opts, output_id, max_try = 5) {
 
   assertthat::assert_that(i < max_try, msg = "Too much attempts to download results.")
 
-  res
+  zipfile <- tempfile(fileext = ".zip")
+  tmpdir  <- tempfile("plaia_zip")
+  dir.create(tmpdir)
+
+  writeBin(download_res, zipfile)
+
+  file.path(tmpdir, zipfile)
 }
 
-extract_from_zip <- function(zipfile, tmpdir, filename,sep = ",", header = TRUE) {
+extract_from_zip <- function(zip_path, filename,sep = ",", header = TRUE) {
 
-  utils::unzip(zipfile, files = filename, exdir = tmpdir)
-  utils::read.csv(file.path(tmpdir, filename),sep = sep, header =  header)
+  utils::unzip(basename(zip_path), files = filename, exdir = dirname(zip_path))
+  utils::read.csv(file.path(dirname(zip_path), filename),sep = sep, header =  header)
 }
 

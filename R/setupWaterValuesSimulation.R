@@ -19,7 +19,7 @@ setupWaterValuesSimulation <- function(area,
                                        efficiency,
                                        backup) {
 
-  prepare_areas_for_simulation(c(area), c(backup), opts)
+  prepare_areas_for_simulation(list(area), list(backup), opts)
 
   #assert the weekly output of the area:
   area_filtering = antaresRead::readIni(file.path("input","areas",area,"optimization.ini"),

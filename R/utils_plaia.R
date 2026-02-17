@@ -48,7 +48,7 @@ download_output_zip <- function(opts, output_id, max_try = 5) {
       ),
       silent = TRUE
     )
-    if (!inherits(res, "try-error") || i >= max_try) break
+    if (!inherits(download_res, "try-error") || i >= max_try) break
     Sys.sleep(10)
   }
 

@@ -109,13 +109,13 @@ getBellmanValuesWithPlaia <- function(opts,
       bellman = as.data.frame(data[,1:51])
       bellman$weeks <- rownames(bellman)
       df_watervalues <- tidyr::pivot_longer(bellman,
-                                    cols = -weeks,
+                                    cols = -.data$weeks,
                                     names_to = "statesid",
                                     values_to = "value_node") %>%
         dplyr::mutate(area = list_areas[[j]],
                       states = (as.integer(stringr::str_remove(.data$statesid,"V"))-1)/50*capa,
-                      weeks = as.integer(weeks)-2,
-                      weeks = dplyr::if_else(weeks==-1,52,weeks)) %>%
+                      weeks = as.integer(.data$weeks)-2,
+                      weeks = dplyr::if_else(.data$weeks==-1,52,.data$weeks)) %>%
         dplyr::select("weeks","states","value_node","area") %>%
         rbind(df_watervalues)
 
@@ -132,7 +132,7 @@ getBellmanValuesWithPlaia <- function(opts,
                       n = 0,
                       week = as.integer(week)-1,
                       mcYear = as.integer(stringr::str_remove(.data$mcYear,"V"))) %>%
-        dplyr::filter(mcYear %in% mcyears) %>%
+        dplyr::filter(.data$mcYear %in% mcyears) %>%
         rbind(df_levels)
     }
 

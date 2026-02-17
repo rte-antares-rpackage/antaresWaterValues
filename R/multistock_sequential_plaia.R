@@ -252,7 +252,7 @@ calculateRewardsSimulationsWithPlaia <- function(node,
     output_id = run_plaia_simulation(opts, name_sim, "grid_cost_function")
 
     # Extract results
-    zipinfo = download_output_zip(opts, output_id)
+    zip_path = download_output_zip(opts, output_id)
 
     reward = extract_from_zip(zip_path,
                               "gridPointsValues_0.csv")

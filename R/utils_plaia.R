@@ -57,3 +57,9 @@ download_output_zip <- function(opts, output_id, max_try = 5) {
   res
 }
 
+extract_from_zip <- function(zipfile, tmpdir, filename,sep = ",", header = TRUE) {
+
+  utils::unzip(zipfile, files = filename, exdir = tmpdir)
+  utils::read.csv(file.path(tmpdir, filename),sep = sep, header =  header)
+}
+

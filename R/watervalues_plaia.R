@@ -98,16 +98,20 @@ getBellmanValuesWithPlaia <- function(opts,
     dir.create(my_tmpdir)
     writeBin(download_res, zipfile)
     for (j in seq_along(list_areas)){
-      utils::unzip(zipfile, files = paste0(j,"_",list_areas[[j]],"_water_values.csv"), exdir = my_tmpdir)
-      list_watervalues[[list_areas[[j]]]] = as.matrix(utils::read.csv(paste0(my_tmpdir,"/",j,"_",list_areas[[j]],"_water_values.csv"),
-                                                            sep = '\t', header = F))
+      list_watervalues[[list_areas[[j]]]] = as.matrix(extract_from_zip(
+        zipfile,
+        my_tmpdir,
+        paste0(j,"_",list_areas[[j]],"_water_values.csv"),
+        sep = '\t', header = F)
+      )
     }
 
     for (j in seq_along(list_areas)){
       capa = antaresWaterValues::get_reservoir_capacity(list_areas[[j]],opts)
-      utils::unzip(zipfile, files = paste0(j,"_",list_areas[[j]],"_bellman_values.csv"), exdir = my_tmpdir)
-      data = utils::read.csv(paste0(my_tmpdir,"/",j,"_",list_areas[[j]],"_bellman_values.csv"),
-                                                            sep = ' ', header = F)
+      data = extract_from_zip(zipfile,
+                              my_tmpdir,
+                              paste0(j,"_",list_areas[[j]],"_bellman_values.csv"),
+                              sep = ' ', header = F)
       bellman = as.data.frame(data[,1:51])
       bellman$weeks <- rownames(bellman)
       df_watervalues <- tidyr::pivot_longer(bellman,
@@ -121,9 +125,10 @@ getBellmanValuesWithPlaia <- function(opts,
         dplyr::select("weeks","states","value_node","area") %>%
         rbind(df_watervalues)
 
-      utils::unzip(zipfile, files = paste0(j,"_",list_areas[[j]],"_optimal_trajectory.csv"), exdir = my_tmpdir)
-      data = utils::read.csv(paste0(my_tmpdir,"/",j,"_",list_areas[[j]],"_optimal_trajectory.csv"),
-                             sep = ' ', header = F)
+      data = extract_from_zip(zipfile,
+                              my_tmpdir,
+                              paste0(j,"_",list_areas[[j]],"_optimal_trajectory.csv"),
+                              sep = ' ', header = F)
       df = as.data.frame(data[,1:ncol(data)-1])
       df$week <- rownames(df)
       df_levels <- tidyr::pivot_longer(df,

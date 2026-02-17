@@ -258,9 +258,9 @@ calculateRewardsSimulationsWithPlaia <- function(node,
     my_tmpdir <- tempfile("my_zip_files")
     dir.create(my_tmpdir)
     writeBin(download_res, zipfile)
-    utils::unzip(zipfile, files = "gridPointsValues_0.csv", exdir = my_tmpdir)
-
-    reward = utils::read.csv(paste0(my_tmpdir,"/gridPointsValues_0.csv"))
+    reward = extract_from_zip(zipfile,
+                              my_tmpdir,
+                              "gridPointsValues_0.csv")
 
     unlink(zipfile)
     on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)

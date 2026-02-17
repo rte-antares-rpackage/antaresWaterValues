@@ -217,7 +217,8 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                       opts,
                                       mcyears,
                                       grid,
-                                      name_sim = paste0("grid_cost_function_",node))
+                                      name_sim = paste0("grid_cost_function_",node),
+                                      other_options = "grid_cost_function")
 
   reward = extract_from_zip(zip_path,
                             "gridPointsValues_0.csv")

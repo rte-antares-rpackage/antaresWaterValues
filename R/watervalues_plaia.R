@@ -54,7 +54,8 @@ getBellmanValuesWithPlaia <- function(opts,
                                       mcyears,
                                       grid,
                                       params,
-                                      name_sim)
+                                      name_sim,
+                                      "watervalues")
 
   for (j in seq_along(list_areas)){
     list_watervalues[[list_areas[[j]]]] = as.matrix(extract_from_zip(

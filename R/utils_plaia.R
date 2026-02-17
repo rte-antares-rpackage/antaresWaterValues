@@ -74,7 +74,8 @@ prepare_and_launch_plaia <- function(list_areas,
                                      mcyears,
                                      grid,
                                      params = list(),
-                                     name_sim) {
+                                     name_sim,
+                                     other_options) {
   validate_and_normalize_areas(list_areas, opts)
 
   list_backup = list()
@@ -112,10 +113,11 @@ prepare_and_launch_plaia <- function(list_areas,
 
     write_api_file(opts,
                    "user/water_values/penalties.yaml",
-                   yaml::as.yaml(params))
+                   yaml::as.yaml(params,
+                                 handlers = list(logical = yaml::verbatim_logical)))
 
     # Start the simulations
-    output_id = run_plaia_simulation(opts, name_sim, "watervalues")
+    output_id = run_plaia_simulation(opts, name_sim, other_options)
 
     # Extract results
     zip_path = download_output_zip(opts, output_id)

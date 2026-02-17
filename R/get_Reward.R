@@ -69,7 +69,11 @@ get_Reward <- function(simulation_values = NULL,simulation_names=NULL,
       X = opts_o,
       FUN = function(o) {
         res <- get_weekly_cost(mcyears = mcyears, simu = o, expansion = expansion)
-        res$simulation <- o$name
+        if (!is_api_study(o)){
+          res$simulation <- o$name
+        } else {
+          res$simulation <- stringr::str_remove(o$simOutputName, "^.*?(eco-|exp-)")
+        }
         res
       }
     )}

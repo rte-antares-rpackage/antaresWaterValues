@@ -54,18 +54,18 @@ download_output_zip <- function(opts, output_id, max_try = 5) {
 
   assertthat::assert_that(i < max_try, msg = "Too much attempts to download results.")
 
-  zipfile <- tempfile(fileext = ".zip")
-  tmpdir  <- tempfile("plaia_zip")
+
+  tmpdir  <- tempfile("plaia_zip_")
   dir.create(tmpdir)
 
+  zipfile <- tempfile(fileext = ".zip", tmpdir = tmpdir)
   writeBin(download_res, zipfile)
 
-  file.path(tmpdir, zipfile)
+  zipfile
 }
 
 extract_from_zip <- function(zip_path, filename,sep = ",", header = TRUE) {
-
-  utils::unzip(basename(zip_path), files = filename, exdir = dirname(zip_path))
+  utils::unzip(zip_path, files = filename, exdir = dirname(zip_path))
   utils::read.csv(file.path(dirname(zip_path), filename),sep = sep, header =  header)
 }
 

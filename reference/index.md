@@ -5,9 +5,6 @@
 - [`Grid_Matrix()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/Grid_Matrix.md)
   : Compute Bellman values
 
-- [`MultiStock_H2_Investment_reward_compute_once()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/MultiStock_H2_Investment_reward_compute_once.md)
-  : Compute optimal candidates for H2 system
-
 - [`calculateBellmanWithIterativeSimulations()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateBellmanWithIterativeSimulations.md)
   : Calculate Bellman values throughout iterations of Antares simulation
   and DP Each simulation leads to a new reward estimation, which leads
@@ -21,14 +18,6 @@
   to new water values, which leads to the off-line calculation in R of
   an optimal trajectory, which leads to new controls to be evaluated
   which leads to a new simulation
-
-- [`calculateRewardsSimulations()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateRewardsSimulations.md)
-  :
-
-  Compute reward function with the 5 simulations method. Called for each
-  area of `MultiStock_H2_Investment_reward_compute_once`. If they are
-  several areas, the trajectories of the other storage are fixed on
-  their optimal trend.
 
 - [`calculateRewardsSimulationsWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/calculateRewardsSimulationsWithPlaia.md)
   :
@@ -46,17 +35,11 @@
 - [`constraint_generator()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/constraint_generator.md)
   : Generate control values
 
-- [`edit_study_with_results()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/edit_study_with_results.md)
-  : Edit the study with the result from investment
-
 - [`getBellmanValuesFromOneSimulationMultistock()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesFromOneSimulationMultistock.md)
   : Compute Bellman values for several storage based on one simulation
 
 - [`getBellmanValuesSequentialMultiStockWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesSequentialMultiStockWithPlaia.md)
   : Calculate Bellman values sequentially, one area at a time.
-
-- [`getBellmanValuesWithPlaia()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getBellmanValuesWithPlaia.md)
-  : Compute Bellman values for several storage with plaia
 
 - [`getOptimalTrend()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/getOptimalTrend.md)
   : Calculate an optimal trajectory for the reservoir levels based on
@@ -94,16 +77,6 @@
   [`get_Reward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_Reward.md)
   to build reward functions.
 
-- [`grid_other_candidates()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/grid_other_candidates.md)
-  : Compute the list of cluster candidates to study following their
-  bounds
-
-- [`max_candidate()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/max_candidate.md)
-  : Compute the candidate with maximal reward
-
-- [`new_bounds()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/new_bounds.md)
-  : Updates the candidates bounds at the end of an iteration.
-
 - [`plot_Bellman()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/plot_Bellman.md)
   : Plot Bellman and water values
 
@@ -121,10 +94,6 @@
 
 - [`readReservoirLevels()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/readReservoirLevels.md)
   : Read reservoir rule curves
-
-- [`remove_candidate_cluster()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/remove_candidate_cluster.md)
-  : Remove candidate cluster from the study before running investment
-  process
 
 - [`remove_out()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/remove_out.md)
   : Post process water values
@@ -149,17 +118,6 @@
 - [`to_Antares_Format_bis()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/to_Antares_Format_bis.md)
   : Convert water values to Antares format with high accuracy
 
-- [`total_cost_loop()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/total_cost_loop.md)
-  : Computes the total reward for a specific candidate following the
-  reward function
-
-- [`total_cost_parallel_version()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/total_cost_parallel_version.md)
-  :
-
-  Computes the total reward for a list of candidate following the reward
-  function, with parallel processing. The storage volume is constant.
-  These function is called inside `parLapply()`.
-
 - [`updateReward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/updateReward.md)
   :
 
@@ -171,14 +129,6 @@
 
   Calculate water values with `Grid_Matrix` from estimated reward, used
   in `calculateBellmanWithIterativeSimulations`
-
-- [`update_reward_cluster_bande()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/update_reward_cluster_bande.md)
-  : Modify the reward function to take into account the effects of a
-  must-run cluster.
-
-- [`update_reward_cluster_flexible()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/update_reward_cluster_flexible.md)
-  : Modify the reward function to take into account the effects of a non
-  must-run cluster, with a speciifc capcaity and marginal cost.
 
 - [`waterValuesViz()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/waterValuesViz.md)
   : Plot water values

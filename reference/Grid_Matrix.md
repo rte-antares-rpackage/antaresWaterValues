@@ -33,8 +33,7 @@ Grid_Matrix(
   force_final_level = F,
   final_level = NULL,
   penalty_final_level_low = NULL,
-  penalty_final_level_high = NULL,
-  plot_watervalues = TRUE
+  penalty_final_level_high = NULL
 )
 ```
 
@@ -151,15 +150,11 @@ Grid_Matrix(
 
 - penalty_final_level_low:
 
-  Double. Penalties for bottom rule curve to constrain final level.
+  Double. Penalties for both bottom rule curve to constrain final level.
 
 - penalty_final_level_high:
 
   Double. Penalties for top rule curve to constrain final level.
-
-- plot_watervalues:
-
-  Binary.
 
 ## Value
 

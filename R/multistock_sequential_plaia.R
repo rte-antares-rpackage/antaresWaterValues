@@ -182,109 +182,60 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                         optimal_traj,
                                         list_max_hydro_weekly)  {
 
-  validate_and_normalize_areas(list_areas,opts)
-
-  list_backup = list()
+  grid = data.frame()
   for (j in seq_along(list_areas)){
-    area = list_areas[[j]]
-    list_backup[[j]] = getBackupData(area,mcyears,opts)
-
-    assertthat::assert_that(ncol(list_backup[[j]]$hydro_storage)>=max(mcyears),
-                            msg = paste0("There is no enough columns for data inflow for ",area))
-  }
-
-  year_by_year = opts$parameters$general$`year-by-year`
-  synthesis = opts$parameters$output$synthesis
-  storenewset = opts$parameters$output$storenewset
-
-  validate_api_study_for_plaia(opts)
-
-  tryCatch({
-
-    antaresEditObject::setPlaylist(playlist = mcyears,opts = opts)
-    antaresEditObject::updateGeneralSettings(year.by.year = FALSE, opts = opts)
-    antaresEditObject::updateOutputSettings(synthesis = FALSE, storenewset = FALSE, opts=opts)
-
-    prepare_areas_for_simulation(list_areas, list_backup, opts)
-
-    grid = data.frame()
-    for (j in seq_along(list_areas)){
-      a <- list_areas[[j]]
-      if (a != node){
-        grid = optimal_traj %>%
-          dplyr::filter(.data$area == a) %>%
-          dplyr::left_join(list_max_hydro_weekly[[j]],by=c("week"="timeId")) %>%
-          dplyr::mutate(rhs = (.data$u+.data$pump*list_efficiency[[j]])/(.data$turb+.data$pump*list_efficiency[[j]])) %>%
-          dplyr::mutate(grid_id = 0,
-                        problem_name = stringr::str_c("problem-",.data$mcYear,"-",.data$week,"--optim-nb-1"),
+    a <- list_areas[[j]]
+    if (a != node){
+      grid = optimal_traj %>%
+        dplyr::filter(.data$area == a) %>%
+        dplyr::left_join(list_max_hydro_weekly[[j]],by=c("week"="timeId")) %>%
+        dplyr::mutate(rhs = (.data$u+.data$pump*list_efficiency[[j]])/(.data$turb+.data$pump*list_efficiency[[j]])) %>%
+        dplyr::mutate(grid_id = 0,
+                      problem_name = stringr::str_c("problem-",.data$mcYear,"-",.data$week,"--optim-nb-1"),
+                      type = "constraint",
+                      name = "HydroPower",
+                      min = .data$rhs,
+                      max = .data$rhs,
+                      step = "0.1") %>%
+        dplyr::select(c("grid_id","problem_name","type","name","area","min","max","step")) %>%
+        rbind(grid)
+    } else {
+      grid = data.frame(grid_id = 0,
+                        problem_name = "all",
                         type = "constraint",
                         name = "HydroPower",
-                        min = .data$rhs,
-                        max = .data$rhs,
-                        step = "0.1") %>%
-          dplyr::select(c("grid_id","problem_name","type","name","area","min","max","step")) %>%
-          rbind(grid)
-      } else {
-        grid = data.frame(grid_id = 0,
-                          problem_name = "all",
-                          type = "constraint",
-                          name = "HydroPower",
-                          area = a,
-                          min = 0,
-                          max = 1,
-                          step = 1/(nb_simulations-1)) %>%
-          rbind(grid)
-      }
-
+                        area = a,
+                        min = 0,
+                        max = 1,
+                        step = 1/(nb_simulations-1)) %>%
+        rbind(grid)
     }
 
-    csv_content <- paste(
-      utils::capture.output(utils::write.csv(grid, row.names = FALSE, quote = FALSE)),
-      collapse = "\n"
-    )
-
-    write_api_file(opts, "user/water_values/grid.csv", csv_content)
-
-    # Start the simulations
-
-    name_sim = paste0("grid_cost_function_",node)
-
-    output_id = run_plaia_simulation(opts, name_sim, "grid_cost_function")
-
-    # Extract results
-    zip_path = download_output_zip(opts, output_id)
-
-    reward = extract_from_zip(zip_path,
-                              "gridPointsValues_0.csv")
-
-    on.exit(unlink(dirname(zip_path), recursive = TRUE), add = TRUE)
-
-    reward = reward %>%
-      dplyr::mutate(timeId = .data$week,
-                    mcYear = .data$scenario,
-                    control = .data[[paste0(node,"_RHSValue")]],
-                    reward = -.data$cost) %>%
-      dplyr::select(c("timeId","mcYear","control","reward"))
-    assertthat::assert_that(sum(is.na(reward))==0)
-    reward_db = list()
-    reward_db$reward = reward
-    reward_db$decision_space = reward %>%
-      dplyr::rename("week"="timeId","u"="control") %>%
-      dplyr::select(-c("reward"))
-  },
-  error = function(e) {
-    stop(e)
-  },
-  finally = {
-    for (j in seq_along(list_areas)){
-      area = list_areas[[j]]
-      restore_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
-                                        misc_gen = list_backup[[j]]$misc_gen)
-    }
-    antaresEditObject::updateGeneralSettings(year.by.year = year_by_year, opts=opts)
-    antaresEditObject::updateOutputSettings(synthesis = synthesis, storenewset = storenewset, opts=opts)
   }
-  )
+
+  zip_path = prepare_and_launch_plaia(list_areas,
+                                      opts,
+                                      mcyears,
+                                      grid,
+                                      name_sim = paste0("grid_cost_function_",node))
+
+  reward = extract_from_zip(zip_path,
+                            "gridPointsValues_0.csv")
+
+  on.exit(unlink(dirname(zip_path), recursive = TRUE), add = TRUE)
+
+  reward = reward %>%
+    dplyr::mutate(timeId = .data$week,
+                  mcYear = .data$scenario,
+                  control = .data[[paste0(node,"_RHSValue")]],
+                  reward = -.data$cost) %>%
+    dplyr::select(c("timeId","mcYear","control","reward"))
+  assertthat::assert_that(sum(is.na(reward))==0)
+  reward_db = list()
+  reward_db$reward = reward
+  reward_db$decision_space = reward %>%
+    dplyr::rename("week"="timeId","u"="control") %>%
+    dplyr::select(-c("reward"))
 
   return(reward_db)
 }

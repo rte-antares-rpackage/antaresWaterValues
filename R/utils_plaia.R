@@ -69,3 +69,76 @@ extract_from_zip <- function(zip_path, filename,sep = ",", header = TRUE) {
   utils::read.csv(file.path(dirname(zip_path), filename),sep = sep, header =  header)
 }
 
+prepare_and_launch_plaia <- function(list_areas,
+                                     opts,
+                                     mcyears,
+                                     grid,
+                                     params = list(),
+                                     name_sim) {
+  validate_and_normalize_areas(list_areas, opts)
+
+  list_backup = list()
+  for (j in seq_along(list_areas)) {
+    area = list_areas[[j]]
+    list_backup[[j]] = getBackupData(area, mcyears, opts)
+    assertthat::assert_that(
+      ncol(list_backup[[j]]$hydro_storage) >= max(mcyears),
+      msg = paste0("There is no enough columns for data inflow for ", area)
+    )
+  }
+
+  year_by_year = opts$parameters$general$`year-by-year`
+  synthesis = opts$parameters$output$synthesis
+  storenewset = opts$parameters$output$storenewset
+
+  validate_api_study_for_plaia(opts)
+
+  tryCatch({
+    # Prepare study
+    antaresEditObject::setPlaylist(playlist = mcyears, opts = opts)
+    antaresEditObject::updateGeneralSettings(year.by.year = FALSE, opts = opts)
+    antaresEditObject::updateOutputSettings(synthesis = FALSE,
+                                            storenewset = FALSE,
+                                            opts = opts)
+
+    prepare_areas_for_simulation(list_areas, list_backup, opts)
+
+    csv_content <- paste(utils::capture.output(utils::write.csv(
+      grid, row.names = FALSE, quote = FALSE
+    )),
+    collapse = "\n")
+
+    write_api_file(opts, "user/water_values/grid.csv", csv_content)
+
+    write_api_file(opts,
+                   "user/water_values/penalties.yaml",
+                   yaml::as.yaml(params))
+
+    # Start the simulations
+    output_id = run_plaia_simulation(opts, name_sim, "watervalues")
+
+    # Extract results
+    zip_path = download_output_zip(opts, output_id)
+  },
+  error = function(e) {
+    stop(e)
+  },
+  finally = {
+    for (j in seq_along(list_areas)) {
+      area = list_areas[[j]]
+      restore_fictive_fatal_prod_demand(
+        area = area,
+        opts = opts,
+        load = list_backup[[j]]$load,
+        misc_gen = list_backup[[j]]$misc_gen
+      )
+    }
+    antaresEditObject::updateGeneralSettings(year.by.year = year_by_year, opts =
+                                               opts)
+    antaresEditObject::updateOutputSettings(synthesis = synthesis,
+                                            storenewset = storenewset,
+                                            opts = opts)
+  })
+
+  return(zip_path)
+}

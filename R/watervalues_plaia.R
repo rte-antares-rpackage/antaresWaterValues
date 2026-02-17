@@ -70,16 +70,15 @@ getBellmanValuesWithPlaia <- function(opts,
     data = extract_from_zip(zip_path,
                             paste0(j,"_",list_areas[[j]],"_bellman_values.csv"),
                             sep = ' ', header = F)
-    bellman = as.data.frame(data[,1:51])
+    bellman = as.data.frame(data[,1:101])
     bellman$weeks <- rownames(bellman)
     df_watervalues <- tidyr::pivot_longer(bellman,
                                           cols = -.data$weeks,
                                           names_to = "statesid",
                                           values_to = "value_node") %>%
       dplyr::mutate(area = list_areas[[j]],
-                    states = (as.integer(stringr::str_remove(.data$statesid,"V"))-1)/50*capa,
-                    weeks = as.integer(.data$weeks)-2,
-                    weeks = dplyr::if_else(.data$weeks==-1,52,.data$weeks)) %>%
+                    states = (as.integer(stringr::str_remove(.data$statesid,"V"))-1)/100*capa,
+                    weeks = as.integer(.data$weeks)-1) %>%
       dplyr::select("weeks","states","value_node","area") %>%
       rbind(df_watervalues)
 

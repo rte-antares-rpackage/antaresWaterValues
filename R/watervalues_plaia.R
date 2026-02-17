@@ -28,6 +28,8 @@ getBellmanValuesWithPlaia <- function(opts,
   for (j in seq_along(list_areas)){
     area = list_areas[[j]]
     list_backup[[j]] = getBackupData(area,mcyears,opts)
+    assertthat::assert_that(ncol(list_backup[[j]]$hydro_storage)>=max(mcyears),
+                            msg = paste0("There is no enough columns for data inflow for ",area))
   }
 
   list_watervalues = list()

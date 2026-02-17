@@ -185,3 +185,20 @@ update_api_opts <- function(opts) {
   options(antares = opts)
   return(invisible(opts))
 }
+
+write_api_file <- function(opts, path, content) {
+
+  body <- list(file = content)
+
+  antaresRead::api_put(
+    opts = opts,
+    endpoint = paste0(
+      opts$study_id,
+      "/raw?path=",
+      URLencode(path),
+      "&create_missing=true&resource_type=file"
+    ),
+    body = body
+  )
+}
+

@@ -139,12 +139,8 @@ runWaterValuesSimulation <- function(area=NULL,
     if(!is_api_study(opts)){
       save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
     } else {
-      body = list()
-      body$file <- jsonlite::toJSON(simulation_res,
-                                    auto_unbox = TRUE)
-      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-                                                     "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
-                           body=body)
+      write_api_file(opts, paste0("user/",file_name,".json"), jsonlite::toJSON(simulation_res,
+                                                                               auto_unbox = TRUE))
     }
 
   },
@@ -398,12 +394,8 @@ runWaterValuesSimulationMultiStock <- function(list_areas,
     if(!is_api_study(opts)){
       save(simulation_res,file=paste0(opts$studyPath,"/user/",file_name,".RData"))
     } else {
-      body = list()
-      body$file <- jsonlite::toJSON(simulation_res,
-                               auto_unbox = TRUE)
-      antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-        "/raw?path=user%2F",file_name,".json&create_missing=true&resource_type=file"),
-        body=body)
+      write_api_file(opts, paste0("user/",file_name,".json"), jsonlite::toJSON(simulation_res,
+                                                                               auto_unbox = TRUE))
     }
   },
   error = function(e) {

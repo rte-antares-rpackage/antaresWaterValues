@@ -65,15 +65,12 @@ getBellmanValuesWithPlaia <- function(opts,
         rbind(grid)
     }
 
-    body = list()
-    out <- utils::capture.output(
-      utils::write.csv(grid, row.names = FALSE, quote = FALSE)
+    csv_content <- paste(
+      utils::capture.output(utils::write.csv(grid, row.names = FALSE, quote = FALSE)),
+      collapse = "\n"
     )
 
-    body$file <- paste(out, collapse = "\n")
-    antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-                                                   "/raw?path=user%2Fwater_values%2Fgrid.csv&create_missing=true&resource_type=file"),
-                         body=body)
+    write_api_file(opts, "user/water_values/grid.csv", csv_content)
 
     # Write penalties.yaml
     params <- list(
@@ -84,14 +81,11 @@ getBellmanValuesWithPlaia <- function(opts,
       cvar = cvar_value
     )
 
-
-    body = list()
-    out <- yaml::as.yaml(params)
-
-    body$file <- out
-    antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-                                                   "/raw?path=user%2Fwater_values%2Fpenalties.yaml&create_missing=true&resource_type=file"),
-                         body=body)
+    write_api_file(
+      opts,
+      "user/water_values/penalties.yaml",
+      yaml::as.yaml(params)
+    )
 
     # Start the simulations
     output_id = run_plaia_simulation(opts, name_sim,"watervalues")

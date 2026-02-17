@@ -238,15 +238,12 @@ calculateRewardsSimulationsWithPlaia <- function(node,
 
     }
 
-    body = list()
-    out <- utils::capture.output(
-      utils::write.csv(grid, row.names = FALSE, quote = FALSE)
+    csv_content <- paste(
+      utils::capture.output(utils::write.csv(grid, row.names = FALSE, quote = FALSE)),
+      collapse = "\n"
     )
 
-    body$file <- paste(out, collapse = "\n")
-    antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-                                                   "/raw?path=user%2Fwater_values%2Fgrid.csv&create_missing=true&resource_type=file"),
-                         body=body)
+    write_api_file(opts, "user/water_values/grid.csv", csv_content)
 
     # Start the simulations
 

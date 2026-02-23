@@ -51,27 +51,32 @@ build_all_possible_decisions <- function(Data_week,decision_space,
   #Get interpolation function of next Bellman values
   f_next_value <- stats::approxfun(df_next_week$next_state, df_next_week$next_value)
 
-  df_next_week = data.frame(next_state = c(lvl_low,lvl_high)) %>%
-    dplyr::mutate(next_value=sapply(.data$next_state,f_next_value)) %>%
-    rbind(df_next_week)
+  possible_states = data.frame(next_state = c(df_next_week$next_state,
+                                              lvl_low,lvl_high))
 
-  future_states <- Data_week %>%
-    dplyr::cross_join(df_next_week) %>%
-    dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage)
+  possible_control <- Data_week %>%
+    dplyr::cross_join(possible_states) %>%
+    dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage) %>%
+    dplyr::filter((-P_max<=.data$control)&(.data$control<=E_max)) %>%
+    dplyr::mutate(overflow = 0)
 
-  control_possible <- Data_week  %>%
+  possible_control <- Data_week  %>%
     dplyr::right_join(decision_space,by=c("years"="mcYear"), relationship="many-to-many") %>%
     dplyr::rename("control"="u") %>%
+    dplyr::mutate(next_state = -.data$control+.data$states+.data$hydroStorage) %>%
     dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,niveau_max,
                                             .data$states+.data$hydroStorage-.data$control)) %>%
     dplyr::mutate(overflow=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,
                                           .data$states+.data$hydroStorage-.data$control-niveau_max,0)) %>%
+    rbind(possible_control)
+
+  df_SDP = possible_control
+
+  df_SDP <- df_SDP %>%
+    dplyr::filter(.data$next_state>=0, .data$next_state<=niveau_max)%>%
     dplyr::mutate(next_value=sapply(.data$next_state,f_next_value)+
                     .data$overflow*overflow_cost) %>%
     dplyr::select(-c("overflow"))
-
-  df_SDP <- dplyr::bind_rows(future_states, control_possible) %>%
-    dplyr::filter((-P_max<=.data$control)&(.data$control<=E_max)&(.data$next_state>=0))
 
   return(df_SDP)
 }

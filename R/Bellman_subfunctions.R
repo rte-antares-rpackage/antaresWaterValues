@@ -57,20 +57,23 @@ build_all_possible_decisions <- function(Data_week,decision_space,
   possible_control <- Data_week %>%
     dplyr::cross_join(possible_states) %>%
     dplyr::mutate(control = -.data$next_state+.data$states+.data$hydroStorage) %>%
-    dplyr::filter((-P_max<=.data$control)&(.data$control<=E_max)) %>%
-    dplyr::mutate(overflow = 0)
+    dplyr::filter((-P_max<=.data$control)&(.data$control<=E_max))
 
   possible_control <- Data_week  %>%
     dplyr::right_join(decision_space,by=c("years"="mcYear"), relationship="many-to-many") %>%
     dplyr::rename("control"="u") %>%
     dplyr::mutate(next_state = -.data$control+.data$states+.data$hydroStorage) %>%
-    dplyr::mutate(next_state=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,niveau_max,
-                                            .data$states+.data$hydroStorage-.data$control)) %>%
-    dplyr::mutate(overflow=dplyr::if_else(.data$states+.data$hydroStorage-.data$control>niveau_max,
-                                          .data$states+.data$hydroStorage-.data$control-niveau_max,0)) %>%
     rbind(possible_control)
 
-  df_SDP = possible_control
+  df_SDP = possible_control %>%
+    dplyr::select(-c("next_state")) %>%
+    dplyr::cross_join(possible_states) %>%
+    dplyr::mutate(overflow = -.data$next_state+.data$states+.data$hydroStorage - .data$control) %>%
+    dplyr::filter(0<=.data$overflow,.data$overflow<=.data$hydroStorage) %>%
+    rbind(dplyr::mutate(possible_control, overflow = 0)) %>%
+    rbind(dplyr::mutate(possible_control,
+                        overflow = .data$hydroStorage,
+                        next_state = .data$next_state-.data$overflow))
 
   df_SDP <- df_SDP %>%
     dplyr::filter(.data$next_state>=0, .data$next_state<=niveau_max)%>%

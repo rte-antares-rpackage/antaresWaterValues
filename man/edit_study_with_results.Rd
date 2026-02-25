@@ -7,7 +7,8 @@
 edit_study_with_results(opts, node, output_node, candidates_types)
 }
 \arguments{
-\item{opts}{List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.}
+\item{opts}{`list`
+Study parameters (typically the output of `antaresRead::setSimulationPath(simulation = "input")`).}
 
 \item{node}{Character. Area for which to update data.}
 

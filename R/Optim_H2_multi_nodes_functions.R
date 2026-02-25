@@ -1,34 +1,96 @@
-#' Compute optimal candidates for H2 system
+#' Compute Optimal Investment Candidates for H2 Systems
 #'
-#' Search optimal solution for bounded candidates for the H2 systems including storage, must-run clusters and flexibles clusters.
+#' Searches for the optimal investment solution among bounded candidates for H2 systems,
+#' including storage, must-run clusters, and flexible clusters.
 #'
-#' @param areas_invest Vector of characters of the names of areas to optimize.
-#' @param max_ite Integer. Maximum number of iterations for each area.
-#' @param list_storage_bounds List of vectors of integers of length 2, with the form (min, max) for each area.
-#' @param storage_points_nb Integer. Number of storage points to test at each iteration.
-#' Must be >3 to update bounds at each iterations and approach solution.
-#' @param candidates_types_gen Data_frame with column names : \code{c(index, name, type, TOTEX, Marg_price, Part_fixe, Prix_fixe,
-#' Borne_min, Borne_max, Points_nb, Zone)}. Each row describes a cluster candidate. The index should correspond to the index of the candidate in \code{candidates_data}.
-#' The name is a character, the type is either \code{"cluster_flexible"} or \code{"cluster_bande"}, TOTEX is in eur/MW/year, Marg_price is in eur/MWh.
-#' Part_fixe is the fixed part for a variable cluster between 0 and 1, Prix_fixe in eur/MWh is its price.
-#' Borne_min and Borne_max are in MW, Points_nb is an integer (number of candidates tested at each iteration, it should be at least 4).
-#' Zone is a character containing the name of the area where to propose the candidate.
-#' @param penalty_low Integer. Penalty for lower guide curve.
-#' @param penalty_high Integer. Penalty for higher guide curve.
-#' @param penalty_final_level Integer. Penalty for higher and lower final level.
-#' @param opts List of study parameters returned by the function \code{antaresRead::setSimulationPath(simulation="input")} in input mode.
-#' @param mc_years_optim Vector of integers. Monte Carlo years to perform the optimization.
-#' @param cvar Numeric in [0,1]. The probability used in cvar algorithm.
-#' @param storage_annual_cost Numeric. Annual cost of storage in eur/MWh.
-#' @param parallelprocess Boolean. True to compute Water values with parallel processing.
-#' @param nb_sockets Integer. Number of sockets for parallel processing
-#' @param unspil_cost Numeric. Unspilled energy cost in eur/MW for all concerned areas.
-#' @param nb_sims Integer. Number of simulations to launch to evaluate reward.
-#' @param file_intermediate_results Character. Local path to save intermediate results.
-#' @param list_ratio_max_hydro List of vectors. For each area, give the maximum generating (turb)/pumping (pump) capacity ratio
-#' @param remove_cluster Boolean. Should cluster candidate be removed before running the investment process
+#' @details
+#' The function first computes gain (reward) functions using the 'plaia' methodology (via Monte Carlo simulations).
+#' For each area, it then iterates over all candidate combinations, calculating the operational cost for each using dynamic programming (`Grid_Matrix()`).
+#' The operational cost computation is based on optimal use (value functions) that are themselves modified by each candidate's characteristics (storage size, cluster types, etc.).
+#' At each iteration, the tested domain is refined around the best candidate solution from the previous iteration (grid refinement).
 #'
-#' @returns a \code{list} containing for each area detailed results (best candidate, all total costs, reward function, optimization time)
+#' The function optimizes the **installed power** (e.g. turbine/pump/generator capacities) of candidates, but only to determine the **maximum weekly energy or power** that can be delivered or absorbed. All constraints and optimizations are performed on a weekly basis.
+#' **Hourly power-related congestion or inadequacies cannot be detected**: only weekly energy or power limitations are modeled in the optimization. This means that the function is suited for weekly energy sizing, but will not capture operational issues that arise at an hourly timescale.
+#'
+#' @note
+#' Power sizing is optimized, but for weekly assessment only. If you need to capture possible hourly power congestion or short-term operating constraints, you will need a different or more detailed optimization.
+#'
+#' @param areas_invest `character vector`
+#'   Names of the areas/zones to optimize.
+#' @param max_ite `integer`
+#'   Maximum number of iterations per area.
+#' @param list_storage_bounds `list`
+#'   List of vectors of two integers (min, max) for each area, specifying the storage bounds to test.
+#' @param storage_points_nb `integer`
+#'   Number of storage points to test at each iteration (must be > 3 for effective refinement).
+#' @param candidates_types_gen `data.frame`
+#'   A data.frame describing the generation candidates to be optimized.
+#'   **See section ‘Structure of candidates_types_gen’ for details about required columns and their usage.**
+#' @param penalty_low `numeric`
+#'   Penalty when storage is below the guide curve (default: 5000).
+#' @param penalty_high `numeric`
+#'   Penalty when storage exceeds the guide curve (default: 5000).
+#' @param penalty_final_level `numeric`
+#'   Penalty for out-of-bounds final storage level (default: 5000).
+#' @param opts `list`
+#'   Study parameters (typically the output of `antaresRead::setSimulationPath(simulation = "input")`).
+#' @param mc_years_optim `integer vector`
+#'   Monte Carlo years used for optimization.
+#' @param cvar `numeric [0,1]`
+#'   Probability used in `Grid_Matrix()` (default: 1).
+#' @param storage_annual_cost `numeric`
+#'   Annual storage cost in €/MWh.
+#' @param nb_sims `integer`
+#'   Number of simulations per evaluation (default: 51).
+#' @param parallelprocess `logical`
+#'   Whether to use parallel processing for Water values calculations.
+#' @param nb_sockets `integer`
+#'   Number of sockets to use if `parallelprocess = TRUE`.
+#' @param unspil_cost `numeric`
+#'   Unspilled energy cost in €/MW for all relevant areas.
+#' @param file_intermediate_results `character`
+#'   Local path for saving intermediate results for backup/restart.
+#' @param list_ratio_max_hydro `list`
+#'   For each area, gives the ratio used to deduce maximum weekly power for the dimensioning (used at weekly resolution only).
+#' @param remove_cluster `logical`
+#'   Should candidate clusters be removed before running the investment process.
+#'
+#' @section Structure of candidates_types_gen:
+#' The \code{candidates_types_gen} argument must be a data.frame with at least the following columns:
+#' \describe{
+#'   \item{index}{Integer. Unique identifier for each candidate (should be 1, 2, ..., n).}
+#'   \item{name}{Character. Name of the candidate (used for study and result traceability).}
+#'   \item{type}{Character. Type of cluster: either `"cluster_flexible"` (dispatchable/flexible) or `"cluster_bande"` (must-run or base load).}
+#'   \item{TOTEX}{Numeric. Total annualized cost per MW of the candidate (\euro/MW/year).}
+#'   \item{Marg_price}{Numeric. Marginal cost for the candidate (\euro/MWh).}
+#'   \item{Part_fixe}{Numeric, between 0 and 1. Fixed part of a flexible cluster (only for `type == "cluster_flexible"`). Value of 0 if not applicable.}
+#'   \item{Prix_fixe}{Numeric. Fixed price (\euro/MWh) for the fixed part of a flexible cluster.}
+#'   \item{Borne_min}{Numeric. Minimum possible size (MW) for the candidate.}
+#'   \item{Borne_max}{Numeric. Maximum possible size (MW) for the candidate.}
+#'   \item{Points_nb}{Integer (\>=4). Number of tested candidate positions (grid points) for this cluster per iteration.}
+#'   \item{Zone}{Character. Name of the area/zone where this candidate can be added.}
+#' }
+#'
+#'
+#' @return
+#' A list, with each element corresponding to an optimized area containing:
+#' \itemize{
+#'   \item `all_costs`: Complete grid of total costs for all tested candidates,
+#'   \item `best`: The best candidate(s) found,
+#'   \item `last_storage_points`, `last_candidates_data`: Bounds and parameters used in the final iteration,
+#'   \item `optim_time`: Optimization duration,
+#'   \item `reward`: Reward function used,
+#'   \item `optimal_traj`: Optimal storage trajectory,
+#'   \item `optimal_max_hydro`, `watervalues`: Optimal hydraulic parameters, etc.
+#' }
+#'
+#' @section Notes:
+#' \itemize{
+#'   \item Flexible clusters are automatically split into fixed and variable parts if needed.
+#'   \item Grid ranges are updated at each iteration based on the best found solution (refinement approach).
+#'   \item The function manages Monte Carlo simulations and ensures reproducibility via the intermediate result file.
+#'   \item Only weekly (not hourly) congestion or adequacy issues can be assessed.
+#' }
 #'
 #' @export
 MultiStock_H2_Investment_reward_compute_once <- function(areas_invest,

@@ -1,5 +1,6 @@
 
 -   [antaresWaterValues](#antareswatervalues)
+    -   [Methods Overview](#methods-overview)
     -   [Installation](#installation)
     -   [Getting Started](#getting-started)
     -   [Usage](#usage)
@@ -22,6 +23,35 @@ programming approaches.
 
 More theoretical details are available in the vignette:
 `vignette("computation_watervalues")`.
+
+## Methods Overview
+
+| Number of stocks | Multistock method     |       Classic reward function <br> (Classic Antares calls)        | Iterative reward function <br> (Classic Antares calls) |      Classic reward function <br> (PLAIA)       | Full PLAIA <br> (reward + Bellman) |
+|------------------|-----------------------|:-----------------------------------------------------------------:|:------------------------------------------------------:|:-----------------------------------------------:|:----------------------------------:|
+| Single stock     | –                     | `runWaterValuesSimulation` +<br> `get_Reward` +<br> `Grid_Matrix` |       `calculateBellmanWithIterativeSimulations`       | `getBellmanValuesSequentialMultiStockWithPlaia` |    `getBellmanValuesWithPlaia`     |
+| Multiple stocks  | Sequential            |        Not available (would require too many simulations)         |  `calculateBellmanWithIterativeSimulationsMultiStock`  | `getBellmanValuesSequentialMultiStockWithPlaia` |    `getBellmanValuesWithPlaia`     |
+| Multiple stocks  | Simultaneous (Global) |           `getBellmanValuesFromOneSimulationMultistock`           |                           —                            |                        —                        |                 —                  |
+
+**Legend**
+
+-   **Classic reward function:** The reward function is computed by
+    running multiple Antares simulations, each corresponding to a
+    different control (i.e., different storage level variations during a
+    week, without considering natural inflows). This approach can be
+    time-consuming.
+-   **Iterative reward function:** Antares simulations are chosen
+    iteratively to maximize efficiency. At each step, the controls to be
+    evaluated are selected using the current estimation of the reward
+    function and Bellman values. After every new simulation, the reward
+    function is updated, reducing the total number of runs required.
+-   **PLAIA:** The reward function is computed efficiently using PLAIA,
+    which keeps the optimization problems in memory and modifies only
+    the constraint (right-hand side) corresponding to the control. This
+    drastically reduces computation time compared to classic Antares
+    calls.
+-   **Full PLAIA:** Both the computation of the reward function and the
+    Bellman recursion are handled internally by PLAIA, providing maximal
+    efficiency.
 
 ## Installation
 

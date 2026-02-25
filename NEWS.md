@@ -1,3 +1,13 @@
+# antaresWaterValues 2.2.0
+
+## New features
+
+* New function to compute Bellman values directly with plaia. 
+
+## Breaking change
+
+* New way to handle overflow in dynamic programming. It can be done anytime but is limited by weekly inflows and is penalized by spillage cost. 
+
 # antaresWaterValues 2.1.0
 
 ## New features

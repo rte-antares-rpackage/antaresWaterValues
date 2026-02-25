@@ -5,7 +5,6 @@
     -   [Getting Started](#getting-started)
     -   [Usage](#usage)
     -   [Plotting Results](#plotting-results)
-    -   [Multistock](#multistock)
     -   [Troubleshooting & Help](#troubleshooting--help)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -67,6 +66,9 @@ Make sure you have a backup of your Antares study. The package edits and
 resets the Antares study, but we recommend saving a copy before your
 first use. For troubleshooting, check package dependencies listed in
 `DESCRIPTION`.
+
+**Important:** Use the Antares hydro heuristic for all storages when
+computing Bellman values.
 
 ### Load the package
 
@@ -235,18 +237,6 @@ plot_4 <- plot_reward_variation_mc(reward_base = reward, weeks_to_plot = c(1,3),
 ```
 
 <img src="man/figures/README-reward-4.png" width="100%" />
-
-------------------------------------------------------------------------
-
-## Multistock
-
-To compute Bellman values for multiple storages, use: -
-`getBellmanValuesFromOneSimulationMultistock()` -
-`getBellmanValuesSequentialMultiStockWithPlaia()` - or compute them
-separately per storage.
-
-**Important:** Use the Antares hydro heuristic for all storages when
-computing Bellman values.
 
 ------------------------------------------------------------------------
 

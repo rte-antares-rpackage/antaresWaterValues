@@ -14,6 +14,7 @@ getBellmanValuesSequentialMultiStockWithPlaia(
   states_step_ratio = 1/50,
   cvar_value = 1,
   penalty_final_level = NULL,
+  list_final_level = NULL,
   initial_traj = NULL,
   list_areas_to_compute = NULL
 )
@@ -37,6 +38,8 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 \item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
 
 \item{penalty_final_level}{Penalties (for both bottom and top rule curves) to force final level}
+
+\item{list_final_level}{List of double. For each storage, final level (in percent between 0 and 100) if final level is constrained. Initial level computed by \code{get_initial_level()} by default.}
 
 \item{initial_traj}{Initial trajectory (used for other storages)}
 

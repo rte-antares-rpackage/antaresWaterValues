@@ -27,6 +27,7 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                                                           states_step_ratio=1/50,
                                                           cvar_value = 1,
                                                           penalty_final_level = NULL,
+                                                          list_final_level = NULL,
                                                           initial_traj = NULL,
                                                           list_areas_to_compute = NULL){
 
@@ -82,7 +83,11 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
 
   for (area in list_areas_to_compute){
     a = area
-    final_level <- get_initial_level(area,opts)
+    if (!is.null(list_final_level)){
+      final_level <- list_final_level[[a]]
+    } else {
+      final_level <- get_initial_level(a, opts)
+    }
 
     level_init <- get_initial_level_year_per_year(area,opts)*list_capacity[[area]]/100
 

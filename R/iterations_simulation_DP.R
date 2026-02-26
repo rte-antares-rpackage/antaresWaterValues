@@ -18,6 +18,7 @@
 #' between the reservoir capacity and zero
 #' @param cvar_value from 0 to 1. the probability used in cvar method
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
+#' @param final_level Double. Final level (in percent between 0 and 100). Initial level computed by \code{get_initial_level()} by default.
 #' @param df_previous_cut Data frame containing previous estimations of cuts
 #'
 #' @export
@@ -28,6 +29,7 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
                                                      path_solver,
                                                      states_step_ratio=1/50,
                                                      cvar_value = 1,
+                                                     final_level = NULL,
                                                      penalty_final_level = NULL,
                                                      df_previous_cut = NULL){
 
@@ -76,7 +78,9 @@ calculateBellmanWithIterativeSimulations <- function(area,pumping, pump_eff=1,op
   controls <- tidyr::drop_na(controls) %>%
     dplyr::cross_join(data.frame(mcYear=mcyears))
 
-  final_level = get_initial_level(area,opts)
+  if (is.null(final_level)){
+    final_level = get_initial_level(area,opts)
+  }
 
   if (!is.null(df_previous_cut)){
     controls = df_previous_cut %>%
@@ -512,6 +516,7 @@ getNewConstraint <- function(level_init,watervalues,mcyears,
 #' less to it. (quantile(cvar_value))
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to constrain final level
 #' @param initial_traj Initial trajectory (used for other storages)
+#' @param list_final_level List of double. For each storage, final level (in percent between 0 and 100) if final level is constrained. Initial level computed by \code{get_initial_level()} by default.
 #' @param list_areas_to_compute Vector of character. Areas for which to compute Bellman values. If \code{NULL}, all areas in \code{list_areas} are used.
 #' @inheritParams runWaterValuesSimulationMultiStock
 #' @inheritParams calculateBellmanWithIterativeSimulations
@@ -524,6 +529,7 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
                                                                path_solver,
                                                                states_step_ratio=1/50,
                                                                cvar_value = 1,
+                                                               list_final_level = NULL,
                                                                penalty_final_level = NULL,
                                                                initial_traj = NULL,
                                                                df_previous_cut = NULL,
@@ -619,7 +625,12 @@ calculateBellmanWithIterativeSimulationsMultiStock <- function(list_areas,list_p
     a = area
     pumping <- list_pumping[area]
     pump_eff <- list_efficiency[area]
-    final_level <- get_initial_level(area,opts)
+    if (is.null(list_final_level)){
+      final_level <- get_initial_level(area,opts)
+    } else {
+      final_level <- list_final_level[[area]]
+    }
+
 
     max_hydro <- get_max_hydro(area, opts)
     max_hydro_weekly <- max_hydro %>%

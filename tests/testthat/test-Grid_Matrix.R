@@ -9,6 +9,10 @@ test_that("Lower bound Grid_Matrix", {
   studies_names <- basename(studies)
   studies_names <- sub("\\.tar\\.gz$", "", studies_names)
 
+  on.exit({
+    unlink(file.path(path0, studies_names), recursive = TRUE, force = TRUE)
+  }, add = TRUE)
+
   for (s in seq_along(studies)) {
     dir.create(file.path(path0, studies_names[s]))
     untar(file.path(sourcedir, studies[s]), exdir = file.path(path0, studies_names[s]))
@@ -58,4 +62,75 @@ test_that("Lower bound Grid_Matrix", {
     nb_cycle = nb_cycle
   )$lower_bound
   expect_equal(lb, -44728328320)
+})
+
+test_that("to_Antares with penalies", {
+  path0 <- tempdir()
+  sourcedir <- system.file("extdata", package = "antaresWaterValues")
+  studies <- list.files(
+    path = sourcedir,
+    pattern = "^antares-test-study.*\\.tar\\.gz$"
+  )
+
+  studies_names <- basename(studies)
+  studies_names <- sub("\\.tar\\.gz$", "", studies_names)
+
+  on.exit({
+    unlink(file.path(path0, studies_names), recursive = TRUE, force = TRUE)
+  }, add = TRUE)
+
+
+  for (s in seq_along(studies)) {
+    dir.create(file.path(path0, studies_names[s]))
+    untar(file.path(sourcedir, studies[s]), exdir = file.path(path0, studies_names[s]))
+  }
+
+  opts <- antaresRead::setSimulationPath(file.path(path0, studies_names,"test_case"),"input")
+
+  area <- "area"
+  pumping <- T #T if pumping possible
+  mcyears <- 1:3 # Monte Carlo years you want to use
+  efficiency <- getPumpEfficiency(area,opts=opts)
+  name = "3sim"
+
+  load(paste0(opts$studyPath, "/user/", tolower(area),"_",name, ".RData"))
+
+  reward_db <- get_Reward(
+    simulation_names = simulation_res$simulation_names,
+    simulation_values = simulation_res$simulation_values,
+    opts=opts,
+    area = area,
+    mcyears = mcyears,
+    efficiency = efficiency,
+    method_old = T,
+  )
+
+  states_step_ratio = 1/21
+  penalty_low = 200
+  penalty_high = 100
+  force_final_level = T
+  penalty_final_level = 500
+  final_level = get_initial_level(area=area,opts=opts)
+  nb_cycle = 1
+
+  res = Grid_Matrix(
+    area=area,
+    reward_db = reward_db,
+    mcyears = mcyears,
+    states_step_ratio = states_step_ratio,
+    opts = opts,
+    efficiency=efficiency,
+    penalty_low = penalty_low,
+    penalty_high = penalty_high,
+    force_final_level = force_final_level,
+    final_level = final_level,
+    penalty_final_level_low = penalty_final_level,
+    penalty_final_level_high = penalty_final_level,
+    nb_cycle = nb_cycle
+  )$aggregated_results
+  vu = as.matrix(to_Antares_Format(res))
+
+  vu_ref <- as.matrix(read.csv(testthat::test_path("testdata/vu_ref.csv"), header = TRUE, check.names = FALSE))
+
+  expect_equal(vu, vu_ref, tolerance = 1e-8)
 })

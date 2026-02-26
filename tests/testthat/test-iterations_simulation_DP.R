@@ -9,6 +9,10 @@ test_that("getNewConstraint", {
   studies_names <- basename(studies)
   studies_names <- sub("\\.tar\\.gz$", "", studies_names)
 
+  on.exit({
+    unlink(file.path(path0, studies_names), recursive = TRUE, force = TRUE)
+  }, add = TRUE)
+
   for (s in seq_along(studies)) {
     dir.create(file.path(path0, studies_names[s]))
     untar(file.path(sourcedir, studies[s]), exdir = file.path(path0, studies_names[s]))

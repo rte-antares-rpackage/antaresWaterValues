@@ -28,34 +28,27 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
   #add penalties
   if (!force_final_level){
     value_nodes_dt <- value_nodes_dt %>%
-      dplyr::mutate(value_nodes_dt,
-                    vu_pen=dplyr::case_when(states>.data$level_high ~ vu - penalty_level_high,
-                                            states<.data$level_low ~ vu + penalty_level_low,
-                                            TRUE ~ vu)) %>%
-      dplyr::mutate(force_final_level=FALSE) %>%
-      dplyr::mutate(penalty_low=penalty_level_low,
-                    penalty_high=penalty_level_high) %>%
-      dplyr::rename(vu="vu_pen",vu_pen="vu")
+      dplyr::mutate(
+        penalty_low=penalty_level_low,
+        penalty_high=penalty_level_high,
+        force_final_level=FALSE)
   } else {
     value_nodes_dt <- value_nodes_dt %>%
       dplyr::mutate(level_high=dplyr::if_else(.data$weeks!=53,
-                                              .data$level_high,final_level)) %>%
-      dplyr::mutate(level_low=dplyr::if_else(.data$weeks!=53,
-                                             .data$level_low,final_level)) %>%
-      dplyr::mutate(vu_pen=dplyr::if_else(.data$weeks!=53,
-                                          dplyr::case_when(states>.data$level_high ~ vu - penalty_level_high,
-                                            states<.data$level_low ~ vu + penalty_level_low,
-                                            TRUE ~ vu),
-                                          dplyr::case_when(states>.data$level_high ~ vu - penalty_final_level_high,
-                                                           states<.data$level_low ~ vu + penalty_final_level_low,
-                                                           TRUE ~ vu))) %>%
-      dplyr::mutate(force_final_level=TRUE) %>%
-      dplyr::mutate(penalty_low=dplyr::if_else(.data$weeks!=53,
+                                              .data$level_high,final_level),
+                    level_low=dplyr::if_else(.data$weeks!=53,
+                                             .data$level_low,final_level),
+                    penalty_low=dplyr::if_else(.data$weeks!=53,
                                                penalty_level_low,penalty_final_level_low),
                     penalty_high=dplyr::if_else(.data$weeks!=53,
-                                                penalty_level_high,penalty_final_level_high)) %>%
-      dplyr::rename(vu="vu_pen",vu_pen="vu")
+                                                penalty_level_high,penalty_final_level_high))
   }
+
+  value_nodes_dt <- value_nodes_dt %>%
+    dplyr::mutate(
+      penalty=derivative_penalty_function(.data$states, .data$level_low, .data$level_high, .data$penalty_low, .data$penalty_high),
+      vu_pen=.data$vu + .data$penalty) %>%
+    dplyr::rename(vu="vu_pen",vu_pen="vu")
 
   value_nodes_dt <- value_nodes_dt %>%
     dplyr::mutate(weeks=.data$weeks-1)
@@ -200,3 +193,24 @@ correct_concavity <- function(df_value_node, weeks){
   }
   return(df_value_node$new_value)
 }
+
+penalty_function <- function(next_state, lvl_low, lvl_high, penalty_level_low, penalty_level_high) {
+  penalty_low  <- ifelse(next_state <= lvl_low,
+                         penalty_level_low * (next_state - lvl_low),
+                         0)
+  penalty_high <- ifelse(next_state >= lvl_high,
+                         penalty_level_high * (lvl_high - next_state),
+                         0)
+  penalty_low + penalty_high
+}
+
+derivative_penalty_function <- function(next_state, lvl_low, lvl_high, penalty_level_low, penalty_level_high) {
+  penalty_low  <- ifelse(next_state < lvl_low,
+                         penalty_level_low,
+                         0)
+  penalty_high <- ifelse(next_state > lvl_high,
+                         -penalty_level_high,
+                         0)
+  penalty_low + penalty_high
+}
+

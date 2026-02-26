@@ -61,9 +61,8 @@
     # the maximum sum of reward, next bellman value and penalties
     df_SDP <- df_SDP %>%
       dplyr::mutate(gain=mapply(function(y,x)f_reward_year[[which(y==mcyears)]](x), df_SDP$years, df_SDP$control),
-             penalty_low = dplyr::if_else(.data$next_state<=lvl_low,penalty_level_low*(.data$next_state-lvl_low),0),
-             penalty_high = dplyr::if_else(.data$next_state>=lvl_high,penalty_level_high*(lvl_high-.data$next_state),0),
-             sum=.data$gain+.data$next_value+.data$penalty_low+.data$penalty_high) %>%
+                    penalty = penalty_function(.data$next_state, lvl_low, lvl_high, penalty_level_low, penalty_level_high),
+                    sum = .data$gain + .data$next_value + .data$penalty) %>%
       dplyr::group_by(.data$years,.data$states) %>%
       dplyr::filter(.data$sum==max(.data$sum)) %>%
       dplyr::slice_max(.data$next_state, with_ties = F) %>%

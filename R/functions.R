@@ -213,9 +213,9 @@ to_Antares_Format <- function(data,constant=T){
                   level_high=.data$level_high/max_state*100)
 
   res <- res %>%
-    dplyr::mutate(vu=dplyr::case_when(.data$states_round_percent>.data$level_high ~ .data$vu_pen - .data$penalty_high,
-                                      .data$states_round_percent<.data$level_low ~ .data$vu_pen + .data$penalty_low,
-                                      TRUE ~ .data$vu_pen))
+    dplyr::mutate(
+      penalty = derivative_penalty_function(.data$states_round_percent, .data$level_low, .data$level_high, .data$penalty_low, .data$penalty_high),
+      vu = .data$vu_pen + .data$penalty)
 
 
   # reshape
@@ -337,9 +337,9 @@ convert_to_percent <- function(data){
                   vu=0) %>%
     dplyr::mutate(level_low=.data$level_low/capa*100,
                   level_high=.data$level_high/capa*100) %>%
-    dplyr::mutate(mu=dplyr::case_when(.data$states_round_percent>.data$level_high ~ .data$mu - .data$penalty_high,
-                                      .data$states_round_percent<=.data$level_low ~ .data$mu + .data$penalty_low,
-                                      TRUE ~ .data$mu)) %>%
+    dplyr::mutate(
+      penalty = derivative_penalty_function(.data$states_round_percent, .data$level_low, .data$level_high, .data$penalty_low, .data$penalty_high),
+      mu = .data$mu + .data$penalty) %>%
     dplyr::select(c("weeks","state_ref","mu","vu","states_round_percent"))
 
   return(vb)

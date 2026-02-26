@@ -120,10 +120,10 @@ The \code{candidates_types_gen} argument must be a data.frame with at least the 
   \item{index}{Integer. Unique identifier for each candidate (should be 1, 2, ..., n).}
   \item{name}{Character. Name of the candidate (used for study and result traceability).}
   \item{type}{Character. Type of cluster: either `"cluster_flexible"` (dispatchable/flexible) or `"cluster_bande"` (must-run or base load).}
-  \item{TOTEX}{Numeric. Total annualized cost per MW of the candidate (\euro/MW/year).}
-  \item{Marg_price}{Numeric. Marginal cost for the candidate (\euro/MWh).}
+  \item{TOTEX}{Numeric. Total annualized cost per MW of the candidate (euros/MW/year).}
+  \item{Marg_price}{Numeric. Marginal cost for the candidate (euros/MWh).}
   \item{Part_fixe}{Numeric, between 0 and 1. Fixed part of a flexible cluster (only for `type == "cluster_flexible"`). Value of 0 if not applicable.}
-  \item{Prix_fixe}{Numeric. Fixed price (\euro/MWh) for the fixed part of a flexible cluster.}
+  \item{Prix_fixe}{Numeric. Fixed price (euros/MWh) for the fixed part of a flexible cluster.}
   \item{Borne_min}{Numeric. Minimum possible size (MW) for the candidate.}
   \item{Borne_max}{Numeric. Maximum possible size (MW) for the candidate.}
   \item{Points_nb}{Integer (\>=4). Number of tested candidate positions (grid points) for this cluster per iteration.}

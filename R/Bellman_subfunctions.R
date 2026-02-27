@@ -77,8 +77,7 @@ build_all_possible_decisions <- function(Data_week,decision_space,
 
   df_SDP <- df_SDP %>%
     dplyr::filter(.data$next_state>=0, .data$next_state<=niveau_max)%>%
-    dplyr::mutate(next_value=sapply(.data$next_state,f_next_value)+
-                    .data$overflow*overflow_cost) %>%
+    dplyr::mutate(next_value = f_next_value(.data$next_state) + .data$overflow*overflow_cost) %>%
     dplyr::select(-c("overflow"))
 
   return(df_SDP)

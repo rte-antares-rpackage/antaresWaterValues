@@ -3,6 +3,8 @@
 ## New features
 
 * New function to compute Bellman values directly with plaia. 
+* Verification of task ending in API mode.
+* Argument final_level on almost all Bellman values functions.
 
 ## Breaking change
 

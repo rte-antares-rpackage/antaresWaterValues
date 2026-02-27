@@ -25,11 +25,11 @@ More theoretical details are available in the vignette:
 
 ## Methods Overview
 
-| Number of stocks | Multistock method     |       Classic reward function <br> (Classic Antares calls)        | Iterative reward function <br> (Classic Antares calls) |      Classic reward function <br> (PLAIA)       | Full PLAIA <br> (reward + Bellman) |
-|------------------|-----------------------|:-----------------------------------------------------------------:|:------------------------------------------------------:|:-----------------------------------------------:|:----------------------------------:|
-| Single stock     | –                     | `runWaterValuesSimulation` +<br> `get_Reward` +<br> `Grid_Matrix` |       `calculateBellmanWithIterativeSimulations`       | `getBellmanValuesSequentialMultiStockWithPlaia` |    `getBellmanValuesWithPlaia`     |
-| Multiple stocks  | Sequential            |        Not available (would require too many simulations)         |  `calculateBellmanWithIterativeSimulationsMultiStock`  | `getBellmanValuesSequentialMultiStockWithPlaia` |    `getBellmanValuesWithPlaia`     |
-| Multiple stocks  | Simultaneous (Global) |           `getBellmanValuesFromOneSimulationMultistock`           |                           —                            |                        —                        |                 —                  |
+| Number of stocks | Multistock method     |          Classic reward function <br> (Classic Antares calls)           | Iterative reward function <br> (Classic Antares calls) |       Classic reward function <br> (PLAIA)        | Full PLAIA <br> (reward + Bellman) |
+|------------------|-----------------------|:-----------------------------------------------------------------------:|:------------------------------------------------------:|:-------------------------------------------------:|:----------------------------------:|
+| Single stock     | –                     | `runWaterValuesSimulation()` +<br> `get_Reward()` +<br> `Grid_Matrix()` |      `calculateBellmanWithIterativeSimulations()`      | `getBellmanValuesSequentialMultiStockWithPlaia()` |   `getBellmanValuesWithPlaia()`    |
+| Multiple stocks  | Sequential            |           Not available (would require too many simulations)            | `calculateBellmanWithIterativeSimulationsMultiStock()` | `getBellmanValuesSequentialMultiStockWithPlaia()` |   `getBellmanValuesWithPlaia()`    |
+| Multiple stocks  | Simultaneous (Global) |             `getBellmanValuesFromOneSimulationMultistock()`             |                           —                            |                         —                         |                 —                  |
 
 **Legend**
 

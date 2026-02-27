@@ -21,7 +21,7 @@ initial_traj or a short-term trajectory is used as a fallback."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,6 +76,7 @@ For areas where Bellman values have not yet been computed, either
 <span>  states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,</span>
 <span>  cvar_value <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  penalty_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  list_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  initial_traj <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  list_areas_to_compute <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -120,6 +121,10 @@ between the reservoir capacity and zero for which Bellman values are computed.</
 
 <dt id="arg-penalty-final-level">penalty_final_level<a class="anchor" aria-label="anchor" href="#arg-penalty-final-level"></a></dt>
 <dd><p>Penalties (for both bottom and top rule curves) to force final level</p></dd>
+
+
+<dt id="arg-list-final-level">list_final_level<a class="anchor" aria-label="anchor" href="#arg-list-final-level"></a></dt>
+<dd><p>List of double. For each storage, final level (in percent between 0 and 100) if final level is constrained. Initial level computed by <code><a href="get_initial_level.html">get_initial_level()</a></code> by default.</p></dd>
 
 
 <dt id="arg-initial-traj">initial_traj<a class="anchor" aria-label="anchor" href="#arg-initial-traj"></a></dt>

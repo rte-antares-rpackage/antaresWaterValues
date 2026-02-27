@@ -22,6 +22,7 @@ calculateBellmanWithIterativeSimulations(
   path_solver,
   states_step_ratio = 1/50,
   cvar_value = 1,
+  final_level = NULL,
   penalty_final_level = NULL,
   df_previous_cut = NULL
 )
@@ -81,6 +82,13 @@ calculateBellmanWithIterativeSimulations(
 - cvar_value:
 
   from 0 to 1. the probability used in cvar method
+
+- final_level:
+
+  Double. Final level (in percent between 0 and 100). Initial level
+  computed by
+  [`get_initial_level()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level.md)
+  by default.
 
 - penalty_final_level:
 

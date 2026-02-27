@@ -5,6 +5,8 @@ on reward functions computed with
 [`get_Reward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_Reward.md).
 Mode information about this function in
 [`vignette("grid_Matrix-parameters")`](https://rte-antares-rpackage.github.io/antaresWaterValues/articles/grid_Matrix-parameters.md).
+In the backward recursion, overflow is accepted but it can't exceed
+weekly inflows and is penalized with the spillage cost.
 
 ## Usage
 
@@ -150,7 +152,7 @@ Grid_Matrix(
 
 - penalty_final_level_low:
 
-  Double. Penalties for both bottom rule curve to constrain final level.
+  Double. Penalties for bottom rule curve to constrain final level.
 
 - penalty_final_level_high:
 

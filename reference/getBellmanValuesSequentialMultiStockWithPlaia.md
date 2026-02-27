@@ -24,6 +24,7 @@ getBellmanValuesSequentialMultiStockWithPlaia(
   states_step_ratio = 1/50,
   cvar_value = 1,
   penalty_final_level = NULL,
+  list_final_level = NULL,
   initial_traj = NULL,
   list_areas_to_compute = NULL
 )
@@ -70,6 +71,13 @@ getBellmanValuesSequentialMultiStockWithPlaia(
 - penalty_final_level:
 
   Penalties (for both bottom and top rule curves) to force final level
+
+- list_final_level:
+
+  List of double. For each storage, final level (in percent between 0
+  and 100) if final level is constrained. Initial level computed by
+  [`get_initial_level()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level.md)
+  by default.
 
 - initial_traj:
 

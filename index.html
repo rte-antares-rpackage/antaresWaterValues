@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,149 +54,260 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><p><img src="reference/figures/antares_simulator.png" width="250"></p>
+  <main id="main" class="col-md-9"><ul>
+<li>
+<a href="#antareswatervalues">antaresWaterValues</a>
+<ul>
+<li><a href="#methods-overview">Methods Overview</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#usage">Usage</a></li>
+<li><a href="#plotting-results">Plotting Results</a></li>
+<li><a href="#troubleshooting--help">Troubleshooting &amp; Help</a></li>
+</ul>
+</li>
+</ul>
+<!-- README.md is generated from README.Rmd. Please edit that file --><p><img src="reference/figures/antares_simulator.png" width="250"></p>
 <div class="section level1">
 <div class="page-header"><h1 id="antareswatervalues">antaresWaterValues<a class="anchor" aria-label="anchor" href="#antareswatervalues"></a>
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>This package calculate water values for long term storages in Antares studies. It uses Antares simulations and dynamic programming.</p>
-<p>More theoretical details are given in : <code><a href="articles/computation_watervalues.html">vignette("computation_watervalues")</a></code>.</p>
+<p>antaresWaterValues calculates water values for long-term storages in Antares studies. The package performs Antares simulations and dynamic programming approaches.</p>
+<p>More theoretical details are available in the vignette: <code><a href="articles/computation_watervalues.html">vignette("computation_watervalues")</a></code>.</p>
+<div class="section level2">
+<h2 id="methods-overview">Methods Overview<a class="anchor" aria-label="anchor" href="#methods-overview"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="7%">
+<col width="9%">
+<col width="26%">
+<col width="22%">
+<col width="19%">
+<col width="14%">
+</colgroup>
+<thead><tr class="header">
+<th>Number of stocks</th>
+<th>Multistock method</th>
+<th align="center">Classic reward function <br> (Classic Antares calls)</th>
+<th align="center">Iterative reward function <br> (Classic Antares calls)</th>
+<th align="center">Classic reward function <br> (PLAIA)</th>
+<th align="center">Full PLAIA <br> (reward + Bellman)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Single stock</td>
+<td>–</td>
+<td align="center">
+<code>runWaterValuesSimulation</code> +<br><code>get_Reward</code> +<br><code>Grid_Matrix</code>
+</td>
+<td align="center"><code>calculateBellmanWithIterativeSimulations</code></td>
+<td align="center"><code>getBellmanValuesSequentialMultiStockWithPlaia</code></td>
+<td align="center"><code>getBellmanValuesWithPlaia</code></td>
+</tr>
+<tr class="even">
+<td>Multiple stocks</td>
+<td>Sequential</td>
+<td align="center">Not available (would require too many simulations)</td>
+<td align="center"><code>calculateBellmanWithIterativeSimulationsMultiStock</code></td>
+<td align="center"><code>getBellmanValuesSequentialMultiStockWithPlaia</code></td>
+<td align="center"><code>getBellmanValuesWithPlaia</code></td>
+</tr>
+<tr class="odd">
+<td>Multiple stocks</td>
+<td>Simultaneous (Global)</td>
+<td align="center"><code>getBellmanValuesFromOneSimulationMultistock</code></td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Legend</strong></p>
+<ul>
+<li>
+<strong>Classic reward function:</strong> The reward function is computed by running multiple Antares simulations, each corresponding to a different control (i.e., different storage level variations during a week, without considering natural inflows). This approach can be time-consuming.</li>
+<li>
+<strong>Iterative reward function:</strong> Antares simulations are chosen iteratively to maximize efficiency. At each step, the controls to be evaluated are selected using the current estimation of the reward function and Bellman values. After every new simulation, the reward function is updated, reducing the total number of runs required.</li>
+<li>
+<strong>PLAIA:</strong> The reward function is computed efficiently using PLAIA, which keeps the optimization problems in memory and modifies only the constraint (right-hand side) corresponding to the control. This drastically reduces computation time compared to classic Antares calls.</li>
+<li>
+<strong>Full PLAIA:</strong> Both the computation of the reward function and the Bellman recursion are handled internally by PLAIA, providing maximal efficiency.</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the latest version of antaresWaterValues from GitHub with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<code class="sourceCode R"><span><span class="co"># Install from GitHub</span></span>
+<span><span class="co"># install.packages("devtools")</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"rte-antares-rpackage/antaresWaterValues@*release"</span><span class="op">)</span> </span></code></pre></div>
-<p>To load the package use :</p>
+</div>
+<div class="section level2">
+<h2 id="getting-started">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
+</h2>
+<p>Make sure you have a backup of your Antares study. The package edits and resets the Antares study, but we recommend saving a copy before your first use. For troubleshooting, check package dependencies listed in <code>DESCRIPTION</code>.</p>
+<p><strong>Important:</strong> Use the Antares hydro heuristic for all storages when computing Bellman values.</p>
+<div class="section level3">
+<h3 id="load-the-package">Load the package<a class="anchor" aria-label="anchor" href="#load-the-package"></a>
+</h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rte-antares-rpackage.github.io/antaresWaterValues/">antaresWaterValues</a></span><span class="op">)</span></span></code></pre></div>
-<p>Now we are ready to use our package. If something gets wrong, please check dependencies versions in <code>DESCRIPTION</code>.</p>
-<p>The package edits the Antares study and resets it at the end but it could be wise to make a copy of the study before using the package for the first time.</p>
+<hr>
+</div>
 </div>
 <div class="section level2">
-<h2 id="using-the-shiny-app">Using the Shiny app<a class="anchor" aria-label="anchor" href="#using-the-shiny-app"></a>
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
+<div class="section level3">
+<h3 id="id_1-with-the-shiny-app">1. With the Shiny app<a class="anchor" aria-label="anchor" href="#id_1-with-the-shiny-app"></a>
+</h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">opts</span> <span class="op">=</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/setSimulationPath.html" class="external-link">setSimulationPath</a></span><span class="op">(</span><span class="st">"your/path/to/the/antares/study"</span>,<span class="st">"input"</span><span class="op">)</span> </span>
+<code class="sourceCode R"><span><span class="va">opts</span> <span class="op">=</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/setSimulationPath.html" class="external-link">setSimulationPath</a></span><span class="op">(</span><span class="st">"your/path/to/the/antares/study"</span>, <span class="st">"input"</span><span class="op">)</span> </span>
 <span><span class="fu"><a href="reference/shiny_water_values.html">shiny_water_values</a></span><span class="op">(</span><span class="va">opts</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="without-the-shiny-app">Without the Shiny app<a class="anchor" aria-label="anchor" href="#without-the-shiny-app"></a>
-</h2>
-<p>Begin by defining some parameters about your study.</p>
+<div class="section level3">
+<h3 id="id_2-scripting-without-the-shiny-app">2. Scripting without the Shiny app<a class="anchor" aria-label="anchor" href="#id_2-scripting-without-the-shiny-app"></a>
+</h3>
+<div class="section level4">
+<h4 id="a-setup-your-study">a. Setup your study<a class="anchor" aria-label="anchor" href="#a-setup-your-study"></a>
+</h4>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">opts</span> <span class="op">&lt;-</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/setSimulationPath.html" class="external-link">setSimulationPath</a></span><span class="op">(</span><span class="st">"your/path/to/the/antares/study"</span>,<span class="st">"input"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">opts</span> <span class="op">&lt;-</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/setSimulationPath.html" class="external-link">setSimulationPath</a></span><span class="op">(</span><span class="st">"your/path/to/the/antares/study"</span>, <span class="st">"input"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="b-set-parameters">b. Set parameters<a class="anchor" aria-label="anchor" href="#b-set-parameters"></a>
+</h4>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">area</span> <span class="op">&lt;-</span> <span class="st">"area"</span></span>
-<span><span class="va">pumping</span> <span class="op">&lt;-</span> <span class="cn">T</span> <span class="co">#T if pumping possible</span></span>
-<span><span class="va">mcyears</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span> <span class="co"># Monte Carlo years you want to use</span></span>
-<span><span class="va">efficiency</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/getPumpEfficiency.html">getPumpEfficiency</a></span><span class="op">(</span><span class="va">area</span>,opts<span class="op">=</span><span class="va">opts</span><span class="op">)</span></span>
+<span><span class="va">pumping</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span> <span class="co"># TRUE if pumping is possible</span></span>
+<span><span class="va">mcyears</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span> <span class="co"># Monte Carlo years to use</span></span>
+<span><span class="va">efficiency</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/getPumpEfficiency.html">getPumpEfficiency</a></span><span class="op">(</span><span class="va">area</span>, opts <span class="op">=</span> <span class="va">opts</span><span class="op">)</span></span>
 <span><span class="va">name</span> <span class="op">=</span> <span class="st">"3sim"</span></span></code></pre></div>
-<p>Then, you have to run simulations.</p>
+</div>
+<div class="section level4">
+<h4 id="c-run-simulations">c. Run simulations<a class="anchor" aria-label="anchor" href="#c-run-simulations"></a>
+</h4>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">simulation_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/runWaterValuesSimulation.html">runWaterValuesSimulation</a></span><span class="op">(</span></span>
-<span>    area<span class="op">=</span><span class="va">area</span>,</span>
-<span>    nb_disc_stock <span class="op">=</span> <span class="fl">3</span>, <span class="co">#number of simulations</span></span>
+<span>    area <span class="op">=</span> <span class="va">area</span>,</span>
+<span>    nb_disc_stock <span class="op">=</span> <span class="fl">3</span>, <span class="co"># Number of simulations</span></span>
 <span>    mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>    path_solver <span class="op">=</span> <span class="st">"your/path/to/antares/bin/antares-8.6-solver.exe"</span>,</span>
 <span>    opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>    file_name<span class="op">=</span><span class="va">name</span>, <span class="co">#name of the saving file</span></span>
-<span>    pumping<span class="op">=</span><span class="va">pumping</span>,</span>
-<span>    efficiency<span class="op">=</span><span class="va">efficiency</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
-<p>If you want to retrieve results from previous simulations, you can use :</p>
+<span>    file_name <span class="op">=</span> <span class="va">name</span>,</span>
+<span>    pumping <span class="op">=</span> <span class="va">pumping</span>,</span>
+<span>    efficiency <span class="op">=</span> <span class="va">efficiency</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="d-retrieve-previous-simulations">d. Retrieve previous simulations<a class="anchor" aria-label="anchor" href="#d-retrieve-previous-simulations"></a>
+</h4>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">opts</span><span class="op">$</span><span class="va">studyPath</span>, <span class="st">"/user/"</span>, <span class="fu"><a href="https://rdrr.io/r/base/chartr.html" class="external-link">tolower</a></span><span class="op">(</span><span class="va">area</span><span class="op">)</span>,<span class="st">"_"</span>,<span class="va">name</span>, <span class="st">".RData"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Now compute reward functions :</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/load.html" class="external-link">load</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">opts</span><span class="op">$</span><span class="va">studyPath</span>, <span class="st">"/user/"</span>, <span class="fu"><a href="https://rdrr.io/r/base/chartr.html" class="external-link">tolower</a></span><span class="op">(</span><span class="va">area</span><span class="op">)</span>, <span class="st">"_"</span>, <span class="va">name</span>, <span class="st">".RData"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="e-compute-reward-functions">e. Compute reward functions<a class="anchor" aria-label="anchor" href="#e-compute-reward-functions"></a>
+</h4>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reward_db</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_Reward.html">get_Reward</a></span><span class="op">(</span></span>
 <span>  simulation_names <span class="op">=</span> <span class="va">simulation_res</span><span class="op">$</span><span class="va">simulation_names</span>,</span>
 <span>  simulation_values <span class="op">=</span> <span class="va">simulation_res</span><span class="op">$</span><span class="va">simulation_values</span>,</span>
-<span>  opts<span class="op">=</span><span class="va">opts</span>,</span>
+<span>  opts <span class="op">=</span> <span class="va">opts</span>,</span>
 <span>  area <span class="op">=</span> <span class="va">area</span>,</span>
 <span>  mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
 <span>  efficiency <span class="op">=</span> <span class="va">efficiency</span>,</span>
-<span>  method_old <span class="op">=</span> <span class="cn">T</span>,<span class="co"># T if you want a simple linear interpolation of rewards,</span></span>
-<span>                 <span class="co"># F if you want to use marginal price to interpolate</span></span>
-<span>  possible_controls <span class="op">=</span> <span class="fu"><a href="reference/constraint_generator.html">constraint_generator</a></span><span class="op">(</span>area<span class="op">=</span><span class="va">area</span>,</span>
-<span>                                           nb_disc_stock <span class="op">=</span> <span class="fl">20</span>,</span>
-<span>                                           mcyears<span class="op">=</span><span class="va">mcyears</span>,</span>
-<span>                                           pumping <span class="op">=</span> <span class="va">pumping</span>,</span>
-<span>                                           efficiency <span class="op">=</span> <span class="va">efficiency</span>,</span>
-<span>                                           opts<span class="op">=</span><span class="va">opts</span><span class="op">)</span><span class="co"># used for marginal prices interpolation</span></span>
+<span>  method_old <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># TRUE for linear interpolation; FALSE for marginal price</span></span>
+<span>  possible_controls <span class="op">=</span> <span class="fu"><a href="reference/constraint_generator.html">constraint_generator</a></span><span class="op">(</span></span>
+<span>    area <span class="op">=</span> <span class="va">area</span>,</span>
+<span>    nb_disc_stock <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>    mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
+<span>    pumping <span class="op">=</span> <span class="va">pumping</span>,</span>
+<span>    efficiency <span class="op">=</span> <span class="va">efficiency</span>,</span>
+<span>    opts <span class="op">=</span> <span class="va">opts</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">reward</span> <span class="op">&lt;-</span> <span class="va">reward_db</span><span class="op">$</span><span class="va">reward</span></span></code></pre></div>
-<p>Finally, compute water values :</p>
+</div>
+<div class="section level4">
+<h4 id="f-compute-water-values">f. Compute water values<a class="anchor" aria-label="anchor" href="#f-compute-water-values"></a>
+</h4>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/Grid_Matrix.html">Grid_Matrix</a></span><span class="op">(</span></span>
-<span>  area<span class="op">=</span><span class="va">area</span>,</span>
+<span>  area <span class="op">=</span> <span class="va">area</span>,</span>
 <span>  reward_db <span class="op">=</span> <span class="va">reward_db</span>,</span>
 <span>  mcyears <span class="op">=</span> <span class="va">mcyears</span>,</span>
-<span>  states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">20</span>, <span class="co"># discretization of states</span></span>
+<span>  states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">20</span>, <span class="co"># State discretization</span></span>
 <span>  opts <span class="op">=</span> <span class="va">opts</span>,</span>
-<span>  efficiency<span class="op">=</span><span class="va">efficiency</span>,</span>
-<span>  penalty_low <span class="op">=</span> <span class="fl">1000</span>,<span class="co">#penalty for bottom rule curve</span></span>
-<span>  penalty_high <span class="op">=</span> <span class="fl">100</span>,<span class="co">#penalty for top rule curve</span></span>
-<span>  force_final_level <span class="op">=</span> <span class="cn">T</span>, <span class="co"># T if you want to constrain final level with penalties (see Grid_Matrix documentation for more information)</span></span>
-<span>  final_level <span class="op">=</span> <span class="fu"><a href="reference/get_initial_level.html">get_initial_level</a></span><span class="op">(</span>area<span class="op">=</span><span class="va">area</span>,opts<span class="op">=</span><span class="va">opts</span><span class="op">)</span>, <span class="co"># wanted final level (between 0 and 100%)</span></span>
+<span>  efficiency <span class="op">=</span> <span class="va">efficiency</span>,</span>
+<span>  penalty_low <span class="op">=</span> <span class="fl">1000</span>, <span class="co"># Penalty for bottom rule curve</span></span>
+<span>  penalty_high <span class="op">=</span> <span class="fl">100</span>, <span class="co"># Penalty for top rule curve</span></span>
+<span>  force_final_level <span class="op">=</span> <span class="cn">TRUE</span>, <span class="co"># Constraint on final level</span></span>
+<span>  final_level <span class="op">=</span> <span class="fu"><a href="reference/get_initial_level.html">get_initial_level</a></span><span class="op">(</span>area <span class="op">=</span> <span class="va">area</span>, opts <span class="op">=</span> <span class="va">opts</span><span class="op">)</span>, <span class="co"># Target final level (0-100%)</span></span>
 <span>  penalty_final_level_low <span class="op">=</span> <span class="fl">2000</span>,</span>
 <span>  penalty_final_level_high <span class="op">=</span> <span class="fl">2000</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-grid_matrix-1.png" width="100%"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">aggregated_results</span> <span class="op">&lt;-</span> <span class="va">results</span><span class="op">$</span><span class="va">aggregated_results</span></span></code></pre></div>
-<p>Water values are written to Antares thanks to the following instructions :</p>
+</div>
+<div class="section level4">
+<h4 id="g-write-results-to-antares">g. Write results to Antares<a class="anchor" aria-label="anchor" href="#g-write-results-to-antares"></a>
+</h4>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">reshaped_values</span> <span class="op">&lt;-</span> <span class="va">aggregated_results</span> <span class="op">%&gt;%</span></span>
-<span>  <span class="fu"><a href="reference/to_Antares_Format_bis.html">to_Antares_Format_bis</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">reshaped_values</span> <span class="op">&lt;-</span> <span class="va">aggregated_results</span> <span class="op">%&gt;%</span> <span class="fu"><a href="reference/to_Antares_Format_bis.html">to_Antares_Format_bis</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu">antaresEditObject</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/writeWaterValues.html" class="external-link">writeWaterValues</a></span><span class="op">(</span></span>
 <span>  area <span class="op">=</span> <span class="va">area</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">reshaped_values</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>Values in <code>reshaped_values</code> are not monotone because Antares will average values.</p>
-<p>Before running a simulation, <code>hydro-princing-mode</code> must be change to <code>accurate</code> :</p>
+<p>Note: Values in <code>reshaped_values</code> may not be monotone because Antares averages values.</p>
+</div>
+<div class="section level4">
+<h4 id="h-make-sure-hydro-pricing-mode-is-set-to-accurate">h. Make sure <code>hydro-pricing-mode</code> is set to <code>accurate</code>
+<a class="anchor" aria-label="anchor" href="#h-make-sure-hydro-pricing-mode-is-set-to-accurate"></a>
+</h4>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">settings_ini</span> <span class="op">&lt;-</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/read-ini.html" class="external-link">readIni</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"settings"</span>, <span class="st">"generaldata.ini"</span><span class="op">)</span>,opts<span class="op">=</span><span class="va">opts</span><span class="op">)</span></span>
-<span><span class="va">settings_ini</span><span class="op">$</span><span class="va">`other preferences`</span><span class="op">$</span><span class="va">`hydro-pricing-mode`</span> <span class="op">=</span> <span class="st">"accurate"</span></span>
-<span><span class="fu">antaresEditObject</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/write-ini.html" class="external-link">writeIni</a></span><span class="op">(</span><span class="va">settings_ini</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"settings"</span>, <span class="st">"generaldata.ini"</span><span class="op">)</span>,overwrite<span class="op">=</span><span class="cn">T</span>,opts<span class="op">=</span><span class="va">opts</span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="plot-results">Plot results<a class="anchor" aria-label="anchor" href="#plot-results"></a>
-</h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/waterValuesViz.html">waterValuesViz</a></span><span class="op">(</span>Data<span class="op">=</span><span class="va">aggregated_results</span>,filter_penalties <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-watervalues-1.png" width="100%"></p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/plot_Bellman.html">plot_Bellman</a></span><span class="op">(</span>value_nodes_dt <span class="op">=</span> <span class="va">aggregated_results</span>, </span>
-<span>             weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-bellman-1.png" width="100%"></p>
-<p>You can also plot reward functions</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plot_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward.html">plot_reward</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>,</span>
-<span>                      weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-reward-1.png" width="100%"></p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plot_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward_mc.html">plot_reward_mc</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>,</span>
-<span>                         weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span>,</span>
-<span>                         scenarios_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-reward-2.png" width="100%"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plot_3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward_variation.html">plot_reward_variation</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>,</span>
-<span>                                weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-reward-3.png" width="100%"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plot_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward_variation_mc.html">plot_reward_variation_mc</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>,</span>
-<span>                                   weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span>,</span>
-<span>                                   scenarios_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-reward-4.png" width="100%"></p>
+<code class="sourceCode R"><span><span class="va">settings_ini</span> <span class="op">&lt;-</span> <span class="fu">antaresRead</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresRead/reference/read-ini.html" class="external-link">readIni</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"settings"</span>, <span class="st">"generaldata.ini"</span><span class="op">)</span>, opts <span class="op">=</span> <span class="va">opts</span><span class="op">)</span></span>
+<span><span class="va">settings_ini</span><span class="op">$</span><span class="va">`other preferences`</span><span class="op">$</span><span class="va">`hydro-pricing-mode`</span> <span class="op">&lt;-</span> <span class="st">"accurate"</span></span>
+<span><span class="fu">antaresEditObject</span><span class="fu">::</span><span class="fu"><a href="https://rte-antares-rpackage.github.io/antaresEditObject/reference/write-ini.html" class="external-link">writeIni</a></span><span class="op">(</span><span class="va">settings_ini</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"settings"</span>, <span class="st">"generaldata.ini"</span><span class="op">)</span>, overwrite <span class="op">=</span> <span class="cn">TRUE</span>, opts <span class="op">=</span> <span class="va">opts</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="multi-stock">Multi stock<a class="anchor" aria-label="anchor" href="#multi-stock"></a>
+<h2 id="plotting-results">Plotting Results<a class="anchor" aria-label="anchor" href="#plotting-results"></a>
 </h2>
-<p>To compute Bellman values for multiple storages, you can either use <code><a href="reference/getBellmanValuesFromOneSimulationMultistock.html">getBellmanValuesFromOneSimulationMultistock()</a></code>, <code><a href="reference/getBellmanValuesSequentialMultiStockWithPlaia.html">getBellmanValuesSequentialMultiStockWithPlaia()</a></code>, or compute them one storage at a time.</p>
-<p>In all cases, make sure to use the Antares hydro heuristic for all storages when computing Bellman values.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Water values visualization</span></span>
+<span><span class="fu"><a href="reference/waterValuesViz.html">waterValuesViz</a></span><span class="op">(</span>Data <span class="op">=</span> <span class="va">aggregated_results</span>, filter_penalties <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-watervalues-1.png" width="100%"></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot Bellman</span></span>
+<span><span class="fu"><a href="reference/plot_Bellman.html">plot_Bellman</a></span><span class="op">(</span>value_nodes_dt <span class="op">=</span> <span class="va">aggregated_results</span>, weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-bellman-1.png" width="100%"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Reward functions</span></span>
+<span><span class="va">plot_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward.html">plot_reward</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>, weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-reward-1.png" width="100%"></p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">plot_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward_mc.html">plot_reward_mc</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>, weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span>, scenarios_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-reward-2.png" width="100%"></p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">plot_3</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward_variation.html">plot_reward_variation</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>, weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-reward-3.png" width="100%"></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">plot_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/plot_reward_variation_mc.html">plot_reward_variation_mc</a></span><span class="op">(</span>reward_base <span class="op">=</span> <span class="va">reward</span>, weeks_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span><span class="op">)</span>, scenarios_to_plot <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-reward-4.png" width="100%"></p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="troubleshooting--help">Troubleshooting &amp; Help<a class="anchor" aria-label="anchor" href="#troubleshooting--help"></a>
+</h2>
+<ul>
+<li>For more info, see the package <a href="https://rte-antares-rpackage.github.io/antaresWaterValues/">reference documentation</a>.</li>
+<li>Report bugs or request help by creating an <a href="https://github.com/rte-antares-rpackage/antaresWaterValues/issues" class="external-link">issue</a>.</li>
+</ul>
 </div>
 </div>
 

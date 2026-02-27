@@ -13,7 +13,7 @@ new controls to be evaluated which leads to a new simulation"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,6 +67,7 @@ new controls to be evaluated which leads to a new simulation</p>
 <span>  <span class="va">path_solver</span>,</span>
 <span>  states_step_ratio <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,</span>
 <span>  cvar_value <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  list_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  penalty_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  initial_traj <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  df_previous_cut <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -128,6 +129,10 @@ between the reservoir capacity and zero</p></dd>
 <dd><p>from 0 to 1. the probability used in quantile method
 to determine a bellman value which cvar_value all bellman values are equal or
 less to it. (quantile(cvar_value))</p></dd>
+
+
+<dt id="arg-list-final-level">list_final_level<a class="anchor" aria-label="anchor" href="#arg-list-final-level"></a></dt>
+<dd><p>List of double. For each storage, final level (in percent between 0 and 100) if final level is constrained. Initial level computed by <code><a href="get_initial_level.html">get_initial_level()</a></code> by default.</p></dd>
 
 
 <dt id="arg-penalty-final-level">penalty_final_level<a class="anchor" aria-label="anchor" href="#arg-penalty-final-level"></a></dt>

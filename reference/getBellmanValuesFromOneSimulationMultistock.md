@@ -22,6 +22,7 @@ getBellmanValuesFromOneSimulationMultistock(
   list_areas,
   list_pumping,
   list_efficiency,
+  list_final_level = NULL,
   force_final_level,
   penalty_final_level_low,
   penalty_final_level_high,
@@ -60,13 +61,20 @@ getBellmanValuesFromOneSimulationMultistock(
 
   Named vector of pumping efficiency.
 
+- list_final_level:
+
+  List of double. For each storage, final level (in percent between 0
+  and 100) if final level is constrained. Initial level computed by
+  [`get_initial_level()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_initial_level.md)
+  by default.
+
 - force_final_level:
 
   Binary. Whether final level should be constrained.
 
 - penalty_final_level_low:
 
-  Double. Penalties for both bottom rule curve to constrain final level.
+  Double. Penalties for bottom rule curve to constrain final level.
 
 - penalty_final_level_high:
 

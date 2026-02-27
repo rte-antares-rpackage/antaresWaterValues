@@ -43,7 +43,6 @@ build_all_possible_decisions <- function(Data_week,decision_space,
 
   possible_control <- Data_week  %>%
     dplyr::right_join(decision_space,by=c("years"="mcYear"), relationship="many-to-many") %>%
-    dplyr::rename("control"="u") %>%
     dplyr::mutate(next_state = -.data$control+.data$states+.data$hydroStorage) %>%
     rbind(possible_control)
 
@@ -60,7 +59,7 @@ build_all_possible_decisions <- function(Data_week,decision_space,
   df_SDP <- df_SDP %>%
     dplyr::filter(.data$next_state>=0, .data$next_state<=niveau_max)%>%
     dplyr::mutate(next_value = f_next_value(.data$next_state) + .data$overflow*overflow_cost) %>%
-    dplyr::select(-c("overflow"))
+    dplyr::select(c("years","states","next_state","control","hydroStorage","next_value"))
 
   return(df_SDP)
 }

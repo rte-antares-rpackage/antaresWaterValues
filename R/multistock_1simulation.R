@@ -7,6 +7,7 @@
 #'
 #' @inheritParams runWaterValuesSimulationMultiStock
 #' @inheritParams Grid_Matrix
+#' @param list_final_level List of double. For each storage, final level (in percent between 0 and 100) if final level is constrained. Initial level computed by \code{get_initial_level()} by default.
 #' @param write_vu Binary. True to write water values in the Antares study.
 #' @param simu List of simulation parameters returned by the function \code{antaresRead::setSimulationPath()} with the simulation selected from which to use the storage trajectory to run the simulation.
 #'
@@ -19,6 +20,7 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
                                                         list_areas,
                                                         list_pumping,
                                                         list_efficiency,
+                                                        list_final_level = NULL,
                                                         force_final_level,
                                                         penalty_final_level_low,
                                                         penalty_final_level_high,
@@ -92,7 +94,11 @@ getBellmanValuesFromOneSimulationMultistock <- function(opts,
   for (a in list_areas) {
     pumping <- list_pumping[a]
     pump_eff <- list_efficiency[a]
-    final_level <- get_initial_level(a, opts)
+    if (!is.null(list_final_level)){
+      final_level <- list_final_level[[a]]
+    } else {
+      final_level <- get_initial_level(a, opts)
+    }
 
     print(a)
     local_sim_values <- simulation_res$simulation_values %>%

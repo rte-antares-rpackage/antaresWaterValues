@@ -27,6 +27,7 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                                                           states_step_ratio=1/50,
                                                           cvar_value = 1,
                                                           penalty_final_level = NULL,
+                                                          list_final_level = NULL,
                                                           initial_traj = NULL,
                                                           list_areas_to_compute = NULL){
 
@@ -39,7 +40,7 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
   assertthat::assert_that(opts$antaresVersion>=930,
                           msg = "Plaia is available since version 9.3 of Antares.")
 
-  list_areas = tolower(list_areas)
+  validate_and_normalize_areas(list_areas,opts)
 
   list_inflow = list()
   list_capacity = list()
@@ -47,7 +48,6 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
   list_max_hydro_weekly = list()
   for (j in seq_along(list_areas)){
     area = list_areas[[j]]
-    check_area_name(area = area, opts = opts)
 
     list_capacity[[j]] <- get_reservoir_capacity(area = area, opts = opts)
     list_inflow[[j]] <- get_inflow(area=area, opts=opts,mcyears=mcyears)
@@ -83,7 +83,11 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
 
   for (area in list_areas_to_compute){
     a = area
-    final_level <- get_initial_level(area,opts)
+    if (!is.null(list_final_level)){
+      final_level <- list_final_level[[a]]
+    } else {
+      final_level <- get_initial_level(a, opts)
+    }
 
     level_init <- get_initial_level_year_per_year(area,opts)*list_capacity[[area]]/100
 
@@ -183,165 +187,61 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                         optimal_traj,
                                         list_max_hydro_weekly)  {
 
-  list_areas = tolower(list_areas)
-
-  list_backup = list()
+  grid = data.frame()
   for (j in seq_along(list_areas)){
-    area = list_areas[[j]]
-    check_area_name(area = area, opts = opts)
-
-    list_backup[[j]] = getBackupData(area,mcyears,opts)
-
-    assertthat::assert_that(ncol(list_backup[[j]]$hydro_storage)>=max(mcyears),
-                            msg = paste0("There is no enough columns for data inflow for ",area))
-  }
-
-  year_by_year = opts$parameters$general$`year-by-year`
-  synthesis = opts$parameters$output$synthesis
-  storenewset = opts$parameters$output$storenewset
-
-  assertthat::assert_that(is_api_study(opts),msg="Study must be in API mode to launch simulations.")
-  assertthat::assert_that(opts$parameters$`adequacy patch`$`include-adq-patch` == FALSE,
-                          msg = "Adequacy Patch can only be used with Economy mode.")
-
-  try(antaresRead::api_post(opts=opts,
-                            endpoint = paste0(opts$study_id,"/extensions/xpansion")),
-      silent = T)
-
-  tryCatch({
-
-    antaresEditObject::setPlaylist(playlist = mcyears,opts = opts)
-    antaresEditObject::updateGeneralSettings(year.by.year = FALSE, opts = opts)
-    antaresEditObject::updateOutputSettings(synthesis = FALSE, storenewset = FALSE, opts=opts)
-
-    for (j in seq_along(list_areas)){
-      area <- list_areas[[j]]
-
-      assertthat::assert_that(area %in% names(opts$energyCosts$unserved),
-                              msg=paste0("Unserved cost is null in ",area,
-                                         ", unserved energy will be exported to this area in simulations launched by the package."))
-
-      suppressWarnings({mingen = antaresRead::readInputTS(mingen = area,opts=opts)})
-      if (nrow(mingen)>0){
-        assertthat::assert_that(max(dplyr::pull(mingen,"mingen"))==0,
-                                msg = paste0("The module is not yet usable with min gen. Please set min gen to zero for area '",area,"'."))
-      }
-
-      changeHydroManagement(opts=opts,watervalues = FALSE, heuristic = TRUE, area=area)
-
-      add_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
-                                    misc_gen = list_backup[[j]]$misc_gen)
-    }
-
-    grid = data.frame()
-    for (j in seq_along(list_areas)){
-      a <- list_areas[[j]]
-      if (a != node){
-        grid = optimal_traj %>%
-          dplyr::filter(.data$area == a) %>%
-          dplyr::left_join(list_max_hydro_weekly[[j]],by=c("week"="timeId")) %>%
-          dplyr::mutate(rhs = (.data$u+.data$pump*list_efficiency[[j]])/(.data$turb+.data$pump*list_efficiency[[j]])) %>%
-          dplyr::mutate(grid_id = 0,
-                        problem_name = stringr::str_c("problem-",.data$mcYear,"-",.data$week,"--optim-nb-1"),
+    a <- list_areas[[j]]
+    if (a != node){
+      grid = optimal_traj %>%
+        dplyr::filter(.data$area == a) %>%
+        dplyr::left_join(list_max_hydro_weekly[[j]],by=c("week"="timeId")) %>%
+        dplyr::mutate(rhs = (.data$u+.data$pump*list_efficiency[[j]])/(.data$turb+.data$pump*list_efficiency[[j]])) %>%
+        dplyr::mutate(grid_id = 0,
+                      problem_name = stringr::str_c("problem-",.data$mcYear,"-",.data$week,"--optim-nb-1"),
+                      type = "constraint",
+                      name = "HydroPower",
+                      min = .data$rhs,
+                      max = .data$rhs,
+                      step = "0.1") %>%
+        dplyr::select(c("grid_id","problem_name","type","name","area","min","max","step")) %>%
+        rbind(grid)
+    } else {
+      grid = data.frame(grid_id = 0,
+                        problem_name = "all",
                         type = "constraint",
                         name = "HydroPower",
-                        min = .data$rhs,
-                        max = .data$rhs,
-                        step = "0.1") %>%
-          dplyr::select(c("grid_id","problem_name","type","name","area","min","max","step")) %>%
-          rbind(grid)
-      } else {
-        grid = data.frame(grid_id = 0,
-                          problem_name = "all",
-                          type = "constraint",
-                          name = "HydroPower",
-                          area = a,
-                          min = 0,
-                          max = 1,
-                          step = 1/(nb_simulations-1)) %>%
-          rbind(grid)
-      }
-
+                        area = a,
+                        min = 0,
+                        max = 1,
+                        step = 1/(nb_simulations-1)) %>%
+        rbind(grid)
     }
 
-    body = list()
-    out <- utils::capture.output(
-      utils::write.csv(grid, row.names = FALSE, quote = FALSE)
-    )
-
-    body$file <- paste(out, collapse = "\n")
-    antaresRead::api_put(opts=opts,endpoint=paste0(opts$study_id,
-                                                   "/raw?path=user%2Fwater_values%2Fgrid.csv&create_missing=true&resource_type=file"),
-                         body=body)
-
-    # Start the simulations
-
-    name_sim = paste0("grid_cost_function_",node)
-
-    res = antaresEditObject::runSimulation(name = name_sim,
-                                           opts=opts,
-                                           xpansion = list(enabled=T),
-                                           other_options = "grid_cost_function")
-
-    assertthat::assert_that(res$status=="success",msg = "Simulation failed.")
-
-    # Extract results
-    export_res = antaresRead::api_get(opts = opts,
-                                      endpoint = paste0(opts$study_id,
-                                                        "/outputs/",res$output_id,
-                                                        "/export"))
-    max_try <- 5
-    i <- 0
-
-    repeat {
-      i <- i + 1
-      res <- try({download_res = antaresRead::api_get(opts = opts,
-                                                      endpoint = export_res$file$id,
-                                                      default_endpoint = "v1/downloads")},
-                 silent = TRUE)
-      if (!inherits(res, "try-error") || i >= max_try) break
-      Sys.sleep(10)
-    }
-
-    assertthat::assert_that(i<max_try, msg = "Too much attempts to download results.")
-
-    zipfile <- tempfile(fileext = ".zip")
-    my_tmpdir <- tempfile("my_zip_files")
-    dir.create(my_tmpdir)
-    writeBin(download_res, zipfile)
-    utils::unzip(zipfile, files = "gridPointsValues_0.csv", exdir = my_tmpdir)
-
-    reward = utils::read.csv(paste0(my_tmpdir,"/gridPointsValues_0.csv"))
-
-    unlink(zipfile)
-    on.exit(unlink(my_tmpdir, recursive = TRUE), add = TRUE)
-
-    reward = reward %>%
-      dplyr::mutate(timeId = .data$week,
-                    mcYear = .data$scenario,
-                    control = .data[[paste0(node,"_RHSValue")]],
-                    reward = -.data$cost) %>%
-      dplyr::select(c("timeId","mcYear","control","reward"))
-    assertthat::assert_that(sum(is.na(reward))==0)
-    reward_db = list()
-    reward_db$reward = reward
-    reward_db$decision_space = reward %>%
-      dplyr::rename("week"="timeId","u"="control") %>%
-      dplyr::select(-c("reward"))
-  },
-  error = function(e) {
-    stop(e)
-  },
-  finally = {
-    for (j in seq_along(list_areas)){
-      area = list_areas[[j]]
-      restore_fictive_fatal_prod_demand(area = area, opts = opts, load = list_backup[[j]]$load,
-                                        misc_gen = list_backup[[j]]$misc_gen)
-    }
-    antaresEditObject::updateGeneralSettings(year.by.year = year_by_year, opts=opts)
-    antaresEditObject::updateOutputSettings(synthesis = synthesis, storenewset = storenewset, opts=opts)
   }
-  )
+
+  zip_path = prepare_and_launch_plaia(list_areas,
+                                      opts,
+                                      mcyears,
+                                      grid,
+                                      name_sim = paste0("grid_cost_function_",node),
+                                      other_options = "grid_cost_function")
+
+  reward = extract_from_zip(zip_path,
+                            "gridPointsValues_0.csv")
+
+  on.exit(unlink(dirname(zip_path), recursive = TRUE), add = TRUE)
+
+  reward = reward %>%
+    dplyr::mutate(timeId = .data$week,
+                  mcYear = .data$scenario,
+                  control = .data[[paste0(node,"_RHSValue")]],
+                  reward = -.data$cost) %>%
+    dplyr::select(c("timeId","mcYear","control","reward"))
+  assertthat::assert_that(sum(is.na(reward))==0)
+  reward_db = list()
+  reward_db$reward = reward
+  reward_db$decision_space = reward %>%
+    dplyr::rename("week"="timeId","u"="control") %>%
+    dplyr::select(-c("reward"))
 
   return(reward_db)
 }

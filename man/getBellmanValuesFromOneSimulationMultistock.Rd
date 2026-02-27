@@ -11,6 +11,7 @@ getBellmanValuesFromOneSimulationMultistock(
   list_areas,
   list_pumping,
   list_efficiency,
+  list_final_level = NULL,
   force_final_level,
   penalty_final_level_low,
   penalty_final_level_high,
@@ -33,9 +34,11 @@ getBellmanValuesFromOneSimulationMultistock(
 
 \item{list_efficiency}{Named vector of pumping efficiency.}
 
+\item{list_final_level}{List of double. For each storage, final level (in percent between 0 and 100) if final level is constrained. Initial level computed by \code{get_initial_level()} by default.}
+
 \item{force_final_level}{Binary. Whether final level should be constrained.}
 
-\item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
+\item{penalty_final_level_low}{Double. Penalties for bottom rule curve to constrain final level.}
 
 \item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.}
 

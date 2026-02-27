@@ -79,7 +79,7 @@ attending the limit.}
 
 \item{final_level}{Double. Final level (in percent between 0 and 100) if final level is constrained. If you want initial level, use \code{get_initial_level()}.}
 
-\item{penalty_final_level_low}{Double. Penalties for both bottom rule curve to constrain final level.}
+\item{penalty_final_level_low}{Double. Penalties for bottom rule curve to constrain final level.}
 
 \item{penalty_final_level_high}{Double. Penalties for top rule curve to constrain final level.}
 }
@@ -90,5 +90,6 @@ attending the limit.}
 }
 \description{
 Compute Bellman values and water values with dynamic programming based on reward functions computed with \code{get_Reward()}.
-Mode information about this function in \code{vignette("grid_Matrix-parameters")}.
+Mode information about this function in \code{vignette("grid_Matrix-parameters")}. In the backward recursion, overflow is accepted but it
+can't exceed weekly inflows and is penalized with the spillage cost.
 }

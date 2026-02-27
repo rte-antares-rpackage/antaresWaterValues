@@ -30,7 +30,7 @@ run_plaia_simulation <- function(opts, name_sim, other_options) {
   res$output_id
 }
 
-download_output_zip <- function(opts, output_id, max_try = 5) {
+download_output_zip <- function(opts, output_id, max_try = 20) {
 
   export_res <- antaresRead::api_get(
     opts = opts,
@@ -40,20 +40,20 @@ download_output_zip <- function(opts, output_id, max_try = 5) {
   i <- 0
   repeat {
     i <- i + 1
-    download_res <- try(
-      antaresRead::api_get(
-        opts = opts,
-        endpoint = export_res$file$id,
-        default_endpoint = "v1/downloads"
-      ),
-      silent = TRUE
-    )
-    if (!inherits(download_res, "try-error") || i >= max_try) break
-    Sys.sleep(10)
+    status  = get_task_status(opts, output_id, "EXPORT")
+    if (status==0 || i >= max_try) break
+    Sys.sleep(30)
   }
 
-  assertthat::assert_that(i < max_try, msg = "Too much attempts to download results.")
+  assertthat::assert_that(i < max_try, msg = "Results export takes too much time.")
 
+  download_res <- antaresRead::api_get(
+      opts = opts,
+      endpoint = export_res$file$id,
+      default_endpoint = "v1/downloads"
+    )
+
+  assertthat::assert_that(!inherits(download_res, "try-error"), msg = "Results download failed.")
 
   tmpdir  <- tempfile("plaia_zip_")
   dir.create(tmpdir)

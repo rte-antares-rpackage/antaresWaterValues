@@ -476,6 +476,17 @@ launchSimulation <- function(opts,i,sim_name,path_solver,expansion,show_output_o
   if (is_api_study(opts)){
     assertthat::assert_that(status$status == "success",
                             msg = "Antares simulation failed, check Antares logs.")
+    max_try = 20
+    i <- 0
+    repeat {
+      i <- i + 1
+      task_status  = get_task_status(opts, status$output_id, "UNARCHIVE")
+      if (task_status==0 || i >= max_try) break
+      Sys.sleep(30)
+    }
+
+    assertthat::assert_that(i < max_try, msg = "Unarchiving takes too much time.")
+
     if (expansion){
       antaresEditObject::updateGeneralSettings(mode = "economy",opts=opts)
     }

@@ -202,3 +202,23 @@ write_api_file <- function(opts, path, content) {
   )
 }
 
+get_task_status <- function(opts, output_id, taskType) {
+
+  if (taskType == "UNARCHIVE"){
+    name = paste0("Unarchive output ",opts$studyName, "/", output_id, " (",opts$study_id,")")
+  } else if (taskType == "EXPORT"){
+    name = paste0("Study output ", opts$studyName, "/", output_id, " export")
+  }
+
+  res = antaresRead::api_get(opts = opts,
+                             endpoint = paste0("v1/tasks?name=",name,"&type=",taskType),
+                             default_endpoint = "")
+
+  if (length(res)==0) return(-1)
+  if (!"status" %in% names(res[[1]])) return(-1)
+  if (res[[1]]$status == 3) return(0)
+
+  return(-1)
+}
+
+

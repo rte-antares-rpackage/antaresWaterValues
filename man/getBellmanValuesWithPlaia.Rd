@@ -43,5 +43,5 @@ List of watervalues matrix
 }
 \description{
 For each storage, reward functions are evaluated and Bellman values are computed with plaia.
-Results are written directly to the output folder.
+Results are written directly to the output folder. Final level is equal to initial level for all storages.
 }

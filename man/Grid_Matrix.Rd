@@ -93,5 +93,6 @@ attending the limit.}
 }
 \description{
 Compute Bellman values and water values with dynamic programming based on reward functions computed with \code{get_Reward()}.
-Mode information about this function in \code{vignette("grid_Matrix-parameters")}.
+Mode information about this function in \code{vignette("grid_Matrix-parameters")}. In the backward recursion, overflow is accepted but it
+can't exceed weekly inflows and is penalized with the spillage cost.
 }

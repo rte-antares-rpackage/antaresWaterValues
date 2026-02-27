@@ -121,9 +121,10 @@ get_weekly_cost <- function(simu,mcyears,expansion=F){
   } else {
     cost <- data.frame(tidyr::expand_grid(mcYear=mcyears,timeId=1:52))%>%
         dplyr::mutate(ov_cost=0,cost_xpansion=0)
+    api_study = is_api_study(simu)
     for (week in 1:52){
       for (scenario in mcyears){
-        if (is_api_study(simu)){
+        if (api_study){
           file = antaresRead::api_get(opts=simu,endpoint=paste0(simu$study_id,
                     "/raw?path=output%2F",simu$simOutputName,"%2Fcriterion-",scenario,"-",week,"--optim-nb-1"),
                                                   parse_result = "text",encoding = "UTF-8")

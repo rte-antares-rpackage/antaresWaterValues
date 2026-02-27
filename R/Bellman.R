@@ -41,7 +41,7 @@
 
     # Build a data.table from Data_week that list for each state and each MC year, the possible transitions
     df_SDP <- build_all_possible_decisions(Data_week,decision_space,
-                                           mcyears,lvl_high,lvl_low,E_max,P_max,
+                                           lvl_high,lvl_low,E_max,P_max,
                                            next_week_values_l,niveau_max,overflow_cost,
                                            next_states = next_state)
 

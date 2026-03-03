@@ -14,7 +14,8 @@ getBellmanValuesWithPlaia(
   penalty_high = 0,
   cvar_value = 1,
   name_sim = "watervalues",
-  n_controls = 51
+  n_controls = 51,
+  cluster = "calin1"
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ getBellmanValuesWithPlaia(
 \item{name_sim}{Character. Name of the simulation to launch}
 
 \item{n_controls}{Integer. Number of controls to evaluate reward functions.}
+
+\item{cluster}{Character. Name of the cluster of antaresWeb}
 }
 \value{
 List of watervalues matrix

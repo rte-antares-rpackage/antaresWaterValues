@@ -16,18 +16,36 @@ validate_api_study_for_plaia <- function(opts) {
   )
 }
 
-run_plaia_simulation <- function(opts, name_sim, other_options) {
+run_plaia_simulation <- function(opts, name_sim, other_options, cluster) {
 
-  res <- antaresEditObject::runSimulation(
-    name = name_sim,
+  assertthat::assert_that(inherits(opts, "simOptions"))
+
+  assertthat::assert_that(is_api_study(opts))
+
+  antaresEditObject::updateGeneralSettings(mode = "economy", opts = opts)
+  run <- antaresRead::api_post(
     opts = opts,
-    xpansion = list(enabled = TRUE),
-    other_options = other_options
+    endpoint = paste0("launcher/run/", opts$study_id,"?launcher=",cluster),
+    default_endpoint = "v1",
+    body = jsonlite::toJSON(list(output_suffix = name_sim,
+                                 other_options = other_options,
+                                 xpansion = list(enabled = TRUE)), auto_unbox = TRUE),
+    encode = "raw"
   )
+  assertthat::assert_that(!is.null(run$job_id), msg = "No job id returned by API, something went wrong.")
 
-  assertthat::assert_that(res$status == "success",msg = "Simulation failed.")
+  message(paste("Job launched with ID:", run$job_id))
 
-  res$output_id
+  status <- antaresEditObject::getJobs(run$job_id, opts = opts)
+  while (is.null(status$completion_date) || is.na(status$completion_date)) {
+    Sys.sleep(1)
+    status <- antaresEditObject::getJobs(run$job_id, opts = opts)
+  }
+
+
+  assertthat::assert_that(status$status == "success",msg = "Simulation failed.")
+
+  status$output_id
 }
 
 download_output_zip <- function(opts, output_id, max_try = 20) {
@@ -75,7 +93,8 @@ prepare_and_launch_plaia <- function(list_areas,
                                      grid,
                                      params = list(),
                                      name_sim,
-                                     other_options) {
+                                     other_options,
+                                     cluster) {
   validate_and_normalize_areas(list_areas, opts)
 
   list_backup = list()
@@ -117,7 +136,7 @@ prepare_and_launch_plaia <- function(list_areas,
                                  handlers = list(logical = yaml::verbatim_logical)))
 
     # Start the simulations
-    output_id = run_plaia_simulation(opts, name_sim, other_options)
+    output_id = run_plaia_simulation(opts, name_sim, other_options, cluster)
 
     # Extract results
     zip_path = download_output_zip(opts, output_id)

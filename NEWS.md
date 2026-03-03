@@ -1,3 +1,9 @@
+# antaresWaterValues (development version)
+
+## New features
+
+* Parameter cluster in plaia functions
+
 # antaresWaterValues 2.2.0
 
 ## New features

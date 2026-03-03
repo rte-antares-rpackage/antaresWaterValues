@@ -21,7 +21,7 @@ initial_traj or a short-term trajectory is used as a fallback."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,7 +78,8 @@ For areas where Bellman values have not yet been computed, either
 <span>  penalty_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  list_final_level <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  initial_traj <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  list_areas_to_compute <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  list_areas_to_compute <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cluster <span class="op">=</span> <span class="st">"calin1"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -133,6 +134,10 @@ between the reservoir capacity and zero for which Bellman values are computed.</
 
 <dt id="arg-list-areas-to-compute">list_areas_to_compute<a class="anchor" aria-label="anchor" href="#arg-list-areas-to-compute"></a></dt>
 <dd><p>Vector of character. Areas for which to compute Bellman values. If <code>NULL</code>, all areas in <code>list_areas</code> are used.</p></dd>
+
+
+<dt id="arg-cluster">cluster<a class="anchor" aria-label="anchor" href="#arg-cluster"></a></dt>
+<dd><p>Character. Name of the cluster of antaresWeb</p></dd>
 
 </dl></div>
     <div class="section level2">

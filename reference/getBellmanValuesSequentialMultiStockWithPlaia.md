@@ -26,7 +26,8 @@ getBellmanValuesSequentialMultiStockWithPlaia(
   penalty_final_level = NULL,
   list_final_level = NULL,
   initial_traj = NULL,
-  list_areas_to_compute = NULL
+  list_areas_to_compute = NULL,
+  cluster = "calin1"
 )
 ```
 
@@ -87,6 +88,10 @@ getBellmanValuesSequentialMultiStockWithPlaia(
 
   Vector of character. Areas for which to compute Bellman values. If
   `NULL`, all areas in `list_areas` are used.
+
+- cluster:
+
+  Character. Name of the cluster of antaresWeb
 
 ## Value
 

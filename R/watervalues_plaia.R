@@ -8,6 +8,7 @@
 #' @param penalty_final_level Double. Penalties for both rule curves to constrain final level.
 #' @param name_sim Character. Name of the simulation to launch
 #' @param n_controls Integer. Number of controls to evaluate reward functions.
+#' @param cluster Character. Name of the cluster of antaresWeb
 #' @return List of watervalues matrix
 #' @export
 #'
@@ -20,7 +21,8 @@ getBellmanValuesWithPlaia <- function(opts,
                                       penalty_high = 0,
                                       cvar_value = 1,
                                       name_sim = "watervalues",
-                                      n_controls = 51) {
+                                      n_controls = 51,
+                                      cluster = "calin1") {
   list_watervalues = list()
   df_levels = data.frame()
   df_watervalues = data.frame()
@@ -55,7 +57,8 @@ getBellmanValuesWithPlaia <- function(opts,
                                       grid,
                                       params,
                                       name_sim,
-                                      "watervalues")
+                                      "watervalues",
+                                      cluster)
 
   for (j in seq_along(list_areas)){
     list_watervalues[[list_areas[[j]]]] = as.matrix(extract_from_zip(

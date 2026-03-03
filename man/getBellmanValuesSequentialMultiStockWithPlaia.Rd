@@ -16,7 +16,8 @@ getBellmanValuesSequentialMultiStockWithPlaia(
   penalty_final_level = NULL,
   list_final_level = NULL,
   initial_traj = NULL,
-  list_areas_to_compute = NULL
+  list_areas_to_compute = NULL,
+  cluster = "calin1"
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 \item{initial_traj}{Initial trajectory (used for other storages)}
 
 \item{list_areas_to_compute}{Vector of character. Areas for which to compute Bellman values. If \code{NULL}, all areas in \code{list_areas} are used.}
+
+\item{cluster}{Character. Name of the cluster of antaresWeb}
 }
 \value{
 List containing aggregated water values, reward functions and optimal trajectories.

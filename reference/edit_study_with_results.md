@@ -12,8 +12,8 @@ edit_study_with_results(opts, node, output_node, candidates_types)
 
 - opts:
 
-  List of study parameters returned by the function
-  `antaresRead::setSimulationPath(simulation="input")` in input mode.
+  \`list\` Study parameters (typically the output of
+  \`antaresRead::setSimulationPath(simulation = "input")\`).
 
 - node:
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">antaresWaterValues</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,16 +53,14 @@
 
 
 <dl><dt id="arg-opts">opts<a class="anchor" aria-label="anchor" href="#arg-opts"></a></dt>
-<dd><p>List of study parameters returned by the function <code>antaresRead::setSimulationPath(simulation="input")</code> in input mode.</p></dd>
+<dd><p>`list`
+Study parameters (typically the output of `antaresRead::setSimulationPath(simulation = "input")`).</p></dd>
 
 
 <dt id="arg-candidates-types-gen">candidates_types_gen<a class="anchor" aria-label="anchor" href="#arg-candidates-types-gen"></a></dt>
-<dd><p>Data_frame with column names : <code>c(index, name, type, TOTEX, Marg_price, Part_fixe, Prix_fixe,
-Borne_min, Borne_max, Points_nb, Zone)</code>. Each row describes a cluster candidate. The index should correspond to the index of the candidate in <code>candidates_data</code>.
-The name is a character, the type is either <code>"cluster_flexible"</code> or <code>"cluster_bande"</code>, TOTEX is in eur/MW/year, Marg_price is in eur/MWh.
-Part_fixe is the fixed part for a variable cluster between 0 and 1, Prix_fixe in eur/MWh is its price.
-Borne_min and Borne_max are in MW, Points_nb is an integer (number of candidates tested at each iteration, it should be at least 4).
-Zone is a character containing the name of the area where to propose the candidate.</p></dd>
+<dd><p>`data.frame`
+A data.frame describing the generation candidates to be optimized.
+**See section ‘Structure of candidates_types_gen’ for details about required columns and their usage.**</p></dd>
 
 </dl></div>
 

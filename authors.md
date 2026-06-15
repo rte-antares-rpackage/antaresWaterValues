@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/rte-antares-rpackage/antaresWaterValues/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/rte-antares-rpackage/antaresWaterValues/blob/v3.0.0/DESCRIPTION)
 
 Gharsallaoui D, Gerbaux J (2026). *antaresWaterValues: Generating water
 values for Antares*. R package version 3.0.0,

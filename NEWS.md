@@ -1,8 +1,19 @@
-# antaresWaterValues (development version)
+# antaresWaterValues 3.0.0
 
 ## New features
 
-* Parameter cluster in plaia functions
+* Plaia can now be executed locally (not only via API) via the new `plaia_path`, `threads` and `solver` parameters.
+* New parameter `n_levels` in `getBellmanValuesWithPlaia`.
+* Parameter `cluster` added to plaia functions.
+
+## Breaking changes
+
+* Input file format for Plaia has changed: `penalties.yaml` is now split into `dynamic_programming.yaml` and `settings.yaml`, and the format of `grid.csv` has also been updated.
+* Scalar penalty parameters in `getBellmanValuesWithPlaia` replaced by per-area named lists (e.g. `penalty_low` → `list_penalty_low`).
+
+## Bugfixes
+
+* `getPumpEfficiency` returns `1` instead of `NULL` when pumping efficiency is not defined for an area.
 
 # antaresWaterValues 2.2.0
 

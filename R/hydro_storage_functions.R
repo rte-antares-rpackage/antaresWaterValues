@@ -68,12 +68,8 @@ resetHydroStorage <- function(area, opts) {
 getPumpEfficiency <- function(area, opts) {
   area = tolower(area)
   hydro_ini <- antaresRead::readIni(file.path("input","hydro","hydro"),opts=opts)
-  if (isTRUE(hydro_ini$reservoir[[area]])) {
-    Pump_Efficiency <- hydro_ini[["pumping efficiency"]][[area]]
-  } else {
-    Pump_Efficiency <- NULL
-  }
-  Pump_Efficiency
+  efficiency <- hydro_ini[["pumping efficiency"]][[area]]
+  if (is.null(efficiency)) 1 else efficiency
 }
 
 #' Change hydro management

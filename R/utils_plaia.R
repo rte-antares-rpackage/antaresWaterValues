@@ -74,7 +74,7 @@ run_plaia_simulation <- function(opts, name_sim, other_options, cluster, plaia_p
     outputs_after <- list.dirs(output_dir, recursive = FALSE)
     new_outputs <- setdiff(outputs_after, outputs_before)
     assertthat::assert_that(length(new_outputs) == 1, msg = paste0(
-      length(new_outputs), " new output folders found after plaia run — expected exactly 1."
+      length(new_outputs), " new output folders found after plaia run - expected exactly 1."
     ))
 
     return(new_outputs[[1]])

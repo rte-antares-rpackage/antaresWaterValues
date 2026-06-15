@@ -10,15 +10,18 @@ First of all, load the package and compute reward functions through
 simulations :
 
 ``` r
+
 library(antaresWaterValues)
 library(dplyr)
 ```
 
 ``` r
+
 opts <- antaresRead::setSimulationPath("your/path/to/the/antares/study","input")
 ```
 
 ``` r
+
 area <- "area"
 pumping <- T #T if pumping possible
 mcyears <- 1:3 # Monte Carlo years you want to use
@@ -27,6 +30,7 @@ name = "3sim"
 ```
 
 ``` r
+
 simulation_res <- runWaterValuesSimulation(
     area=area,
     nb_disc_stock = 3, #number of simulations
@@ -43,6 +47,7 @@ simulation_res <- runWaterValuesSimulation(
 Now compute reward functions :
 
 ``` r
+
 reward_db <- get_Reward(
   simulation_names = simulation_res$simulation_names,
   simulation_values = simulation_res$simulation_values,
@@ -52,13 +57,14 @@ reward_db <- get_Reward(
   efficiency = efficiency,
   method_old = T,
 )
-#> Warning: 'memory.limit()' is Windows-specific
+#> Warning: 'memory.limit()' is no longer supported
 reward <- reward_db$reward
 ```
 
 Define default parameters :
 
 ``` r
+
 states_step_ratio = 1/20
 penalty_low = 0
 penalty_high = 0
@@ -75,6 +81,7 @@ state levels in the Bellman computation, can be decreased to have more
 precise results but this will also increase computational time.
 
 ``` r
+
 compare_states = data.frame()
 for (s in c(10,20,50)){
   compare_states = Grid_Matrix(
@@ -100,6 +107,7 @@ for (s in c(10,20,50)){
 ![](grid_Matrix-parameters_files/figure-html/compare_state-1.png)![](grid_Matrix-parameters_files/figure-html/compare_state-2.png)![](grid_Matrix-parameters_files/figure-html/compare_state-3.png)
 
 ``` r
+
 compare_states %>%
   dplyr::filter(weeks %in% c(2,12,22,32,42,52),!is.na(vu)) %>%
   dplyr::mutate(number_states = as.character(number_states)) %>%
@@ -116,6 +124,7 @@ this example, 20 states seem to be enough to represent the variation of
 water values.
 
 ``` r
+
 compare_states %>%
   dplyr::filter(weeks == 1) %>%
   dplyr::mutate(number_states = as.character(number_states)) %>%
@@ -147,6 +156,7 @@ Bellman values can be computed with 2 different formulas :
   value `cvar_value` can be adapted to be more or less cautious.
 
 ``` r
+
 compare_method = data.frame()
 for (m in c(1, 0.5, 0.2)){
   compare_method = Grid_Matrix(
@@ -173,6 +183,7 @@ for (m in c(1, 0.5, 0.2)){
 ![](grid_Matrix-parameters_files/figure-html/compare_method-1.png)![](grid_Matrix-parameters_files/figure-html/compare_method-2.png)![](grid_Matrix-parameters_files/figure-html/compare_method-3.png)
 
 ``` r
+
 compare_method %>%
   dplyr::mutate(cvar_value = as.character(cvar_value)) %>%
   dplyr::filter(weeks %in% c(2,12,22,32,42,52),!is.na(vu)) %>%
@@ -188,6 +199,7 @@ Smaller `cvar_value` gives higher water values and therefore more
 conservative levels trajectories.
 
 ``` r
+
 compare_method %>%
   dplyr::mutate(cvar_value = as.character(cvar_value)) %>%
   dplyr::filter(weeks == 1) %>%
@@ -216,12 +228,20 @@ Penalties are added in the computation of Bellman values on the future
 level (at the end of the week) and also added at the end of the
 algorithm in the initial level (at the beginning of the week) :
 
-$$V_{t}\left( X_{t} \right) = \max\limits_{U \in {\lbrack U^{min},U^{max}\rbrack},X_{t + 1} = X_{t} - U_{t} + I_{t},X_{t + 1} \in {\lbrack X_{t + 1}^{min},X_{t + 1}^{max}\rbrack}}G_{t}\left( X_{t},U_{t},W_{t} \right) + V_{t + 1}\left( X_{t + 1} \right) + P_{t + 1}\left( X_{t + 1} \right)$$$$V_{t}^{final}\left( X_{t} \right) = V_{t}\left( X_{t} \right) + P_{t}\left( X_{t} \right)$$
+``` math
+V_t(X_t) = \max_{U \in [U^{min},U^{max}],X_{t+1}=X_t-U_t+I_t,X_{t+1} \in [X_{t+1}^{min},X_{t+1}^{max}]} G_t(X_t,U_t,W_t) + V_{t+1}(X_{t+1}) + P_{t+1}(X_{t+1})
+```
+``` math
+V^{final}_t(X_t) =V_t(X_t) + P_t(X_{t})
+```
 With the penalty defined as :
 
-$$P_{t}\left( X_{t} \right) = \min\left( 0,p_{low}\left( X_{t} - {\underline{X}}_{t} \right),p_{high}\left( {\overline{X}}_{t} - X_{t} \right) \right)$$
+``` math
+P_t(X_{t}) = \min(0, p_{low}(X_t-\underline{X}_t), p_{high}(\overline{X}_t-X_t))
+```
 
 ``` r
+
 compare_rulecurve = data.frame()
 for (p in c(0,150,500)){
   compare_rulecurve = Grid_Matrix(
@@ -247,6 +267,7 @@ for (p in c(0,150,500)){
 ![](grid_Matrix-parameters_files/figure-html/compare_rulecurve-1.png)![](grid_Matrix-parameters_files/figure-html/compare_rulecurve-2.png)![](grid_Matrix-parameters_files/figure-html/compare_rulecurve-3.png)
 
 ``` r
+
 compare_rulecurve %>%
   dplyr::filter(weeks %in% c(2,12,22,32,42,52),!is.na(vu)) %>%
   dplyr::mutate(penalty = as.character(penalty)) %>%
@@ -276,6 +297,7 @@ used for the final week and are given by `penalty_final_level_low` and
 `penalty_final_level_high`.
 
 ``` r
+
 res = Grid_Matrix(
   area=area,
   reward_db = reward_db,
@@ -308,6 +330,7 @@ estimate final Bellman values and to use then at the end of the horizon.
 Empirically, 2 iterations is enough.
 
 ``` r
+
 compare_cycle = data.frame()
 for (n in c(1,2)){
   compare_cycle = Grid_Matrix(
@@ -333,6 +356,7 @@ for (n in c(1,2)){
 ![](grid_Matrix-parameters_files/figure-html/compare_cycle-1.png)![](grid_Matrix-parameters_files/figure-html/compare_cycle-2.png)![](grid_Matrix-parameters_files/figure-html/compare_cycle-3.png)
 
 ``` r
+
 compare_cycle %>%
   dplyr::filter(weeks %in% c(2,12,22,32,42,52),!is.na(vu)) %>%
   dplyr::mutate(nb_cycle = as.character(nb_cycle)) %>%

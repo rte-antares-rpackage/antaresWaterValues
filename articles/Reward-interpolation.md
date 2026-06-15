@@ -3,15 +3,18 @@
 ## Initialize study and run simulations
 
 ``` r
+
 library(antaresWaterValues)
 library(dplyr)
 ```
 
 ``` r
+
 opts <- antaresRead::setSimulationPath("your/path/to/the/antares/study","input")
 ```
 
 ``` r
+
 area <- "area"
 pumping <- T #T if pumping possible
 mcyears <- 1:3 # Monte Carlo years you want to use
@@ -20,6 +23,7 @@ name = "3sim"
 ```
 
 ``` r
+
 simulation_res <- runWaterValuesSimulation(
     area=area,
     nb_disc_stock = 3, #number of simulations
@@ -41,6 +45,7 @@ control per simulation. This method gives an underestimation of the real
 reward function.
 
 ``` r
+
 reward_db <- get_Reward(
   simulation_names = simulation_res$simulation_names,
   simulation_values = simulation_res$simulation_values,
@@ -50,7 +55,7 @@ reward_db <- get_Reward(
   efficiency = efficiency,
   method_old = T
 )
-#> Warning: 'memory.limit()' is Windows-specific
+#> Warning: 'memory.limit()' is no longer supported
 reward_simple <- reward_db$reward
 ```
 
@@ -58,6 +63,7 @@ In this example, with 3 simulations, the reward function for the first
 week and the first Monte Carlo year has 3 different controls.
 
 ``` r
+
 reward_simple %>% 
   dplyr::filter(mcYear==1,timeId==1)%>%
   ggplot2::ggplot() +
@@ -77,6 +83,7 @@ local estimation is evaluated for controls listed in
 `possible_controls`.
 
 ``` r
+
 reward_db <- get_Reward(
   simulation_names = simulation_res$simulation_names,
   simulation_values = simulation_res$simulation_values,
@@ -98,6 +105,7 @@ reward_marg_interp <- reward_db$reward
 We can look at local estimation of reward function :
 
 ``` r
+
 reward_db$local_reward %>% 
   dplyr::filter(mcYear==1,week==1) %>%
   ggplot2::ggplot() +
@@ -111,6 +119,7 @@ The final estimation is obtained by taking the minimum of all
 estimations :
 
 ``` r
+
 reward_marg_interp %>% 
   dplyr::filter(mcYear==1,timeId==1) %>%
   ggplot2::ggplot() +
@@ -126,6 +135,7 @@ first week and the first Monte Carlo year has 20 different controls.
 ## Comparaison
 
 ``` r
+
 rbind(dplyr::mutate(reward_marg_interp,interpolation = "marg_prices"),
       dplyr::mutate(reward_simple,interpolation = "simple")) %>%
   dplyr::filter(mcYear==1,timeId==1) %>%

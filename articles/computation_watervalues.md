@@ -49,36 +49,38 @@ following optimization problems for each week and each reservoir level.
 This means that one begins by solving the problem of the last week of
 the year and then one solves the precedent week through backtracking.
 
-$$V_{t}\left( X_{t} \right) = \max\limits_{U \in {\lbrack U^{min},U^{max}\rbrack},X_{t + 1} = X_{t} - U_{t} + I_{t},X_{t + 1} \in {\lbrack X_{t + 1}^{min},X_{t + 1}^{max}\rbrack}}G_{t}\left( X_{t},U_{t},W_{t} \right) + V_{t + 1}\left( X_{t + 1} \right)$$
+``` math
+V_t(X_t) = \max_{U \in [U^{min},U^{max}],X_{t+1}=X_t-U_t+I_t,X_{t+1} \in [X_{t+1}^{min},X_{t+1}^{max}]} G_t(X_t,U_t,W_t) + V_{t+1}(X_{t+1})
+```
 
 We use the following notations :
 
-- $t \in \lbrack 1,T\rbrack$ representing the weeks of the year.
+- $`t \in [1,T]`$ representing the weeks of the year.
 
-- $V_{t}\left( X_{t} \right)$ is the Bellman value for week $t$ and for
-  the reservoir level at the beginning of week $t$$X_{t}$.
+- $`V_t(X_t)`$ is the Bellman value for week $`t`$ and for the reservoir
+  level at the beginning of week $`t`$$`X_t`$.
 
-- $V_{T + 1}\left( X_{T + 1} \right) = K\left( X_{T + 1} \right)$ is the
-  Bellman value at the end of the year that is supposed to be known.
+- $`V_{T+1}(X_{T+1}) = K(X_{T+1})`$ is the Bellman value at the end of
+  the year that is supposed to be known.
 
-- $U_{t}$ is the amount of water generated ($> 0$) or pumped ($< 0$)
-  with extreme values $U^{min}$ and $U^{max}$. It is also called the
+- $`U_t`$ is the amount of water generated ($`>0`$) or pumped ($`<0`$)
+  with extreme values $`U^{min}`$ and $`U^{max}`$. It is also called the
   control.
 
-- $I_{t}$ is the inflow during week $t$.
+- $`I_t`$ is the inflow during week $`t`$.
 
-- $\left\lbrack X_{t}^{min},X_{t}^{max} \right\rbrack$ are the rule
-  curves for the beginning of week $t$.
+- $`[X_t^{min},X_t^{max}]`$ are the rule curves for the beginning of
+  week $`t`$.
 
-- $G_{t}\left( X_{t},U_{t},W_{t} \right)$ is the reward during week $t$
-  depending on the hazards $W_{t}$ that comprise the inflow. Hazards are
-  represented by Monte Carlo years in Antares.
+- $`G_t(X_t,U_t,W_t)`$ is the reward during week $`t`$ depending on the
+  hazards $`W_t`$ that comprise the inflow. Hazards are represented by
+  Monte Carlo years in Antares.
 
 This equation means that the reward that is possible to earn between the
-beginning of week $t$ and the end of the year is the best compromise
-between the reward at week $t$ and the reward between the beginning of
-week $t + 1$ and the end of the year. In other words, it is the best
-compromise between using water during week $t$ and keeping it for the
+beginning of week $`t`$ and the end of the year is the best compromise
+between the reward at week $`t`$ and the reward between the beginning of
+week $`t+1`$ and the end of the year. In other words, it is the best
+compromise between using water during week $`t`$ and keeping it for the
 other weeks.
 
 ![](images/bellman_calculation.PNG)
@@ -105,8 +107,8 @@ depending on the `hydro-princing-mode` :
 There are three main steps to compute water values in this package using
 Antares :
 
-1.  Compute rewards functions $G_{t}\left( X_{t},U_{t},W_{t} \right)$
-    for all weeks and all possible hazards.
+1.  Compute rewards functions $`G_t(X_t,U_t,W_t)`$ for all weeks and all
+    possible hazards.
 
 2.  Apply the precedent equation to compute Bellman values.
 
@@ -116,11 +118,10 @@ Each step is detailed is the following paragraphs.
 
 ### Rewards functions
 
-First of all, we assume that the reward
-$G_{t}\left( X_{t},U_{t},W_{t} \right)$ doesn’t depend on the reservoir
-level $X_{t}$ so it becomes $G_{t}\left( U_{t},W_{t} \right)$ which
-means the reward depends only on the week, the scenario and the control
-of the storage.
+First of all, we assume that the reward $`G_t(X_t,U_t,W_t)`$ doesn’t
+depend on the reservoir level $`X_t`$ so it becomes $`G_t(U_t,W_t)`$
+which means the reward depends only on the week, the scenario and the
+control of the storage.
 
 Reward functions are computed in two steps : the first one is to launch
 Antares simulation (“simulation tab” in the shiny interface or
@@ -130,7 +131,7 @@ reward function (“calculate water values” tab or
 [`get_Reward()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/get_Reward.md)).
 
 For the first step, the user chooses a number of controls
-(`nb_disc_stock`) for which the reward $G_{t}$ function will be
+(`nb_disc_stock`) for which the reward $`G_t`$ function will be
 evaluated. There is the same number of controls for each week and each
 scenario but the value of the controls can change if the maximum power
 of the turbine varies between weeks. For each control, a complete

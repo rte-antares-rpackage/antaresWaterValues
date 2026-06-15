@@ -27,7 +27,9 @@ getBellmanValuesSequentialMultiStockWithPlaia(
   list_final_level = NULL,
   initial_traj = NULL,
   list_areas_to_compute = NULL,
-  cluster = "calin1"
+  cluster = "calin1",
+  plaia_path = NULL,
+  threads = 1L
 )
 ```
 
@@ -92,6 +94,16 @@ getBellmanValuesSequentialMultiStockWithPlaia(
 - cluster:
 
   Character. Name of the cluster of antaresWeb
+
+- plaia_path:
+
+  Character. Path to the plaia executable. Required for local studies,
+  ignored for API studies.
+
+- threads:
+
+  Integer. Number of threads used by the plaia executable (local studies
+  only).
 
 ## Value
 

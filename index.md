@@ -45,6 +45,7 @@ More theoretical details are available in the vignette:
 ## Installation
 
 ``` r
+
 # Install from GitHub
 # install.packages("devtools")
 devtools::install_github("rte-antares-rpackage/antaresWaterValues@*release") 
@@ -63,6 +64,7 @@ computing Bellman values.
 ### Load the package
 
 ``` r
+
 library(antaresWaterValues)
 ```
 
@@ -73,6 +75,7 @@ library(antaresWaterValues)
 ### 1. With the Shiny app
 
 ``` r
+
 opts = antaresRead::setSimulationPath("your/path/to/the/antares/study", "input") 
 shiny_water_values(opts)
 ```
@@ -82,12 +85,14 @@ shiny_water_values(opts)
 #### a. Setup your study
 
 ``` r
+
 opts <- antaresRead::setSimulationPath("your/path/to/the/antares/study", "input")
 ```
 
 #### b. Set parameters
 
 ``` r
+
 area <- "area"
 pumping <- TRUE # TRUE if pumping is possible
 mcyears <- 1:3 # Monte Carlo years to use
@@ -98,6 +103,7 @@ name = "3sim"
 #### c. Run simulations
 
 ``` r
+
 simulation_res <- runWaterValuesSimulation(
     area = area,
     nb_disc_stock = 3, # Number of simulations
@@ -113,12 +119,14 @@ simulation_res <- runWaterValuesSimulation(
 #### d. Retrieve previous simulations
 
 ``` r
+
 load(paste0(opts$studyPath, "/user/", tolower(area), "_", name, ".RData"))
 ```
 
 #### e. Compute reward functions
 
 ``` r
+
 reward_db <- get_Reward(
   simulation_names = simulation_res$simulation_names,
   simulation_values = simulation_res$simulation_values,
@@ -142,6 +150,7 @@ reward <- reward_db$reward
 #### f. Compute water values
 
 ``` r
+
 results <- Grid_Matrix(
   area = area,
   reward_db = reward_db,
@@ -161,12 +170,14 @@ results <- Grid_Matrix(
 ![](reference/figures/README-grid_matrix-1.png)
 
 ``` r
+
 aggregated_results <- results$aggregated_results
 ```
 
 #### g. Write results to Antares
 
 ``` r
+
 reshaped_values <- aggregated_results %>% to_Antares_Format_bis()
 antaresEditObject::writeWaterValues(
   area = area,
@@ -180,6 +191,7 @@ averages values.
 #### h. Make sure `hydro-pricing-mode` is set to `accurate`
 
 ``` r
+
 settings_ini <- antaresRead::readIni(file.path("settings", "generaldata.ini"), opts = opts)
 settings_ini$`other preferences`$`hydro-pricing-mode` <- "accurate"
 antaresEditObject::writeIni(settings_ini, file.path("settings", "generaldata.ini"), overwrite = TRUE, opts = opts)
@@ -190,6 +202,7 @@ antaresEditObject::writeIni(settings_ini, file.path("settings", "generaldata.ini
 ## Plotting Results
 
 ``` r
+
 # Water values visualization
 waterValuesViz(Data = aggregated_results, filter_penalties = TRUE)
 ```
@@ -197,6 +210,7 @@ waterValuesViz(Data = aggregated_results, filter_penalties = TRUE)
 ![](reference/figures/README-watervalues-1.png)
 
 ``` r
+
 # Plot Bellman
 plot_Bellman(value_nodes_dt = aggregated_results, weeks_to_plot = c(1,3))
 ```
@@ -204,6 +218,7 @@ plot_Bellman(value_nodes_dt = aggregated_results, weeks_to_plot = c(1,3))
 ![](reference/figures/README-bellman-1.png)
 
 ``` r
+
 # Reward functions
 plot_1 <- plot_reward(reward_base = reward, weeks_to_plot = c(1,3))
 ```
@@ -211,18 +226,21 @@ plot_1 <- plot_reward(reward_base = reward, weeks_to_plot = c(1,3))
 ![](reference/figures/README-reward-1.png)
 
 ``` r
+
 plot_2 <- plot_reward_mc(reward_base = reward, weeks_to_plot = c(1,3), scenarios_to_plot = c(1,2))
 ```
 
 ![](reference/figures/README-reward-2.png)
 
 ``` r
+
 plot_3 <- plot_reward_variation(reward_base = reward, weeks_to_plot = c(1,3))
 ```
 
 ![](reference/figures/README-reward-3.png)
 
 ``` r
+
 plot_4 <- plot_reward_variation_mc(reward_base = reward, weeks_to_plot = c(1,3), scenarios_to_plot = c(1,2))
 ```
 

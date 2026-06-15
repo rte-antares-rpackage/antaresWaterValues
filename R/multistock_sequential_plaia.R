@@ -16,6 +16,9 @@
 #' @param nb_simulations Number of controls to simulate
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to force final level
 #' @param cluster Character. Name of the cluster of antaresWeb
+#' @param plaia_path Character. Path to the plaia executable. Required for local studies, ignored for API studies.
+#' @param settings List. Additional settings passed to plaia via \code{settings.yaml}.
+#' @param threads Integer. Number of threads used by the plaia executable (local studies only).
 #'
 #' @export
 #' @return List containing aggregated water values, reward functions and optimal trajectories.
@@ -31,7 +34,10 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                                                           list_final_level = NULL,
                                                           initial_traj = NULL,
                                                           list_areas_to_compute = NULL,
-                                                          cluster = "calin1"){
+                                                          cluster = "calin1",
+                                                          plaia_path = NULL,
+                                                          settings = list(),
+                                                          threads = 1L){
 
   # Initialization
   df_watervalues <- data.frame()
@@ -101,7 +107,10 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                                 nb_simulations = nb_simulations,
                                 initial_traj,
                                 list_max_hydro_weekly,
-                                cluster)
+                                cluster,
+                                plaia_path,
+                                settings,
+                                threads)
 
     df_rewards = reward_db$reward %>%
       dplyr::mutate(area = area) %>%
@@ -190,7 +199,10 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                         nb_simulations,
                                         optimal_traj,
                                         list_max_hydro_weekly,
-                                        cluster = "calin1")  {
+                                        cluster = "calin1",
+                                        plaia_path = NULL,
+                                        settings = list(),
+                                        threads = 1L)  {
 
   grid = data.frame()
   for (j in seq_along(list_areas)){
@@ -223,18 +235,23 @@ calculateRewardsSimulationsWithPlaia <- function(node,
 
   }
 
-  zip_path = prepare_and_launch_plaia(list_areas,
+  plaia_output_path = prepare_and_launch_plaia(list_areas,
                                       opts,
                                       mcyears,
                                       grid,
                                       name_sim = paste0("grid_cost_function_",node),
-                                      other_options = "grid_cost_function",
-                                      cluster = cluster)
+                                      other_options = "grid_evaluator",
+                                      cluster = cluster,
+                                      plaia_path = plaia_path,
+                                      settings = settings,
+                                      threads = threads)
 
-  reward = extract_from_zip(zip_path,
+  reward = extract_plaia_result(plaia_output_path,
                             "gridPointsValues_0.csv")
 
-  on.exit(unlink(dirname(zip_path), recursive = TRUE), add = TRUE)
+  if (grepl("\\.zip$", plaia_output_path)) {
+    on.exit(unlink(dirname(plaia_output_path), recursive = TRUE), add = TRUE)
+  }
 
   reward = reward %>%
     dplyr::mutate(timeId = .data$week,

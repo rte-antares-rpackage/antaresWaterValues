@@ -8,14 +8,19 @@ getBellmanValuesWithPlaia(
   opts,
   mcyears,
   list_areas,
-  force_final_level = TRUE,
-  penalty_final_level = 0,
-  penalty_low = 0,
-  penalty_high = 0,
-  cvar_value = 1,
+  list_force_final_level = list(),
+  list_final_level = list(),
+  list_penalty_final_level = list(),
+  list_penalty_low = list(),
+  list_penalty_high = list(),
+  list_cvar_value = list(),
   name_sim = "watervalues",
   n_controls = 51,
-  cluster = "calin1"
+  n_levels = 101,
+  cluster = "calin1",
+  plaia_path = NULL,
+  solver = "xpress",
+  threads = 1L
 )
 }
 \arguments{
@@ -25,21 +30,31 @@ getBellmanValuesWithPlaia(
 
 \item{list_areas}{Vector of areas concerned by simulations.}
 
-\item{force_final_level}{Binary. Whether final level should be constrained.}
+\item{list_force_final_level}{Named list of logical. Per-area flag indicating whether the final level should be constrained.}
 
-\item{penalty_final_level}{Double. Penalties for both rule curves to constrain final level.}
+\item{list_final_level}{Named list of double. Per-area final reservoir level (in percent between 0 and 100). Used when \code{list_force_final_level} is \code{TRUE}.}
 
-\item{penalty_low}{Double. Penalty for violating the bottom rule curve, comparable to the unsupplied energy cost.}
+\item{list_penalty_final_level}{Named list of double. Per-area penalties for both rule curves to constrain final level.}
 
-\item{penalty_high}{Double. Penalty for violating the top rule curve, comparable to the spilled energy cost.}
+\item{list_penalty_low}{Named list of double. Per-area penalty for violating the bottom rule curve, comparable to the unsupplied energy cost.}
 
-\item{cvar_value}{Double from 0 to 1. The probability used in cvar method.}
+\item{list_penalty_high}{Named list of double. Per-area penalty for violating the top rule curve, comparable to the spilled energy cost.}
+
+\item{list_cvar_value}{Named list of double (values between 0 and 1). Per-area probability used in the CVaR method.}
 
 \item{name_sim}{Character. Name of the simulation to launch}
 
 \item{n_controls}{Integer. Number of controls to evaluate reward functions.}
 
+\item{n_levels}{Integer. Number of Bellman value levels to compute.}
+
 \item{cluster}{Character. Name of the cluster of antaresWeb}
+
+\item{plaia_path}{Character. Path to the plaia executable. Required for local studies, ignored for API studies.}
+
+\item{solver}{Character. Solver used by plaia (e.g. \code{"xpress"}, \code{"coin"}).}
+
+\item{threads}{Integer. Number of threads used by the plaia executable (local studies only).}
 }
 \value{
 List of watervalues matrix

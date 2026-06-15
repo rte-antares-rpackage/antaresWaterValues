@@ -17,7 +17,6 @@
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to force final level
 #' @param cluster Character. Name of the cluster of antaresWeb
 #' @param plaia_path Character. Path to the plaia executable. Required for local studies, ignored for API studies.
-#' @param settings List. Additional settings passed to plaia via \code{settings.yaml}.
 #' @param threads Integer. Number of threads used by the plaia executable (local studies only).
 #'
 #' @export
@@ -36,7 +35,6 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                                                           list_areas_to_compute = NULL,
                                                           cluster = "calin1",
                                                           plaia_path = NULL,
-                                                          settings = list(),
                                                           threads = 1L){
 
   # Initialization
@@ -109,7 +107,6 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                                 list_max_hydro_weekly,
                                 cluster,
                                 plaia_path,
-                                settings,
                                 threads)
 
     df_rewards = reward_db$reward %>%
@@ -201,38 +198,44 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                         list_max_hydro_weekly,
                                         cluster = "calin1",
                                         plaia_path = NULL,
-                                        settings = list(),
                                         threads = 1L)  {
+  settings <- list(
+    solver = "xpress",
+    keep_mps = FALSE,
+    problem_format = "OPTIMIZED",
+    verbosity = "INFO",
+    cache_problems = TRUE
+  )
 
   grid = data.frame()
   for (j in seq_along(list_areas)){
     a <- list_areas[[j]]
     if (a != node){
-      grid = optimal_traj %>%
+      grid_area = optimal_traj %>%
         dplyr::filter(.data$area == a) %>%
-        dplyr::left_join(list_max_hydro_weekly[[j]],by=c("week"="timeId")) %>%
-        dplyr::mutate(rhs = (.data$u+.data$pump*list_efficiency[[j]])/(.data$turb+.data$pump*list_efficiency[[j]])) %>%
         dplyr::mutate(grid_id = 0,
                       problem_name = stringr::str_c("problem-",.data$mcYear,"-",.data$week,"--optim-nb-1"),
                       type = "constraint",
                       name = "HydroPower",
-                      min = .data$rhs,
-                      max = .data$rhs,
-                      step = "0.1") %>%
-        dplyr::select(c("grid_id","problem_name","type","name","area","min","max","step")) %>%
-        rbind(grid)
+                      min = .data$u,
+                      max = .data$u,
+                      nb_values = 1L) %>%
+        dplyr::select(c("grid_id","problem_name","type","name","area","min","max","nb_values"))
+      grid = rbind(grid, grid_area)
     } else {
-      grid = data.frame(grid_id = 0,
-                        problem_name = "all",
-                        type = "constraint",
-                        name = "HydroPower",
-                        area = a,
-                        min = 0,
-                        max = 1,
-                        step = 1/(nb_simulations-1)) %>%
-        rbind(grid)
+      grid_area = tidyr::expand_grid(mcYear = mcyears, timeId = list_max_hydro_weekly[[j]]$timeId) %>%
+        dplyr::left_join(list_max_hydro_weekly[[j]], by = "timeId") %>%
+        dplyr::mutate(grid_id = 0,
+                      problem_name = stringr::str_c("problem-",.data$mcYear,"-",.data$timeId,"--optim-nb-1"),
+                      type = "constraint",
+                      name = "HydroPower",
+                      area = a,
+                      min = -.data$pump * list_efficiency[[j]],
+                      max = .data$turb,
+                      nb_values = nb_simulations) %>%
+        dplyr::select(c("grid_id","problem_name","type","name","area","min","max","nb_values"))
+      grid = rbind(grid_area, grid)
     }
-
   }
 
   plaia_output_path = prepare_and_launch_plaia(list_areas,
@@ -246,12 +249,10 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                       settings = settings,
                                       threads = threads)
 
+  on.exit(cleanup_plaia_output(plaia_output_path), add = TRUE)
+
   reward = extract_plaia_result(plaia_output_path,
                             "gridPointsValues_0.csv")
-
-  if (grepl("\\.zip$", plaia_output_path)) {
-    on.exit(unlink(dirname(plaia_output_path), recursive = TRUE), add = TRUE)
-  }
 
   reward = reward %>%
     dplyr::mutate(timeId = .data$week,

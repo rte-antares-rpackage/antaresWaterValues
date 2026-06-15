@@ -19,7 +19,6 @@ getBellmanValuesSequentialMultiStockWithPlaia(
   list_areas_to_compute = NULL,
   cluster = "calin1",
   plaia_path = NULL,
-  settings = list(),
   threads = 1L
 )
 }
@@ -52,8 +51,6 @@ between the reservoir capacity and zero for which Bellman values are computed.}
 \item{cluster}{Character. Name of the cluster of antaresWeb}
 
 \item{plaia_path}{Character. Path to the plaia executable. Required for local studies, ignored for API studies.}
-
-\item{settings}{List. Additional settings passed to plaia via \code{settings.yaml}.}
 
 \item{threads}{Integer. Number of threads used by the plaia executable (local studies only).}
 }

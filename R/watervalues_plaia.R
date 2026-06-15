@@ -65,7 +65,7 @@ getBellmanValuesWithPlaia <- function(opts,
                     max = .data$turb,
                     nb_values = n_controls) %>%
       dplyr::select(c("grid_id", "problem_name", "type", "name", "area", "min", "max", "nb_values"))
-    grid = rbind(grid_area, grid)
+    grid = rbind(grid, grid_area)
   }
 
   # penalties.yaml: per-area penalties assembled from per-parameter lists
@@ -103,6 +103,7 @@ getBellmanValuesWithPlaia <- function(opts,
                                       plaia_path,
                                       settings,
                                       threads)
+  on.exit(cleanup_plaia_output(plaia_output_path), add = TRUE)
 
   for (j in seq_along(list_areas)){
     list_watervalues[[list_areas[[j]]]] = as.matrix(extract_plaia_result(
@@ -124,7 +125,7 @@ getBellmanValuesWithPlaia <- function(opts,
                                           names_to = "statesid",
                                           values_to = "value_node") %>%
       dplyr::mutate(area = list_areas[[j]],
-                    states = (as.integer(stringr::str_remove(.data$statesid,"V"))-1)/100*capa,
+                    states = (as.integer(stringr::str_remove(.data$statesid,"V"))-1)/(n_levels-1)*capa,
                     weeks = as.integer(.data$weeks)-1) %>%
       dplyr::select("weeks","states","value_node","area") %>%
       rbind(df_watervalues)
@@ -144,10 +145,6 @@ getBellmanValuesWithPlaia <- function(opts,
                     mcYear = as.integer(stringr::str_remove(.data$mcYear,"V"))) %>%
       dplyr::filter(.data$mcYear %in% mcyears) %>%
       rbind(df_levels)
-  }
-
-  if (grepl("\\.zip$", plaia_output_path)) {
-    on.exit(unlink(dirname(plaia_output_path), recursive = TRUE), add = TRUE)
   }
 
   output <- list()

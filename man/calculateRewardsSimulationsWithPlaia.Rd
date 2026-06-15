@@ -18,7 +18,6 @@ calculateRewardsSimulationsWithPlaia(
   list_max_hydro_weekly,
   cluster = "calin1",
   plaia_path = NULL,
-  settings = list(),
   threads = 1L
 )
 }
@@ -42,8 +41,6 @@ calculateRewardsSimulationsWithPlaia(
 \item{cluster}{Character. Name of the cluster of antaresWeb}
 
 \item{plaia_path}{Character. Path to the plaia executable. Required for local studies, ignored for API studies.}
-
-\item{settings}{List. Additional settings passed to plaia via \code{settings.yaml}.}
 
 \item{threads}{Integer. Number of threads used by the plaia executable (local studies only).}
 }

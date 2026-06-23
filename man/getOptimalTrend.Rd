@@ -16,7 +16,8 @@ getOptimalTrend(
   max_hydro_weekly,
   seed = 0,
   efficiency,
-  mix_scenario = TRUE
+  mix_scenario = TRUE,
+  reward
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ getOptimalTrend(
 \item{efficiency}{Double between 0 and 1. Pumping efficiency ratio. Get it with \code{getPumpEfficiency()}.}
 
 \item{mix_scenario}{Should scenario be mix from one week to another ?}
+
+\item{reward}{Output \code{reward} of \code{get_Reward()}}
 }
 \value{
 Data frame with level (\code{"lev"}) and optimal transition

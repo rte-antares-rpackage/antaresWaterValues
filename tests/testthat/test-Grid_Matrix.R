@@ -42,7 +42,7 @@ test_that("Lower bound Grid_Matrix", {
   final_level = get_initial_level(area=area,opts=opts)
   nb_cycle = 1
 
-  lb = Grid_Matrix(
+  temps <- system.time({lb = Grid_Matrix(
     area=area,
     reward_db = reward_db,
     mcyears = mcyears,
@@ -55,7 +55,9 @@ test_that("Lower bound Grid_Matrix", {
     final_level = final_level,
     penalty_final_level_low = penalty_final_level,
     penalty_final_level_high = penalty_final_level,
-    nb_cycle = nb_cycle
-  )$lower_bound
+    nb_cycle = nb_cycle,
+    plot_watervalues = F
+  )$lower_bound})
+  message(temps[["elapsed"]])
   expect_equal(lb, -44728328320)
 })

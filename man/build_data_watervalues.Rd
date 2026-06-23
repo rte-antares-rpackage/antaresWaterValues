@@ -14,7 +14,8 @@ build_data_watervalues(
   force_final_level = F,
   penalty_final_level_low = 0,
   penalty_final_level_high = 0,
-  final_level = NULL
+  final_level = NULL,
+  plot_watervalues = T
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ build_data_watervalues(
 \item{penalty_final_level_high}{Penalties for top rule curve to constrain final level}
 
 \item{final_level}{Double. Final level to consider}
+
+\item{plot_watervalues}{Binary. Plot watervalues or not ?}
 }
 \value{
 Data frame with water value (vu) for each week (weeks) and each state (states).

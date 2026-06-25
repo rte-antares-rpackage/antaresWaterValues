@@ -33,7 +33,7 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
                                                           list_final_level = NULL,
                                                           initial_traj = NULL,
                                                           list_areas_to_compute = NULL,
-                                                          cluster = "calin1",
+                                                          cluster = "calin2",
                                                           plaia_path = NULL,
                                                           threads = 1L){
 
@@ -196,7 +196,7 @@ calculateRewardsSimulationsWithPlaia <- function(node,
                                         nb_simulations,
                                         optimal_traj,
                                         list_max_hydro_weekly,
-                                        cluster = "calin1",
+                                        cluster = "calin2",
                                         plaia_path = NULL,
                                         threads = 1L)  {
   settings <- list(

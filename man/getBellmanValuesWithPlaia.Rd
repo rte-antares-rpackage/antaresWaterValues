@@ -17,7 +17,7 @@ getBellmanValuesWithPlaia(
   name_sim = "watervalues",
   n_controls = 51,
   n_levels = 101,
-  cluster = "calin1",
+  cluster = "calin2",
   plaia_path = NULL,
   solver = "xpress",
   threads = 1L

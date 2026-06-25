@@ -17,7 +17,7 @@ getBellmanValuesSequentialMultiStockWithPlaia(
   list_final_level = NULL,
   initial_traj = NULL,
   list_areas_to_compute = NULL,
-  cluster = "calin1",
+  cluster = "calin2",
   plaia_path = NULL,
   threads = 1L
 )

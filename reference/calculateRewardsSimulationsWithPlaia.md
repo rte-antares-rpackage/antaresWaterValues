@@ -19,7 +19,7 @@ calculateRewardsSimulationsWithPlaia(
   nb_simulations,
   optimal_traj,
   list_max_hydro_weekly,
-  cluster = "calin1",
+  cluster = "calin2",
   plaia_path = NULL,
   threads = 1L
 )

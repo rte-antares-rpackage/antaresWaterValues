@@ -89,7 +89,7 @@ getBellmanValuesWithPlaia <- function(opts,
     end_week = 52L,
     antares_format = TRUE,
     use_optimal_trajectory = TRUE,
-    n_levels = as.integer(n_levels))
+    nb_levels = as.integer(n_levels))
   )
 
   plaia_output_path = prepare_and_launch_plaia(list_areas,

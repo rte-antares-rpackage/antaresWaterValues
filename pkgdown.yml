@@ -5,7 +5,7 @@ articles:
   computation_watervalues: computation_watervalues.html
   grid_Matrix-parameters: grid_Matrix-parameters.html
   Reward-interpolation: Reward-interpolation.html
-last_built: 2026-07-21T07:24Z
+last_built: 2026-07-21T07:27Z
 urls:
   reference: https://rte-antares-rpackage.github.io/antaresWaterValues/reference
   article: https://rte-antares-rpackage.github.io/antaresWaterValues/articles

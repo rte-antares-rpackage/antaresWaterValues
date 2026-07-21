@@ -1,6 +1,6 @@
 validate_study_for_plaia <- function(opts, plaia_path = NULL) {
 
-  assertthat::assert_that(opts$parameters$`adequacy patch`$`include-adq-patch` == FALSE,
+  assertthat::assert_that(!isTRUE(opts$parameters$`adequacy patch`$`include-adq-patch`),
                           msg = "Adequacy Patch can only be used with Economy mode.")
 
   if (is_api_study(opts)) {

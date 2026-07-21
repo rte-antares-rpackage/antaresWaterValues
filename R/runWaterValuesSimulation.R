@@ -168,7 +168,7 @@ setupGeneralParameters <- function(opts,
   assertthat::assert_that(class(opts) == "simOptions")
 
   if (expansion){
-    assertthat::assert_that(opts$parameters$`adequacy patch`$`include-adq-patch` == FALSE,
+    assertthat::assert_that(!isTRUE(opts$parameters$`adequacy patch`$`include-adq-patch`),
                             msg = "Adequacy Patch can only be used with Economy mode.")
   }
 

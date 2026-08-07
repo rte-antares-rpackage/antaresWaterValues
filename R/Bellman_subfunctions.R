@@ -1,21 +1,3 @@
-
-#' Create approximation of reward function for each scenario, used in \code{Bellman}
-#'
-#' @param Data_week Data frame generated in \code{Grid_Matrix} code containing
-#' reward database for each scenario (we suppose there is only one week at a time)
-#'
-#' @return List of \code{stats::approxfun} for each scenario
-#' @keywords internal
-get_reward_interpolation <- function(Data_week){
-
-  reward <- dplyr::distinct(Data_week[,c('years','reward_db')])
-
-  f_reward_year <- sapply(reward$reward_db,FUN = function(df) stats::approxfun(df$control,df$reward))
-
-  return(f_reward_year)
-}
-
-
 #' Create a data frame with all possible transition and associated next state for
 #' each scenario and each state for one particular week, used in \code{Bellman}.
 #' For each next state, Bellman value is calculated.
@@ -61,7 +43,6 @@ build_all_possible_decisions <- function(Data_week,decision_space,
 
   possible_control <- Data_week  %>%
     dplyr::right_join(decision_space,by=c("years"="mcYear"), relationship="many-to-many") %>%
-    dplyr::rename("control"="u") %>%
     dplyr::mutate(next_state = -.data$control+.data$states+.data$hydroStorage) %>%
     rbind(possible_control)
 
@@ -78,7 +59,8 @@ build_all_possible_decisions <- function(Data_week,decision_space,
   df_SDP <- df_SDP %>%
     dplyr::filter(.data$next_state>=0, .data$next_state<=niveau_max)%>%
     dplyr::mutate(next_value = f_next_value(.data$next_state) + .data$overflow*overflow_cost) %>%
-    dplyr::select(-c("overflow"))
+    dplyr::select(c("years","states","next_state","control","hydroStorage","next_value"))
 
   return(df_SDP)
 }
+

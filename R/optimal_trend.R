@@ -6,6 +6,7 @@
 #' @param mix_scenario Should scenario be mix from one week to another ?
 #' @param seed If scenario are mixed, seed to make results reproducible.
 #' @param penalty_final_level Penalties (for both bottom and top rule curves) to force final level
+#' @param reward Output \code{reward} of \code{get_Reward()}
 #'
 #' @return Data frame with level (\code{"lev"}) and optimal transition
 #' (\code{"constraint"}) for each (\code{"week"}) and each (\code{"scenario"}).
@@ -21,7 +22,8 @@ getOptimalTrend <- function(level_init,
                             max_hydro_weekly,
                             seed = 0,
                             efficiency,
-                            mix_scenario=TRUE){
+                            mix_scenario=TRUE,
+                            reward){
   level_i <- data.frame(states = level_init[mcyears],scenario = seq_along(mcyears))
   levels <- data.frame()
 
@@ -31,6 +33,8 @@ getOptimalTrend <- function(level_init,
 
     transition <- watervalues %>%
       dplyr::filter(.data$weeks==w+1)
+
+    reward_week = dplyr::filter(reward,.data$timeId==w)
 
     # Rule curves at the end of the current week (and beginning of the next one)
     Data_week <- watervalues %>%
@@ -53,15 +57,9 @@ getOptimalTrend <- function(level_init,
     pen_high <- ifelse(w<52,penalty_high,penalty_final_level)
     pen_low <- ifelse(w<52,penalty_low,penalty_final_level)
 
-    decision_space <-  dplyr::distinct(Data_week[,c('years','reward_db')]) %>%
-      tidyr::unnest(c("reward_db")) %>%
-      dplyr::select(c("years","control")) %>%
-      dplyr::rename("mcYear"="years","u"="control") %>%
-      dplyr::mutate(week = w)
-
     control = Bellman(Data_week = Data_week,
                       next_week_values_l = transition$value_node,
-                      decision_space = decision_space,
+                      reward = reward_week,
                       E_max = max_hydro_weekly$turb[w],
                       P_max = max_hydro_weekly$pump[w]*efficiency,
                       mcyears = mcyears,

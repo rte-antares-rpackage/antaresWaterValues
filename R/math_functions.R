@@ -11,6 +11,7 @@
 #' @param penalty_final_level_low Penalties for both bottom rule curve to constrain final level
 #' @param penalty_final_level_high Penalties for top rule curve to constrain final level
 #' @param final_level Double. Final level to consider
+#' @param plot_watervalues Binary. Plot watervalues or not ?
 #'
 #' @return Data frame with water value (vu) for each week (weeks) and each state (states).
 #' vu_pen corresponds to water value without penalties
@@ -18,7 +19,7 @@
 build_data_watervalues <- function(watervalues,statesdt,reservoir,
                                    penalty_level_high,penalty_level_low,
                                    force_final_level=F,penalty_final_level_low=0,
-                                   penalty_final_level_high=0,final_level=NULL){
+                                   penalty_final_level_high=0,final_level=NULL, plot_watervalues=T){
   # calculate derivative of Bellman values (ie watervalues not yet penalized)
   value_nodes_dt <- value_node_gen(watervalues,statesdt,reservoir)
 
@@ -61,7 +62,9 @@ build_data_watervalues <- function(watervalues,statesdt,reservoir,
     dplyr::mutate(weeks=.data$weeks-1)
 
   # plotting
-  print(waterValuesViz(value_nodes_dt))
+  if (plot_watervalues){
+    print(waterValuesViz(value_nodes_dt))
+  }
   return(value_nodes_dt)
 
 }

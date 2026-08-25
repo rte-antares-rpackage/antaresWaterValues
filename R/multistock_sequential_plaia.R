@@ -188,6 +188,7 @@ getBellmanValuesSequentialMultiStockWithPlaia <- function(list_areas,
 #' @param cluster Character. Name of the cluster of antaresWeb
 #'
 #' @returns a \code{data_frame} containing the rewards returned by the function \code{get_Reward()}
+#' @export
 calculateRewardsSimulationsWithPlaia <- function(node,
                                         list_areas,
                                         list_efficiency,

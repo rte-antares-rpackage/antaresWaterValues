@@ -8,6 +8,13 @@ check_area_name <- function(area, opts) {
     stop("'", area, "' is not a valid area name, possible names are: ", paste(areaList, collapse = ", "), call. = FALSE)
 }
 
+#' Validate a vector of area names against the study and normalize their case.
+#'
+#' @param list_areas Character vector of area names.
+#' @param opts List. Antares simulation options, as returned by \code{antaresRead::setSimulationPath()}.
+#'
+#' @returns Character vector of \code{list_areas} normalized to lower case.
+#' @export
 validate_and_normalize_areas <- function(list_areas, opts) {
   list_areas <- tolower(list_areas)
 

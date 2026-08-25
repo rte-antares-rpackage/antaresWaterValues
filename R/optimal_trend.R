@@ -10,6 +10,7 @@
 #' @return Data frame with level (\code{"lev"}) and optimal transition
 #' (\code{"constraint"}) for each (\code{"week"}) and each (\code{"scenario"}).
 #' For each (\code{"week"}), the (\code{"scenario"}) used is given by (\code{"mcYear"}).
+#' @export
 getOptimalTrend <- function(level_init,
                             watervalues,
                             mcyears,

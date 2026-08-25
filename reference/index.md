@@ -133,5 +133,9 @@
   Calculate water values with `Grid_Matrix` from estimated reward, used
   in `calculateBellmanWithIterativeSimulations`
 
+- [`validate_and_normalize_areas()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/validate_and_normalize_areas.md)
+  : Validate a vector of area names against the study and normalize
+  their case.
+
 - [`waterValuesViz()`](https://rte-antares-rpackage.github.io/antaresWaterValues/reference/waterValuesViz.md)
   : Plot water values
